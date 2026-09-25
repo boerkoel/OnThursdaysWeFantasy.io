@@ -210,6 +210,22 @@
         "source": "REGULAR_SEASON",
         "regularSeasonSeed": 7,
         "pointsFor": 258.26
+      },
+      {
+        "seed": 7,
+        "teamId": null,
+        "team": "Highest ranked loser from Week 15 playoff matchup",
+        "source": "WEEK_15_PLAYOFF_LOSER",
+        "playoffSeed": null,
+        "opponent": null
+      },
+      {
+        "seed": 8,
+        "teamId": null,
+        "team": "Other Week 15 playoff loser",
+        "source": "WEEK_15_PLAYOFF_LOSER",
+        "playoffSeed": null,
+        "opponent": null
       }
     ],
     "playoffLosers": [],
@@ -219,20 +235,38 @@
         "week": 16,
         "round": "Quarterfinal",
         "homeSeed": 1,
-        "awaySeed": 6,
+        "awaySeed": 8,
         "homeTeam": "Beautiful Dark Twisted Fantasy",
-        "awayTeam": "Mr. Action Jackson"
+        "awayTeam": "Highest ranked loser from Week 15 playoff matchup"
       },
       {
         "id": "ul-qf2",
         "week": 16,
         "round": "Quarterfinal",
         "homeSeed": 2,
-        "awaySeed": 5,
+        "awaySeed": 7,
         "homeTeam": "TDsMaGee",
+        "awayTeam": "Other Week 15 playoff loser"
+      },
+      {
+        "id": "ul-qf3",
+        "week": 16,
+        "round": "Quarterfinal",
+        "homeSeed": 3,
+        "awaySeed": 6,
+        "homeTeam": "The Mahomies",
+        "awayTeam": "Mr. Action Jackson"
+      },
+      {
+        "id": "ul-qf4",
+        "week": 16,
+        "round": "Quarterfinal",
+        "homeSeed": 4,
+        "awaySeed": 5,
+        "homeTeam": "Ruffing the Passer",
         "awayTeam": "Ramosverse"
       }
     ],
-    "note": "Six regular-season non-playoff teams enter as seeds 1-6; the two Week 15 playoff losers enter as seeds 7-8. The lower-scoring team advances each round, and the remaining teams are reseeded highest-vs-lowest before the next round."
+    "note": "Six regular-season non-playoff teams enter as seeds 1-6; the highest-ranked Week 15 playoff loser enters as seed 7 and the other Week 15 playoff loser enters as seed 8. The lower-scoring team advances each round, and the remaining teams are reseeded highest-vs-lowest before the next round."
   }
 }
