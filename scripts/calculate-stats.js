@@ -76,7 +76,39 @@ const awards={highestScore:scoreAward(highestScore),lowestScore:scoreAward(lowes
   benchWarmerChampion:bench[0]?{week:currentWeek,teamId:bench[0].teamId,team:name(bench[0].teamId),points:bench[0].points,players:bench[0].players}:null};
 
 await mkdir("data/current",{recursive:true});
+const playoffTeamCount = Number(settings.settings?.scheduleSettings?.playoffTeamCount || 6);
+const playoffSeedingRule = settings.settings?.scheduleSettings?.playoffSeedingRule || "TOTAL_POINTS_SCORED";
+const playoffReseed = Boolean(settings.settings?.scheduleSettings?.playoffReseed);
+const playoffSeeds = [...standings]
+  .sort((a,b)=>b.pointsFor-a.pointsFor)
+  .map((team,index)=>({...team,seed:index+1,playoffTeam:index<playoffTeamCount}))
+  .filter(t=>t.playoffTeam);
+const playoffSeedMap = new Map(playoffSeeds.map(t=>[t.seed,t]));
+const playoffSchedule = [
+  {id:"qf1",week:15,round:"Quarterfinal",homeSeed:3,awaySeed:6},
+  {id:"qf2",week:15,round:"Quarterfinal",homeSeed:4,awaySeed:5},
+  {id:"sf1",week:16,round:"Semifinal",homeSeed:1,away:"Winner QF1/QF2 (reseeded)",homeBye:true},
+  {id:"sf2",week:16,round:"Semifinal",homeSeed:2,away:"Winner QF1/QF2 (reseeded)",homeBye:true},
+  {id:"final",week:17,round:"Championship",home:"Semifinal Winner",away:"Semifinal Winner"}
+].map(g=>({
+  ...g,
+  homeTeam:g.homeSeed?playoffSeedMap.get(g.homeSeed)?.name:null,
+  awayTeam:g.awaySeed?playoffSeedMap.get(g.awaySeed)?.name:null
+}));
+const playoffs = {
+  season:settings.seasonId,
+  currentWeek,
+  playoffTeamCount,
+  playoffReseed,
+  playoffSeedingRule,
+  status: currentWeek >= 15 ? "ACTIVE" : "PROJECTED",
+  seeds:playoffSeeds.map(t=>({seed:t.seed,teamId:t.id,team:t.name,wins:t.wins,losses:t.losses,pointsFor:t.pointsFor})),
+  nonPlayoffTeams:[...standings].sort((a,b)=>b.pointsFor-a.pointsFor).slice(playoffTeamCount).map((t,i)=>({seed:playoffTeamCount+i+1,teamId:t.id,team:t.name,wins:t.wins,losses:t.losses,pointsFor:t.pointsFor})),
+  schedule:playoffSchedule
+};
+
 await writeJson("data/current/standings.json",{season:settings.seasonId,currentWeek,completedWeeks,standings});
+await writeJson("data/current/playoffs.json",playoffs);
 await writeJson("data/current/raffle.json",{season:settings.seasonId,currentWeek,completedWeeks,winners:raffleWinners.map(x=>({week:x.week,teamId:x.teamId,team:name(x.teamId),score:round(x.score)})),tickets:raffleTickets});
 await writeJson("data/current/matchups.json",{season:settings.seasonId,currentWeek,matchups});
 await writeJson("data/current/scoreboard.json",currentScoreboard);
