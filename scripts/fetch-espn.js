@@ -13,9 +13,10 @@ if (!espnS2 || !swid) {
   throw new Error("Missing ESPN_S2 or ESPN_SWID GitHub Actions secrets.");
 }
 
-async function fetchView(view) {
+async function fetchView(view, scoringPeriodId = null) {
   const url = new URL(base);
   url.searchParams.set("view", view);
+  if (scoringPeriodId != null) url.searchParams.set("scoringPeriodId", String(scoringPeriodId));
 
   const response = await fetch(url, {
     headers: {
