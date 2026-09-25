@@ -6,6 +6,7 @@ const previousProjectionHistory = previousScoreboard?.projectionHistory || [];
 const teamData = await readJson("data/current/mTeam.json");
 const matchupData = await readJson("data/current/mMatchup.json");
 const rosterData = await readJson("data/current/mRoster.json");
+const historicalRosterData = new Map();
 const draftData = await readJson("data/current/mDraftDetail.json").catch(() => ({draftDetail:{picks:[]}}));
 const liveScoringData = await readJson("data/current/mLiveScoring.json");
 const boxscoreData = await readJson("data/current/mBoxscore.json");
@@ -30,6 +31,9 @@ const currentWeek = Number(matchupData.scoringPeriodId || 1);
 const completedWeeks = [...new Set(completed.map(m=>m.week))].sort((a,b)=>a-b);
 
 const currentWeekMatchups = matchups.filter(m => m.week === currentWeek);
+for (const week of completedWeeks) {
+  historicalRosterData.set(week, await readJson(`data/current/mRoster-week-${week}.json`).catch(() => null));
+}
 
 // ESPN's mBoxscore response includes schedule entries for many/all matchup
 // periods. Only use entries for the current matchup period; otherwise later
@@ -472,11 +476,30 @@ function playerSeasonPoints(entry) {
 }
 
 function playerWeeklyScores(entry) {
-  const stats = entry.playerPoolEntry?.player?.stats || [];
-  return stats
-    .filter(s => Number(s.statSourceId) === 0 && Number(s.statSplitTypeId) === 1 && Number(s.scoringPeriodId) <= currentWeek)
-    .map(s => ({week:Number(s.scoringPeriodId), score:Number(s.appliedTotal)}))
-    .filter(s => Number.isFinite(s.score) && completedWeeks.includes(s.week));
+  const playerId = Number(entry.playerId);
+  const scores = [];
+  for (const week of completedWeeks) {
+    const weeklyRoster = historicalRosterData.get(week);
+    const weeklyTeam = (weeklyRoster?.teams || []).find(t =>
+      (t.roster?.entries || []).some(e => Number(e.playerId) === playerId)
+    );
+    const weeklyEntry = weeklyTeam?.roster?.entries?.find(e => Number(e.playerId) === playerId);
+    if (weeklyEntry) {
+      const score = Number(weeklyEntry.playerPoolEntry?.appliedStatTotal);
+      if (Number.isFinite(score)) scores.push({week, score});
+    }
+  }
+
+  // Fall back to player stats when a week-specific roster snapshot is not
+  // available, preserving the previous behavior.
+  if (!scores.length) {
+    const stats = entry.playerPoolEntry?.player?.stats || [];
+    return stats
+      .filter(s => Number(s.statSourceId) === 0 && Number(s.statSplitTypeId) === 1 && Number(s.scoringPeriodId) <= currentWeek)
+      .map(s => ({week:Number(s.scoringPeriodId), score:Number(s.appliedTotal)}))
+      .filter(s => Number.isFinite(s.score) && completedWeeks.includes(s.week));
+  }
+  return scores;
 }
 
 const allRosterPlayers = (rosterData.teams || []).flatMap(team =>
