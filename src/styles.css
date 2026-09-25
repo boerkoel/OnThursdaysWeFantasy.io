@@ -231,3 +231,8 @@
 .bracket-vs{font-size:10px;font-weight:900;letter-spacing:.08em}
 .bracket-advance{grid-column:1 / -1;display:block;margin-top:-8px;text-align:center;color:#8f978c;font-size:8px;font-weight:900;letter-spacing:.08em}
 @media(max-width:700px){.bracket-advance{font-size:7px}}
+
+/* Keep the advancement note outside the matchup box. */
+.bracket-game-wrap{display:flex;flex-direction:column;gap:6px}
+.bracket-game-wrap .bracket-game{width:100%}
+.bracket-game-wrap .bracket-advance{display:block;margin:0;text-align:center;color:#8f978c;font-size:8px;font-weight:900;letter-spacing:.08em}
