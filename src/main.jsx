@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 import scoreboard from "../data/current/scoreboard.json";
@@ -6,8 +6,73 @@ import standingsData from "../data/current/standings.json";
 import awards from "../data/current/awards.json";
 import raffle from "../data/current/raffle.json";
 import playoffs from "../data/current/playoffs.json";
+import teamsData from "../data/current/teams.json";
 
 const money = (n) => Number(n).toFixed(2);
+
+function TeamCards({ teams }) {
+  const [selectedId, setSelectedId] = useState(null);
+  const selected = teams.find(t => t.id === selectedId);
+
+  return (
+    <>
+      <div className="team-card-grid">
+        {teams.map((team, i) => {
+          const s = team.standings || {};
+          const avg = s.games ? s.pointsFor / s.games : 0;
+          return (
+            <button className={selectedId === team.id ? "team-card selected" : "team-card"} key={team.id} onClick={() => setSelectedId(selectedId === team.id ? null : team.id)}>
+              <div className="card-top"><span className="card-rank">#{i + 1}</span><span className="card-season">2026</span></div>
+              <div className="card-logo-wrap"><img src={team.logo} alt="" className="team-logo" /></div>
+              <h3>{team.name.trim()}</h3>
+              <div className="card-record">{s.wins}-{s.losses} <span>·</span> {money(avg)} PPG</div>
+              <div className="card-stats">
+                <span><small>PF</small><strong>{money(s.pointsFor)}</strong></span>
+                <span><small>PA</small><strong>{money(s.pointsAgainst)}</strong></span>
+                <span><small>STREAK</small><strong>{s.streak?.length ? s.streak.type + s.streak.length : "—"}</strong></span>
+              </div>
+              <div className="card-footer"><span>{selectedId === team.id ? "CLOSE PROFILE" : "VIEW PROFILE"}</span><span>↗</span></div>
+            </button>
+          );
+        })}
+      </div>
+
+      {selected && (
+        <article className="team-profile">
+          <div className="profile-header">
+            <div className="profile-identity">
+              <div className="profile-logo-wrap"><img src={selected.logo} alt="" className="profile-logo" /></div>
+              <div>
+                <span className="section-kicker">2026 TEAM PROFILE</span>
+                <h3>{selected.name.trim()}</h3>
+                <p>{selected.abbrev} · {selected.standings.wins}-{selected.standings.losses} · {selected.standings.streak?.length ? (selected.standings.streak.type === "W" ? "Win" : "Loss") + " streak: " + selected.standings.streak.length : "No streak"}</p>
+              </div>
+            </div>
+            <button className="profile-close" onClick={() => setSelectedId(null)}>×</button>
+          </div>
+
+          <div className="profile-metrics">
+            <div><small>POINTS FOR</small><strong>{money(selected.standings.pointsFor)}</strong></div>
+            <div><small>POINTS AGAINST</small><strong>{money(selected.standings.pointsAgainst)}</strong></div>
+            <div><small>AVERAGE</small><strong>{money(selected.standings.games ? selected.standings.pointsFor / selected.standings.games : 0)}</strong></div>
+            <div><small>WIN %</small><strong>{money((selected.standings.winPct || 0) * 100)}%</strong></div>
+          </div>
+
+          <div className="profile-history">
+            <div className="profile-history-heading"><span className="section-kicker">GAME LOG</span><strong>Weekly Matchups</strong></div>
+            {selected.weeklyResults?.length ? selected.weeklyResults.map(w => (
+              <div className={w.result === "W" ? "profile-week win" : "profile-week loss"} key={w.week}>
+                <span className="week-number">W{w.week}</span>
+                <div><strong>{w.result}</strong><span>vs {w.opponent}</span></div>
+                <strong>{money(w.score)}–{money(w.opponentScore)}</strong>
+              </div>
+            )) : <p className="profile-empty">No completed games yet.</p>}
+          </div>
+        </article>
+      )}
+    </>
+  );
+}
 
 function App() {
   const scores = scoreboard.scores || [];
@@ -149,6 +214,15 @@ function App() {
             <span>{s.pointsFor != null ? money(s.pointsFor) + " PF" : "TBD"}</span>
           </div>)}
         </div>
+      </section>
+
+      <section id="teams" className="section">
+        <div className="section-heading">
+          <div><span className="section-kicker">THE ROSTER ROOM</span><h2>Team Cards</h2></div>
+          <span className="record-count">12 TEAMS · 2026</span>
+        </div>
+        <p className="team-cards-intro">Every manager gets a baseball-card-style snapshot of the season. Click a card to open the full team profile.</p>
+        <TeamCards teams={teamsData.teams || []} />
       </section>
 
       <section id="awards" className="section">
