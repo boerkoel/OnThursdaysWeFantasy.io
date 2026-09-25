@@ -159,7 +159,8 @@ const playoffSchedule = [
   {id:"qf2",week:15,round:"Quarterfinal",homeSeed:4,awaySeed:5},
   {id:"sf1",week:16,round:"Semifinal",homeSeed:1,homeBye:true},
   {id:"sf2",week:16,round:"Semifinal",homeSeed:2,homeBye:true},
-  {id:"final",week:17,round:"Championship"}
+  {id:"final",week:17,round:"Championship"},
+  {id:"third",week:17,round:"Third Place"}
 ].map(g=>({
   ...g,
   homeTeam:g.homeSeed?playoffSeedMap.get(g.homeSeed)?.name:null,
