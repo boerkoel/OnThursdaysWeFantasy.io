@@ -2,9 +2,20 @@
   "week": 3,
   "scores": [
     {
+      "teamId": 11,
+      "opponentId": 3,
+      "score": 58.900000000000006,
+      "opponentScore": 6.6,
+      "matchupId": 14,
+      "team": "Brock You Like a Hurricane",
+      "opponent": "Kyle Tucker",
+      "logo": "https://mystique-api.fantasy.espn.com/apis/v1/domains/lm/images/add1ddb0-a2f7-11f1-8ef0-19c1af2548f8",
+      "status": "LIVE"
+    },
+    {
       "teamId": 6,
       "opponentId": 12,
-      "score": 0,
+      "score": 30.400000000000002,
       "opponentScore": 0,
       "matchupId": 13,
       "team": "Claremont In Yo Stace!",
@@ -13,36 +24,58 @@
       "status": "LIVE"
     },
     {
-      "teamId": 12,
-      "opponentId": 6,
-      "score": 0,
+      "teamId": 9,
+      "opponentId": 1,
+      "score": 22,
       "opponentScore": 0,
-      "matchupId": 13,
-      "team": "Beautiful Dark Twisted Fantasy",
-      "opponent": "Claremont In Yo Stace!",
-      "logo": "https://g.espncdn.com/lm-static/logo-packs/core/OldTimeMickeyAndFriends/Football_Mickey.svg",
+      "matchupId": 17,
+      "team": "The Mahomies",
+      "opponent": "Ramosverse",
+      "logo": "https://g.espncdn.com/lm-static/logo-packs/ffl/CrazyHelmets-ToddDetwiler/Helmets_09.svg",
       "status": "LIVE"
     },
     {
-      "teamId": 11,
-      "opponentId": 3,
-      "score": 0,
-      "opponentScore": 0,
-      "matchupId": 14,
-      "team": "Brock You Like a Hurricane",
-      "opponent": "Kyle Tucker",
-      "logo": "https://mystique-api.fantasy.espn.com/apis/v1/domains/lm/images/add1ddb0-a2f7-11f1-8ef0-19c1af2548f8",
+      "teamId": 7,
+      "opponentId": 2,
+      "score": 19.48,
+      "opponentScore": 1.5,
+      "matchupId": 16,
+      "team": "Ruffing the Passer",
+      "opponent": "TDsMaGee",
+      "logo": "https://mystique-api.fantasy.espn.com/apis/v1/domains/lm/images/7659cbc0-a1cd-11f1-9afc-5feb43d211a1",
       "status": "LIVE"
     },
     {
       "teamId": 3,
       "opponentId": 11,
-      "score": 0,
-      "opponentScore": 0,
+      "score": 6.6,
+      "opponentScore": 58.900000000000006,
       "matchupId": 14,
       "team": "Kyle Tucker",
       "opponent": "Brock You Like a Hurricane",
       "logo": "https://i.pinimg.com/280x280_RS/3a/d0/a9/3ad0a90c0e668da81c4e76e3fa51fbd0.jpg",
+      "status": "LIVE"
+    },
+    {
+      "teamId": 2,
+      "opponentId": 7,
+      "score": 1.5,
+      "opponentScore": 19.48,
+      "matchupId": 16,
+      "team": "TDsMaGee",
+      "opponent": "Ruffing the Passer",
+      "logo": "https://g.espncdn.com/lm-static/logo-packs/ffl/SmackTalk-LeoEspinosa/Boom-10.svg",
+      "status": "LIVE"
+    },
+    {
+      "teamId": 12,
+      "opponentId": 6,
+      "score": 0,
+      "opponentScore": 30.400000000000002,
+      "matchupId": 13,
+      "team": "Beautiful Dark Twisted Fantasy",
+      "opponent": "Claremont In Yo Stace!",
+      "logo": "https://g.espncdn.com/lm-static/logo-packs/core/OldTimeMickeyAndFriends/Football_Mickey.svg",
       "status": "LIVE"
     },
     {
@@ -68,43 +101,10 @@
       "status": "LIVE"
     },
     {
-      "teamId": 2,
-      "opponentId": 7,
-      "score": 0,
-      "opponentScore": 0,
-      "matchupId": 16,
-      "team": "TDsMaGee",
-      "opponent": "Ruffing the Passer",
-      "logo": "https://g.espncdn.com/lm-static/logo-packs/ffl/SmackTalk-LeoEspinosa/Boom-10.svg",
-      "status": "LIVE"
-    },
-    {
-      "teamId": 7,
-      "opponentId": 2,
-      "score": 0,
-      "opponentScore": 0,
-      "matchupId": 16,
-      "team": "Ruffing the Passer",
-      "opponent": "TDsMaGee",
-      "logo": "https://mystique-api.fantasy.espn.com/apis/v1/domains/lm/images/7659cbc0-a1cd-11f1-9afc-5feb43d211a1",
-      "status": "LIVE"
-    },
-    {
-      "teamId": 9,
-      "opponentId": 1,
-      "score": 0,
-      "opponentScore": 0,
-      "matchupId": 17,
-      "team": "The Mahomies",
-      "opponent": "Ramosverse",
-      "logo": "https://g.espncdn.com/lm-static/logo-packs/ffl/CrazyHelmets-ToddDetwiler/Helmets_09.svg",
-      "status": "LIVE"
-    },
-    {
       "teamId": 1,
       "opponentId": 9,
       "score": 0,
-      "opponentScore": 0,
+      "opponentScore": 22,
       "matchupId": 17,
       "team": "Ramosverse",
       "opponent": "The Mahomies",
@@ -134,5 +134,5 @@
       "status": "LIVE"
     }
   ],
-  "median": 0
+  "median": 0.75
 }
