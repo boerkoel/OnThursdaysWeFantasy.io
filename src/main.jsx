@@ -38,7 +38,7 @@ function TeamCards({ teams }) {
         <div><small>WIN %</small><strong>{money((team.standings.winPct || 0) * 100)}%</strong></div>
       </div>
 
-      {team.playerAwards ? <div className="profile-awards">
+      {team.playerAwards && (<div className="profile-awards">
         <div className="profile-awards-heading"><span className="section-kicker">PLAYER AWARDS</span><strong>Season So Far</strong></div>
         <div className="profile-award-grid">
           {team.playerAwards.mvp ? <div className="profile-award"><span>🏆</span><div><small>MVP</small><strong>{team.playerAwards.mvp.player}</strong><em>{money(team.playerAwards.mvp.points)} pts · #{team.playerAwards.mvp.seasonRank} overall</em></div></div> : null}
@@ -49,7 +49,7 @@ function TeamCards({ teams }) {
           {team.playerAwards.lateRoundWizard ? <div className="profile-award"><span>🧙</span><div><small>LATE-ROUND WIZARD</small><strong>{team.playerAwards.lateRoundWizard.player}</strong><em>Round {team.playerAwards.lateRoundWizard.round} · +{team.playerAwards.lateRoundWizard.valueGap} value spots</em></div></div> : null}
           {team.playerAwards.boomBust ? <div className="profile-award"><span>🎰</span><div><small>BOOM / BUST</small><strong>{team.playerAwards.boomBust.player}</strong><em>{money(team.playerAwards.boomBust.range)} pt range</em></div></div> : null}
         </div>
-      </div>}
+      </div>)}
 
       <div className="profile-history">
         <div className="profile-history-heading"><span className="section-kicker">GAME LOG</span><strong>Weekly Matchups</strong></div>
