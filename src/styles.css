@@ -69,3 +69,8 @@
 @media(max-width:1000px){.team-card-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:800px){.team-card-grid{grid-template-columns:repeat(2,1fr)}.profile-metrics{grid-template-columns:repeat(2,1fr)}.profile-metrics div:nth-child(2){border-right:0}.profile-metrics div:nth-child(-n+2){border-bottom:1px solid #292c27}.profile-header{padding:18px}.profile-identity h3{font-size:22px}.profile-history{padding:18px}}
 @media(max-width:520px){.team-card-grid{grid-template-columns:1fr}.profile-week{grid-template-columns:42px 1fr auto}.profile-week div{display:block}.profile-week div span{display:block;margin-top:2px}.profile-logo-wrap{width:68px;height:68px}.profile-logo{width:54px;height:54px}}
+
+.score-projection{color:#777a72;font-size:9px;font-weight:800;letter-spacing:.06em;white-space:nowrap}
+.matchup .team small{display:block;margin-top:4px;color:#b8c69b;font-size:8px;font-weight:800;letter-spacing:.08em}
+.median-line{display:flex;justify-content:space-between;gap:16px}
+@media(max-width:700px){.score-projection{display:none}.median-line{display:block}.median-line span+span{display:block;margin-top:4px}}
