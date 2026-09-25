@@ -298,7 +298,7 @@ function App() {
           </div>
         </div>
         <div className="seed-board">
-          {playoffs.seeds.map(s => <div className="seed-row" key={s.seed}><span>{s.seed >= 7 ? "TBD" : "#" + s.seed}</span><strong>{s.team}</strong><span>{s.wins}-{s.losses}</span><span>{money(s.pointsFor)} PF</span>{s.seed<=2 ? <em>BYE</em> : null}</div>)}
+          {playoffs.seeds.map(s => <div className="seed-row" key={s.seed}><span>{"#" + s.seed}</span><strong>{s.team}</strong><span>{s.wins}-{s.losses}</span><span>{money(s.pointsFor)} PF</span>{s.seed<=2 ? <em>BYE</em> : null}</div>)}
         </div>
       </section>
 
@@ -314,25 +314,34 @@ function App() {
             {playoffs.ultimateLoser?.schedule.filter(g=>g.round==="Quarterfinal").map(g => {
               const home = playoffs.ultimateLoser.entrants.find(s=>s.seed===g.homeSeed);
               const away = playoffs.ultimateLoser.entrants.find(s=>s.seed===g.awaySeed);
-              return <div className="bracket-game" key={g.id}>
-                <div><small>{g.homeSeed >= 7 ? "TBD" : "#" + g.homeSeed}</small><strong>{home?.team || "TBD"}</strong></div>
-                <span className="bracket-vs">VS.</span><small className="bracket-advance">LOSER ADVANCES</small>
-                <div><small>{g.awaySeed >= 7 ? "TBD" : "#" + g.awaySeed}</small><strong>{away?.team || "TBD"}</strong></div>
+              return <div className="bracket-game-wrap" key={g.id}>
+                <div className="bracket-game">
+                  <div><small>{"#" + g.homeSeed}</small><strong>{home?.team || "TBD"}</strong></div>
+                  <span className="bracket-vs">VS.</span>
+                  <div><small>{"#" + g.awaySeed}</small><strong>{away?.team || "TBD"}</strong></div>
+                </div>
+                <small className="bracket-advance">LOSER ADVANCES</small>
               </div>;
             })}
           </div>
           <div className="bracket-round">
             <div className="bracket-round-title">WEEK 17 · SEMIFINALS</div>
             {playoffs.ultimateLoser?.schedule.filter(g=>g.round==="Semifinal").length
-              ? playoffs.ultimateLoser.schedule.filter(g=>g.round==="Semifinal").map(g => <div className="bracket-game" key={g.id}>
-                  <div><small>{g.reseeded ? "RESEEDED" : "QF"}</small><strong>{g.homeTeam || "QF Losers"}</strong></div>
-                  <span className="bracket-vs">VS.</span><small className="bracket-advance">LOSER ADVANCES</small>
-                  <div><small>{g.reseeded ? "RESEEDED" : "QF"}</small><strong>{g.awayTeam || "QF Losers"}</strong></div>
+              ? playoffs.ultimateLoser.schedule.filter(g=>g.round==="Semifinal").map(g => <div className="bracket-game-wrap" key={g.id}>
+                  <div className="bracket-game">
+                    <div><small>{g.reseeded ? "RESEEDED" : "QF"}</small><strong>{g.homeTeam || "QF Losers"}</strong></div>
+                    <span className="bracket-vs">VS.</span>
+                    <div><small>{g.reseeded ? "RESEEDED" : "QF"}</small><strong>{g.awayTeam || "QF Losers"}</strong></div>
+                  </div>
+                  <small className="bracket-advance">LOSER ADVANCES</small>
                 </div>)
-              : [1,2].map(i => <div className="bracket-game" key={`ul-sf-placeholder-${i}`}>
-                  <div><small>RESEED</small><strong>QF Losers</strong></div>
-                  <span className="bracket-vs">VS.</span><small className="bracket-advance">LOSER ADVANCES</small>
-                  <div><small>RESEED</small><strong>QF Losers</strong></div>
+              : [1,2].map(i => <div className="bracket-game-wrap" key={`ul-sf-placeholder-${i}`}>
+                  <div className="bracket-game">
+                    <div><small>RESEED</small><strong>QF Losers</strong></div>
+                    <span className="bracket-vs">VS.</span>
+                    <div><small>RESEED</small><strong>QF Losers</strong></div>
+                  </div>
+                  <small className="bracket-advance">LOSER ADVANCES</small>
                 </div>)}
           </div>
           <div className="bracket-round">
