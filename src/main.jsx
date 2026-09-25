@@ -100,6 +100,51 @@ function App() {
         </div>
       </section>
 
+      <section id="ultimate-loser" className="section">
+        <div className="section-heading">
+          <div><span className="section-kicker">THE OTHER ROAD</span><h2>Ultimate Loser</h2></div>
+          <span className="record-count">WEEKS 16–18 · 8 TEAMS</span>
+        </div>
+        <p className="playoff-intro">Three weeks. Single elimination. The lower-scoring team advances. Six regular-season non-playoff teams enter first, then the two Week 15 playoff losers join them.</p>
+        <div className="bracket">
+          <div className="bracket-round">
+            <div className="bracket-round-title">WEEK 16 · QUARTERFINALS</div>
+            {playoffs.ultimateLoser?.schedule.filter(g=>g.round==="Quarterfinal").map(g => {
+              const home = playoffs.ultimateLoser.entrants.find(s=>s.seed===g.homeSeed);
+              const away = playoffs.ultimateLoser.entrants.find(s=>s.seed===g.awaySeed);
+              return <div className="bracket-game" key={g.id}>
+                <div><small>#{g.homeSeed}</small><strong>{home?.team || "TBD"}</strong></div>
+                <span>LOWER SCORE ADVANCES</span>
+                <div><small>#{g.awaySeed}</small><strong>{away?.team || "TBD"}</strong></div>
+              </div>;
+            })}
+          </div>
+          <div className="bracket-round">
+            <div className="bracket-round-title">WEEK 17 · SEMIFINALS</div>
+            {playoffs.ultimateLoser?.schedule.filter(g=>g.round==="Semifinal").map(g => <div className="bracket-game" key={g.id}>
+              <div><small>QF</small><strong>Loser advances</strong></div>
+              <span>LOWER SCORE ADVANCES</span>
+              <div><small>QF</small><strong>Loser advances</strong></div>
+            </div>)}
+          </div>
+          <div className="bracket-round">
+            <div className="bracket-round-title">WEEK 18 · ULTIMATE LOSER CHAMPIONSHIP</div>
+            <div className="bracket-game championship-game">
+              <div><small>FINALISTS</small><strong>Semifinal Loser-Advance</strong></div>
+              <span>LOWER SCORE ADVANCES</span>
+              <div><small>FINALISTS</small><strong>Semifinal Loser-Advance</strong></div>
+            </div>
+          </div>
+        </div>
+        <div className="seed-board">
+          {(playoffs.ultimateLoser?.entrants || []).map(s => <div className="seed-row" key={s.seed}>
+            <span>#{s.seed}</span><strong>{s.team}</strong>
+            <span>{s.source==="REGULAR_SEASON" ? "REG SEED" : "W15 LOSER"}</span>
+            <span>{s.pointsFor != null ? money(s.pointsFor) + " PF" : "TBD"}</span>
+          </div>)}
+        </div>
+      </section>
+
       <section id="awards" className="section">
         <div className="section-heading">
           <div><span className="section-kicker">THE GOOD STUFF</span><h2>League Awards</h2></div>
