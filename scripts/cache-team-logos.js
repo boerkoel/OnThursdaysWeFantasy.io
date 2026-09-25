@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 
 const teamData = JSON.parse(await readFile("data/current/mTeam.json", "utf8"));
 await mkdir("public/team-logos", { recursive: true });
@@ -40,7 +40,3 @@ for (const team of teamData.teams || []) {
 await writeFile("data/current/logo-map.json", JSON.stringify(logoMap, null, 2) + "\n");
 console.log(`Cached ${Object.keys(logoMap).length} team logos.`);
 
-async function readFile(path) {
-  const { readFile } = await import("node:fs/promises");
-  return readFile(path);
-}
