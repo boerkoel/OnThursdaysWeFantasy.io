@@ -151,15 +151,20 @@ function App() {
             </div>)}
           </div>
           <div className="bracket-round">
-            <div className="bracket-round-title">WEEK 17 · CHAMPIONSHIP</div>
+            <div className="bracket-round-title">WEEK 17 · CHAMPIONSHIP WEEK</div>
             <div className="bracket-game championship-game">
-              <div><small>FINAL · $375</small><strong>Semifinal Winner</strong></div>
+              <div><small>FINAL</small><strong>Semifinal Winner</strong></div>
               <span>vs</span>
               <div><small>FINAL</small><strong>Semifinal Winner</strong></div>
             </div>
+            <div className="championship-payouts">
+              <strong>1st: $375</strong>
+              <strong>2nd: $225</strong>
+              <strong>3rd: $100</strong>
+            </div>
             <div className="bracket-round-title third-place-title">WEEK 17 · THIRD PLACE</div>
             <div className="bracket-game third-place-game">
-              <div><small>3RD PLACE · $100</small><strong>Semifinal Loser</strong></div>
+              <div><small>3RD PLACE</small><strong>Semifinal Loser</strong></div>
               <span>vs</span>
               <div><small>3RD PLACE</small><strong>Semifinal Loser</strong></div>
             </div>
