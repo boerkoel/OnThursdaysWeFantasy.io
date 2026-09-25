@@ -323,11 +323,17 @@ function App() {
           </div>
           <div className="bracket-round">
             <div className="bracket-round-title">WEEK 17 · SEMIFINALS</div>
-            {playoffs.ultimateLoser?.schedule.filter(g=>g.round==="Semifinal").map(g => <div className="bracket-game" key={g.id}>
-              <div><small>QF</small><strong>Loser advances</strong></div>
-              <span>LOWER SCORE ADVANCES</span>
-              <div><small>QF</small><strong>Loser advances</strong></div>
-            </div>)}
+            {playoffs.ultimateLoser?.schedule.filter(g=>g.round==="Semifinal").length
+              ? playoffs.ultimateLoser.schedule.filter(g=>g.round==="Semifinal").map(g => <div className="bracket-game" key={g.id}>
+                  <div><small>{g.reseeded ? "RESEEDED" : "QF"}</small><strong>{g.homeTeam || "TBD — QF winner"}</strong></div>
+                  <span>LOWER SCORE ADVANCES</span>
+                  <div><small>{g.reseeded ? "RESEEDED" : "QF"}</small><strong>{g.awayTeam || "TBD — QF winner"}</strong></div>
+                </div>)
+              : [1,2].map(i => <div className="bracket-game" key={`ul-sf-placeholder-${i}`}>
+                  <div><small>RESEED</small><strong>TBD — QF winner</strong></div>
+                  <span>LOWER SCORE ADVANCES</span>
+                  <div><small>RESEED</small><strong>TBD — QF winner</strong></div>
+                </div>)}
           </div>
           <div className="bracket-round">
             <div className="bracket-round-title">WEEK 18 · ULTIMATE LOSER CHAMPIONSHIP</div>
