@@ -339,7 +339,7 @@ function App() {
             <div className="bracket-round-title">WEEK 18 · ULTIMATE LOSER CHAMPIONSHIP</div>
             <div className="bracket-game championship-game">
               <div><small>FINALISTS</small><strong>SF Losers</strong></div>
-              <span className="bracket-vs">VS.</span><small className="bracket-advance">LOSER ADVANCES</small>
+              <span className="bracket-vs">ULTIMATE LOSER</span>
               <div><small>FINALISTS</small><strong>SF Losers</strong></div>
             </div>
           </div>
