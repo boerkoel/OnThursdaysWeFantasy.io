@@ -21,7 +21,7 @@ function TeamCards({ teams }) {
           const s = team.standings || {};
           const avg = s.games ? s.pointsFor / s.games : 0;
           return (
-            <button className={selectedId === team.id ? "team-card selected" : "team-card"} key={team.id} onClick={() => setSelectedId(selectedId === team.id ? null : team.id)}>
+            <button className={selectedId === team.id ? "team-card selected" : "team-card"} key={team.id} type="button" aria-expanded={selectedId === team.id} onClick={() => setSelectedId(selectedId === team.id ? null : team.id)}>
               <div className="card-top"><span className="card-rank">#{i + 1}</span><span className="card-season">2026</span></div>
               <div className="card-logo-wrap"><img src={team.logo} alt="" className="team-logo" /></div>
               <h3>{team.name.trim()}</h3>
