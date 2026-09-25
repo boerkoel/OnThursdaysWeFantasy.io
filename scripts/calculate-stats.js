@@ -16,6 +16,18 @@ const completed = matchups.filter(m => m.completed);
 const currentWeek = Number(matchupData.scoringPeriodId || 1);
 const completedWeeks = [...new Set(completed.map(m=>m.week))].sort((a,b)=>a-b);
 
+const currentWeekMatchups = matchups.filter(m => m.week === currentWeek);
+const currentScores = currentWeekMatchups.flatMap(m => [
+  { teamId:m.homeTeamId, opponentId:m.awayTeamId, score:m.homeScore, opponentScore:m.awayScore, matchupId:m.id },
+  { teamId:m.awayTeamId, opponentId:m.homeTeamId, score:m.awayScore, opponentScore:m.homeScore, matchupId:m.id }
+]).map(x => ({...x, team:name(x.teamId), opponent:name(x.opponentId), logo:teams.get(x.teamId)?.logo || null,
+  status: currentWeekMatchups.find(m => m.id === x.matchupId)?.completed ? "FINAL" : "LIVE"}))
+.sort((a,b)=>b.score-a.score);
+const median = currentScores.length % 2
+  ? currentScores[Math.floor(currentScores.length / 2)].score
+  : currentScores.length ? round((currentScores[currentScores.length / 2 - 1].score + currentScores[currentScores.length / 2].score) / 2) : null;
+const currentScoreboard = { week:currentWeek, scores:currentScores, median };
+
 const standings = [...teams.values()].map(team => {
   const games=completed.filter(m=>m.homeTeamId===team.id||m.awayTeamId===team.id);
   let wins=0,losses=0,pointsFor=0,pointsAgainst=0;
@@ -53,6 +65,7 @@ const awards={highestScore:scoreAward(highestScore),lowestScore:scoreAward(lowes
 await mkdir("data/current",{recursive:true});
 await writeJson("data/current/standings.json",{season:settings.seasonId,currentWeek,completedWeeks,standings});
 await writeJson("data/current/matchups.json",{season:settings.seasonId,currentWeek,matchups});
+await writeJson("data/current/scoreboard.json",currentScoreboard);
 await writeJson("data/current/awards.json",{season:settings.seasonId,currentWeek,awards});
 await writeJson("data/current/leaders.json",{season:settings.seasonId,currentWeek,leaders:{highestScore:scoreAward(highestScore),lowestScore:scoreAward(lowestScore),highestScoringLoser:scoreAward(highestScoringLoser),lowestScoringWinner:scoreAward(lowestScoringWinner),largestBlowout:matchupAward(blowout)}});
 await writeJson("data/current/weekly.json",{season:settings.seasonId,currentWeek,weeks:completedWeeks.map(week=>({week,matchups:completed.filter(m=>m.week===week),highestScore:scoreAward(maxBy(rows.filter(x=>x.week===week),x=>x.score)),largestBlowout:matchupAward(maxBy(completed.filter(m=>m.week===week),x=>x.margin))}))});
