@@ -143,3 +143,23 @@
   .profile-awards{padding:16px}
   .profile-award-grid{grid-template-columns:1fr}
 }
+
+
+/* Keep the selected team profile directly beneath the row containing its card. */
+.team-card-layout-3,.team-card-layout-2,.team-card-layout-mobile{display:none}
+.team-card-layout-4{display:block}
+.team-card-row{width:100%}
+.team-card-row>.team-profile{margin-top:14px;margin-bottom:12px}
+@media(max-width:1000px) and (min-width:801px){
+  .team-card-layout-4{display:none}
+  .team-card-layout-3{display:block}
+}
+@media(max-width:800px) and (min-width:521px){
+  .team-card-layout-4,.team-card-layout-3{display:none}
+  .team-card-layout-2{display:block}
+}
+@media(max-width:520px){
+  .team-card-layout-4,.team-card-layout-3,.team-card-layout-2{display:none}
+  .team-card-layout-mobile{display:block}
+  .team-card-row>.team-profile{display:none}
+}
