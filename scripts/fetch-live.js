@@ -12,7 +12,8 @@ const matchup = JSON.parse(await readFile("data/current/mMatchup.json", "utf8"))
 const scoringPeriodId = Number(matchup.scoringPeriodId || 1);
 
 const url = new URL(base);
-url.searchParams.set("view", "mLiveScoring");
+url.searchParams.append("view", "mScoreboard");
+url.searchParams.append("view", "mLiveScoring");
 url.searchParams.set("scoringPeriodId", String(scoringPeriodId));
 
 const response = await fetch(url, {
