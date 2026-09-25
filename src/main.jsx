@@ -262,9 +262,9 @@ function App() {
               const home = playoffs.seeds.find(s=>s.seed===g.homeSeed);
               const away = playoffs.seeds.find(s=>s.seed===g.awaySeed);
               return <div className="bracket-game" key={g.id}>
-                <div><small>{home ? "#" + home.seed : "TBD"}</small><strong>{home?.team || "TBD"}</strong></div>
+                <div><small>{home ? (home.seed >= 7 ? "TBD" : "#" + home.seed) : "TBD"}</small><strong>{home?.team || "TBD"}</strong></div>
                 <span className="bracket-vs">vs</span>
-                <div><small>{away ? "#" + away.seed : "TBD"}</small><strong>{away?.team || "TBD"}</strong></div>
+                <div><small>{away ? (away.seed >= 7 ? "TBD" : "#" + away.seed) : "TBD"}</small><strong>{away?.team || "TBD"}</strong></div>
               </div>;
             })}
           </div>
@@ -291,14 +291,14 @@ function App() {
             </div>
             <div className="bracket-round-title third-place-title">WEEK 17 · THIRD PLACE</div>
             <div className="bracket-game third-place-game">
-              <div><small>3RD PLACE</small><strong>Semifinal Loser</strong></div>
+              <div><small>3RD PLACE</small><strong>SF Losers</strong></div>
               <span>vs</span>
-              <div><small>3RD PLACE</small><strong>Semifinal Loser</strong></div>
+              <div><small>3RD PLACE</small><strong>SF Losers</strong></div>
             </div>
           </div>
         </div>
         <div className="seed-board">
-          {playoffs.seeds.map(s => <div className="seed-row" key={s.seed}><span>#{s.seed}</span><strong>{s.team}</strong><span>{s.wins}-{s.losses}</span><span>{money(s.pointsFor)} PF</span>{s.seed<=2 ? <em>BYE</em> : null}</div>)}
+          {playoffs.seeds.map(s => <div className="seed-row" key={s.seed}><span>{s.seed >= 7 ? "TBD" : "#" + s.seed}</span><strong>{s.team}</strong><span>{s.wins}-{s.losses}</span><span>{money(s.pointsFor)} PF</span>{s.seed<=2 ? <em>BYE</em> : null}</div>)}
         </div>
       </section>
 
@@ -325,22 +325,22 @@ function App() {
             <div className="bracket-round-title">WEEK 17 · SEMIFINALS</div>
             {playoffs.ultimateLoser?.schedule.filter(g=>g.round==="Semifinal").length
               ? playoffs.ultimateLoser.schedule.filter(g=>g.round==="Semifinal").map(g => <div className="bracket-game" key={g.id}>
-                  <div><small>{g.reseeded ? "RESEEDED" : "QF"}</small><strong>{g.homeTeam || "TBD — QF winner"}</strong></div>
+                  <div><small>{g.reseeded ? "RESEEDED" : "QF"}</small><strong>{g.homeTeam || "QF Losers"}</strong></div>
                   <span className="bracket-vs">LOSER ADVANCES</span>
-                  <div><small>{g.reseeded ? "RESEEDED" : "QF"}</small><strong>{g.awayTeam || "TBD — QF winner"}</strong></div>
+                  <div><small>{g.reseeded ? "RESEEDED" : "QF"}</small><strong>{g.awayTeam || "QF Losers"}</strong></div>
                 </div>)
               : [1,2].map(i => <div className="bracket-game" key={`ul-sf-placeholder-${i}`}>
-                  <div><small>RESEED</small><strong>TBD — QF winner</strong></div>
+                  <div><small>RESEED</small><strong>QF Losers</strong></div>
                   <span className="bracket-vs">LOSER ADVANCES</span>
-                  <div><small>RESEED</small><strong>TBD — QF winner</strong></div>
+                  <div><small>RESEED</small><strong>QF Losers</strong></div>
                 </div>)}
           </div>
           <div className="bracket-round">
             <div className="bracket-round-title">WEEK 18 · ULTIMATE LOSER CHAMPIONSHIP</div>
             <div className="bracket-game championship-game">
-              <div><small>FINALISTS</small><strong>Semifinal Loser-Advance</strong></div>
+              <div><small>FINALISTS</small><strong>SF Losers-Advance</strong></div>
               <span className="bracket-vs">LOSER ADVANCES</span>
-              <div><small>FINALISTS</small><strong>Semifinal Loser-Advance</strong></div>
+              <div><small>FINALISTS</small><strong>SF Losers-Advance</strong></div>
             </div>
           </div>
         </div>
