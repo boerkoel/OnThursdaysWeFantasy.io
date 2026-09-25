@@ -315,9 +315,9 @@ function App() {
               const home = playoffs.ultimateLoser.entrants.find(s=>s.seed===g.homeSeed);
               const away = playoffs.ultimateLoser.entrants.find(s=>s.seed===g.awaySeed);
               return <div className="bracket-game" key={g.id}>
-                <div><small>#{g.homeSeed}</small><strong>{home?.team || "TBD"}</strong></div>
+                <div><small>{g.homeSeed >= 7 ? "TBD" : "#" + g.homeSeed}</small><strong>{home?.team || "TBD"}</strong></div>
                 <span className="bracket-vs">LOSER ADVANCES</span>
-                <div><small>#{g.awaySeed}</small><strong>{away?.team || "TBD"}</strong></div>
+                <div><small>{g.awaySeed >= 7 ? "TBD" : "#" + g.awaySeed}</small><strong>{away?.team || "TBD"}</strong></div>
               </div>;
             })}
           </div>
@@ -338,15 +338,15 @@ function App() {
           <div className="bracket-round">
             <div className="bracket-round-title">WEEK 18 · ULTIMATE LOSER CHAMPIONSHIP</div>
             <div className="bracket-game championship-game">
-              <div><small>FINALISTS</small><strong>SF Losers-Advance</strong></div>
+              <div><small>FINALISTS</small><strong>SF Losers</strong></div>
               <span className="bracket-vs">LOSER ADVANCES</span>
-              <div><small>FINALISTS</small><strong>SF Losers-Advance</strong></div>
+              <div><small>FINALISTS</small><strong>SF Losers</strong></div>
             </div>
           </div>
         </div>
         <div className="seed-board">
           {(playoffs.ultimateLoser?.entrants || []).map(s => <div className="seed-row" key={s.seed}>
-            <span>#{s.seed}</span><strong>{s.team}</strong>
+            <span>{s.seed >= 7 ? "TBD" : "#" + s.seed}</span><strong>{s.team}</strong>
             <span>{s.source==="REGULAR_SEASON" ? "REG SEED" : "W15 LOSER"}</span>
             <span>{s.pointsFor != null ? money(s.pointsFor) + " PF" : "TBD"}</span>
           </div>)}
