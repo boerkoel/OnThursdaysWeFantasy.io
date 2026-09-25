@@ -47,6 +47,20 @@ for (const view of views) {
   );
 }
 
+// Keep week-specific roster snapshots so player awards can use actual weekly
+// fantasy scores from completed weeks, rather than only the current roster view.
+const currentScoringPeriod = Number(results.mMatchup?.scoringPeriodId || 1);
+for (let week = 1; week <= currentScoringPeriod; week++) {
+  console.log(`Fetching mRoster for week ${week}...`);
+  const weeklyRoster = week === currentScoringPeriod
+    ? results.mRoster
+    : await fetchView("mRoster", week);
+  await writeFile(
+    `data/current/mRoster-week-${week}.json`,
+    JSON.stringify(weeklyRoster, null, 2) + "\n"
+  );
+}
+
 await writeFile(
   "data/current/metadata.json",
   JSON.stringify({ season, leagueId, fetchedAt, views }, null, 2) + "\n"
