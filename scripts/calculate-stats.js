@@ -79,22 +79,67 @@ await mkdir("data/current",{recursive:true});
 const playoffTeamCount = Number(settings.settings?.scheduleSettings?.playoffTeamCount || 6);
 const playoffSeedingRule = settings.settings?.scheduleSettings?.playoffSeedingRule || "TOTAL_POINTS_SCORED";
 const playoffReseed = Boolean(settings.settings?.scheduleSettings?.playoffReseed);
-const playoffSeeds = [...standings]
-  .sort((a,b)=>b.pointsFor-a.pointsFor)
-  .map((team,index)=>({...team,seed:index+1,playoffTeam:index<playoffTeamCount}))
-  .filter(t=>t.playoffTeam);
+
+const allByPoints = [...standings].sort((a,b)=>b.pointsFor-a.pointsFor || b.wins-a.wins);
+const playoffSeeds = allByPoints.slice(0, playoffTeamCount).map((team,index)=>({...team,seed:index+1}));
+const nonPlayoffTeams = allByPoints.slice(playoffTeamCount).map((team,index)=>({...team,seed:playoffTeamCount+index+1}));
+
 const playoffSeedMap = new Map(playoffSeeds.map(t=>[t.seed,t]));
 const playoffSchedule = [
   {id:"qf1",week:15,round:"Quarterfinal",homeSeed:3,awaySeed:6},
   {id:"qf2",week:15,round:"Quarterfinal",homeSeed:4,awaySeed:5},
-  {id:"sf1",week:16,round:"Semifinal",homeSeed:1,away:"Winner QF1/QF2 (reseeded)",homeBye:true},
-  {id:"sf2",week:16,round:"Semifinal",homeSeed:2,away:"Winner QF1/QF2 (reseeded)",homeBye:true},
-  {id:"final",week:17,round:"Championship",home:"Semifinal Winner",away:"Semifinal Winner"}
+  {id:"sf1",week:16,round:"Semifinal",homeSeed:1,homeBye:true},
+  {id:"sf2",week:16,round:"Semifinal",homeSeed:2,homeBye:true},
+  {id:"final",week:17,round:"Championship"}
 ].map(g=>({
   ...g,
   homeTeam:g.homeSeed?playoffSeedMap.get(g.homeSeed)?.name:null,
   awayTeam:g.awaySeed?playoffSeedMap.get(g.awaySeed)?.name:null
 }));
+
+const week15Completed = matchups.filter(m=>m.week===15 && m.completed);
+const playoffLosers = week15Completed.map(m => {
+  const loserId = m.winner === "HOME" ? m.awayTeamId : m.homeTeamId;
+  const winnerId = m.winner === "HOME" ? m.homeTeamId : m.awayTeamId;
+  const loserSeed = playoffSeeds.find(s=>s.id===loserId)?.seed ?? null;
+  return {teamId:loserId,team:name(loserId),playoffSeed:loserSeed,week:15,opponentId:winnerId,opponent:name(winnerId)};
+}).filter(x=>x.teamId);
+
+const ultimateEntrants = [
+  ...nonPlayoffTeams.map(t=>({seed:t.seed-playoffTeamCount,teamId:t.id,team:t.name,source:"REGULAR_SEASON",regularSeasonSeed:t.seed,pointsFor:t.pointsFor})),
+  ...playoffLosers
+    .sort((a,b)=>(a.playoffSeed??99)-(b.playoffSeed??99))
+    .map((t,i)=>({seed:7+i,teamId:t.teamId,team:t.team,source:"WEEK_15_PLAYOFF_LOSER",playoffSeed:t.playoffSeed,opponent:t.opponent}))
+];
+
+const ulSeedMap = new Map(ultimateEntrants.map(t=>[t.seed,t]));
+const ultimateLoserSchedule = [
+  {id:"ul-qf1",week:16,round:"Quarterfinal",homeSeed:1,awaySeed:8},
+  {id:"ul-qf2",week:16,round:"Quarterfinal",homeSeed:4,awaySeed:5},
+  {id:"ul-qf3",week:16,round:"Quarterfinal",homeSeed:2,awaySeed:7},
+  {id:"ul-qf4",week:16,round:"Quarterfinal",homeSeed:3,awaySeed:6},
+  {id:"ul-sf1",week:17,round:"Semifinal",homeFrom:"ul-qf1",awayFrom:"ul-qf2"},
+  {id:"ul-sf2",week:17,round:"Semifinal",homeFrom:"ul-qf3",awayFrom:"ul-qf4"},
+  {id:"ul-final",week:18,round:"Championship",homeFrom:"ul-sf1",awayFrom:"ul-sf2"}
+].map(g=>({
+  ...g,
+  homeTeam:g.homeSeed?ulSeedMap.get(g.homeSeed)?.team:null,
+  awayTeam:g.awaySeed?ulSeedMap.get(g.awaySeed)?.team:null,
+  homeSeed:g.homeSeed??null,
+  awaySeed:g.awaySeed??null
+}));
+
+const ultimateLoser = {
+  format:"3-week single elimination",
+  advancementRule:"LOWER_SCORE_ADVANCES",
+  currentWeek,
+  status:currentWeek>=16 ? "ACTIVE" : "PROJECTED",
+  entrants:ultimateEntrants,
+  playoffLosers,
+  schedule:ultimateLoserSchedule,
+  note:"Six regular-season non-playoff teams enter as seeds 1-6; the two Week 15 playoff losers enter as seeds 7-8. The lower-scoring team advances each round."
+};
+
 const playoffs = {
   season:settings.seasonId,
   currentWeek,
@@ -103,8 +148,9 @@ const playoffs = {
   playoffSeedingRule,
   status: currentWeek >= 15 ? "ACTIVE" : "PROJECTED",
   seeds:playoffSeeds.map(t=>({seed:t.seed,teamId:t.id,team:t.name,wins:t.wins,losses:t.losses,pointsFor:t.pointsFor})),
-  nonPlayoffTeams:[...standings].sort((a,b)=>b.pointsFor-a.pointsFor).slice(playoffTeamCount).map((t,i)=>({seed:playoffTeamCount+i+1,teamId:t.id,team:t.name,wins:t.wins,losses:t.losses,pointsFor:t.pointsFor})),
-  schedule:playoffSchedule
+  nonPlayoffTeams:nonPlayoffTeams.map(t=>({seed:t.seed,teamId:t.id,team:t.name,wins:t.wins,losses:t.losses,pointsFor:t.pointsFor})),
+  schedule:playoffSchedule,
+  ultimateLoser
 };
 
 await writeJson("data/current/standings.json",{season:settings.seasonId,currentWeek,completedWeeks,standings});
