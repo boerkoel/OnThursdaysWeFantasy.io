@@ -91,6 +91,18 @@ function App() {
   const preGame = scores.length > 0 && scores.every(s => Number(s.score) === 0 && Number(s.opponentScore) === 0);
   const currentWeekComplete = raffle.completedWeeks?.includes(scoreboard.week);
 
+  const projectedMedian = Number(scoreboard.projectedMedian);
+  const projectedWithScores = scores.filter(s => Number.isFinite(Number(s.projectionAverage)) && Number.isFinite(projectedMedian));
+  const closestAbove = projectedWithScores
+    .filter(s => Number(s.projectionAverage) >= projectedMedian)
+    .sort((a, b) => Number(a.projectionAverage) - Number(b.projectionAverage))[0];
+  const closestBelow = projectedWithScores
+    .filter(s => Number(s.projectionAverage) < projectedMedian)
+    .sort((a, b) => Number(b.projectionAverage) - Number(a.projectionAverage))[0];
+  const projectedMedianEdgeTeams = new Set(
+    [closestAbove?.teamId, closestBelow?.teamId].filter(Boolean)
+  );
+
   return (
     <main className="site">
       <header className="topbar">
@@ -115,9 +127,9 @@ function App() {
             const a = teams[0], b = teams[1];
             if (!a || !b) return null;
             return <article className="matchup" key={matchupId}>
-              <div className={a.score >= b.score ? "team winning" : "team"}><span>{a.team}</span><strong className={Number.isFinite(Number(a.projectionAverage)) && Number.isFinite(Number(scoreboard.projectedMedian)) ? (Number(a.projectionAverage) >= Number(scoreboard.projectedMedian) ? "projected-above" : "projected-below") : ""}>{money(a.score)}</strong><small>PROJ {a.projectionAverage != null ? money(a.projectionAverage) : "—"}</small></div>
+              <div className={a.score >= b.score ? "team winning" : "team"}><span>{a.team}</span><strong className={projectedMedianEdgeTeams.has(a.teamId) ? "projected-edge" : (Number.isFinite(Number(a.projectionAverage)) && Number.isFinite(projectedMedian) ? (Number(a.projectionAverage) >= projectedMedian ? "projected-above" : "projected-below") : "")}>{money(a.score)}</strong><small>PROJ {a.projectionAverage != null ? money(a.projectionAverage) : "—"}</small></div>
               <div className="versus">vs</div>
-              <div className={b.score >= a.score ? "team winning" : "team"}><span>{b.team}</span><strong className={Number.isFinite(Number(b.projectionAverage)) && Number.isFinite(Number(scoreboard.projectedMedian)) ? (Number(b.projectionAverage) >= Number(scoreboard.projectedMedian) ? "projected-above" : "projected-below") : ""}>{money(b.score)}</strong><small>PROJ {b.projectionAverage != null ? money(b.projectionAverage) : "—"}</small></div>
+              <div className={b.score >= a.score ? "team winning" : "team"}><span>{b.team}</span><strong className={projectedMedianEdgeTeams.has(b.teamId) ? "projected-edge" : (Number.isFinite(Number(b.projectionAverage)) && Number.isFinite(projectedMedian) ? (Number(b.projectionAverage) >= projectedMedian ? "projected-above" : "projected-below") : "")}>{money(b.score)}</strong><small>PROJ {b.projectionAverage != null ? money(b.projectionAverage) : "—"}</small></div>
             </article>;
           })}
         </div>
