@@ -57,36 +57,12 @@
   ],
   "nonPlayoffTeams": [
     {
-      "seed": 12,
-      "teamId": 12,
-      "team": "Beautiful Dark Twisted Fantasy",
-      "wins": 0,
-      "losses": 2,
-      "pointsFor": 164.44
-    },
-    {
-      "seed": 11,
-      "teamId": 2,
-      "team": "TDsMaGee",
-      "wins": 0,
-      "losses": 2,
-      "pointsFor": 210.4
-    },
-    {
-      "seed": 10,
-      "teamId": 9,
-      "team": "The Mahomies",
+      "seed": 7,
+      "teamId": 8,
+      "team": "Mr. Action Jackson",
       "wins": 1,
       "losses": 1,
-      "pointsFor": 238.24
-    },
-    {
-      "seed": 9,
-      "teamId": 7,
-      "team": "Ruffing the Passer",
-      "wins": 0,
-      "losses": 2,
-      "pointsFor": 246.64
+      "pointsFor": 258.26
     },
     {
       "seed": 8,
@@ -97,12 +73,36 @@
       "pointsFor": 249.6
     },
     {
-      "seed": 7,
-      "teamId": 8,
-      "team": "Mr. Action Jackson",
+      "seed": 9,
+      "teamId": 7,
+      "team": "Ruffing the Passer",
+      "wins": 0,
+      "losses": 2,
+      "pointsFor": 246.64
+    },
+    {
+      "seed": 10,
+      "teamId": 9,
+      "team": "The Mahomies",
       "wins": 1,
       "losses": 1,
-      "pointsFor": 258.26
+      "pointsFor": 238.24
+    },
+    {
+      "seed": 11,
+      "teamId": 2,
+      "team": "TDsMaGee",
+      "wins": 0,
+      "losses": 2,
+      "pointsFor": 210.4
+    },
+    {
+      "seed": 12,
+      "teamId": 12,
+      "team": "Beautiful Dark Twisted Fantasy",
+      "wins": 0,
+      "losses": 2,
+      "pointsFor": 164.44
     }
   ],
   "schedule": [
@@ -165,38 +165,14 @@
     "entrants": [
       {
         "seed": 1,
-        "teamId": 12,
-        "team": "Beautiful Dark Twisted Fantasy",
+        "teamId": 8,
+        "team": "Mr. Action Jackson",
         "source": "REGULAR_SEASON",
-        "regularSeasonSeed": 12,
-        "pointsFor": 164.44
+        "regularSeasonSeed": 7,
+        "pointsFor": 258.26
       },
       {
         "seed": 2,
-        "teamId": 2,
-        "team": "TDsMaGee",
-        "source": "REGULAR_SEASON",
-        "regularSeasonSeed": 11,
-        "pointsFor": 210.4
-      },
-      {
-        "seed": 3,
-        "teamId": 9,
-        "team": "The Mahomies",
-        "source": "REGULAR_SEASON",
-        "regularSeasonSeed": 10,
-        "pointsFor": 238.24
-      },
-      {
-        "seed": 4,
-        "teamId": 7,
-        "team": "Ruffing the Passer",
-        "source": "REGULAR_SEASON",
-        "regularSeasonSeed": 9,
-        "pointsFor": 246.64
-      },
-      {
-        "seed": 5,
         "teamId": 1,
         "team": "Ramosverse",
         "source": "REGULAR_SEASON",
@@ -204,12 +180,36 @@
         "pointsFor": 249.6
       },
       {
-        "seed": 6,
-        "teamId": 8,
-        "team": "Mr. Action Jackson",
+        "seed": 3,
+        "teamId": 7,
+        "team": "Ruffing the Passer",
         "source": "REGULAR_SEASON",
-        "regularSeasonSeed": 7,
-        "pointsFor": 258.26
+        "regularSeasonSeed": 9,
+        "pointsFor": 246.64
+      },
+      {
+        "seed": 4,
+        "teamId": 9,
+        "team": "The Mahomies",
+        "source": "REGULAR_SEASON",
+        "regularSeasonSeed": 10,
+        "pointsFor": 238.24
+      },
+      {
+        "seed": 5,
+        "teamId": 2,
+        "team": "TDsMaGee",
+        "source": "REGULAR_SEASON",
+        "regularSeasonSeed": 11,
+        "pointsFor": 210.4
+      },
+      {
+        "seed": 6,
+        "teamId": 12,
+        "team": "Beautiful Dark Twisted Fantasy",
+        "source": "REGULAR_SEASON",
+        "regularSeasonSeed": 12,
+        "pointsFor": 164.44
       },
       {
         "seed": 7,
@@ -236,8 +236,8 @@
         "round": "Quarterfinal",
         "homeSeed": 1,
         "awaySeed": 8,
-        "homeTeam": "Beautiful Dark Twisted Fantasy",
-        "awayTeam": "Highest ranked loser from Week 15 playoff matchup"
+        "homeTeam": "Mr. Action Jackson",
+        "awayTeam": "Other Week 15 playoff loser"
       },
       {
         "id": "ul-qf2",
@@ -245,8 +245,8 @@
         "round": "Quarterfinal",
         "homeSeed": 2,
         "awaySeed": 7,
-        "homeTeam": "TDsMaGee",
-        "awayTeam": "Other Week 15 playoff loser"
+        "homeTeam": "Ramosverse",
+        "awayTeam": "Highest ranked loser from Week 15 playoff matchup"
       },
       {
         "id": "ul-qf3",
@@ -254,8 +254,8 @@
         "round": "Quarterfinal",
         "homeSeed": 3,
         "awaySeed": 6,
-        "homeTeam": "The Mahomies",
-        "awayTeam": "Mr. Action Jackson"
+        "homeTeam": "Ruffing the Passer",
+        "awayTeam": "Beautiful Dark Twisted Fantasy"
       },
       {
         "id": "ul-qf4",
@@ -263,8 +263,8 @@
         "round": "Quarterfinal",
         "homeSeed": 4,
         "awaySeed": 5,
-        "homeTeam": "Ruffing the Passer",
-        "awayTeam": "Ramosverse"
+        "homeTeam": "The Mahomies",
+        "awayTeam": "TDsMaGee"
       }
     ],
     "note": "Six regular-season non-playoff teams enter as seeds 1-6; the highest-ranked Week 15 playoff loser enters as seed 7 and the other Week 15 playoff loser enters as seed 8. The lower-scoring team advances each round, and the remaining teams are reseeded highest-vs-lowest before the next round."
