@@ -4,7 +4,7 @@ const season = process.env.ESPN_SEASON || "2026";
 const leagueId = process.env.ESPN_LEAGUE_ID || "998599827";
 const base = `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${season}/segments/0/leagues/${leagueId}`;
 
-const views = ["mSettings", "mTeam", "mRoster", "mMatchup", "mScoreboard"];
+const views = ["mSettings", "mTeam", "mRoster", "mMatchup", "mScoreboard", "mTransactions"];
 
 const espnS2 = process.env.ESPN_S2;
 const swid = process.env.ESPN_SWID;
