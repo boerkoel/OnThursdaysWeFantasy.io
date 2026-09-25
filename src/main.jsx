@@ -99,8 +99,7 @@ function App() {
       <section id="scores" className="section">
         <div className="section-heading"><div><span className="section-kicker">RIGHT NOW</span><h2>Week {scoreboard.week} Scores</h2></div><span className="live-pill">{preGame ? "● NOT STARTED" : "● LIVE"}</span></div>
         <div className="matchups">
-          {Array.from({length: Math.ceil(scores.length / 2)}, (_, i) => {
-            const matchupId = scores[i * 2]?.matchupId;
+          {[...new Set(scores.map(s => s.matchupId))].map(matchupId => {
             const teams = scores.filter(s => s.matchupId === matchupId);
             const a = teams[0], b = teams[1];
             if (!a || !b) return null;
