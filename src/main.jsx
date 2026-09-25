@@ -88,19 +88,17 @@ function App() {
             </div>)}
           </div>
           <div className="bracket-round">
-            <div className="bracket-round-title">WEEK 17 · THIRD PLACE</div>
-            <div className="bracket-game">
-              <div><small>3RD PLACE</small><strong>Semifinal Loser</strong></div>
-              <span>vs</span>
-              <div><small>3RD PLACE</small><strong>Semifinal Loser</strong></div>
-            </div>
-          </div>
-          <div className="bracket-round">
             <div className="bracket-round-title">WEEK 17 · CHAMPIONSHIP</div>
             <div className="bracket-game championship-game">
               <div><small>FINAL</small><strong>Semifinal Winner</strong></div>
               <span>vs</span>
               <div><small>FINAL</small><strong>Semifinal Winner</strong></div>
+            </div>
+            <div className="bracket-round-title third-place-title">WEEK 17 · THIRD PLACE</div>
+            <div className="bracket-game third-place-game">
+              <div><small>3RD PLACE</small><strong>Semifinal Loser</strong></div>
+              <span>vs</span>
+              <div><small>3RD PLACE</small><strong>Semifinal Loser</strong></div>
             </div>
           </div>
         </div>
