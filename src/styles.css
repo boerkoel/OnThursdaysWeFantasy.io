@@ -182,3 +182,11 @@
   .history-score-block{min-width:70px}
   .history-score{font-size:15px}
 }
+
+
+/* Keep bracket matchup labels centered cleanly between the two teams. */
+.bracket-game{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:14px}
+.bracket-game>div:last-child{text-align:right}
+.bracket-vs{display:flex;align-items:center;justify-content:center;min-width:72px;padding:0 4px;text-align:center;white-space:nowrap;font-size:9px;font-weight:900;letter-spacing:.08em;color:#8f978c}
+.bracket-game strong{overflow-wrap:anywhere}
+@media(max-width:700px){.bracket-game{gap:8px}.bracket-vs{min-width:58px;font-size:8px;white-space:normal;line-height:1.15}}
