@@ -65,7 +65,6 @@ function App() {
           <span className="record-count">{playoffs.status === "ACTIVE" ? "PLAYOFFS ACTIVE" : "PROJECTED FROM CURRENT STANDINGS"}</span>
         </div>
         <p className="playoff-intro">Six teams qualify. Seeding is based on total points scored, with the top two seeds receiving first-round byes. ESPN's playoff reseeding is reflected in the semifinal placeholders.</p>
-        <div className="prize-board"><div><span>RAFFLE</span><strong>$100</strong></div><div><span>1ST</span><strong>$375</strong></div><div><span>2ND</span><strong>$225</strong></div><div><span>3RD</span><strong>$100</strong></div></div>
         <div className="bracket">
           <div className="bracket-round">
             <div className="bracket-round-title">WEEK 15 · QUARTERFINALS</div>
@@ -90,13 +89,13 @@ function App() {
           <div className="bracket-round">
             <div className="bracket-round-title">WEEK 17 · CHAMPIONSHIP</div>
             <div className="bracket-game championship-game">
-              <div><small>FINAL</small><strong>Semifinal Winner</strong></div>
+              <div><small>FINAL · $375</small><strong>Semifinal Winner</strong></div>
               <span>vs</span>
               <div><small>FINAL</small><strong>Semifinal Winner</strong></div>
             </div>
             <div className="bracket-round-title third-place-title">WEEK 17 · THIRD PLACE</div>
             <div className="bracket-game third-place-game">
-              <div><small>3RD PLACE</small><strong>Semifinal Loser</strong></div>
+              <div><small>3RD PLACE · $100</small><strong>Semifinal Loser</strong></div>
               <span>vs</span>
               <div><small>3RD PLACE</small><strong>Semifinal Loser</strong></div>
             </div>
@@ -178,7 +177,7 @@ function App() {
           <div><span className="section-kicker">SEASON RAFFLE</span><h2>Raffle Tickets</h2></div>
           <span className="record-count">{raffle.completedWeeks?.length || 0} TICKET WEEKS COMPLETE</span>
         </div>
-        <p className="raffle-intro">Each week's highest-scoring team earns one entry into the end-of-season prize raffle.</p>
+        <p className="raffle-intro">Each week's highest-scoring team earns one entry into the end-of-season raffle for the $100 prize!</p>
         <div className="raffle-board">
           {raffle.tickets?.map((t, i) => <div className="raffle-row" key={t.teamId}>
             <span className="rank">{i + 1}</span>
