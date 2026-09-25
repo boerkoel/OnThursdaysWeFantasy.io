@@ -5,6 +5,7 @@ const teamData = await readJson("data/current/mTeam.json");
 const matchupData = await readJson("data/current/mMatchup.json");
 const rosterData = await readJson("data/current/mRoster.json");
 const liveScoringData = await readJson("data/current/mLiveScoring.json");
+const boxscoreData = await readJson("data/current/mBoxscore.json");
 
 const teams = new Map((teamData.teams || []).map(t => [t.id, { id:t.id, name:(t.name||"").trim(), abbrev:t.abbrev||"", logo:t.logo||null }]));
 const matchups = (matchupData.schedule || []).filter(m => m.home?.teamId && m.away?.teamId).map(m => ({
@@ -19,11 +20,14 @@ const completedWeeks = [...new Set(completed.map(m=>m.week))].sort((a,b)=>a-b);
 
 const currentWeekMatchups = matchups.filter(m => m.week === currentWeek);
 const liveSchedule = liveScoringData.schedule || [];
+const boxscoreSchedule = boxscoreData.schedule || [];
+const allLiveSchedules = [...liveSchedule, ...boxscoreSchedule];
 const liveByTeam = new Map();
-for (const g of liveSchedule) {
+for (const g of allLiveSchedules) {
   for (const side of [g.home, g.away]) {
     if (!side?.teamId) continue;
-    const liveScore = Number(side.totalPointsLive ?? side.totalPoints ?? side.cumulativeScore?.score ?? 0);
+    const playerTotal = (side.rosterForCurrentScoringPeriod?.entries || []).reduce((sum, entry) => sum + Number(entry.playerPoolEntry?.appliedStatTotal ?? 0), 0);
+    const liveScore = Number(side.totalPointsLive ?? side.totalPoints ?? side.cumulativeScore?.score ?? (Number.isFinite(playerTotal) ? playerTotal : 0));
     liveByTeam.set(side.teamId, liveScore);
   }
 }
