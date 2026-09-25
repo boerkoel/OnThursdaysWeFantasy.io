@@ -15,6 +15,7 @@ async function fetchViews(views) {
   const url = new URL(base);
   for (const view of views) url.searchParams.append("view", view);
   url.searchParams.set("scoringPeriodId", String(scoringPeriodId));
+  url.searchParams.set("matchupPeriodId", String(scoringPeriodId));
 
   const response = await fetch(url, {
     headers: {
