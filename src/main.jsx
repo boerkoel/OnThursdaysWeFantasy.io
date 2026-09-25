@@ -263,7 +263,7 @@ function App() {
               const away = playoffs.seeds.find(s=>s.seed===g.awaySeed);
               return <div className="bracket-game" key={g.id}>
                 <div><small>{home ? "#" + home.seed : "TBD"}</small><strong>{home?.team || "TBD"}</strong></div>
-                <span>vs</span>
+                <span className="bracket-vs">VS</span>
                 <div><small>{away ? "#" + away.seed : "TBD"}</small><strong>{away?.team || "TBD"}</strong></div>
               </div>;
             })}
@@ -316,7 +316,7 @@ function App() {
               const away = playoffs.ultimateLoser.entrants.find(s=>s.seed===g.awaySeed);
               return <div className="bracket-game" key={g.id}>
                 <div><small>#{g.homeSeed}</small><strong>{home?.team || "TBD"}</strong></div>
-                <span>LOWER SCORE ADVANCES</span>
+                <span className="bracket-vs">LOWER SCORE ADVANCES</span>
                 <div><small>#{g.awaySeed}</small><strong>{away?.team || "TBD"}</strong></div>
               </div>;
             })}
@@ -326,12 +326,12 @@ function App() {
             {playoffs.ultimateLoser?.schedule.filter(g=>g.round==="Semifinal").length
               ? playoffs.ultimateLoser.schedule.filter(g=>g.round==="Semifinal").map(g => <div className="bracket-game" key={g.id}>
                   <div><small>{g.reseeded ? "RESEEDED" : "QF"}</small><strong>{g.homeTeam || "TBD — QF winner"}</strong></div>
-                  <span>LOWER SCORE ADVANCES</span>
+                  <span className="bracket-vs">LOWER SCORE ADVANCES</span>
                   <div><small>{g.reseeded ? "RESEEDED" : "QF"}</small><strong>{g.awayTeam || "TBD — QF winner"}</strong></div>
                 </div>)
               : [1,2].map(i => <div className="bracket-game" key={`ul-sf-placeholder-${i}`}>
                   <div><small>RESEED</small><strong>TBD — QF winner</strong></div>
-                  <span>LOWER SCORE ADVANCES</span>
+                  <span className="bracket-vs">LOWER SCORE ADVANCES</span>
                   <div><small>RESEED</small><strong>TBD — QF winner</strong></div>
                 </div>)}
           </div>
@@ -339,7 +339,7 @@ function App() {
             <div className="bracket-round-title">WEEK 18 · ULTIMATE LOSER CHAMPIONSHIP</div>
             <div className="bracket-game championship-game">
               <div><small>FINALISTS</small><strong>Semifinal Loser-Advance</strong></div>
-              <span>LOWER SCORE ADVANCES</span>
+              <span className="bracket-vs">LOWER SCORE ADVANCES</span>
               <div><small>FINALISTS</small><strong>Semifinal Loser-Advance</strong></div>
             </div>
           </div>
