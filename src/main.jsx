@@ -263,7 +263,7 @@ function App() {
               const away = playoffs.seeds.find(s=>s.seed===g.awaySeed);
               return <div className="bracket-game" key={g.id}>
                 <div><small>{home ? "#" + home.seed : "TBD"}</small><strong>{home?.team || "TBD"}</strong></div>
-                <span className="bracket-vs">VS</span>
+                <span className="bracket-vs">vs</span>
                 <div><small>{away ? "#" + away.seed : "TBD"}</small><strong>{away?.team || "TBD"}</strong></div>
               </div>;
             })}
