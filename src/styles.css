@@ -236,3 +236,10 @@
 .bracket-game-wrap{display:flex;flex-direction:column;gap:6px}
 .bracket-game-wrap .bracket-game{width:100%}
 .bracket-game-wrap .bracket-advance{display:block;margin:0;text-align:center;color:#8f978c;font-size:8px;font-weight:900;letter-spacing:.08em}
+
+/* Keep loser-advance and championship labels clearly outside matchup boxes. */
+.bracket-game-wrap{gap:9px}
+.bracket-game-wrap .bracket-advance,.bracket-final-label{position:static;margin:0;text-align:center;line-height:1.2}
+.bracket-final-label{display:block;color:#b8c69b;font-size:9px;font-weight:900;letter-spacing:.08em}
+.seed-row{grid-template-columns:42px minmax(0,1fr) 110px 80px}
+@media(max-width:700px){.bracket-game-wrap{gap:7px}.bracket-game-wrap .bracket-advance,.bracket-final-label{font-size:8px}.seed-row{grid-template-columns:32px minmax(0,1fr) 92px 65px;gap:8px}}
