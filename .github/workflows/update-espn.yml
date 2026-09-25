@@ -4,6 +4,10 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "15 * * * *"
+    - cron: "*/5 0-3 * * 5"
+    - cron: "*/5 17-23 * * 0"
+    - cron: "*/5 0-3 * * 1"
+    - cron: "*/5 0-3 * * 2"
 
 permissions:
   contents: write
@@ -25,6 +29,13 @@ jobs:
           ESPN_S2: ${{ secrets.ESPN_S2 }}
           ESPN_SWID: ${{ secrets.ESPN_SWID }}
         run: node scripts/fetch-espn.js
+      - name: Fetch current live scoring
+        env:
+          ESPN_SEASON: "2026"
+          ESPN_LEAGUE_ID: "998599827"
+          ESPN_S2: ${{ secrets.ESPN_S2 }}
+          ESPN_SWID: ${{ secrets.ESPN_SWID }}
+        run: node scripts/fetch-live.js
       - name: Calculate league stats
         run: node scripts/calculate-stats.js
       - name: Commit updated data
