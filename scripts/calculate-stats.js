@@ -57,6 +57,19 @@ const bench=(rosterData.teams||[]).map(t=>{
     players:players.map(e=>({playerId:e.playerId,name:e.playerPoolEntry?.player?.fullName||"Unknown player",points:round(Number(e.playerPoolEntry?.appliedStatTotal||0))})).sort((a,b)=>b.points-a.points)};
 }).sort((a,b)=>b.points-a.points);
 
+const raffleWinners = completedWeeks.map(week => {
+  const weekRows = rows.filter(x => x.week === week);
+  return maxBy(weekRows, x => x.score);
+}).filter(Boolean);
+
+const raffleTickets = [...teams.values()].map(team => ({
+  teamId: team.id,
+  team: team.name,
+  logo: team.logo,
+  tickets: raffleWinners.filter(x => x.teamId === team.id).length,
+  winningWeeks: raffleWinners.filter(x => x.teamId === team.id).map(x => x.week)
+})).sort((a,b) => b.tickets - a.tickets || a.team.localeCompare(b.team));
+
 const awards={highestScore:scoreAward(highestScore),lowestScore:scoreAward(lowestScore),
   highestScoringLoser:scoreAward(highestScoringLoser),lowestScoringWinner:scoreAward(lowestScoringWinner),
   blowoutKing:matchupAward(blowout),
@@ -64,6 +77,7 @@ const awards={highestScore:scoreAward(highestScore),lowestScore:scoreAward(lowes
 
 await mkdir("data/current",{recursive:true});
 await writeJson("data/current/standings.json",{season:settings.seasonId,currentWeek,completedWeeks,standings});
+await writeJson("data/current/raffle.json",{season:settings.seasonId,currentWeek,completedWeeks,winners:raffleWinners.map(x=>({week:x.week,teamId:x.teamId,team:name(x.teamId),score:round(x.score)})),tickets:raffleTickets});
 await writeJson("data/current/matchups.json",{season:settings.seasonId,currentWeek,matchups});
 await writeJson("data/current/scoreboard.json",currentScoreboard);
 await writeJson("data/current/awards.json",{season:settings.seasonId,currentWeek,awards});
