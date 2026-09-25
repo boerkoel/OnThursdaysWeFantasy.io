@@ -137,6 +137,7 @@ const projectedMedian = projectedValues.length % 2
 
 const currentScoreboard = {
   week:currentWeek,
+  lastUpdated:new Date().toISOString(),
   scores:currentScores,
   median,
   projectedMedian,
