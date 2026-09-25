@@ -19,18 +19,32 @@ const currentWeek = Number(matchupData.scoringPeriodId || 1);
 const completedWeeks = [...new Set(completed.map(m=>m.week))].sort((a,b)=>a-b);
 
 const currentWeekMatchups = matchups.filter(m => m.week === currentWeek);
-const liveSchedule = liveScoringData.schedule || [];
-const boxscoreSchedule = boxscoreData.schedule || [];
+
+// ESPN's mBoxscore response includes schedule entries for many/all matchup
+// periods. Only use entries for the current matchup period; otherwise later
+// zero-valued future matchups can overwrite the live totals for the same team.
+const liveSchedule = (liveScoringData.schedule || []).filter(g => Number(g.matchupPeriodId) === currentWeek);
+const boxscoreSchedule = (boxscoreData.schedule || []).filter(g => Number(g.matchupPeriodId) === currentWeek);
 const allLiveSchedules = [...liveSchedule, ...boxscoreSchedule];
 const liveByTeam = new Map();
+
 for (const g of allLiveSchedules) {
   for (const side of [g.home, g.away]) {
     if (!side?.teamId) continue;
-    const playerTotal = (side.rosterForCurrentScoringPeriod?.entries || []).reduce((sum, entry) => sum + Number(entry.playerPoolEntry?.appliedStatTotal ?? 0), 0);
-    const liveScore = Number(side.totalPointsLive ?? side.totalPoints ?? side.cumulativeScore?.score ?? (Number.isFinite(playerTotal) ? playerTotal : 0));
+    const playerTotal = (side.rosterForCurrentScoringPeriod?.entries || []).reduce(
+      (sum, entry) => sum + Number(entry.playerPoolEntry?.appliedStatTotal ?? 0),
+      0
+    );
+    const liveScore = Number(
+      side.totalPointsLive ??
+      side.totalPoints ??
+      side.cumulativeScore?.score ??
+      (Number.isFinite(playerTotal) ? playerTotal : 0)
+    );
     liveByTeam.set(side.teamId, liveScore);
   }
 }
+
 const currentScores = currentWeekMatchups.flatMap(m => [
   { teamId:m.homeTeamId, opponentId:m.awayTeamId, score:liveByTeam.get(m.homeTeamId) ?? m.homeScore, opponentScore:liveByTeam.get(m.awayTeamId) ?? m.awayScore, matchupId:m.id },
   { teamId:m.awayTeamId, opponentId:m.homeTeamId, score:liveByTeam.get(m.awayTeamId) ?? m.awayScore, opponentScore:liveByTeam.get(m.homeTeamId) ?? m.homeScore, matchupId:m.id }
