@@ -5,6 +5,7 @@ import scoreboard from "../data/current/scoreboard.json";
 import standingsData from "../data/current/standings.json";
 import awards from "../data/current/awards.json";
 import raffle from "../data/current/raffle.json";
+import playoffs from "../data/current/playoffs.json";
 
 const money = (n) => Number(n).toFixed(2);
 
@@ -22,7 +23,7 @@ function App() {
           <h1>On Thursdays We Fantasy</h1>
           <p className="subtitle">The Officially Unofficial League Record Book</p>
         </div>
-        <nav><a href="#scores">Scores</a><a href="#raffle">Raffle</a><a href="#standings">Standings</a><a href="#awards">Awards</a></nav>
+        <nav><a href="#scores">Scores</a><a href="#playoffs">Playoffs</a><a href="#raffle">Raffle</a><a href="#standings">Standings</a><a href="#awards">Awards</a></nav>
       </header>
 
       <section className="hero-strip">
@@ -56,6 +57,47 @@ function App() {
           </React.Fragment>)}
         </div>
         <p className="median-note">{preGame ? "The median will appear once scoring begins. In your median-scoring format, six teams score above the median and six below it." : "The line marks the median of the 12 current scores. In your median-scoring format, six teams are above it and six are below it."}</p>
+      </section>
+
+      <section id="playoffs" className="section">
+        <div className="section-heading">
+          <div><span className="section-kicker">ROAD TO THE TITLE</span><h2>2026 Playoffs</h2></div>
+          <span className="record-count">{playoffs.status === "ACTIVE" ? "PLAYOFFS ACTIVE" : "PROJECTED FROM CURRENT STANDINGS"}</span>
+        </div>
+        <p className="playoff-intro">Six teams qualify. Seeding is based on total points scored, with the top two seeds receiving first-round byes. ESPN's playoff reseeding is reflected in the semifinal placeholders.</p>
+        <div className="bracket">
+          <div className="bracket-round">
+            <div className="bracket-round-title">WEEK 15 · QUARTERFINALS</div>
+            {playoffs.schedule.filter(g=>g.round==="Quarterfinal").map(g => {
+              const home = playoffs.seeds.find(s=>s.seed===g.homeSeed);
+              const away = playoffs.seeds.find(s=>s.seed===g.awaySeed);
+              return <div className="bracket-game" key={g.id}>
+                <div><small>#{g.homeSeed}</small><strong>{home?.team || "TBD"}</strong></div>
+                <span>vs</span>
+                <div><small>#{g.awaySeed}</small><strong>{away?.team || "TBD"}</strong></div>
+              </div>;
+            })}
+          </div>
+          <div className="bracket-round">
+            <div className="bracket-round-title">WEEK 16 · SEMIFINALS</div>
+            {playoffs.schedule.filter(g=>g.round==="Semifinal").map(g => <div className="bracket-game" key={g.id}>
+              <div><small>#{g.homeSeed}</small><strong>{g.homeTeam || "TBD"}</strong></div>
+              <span>vs</span>
+              <div><small>RESEED</small><strong>Lowest remaining seed</strong></div>
+            </div>)}
+          </div>
+          <div className="bracket-round">
+            <div className="bracket-round-title">WEEK 17 · CHAMPIONSHIP</div>
+            <div className="bracket-game championship-game">
+              <div><small>FINAL</small><strong>Semifinal Winner</strong></div>
+              <span>vs</span>
+              <div><small>FINAL</small><strong>Semifinal Winner</strong></div>
+            </div>
+          </div>
+        </div>
+        <div className="seed-board">
+          {playoffs.seeds.map(s => <div className="seed-row" key={s.seed}><span>#{s.seed}</span><strong>{s.team}</strong><span>{s.wins}-{s.losses}</span><span>{money(s.pointsFor)} PF</span>{s.seed<=2 ? <em>BYE</em> : null}</div>)}
+        </div>
       </section>
 
       <section id="awards" className="section">
