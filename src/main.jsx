@@ -273,7 +273,7 @@ function App() {
             {playoffs.schedule.filter(g=>g.round==="Semifinal").map(g => <div className="bracket-game" key={g.id}>
               <div><small>#{g.homeSeed}</small><strong>{g.homeTeam || "TBD"}</strong></div>
               <span>vs</span>
-              <div><small>RESEED</small><strong>Lowest remaining seed</strong></div>
+              <div><small>RESEED</small><strong>Highest remaining seed</strong></div>
             </div>)}
           </div>
           <div className="bracket-round championship-round">
