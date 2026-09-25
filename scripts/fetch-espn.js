@@ -6,6 +6,13 @@ const base = `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${
 
 const views = ["mSettings", "mTeam", "mRoster", "mMatchup", "mScoreboard"];
 
+const espnS2 = process.env.ESPN_S2;
+const swid = process.env.ESPN_SWID;
+
+if (!espnS2 || !swid) {
+  throw new Error("Missing ESPN_S2 or ESPN_SWID GitHub Actions secrets.");
+}
+
 async function fetchView(view) {
   const url = new URL(base);
   url.searchParams.set("view", view);
@@ -13,7 +20,8 @@ async function fetchView(view) {
   const response = await fetch(url, {
     headers: {
       Accept: "application/json",
-      "User-Agent": "OnThursdaysWeFantasy/1.0"
+      "User-Agent": "OnThursdaysWeFantasy/1.0",
+      Cookie: `espn_s2=${espnS2}; SWID=${swid}`
     }
   });
 
