@@ -57,36 +57,12 @@
   ],
   "nonPlayoffTeams": [
     {
-      "seed": 7,
-      "teamId": 8,
-      "team": "Mr. Action Jackson",
-      "wins": 1,
-      "losses": 1,
-      "pointsFor": 258.26
-    },
-    {
-      "seed": 8,
-      "teamId": 1,
-      "team": "Ramosverse",
-      "wins": 1,
-      "losses": 1,
-      "pointsFor": 249.6
-    },
-    {
-      "seed": 9,
-      "teamId": 7,
-      "team": "Ruffing the Passer",
+      "seed": 12,
+      "teamId": 12,
+      "team": "Beautiful Dark Twisted Fantasy",
       "wins": 0,
       "losses": 2,
-      "pointsFor": 246.64
-    },
-    {
-      "seed": 10,
-      "teamId": 9,
-      "team": "The Mahomies",
-      "wins": 1,
-      "losses": 1,
-      "pointsFor": 238.24
+      "pointsFor": 164.44
     },
     {
       "seed": 11,
@@ -97,12 +73,36 @@
       "pointsFor": 210.4
     },
     {
-      "seed": 12,
-      "teamId": 12,
-      "team": "Beautiful Dark Twisted Fantasy",
+      "seed": 10,
+      "teamId": 9,
+      "team": "The Mahomies",
+      "wins": 1,
+      "losses": 1,
+      "pointsFor": 238.24
+    },
+    {
+      "seed": 9,
+      "teamId": 7,
+      "team": "Ruffing the Passer",
       "wins": 0,
       "losses": 2,
-      "pointsFor": 164.44
+      "pointsFor": 246.64
+    },
+    {
+      "seed": 8,
+      "teamId": 1,
+      "team": "Ramosverse",
+      "wins": 1,
+      "losses": 1,
+      "pointsFor": 249.6
+    },
+    {
+      "seed": 7,
+      "teamId": 8,
+      "team": "Mr. Action Jackson",
+      "wins": 1,
+      "losses": 1,
+      "pointsFor": 258.26
     }
   ],
   "schedule": [
@@ -129,6 +129,7 @@
       "week": 16,
       "round": "Semifinal",
       "homeSeed": 1,
+      "homeBye": true,
       "homeTeam": "Gibb it to Me Baby",
       "awayTeam": null
     },
@@ -137,6 +138,7 @@
       "week": 16,
       "round": "Semifinal",
       "homeSeed": 2,
+      "homeBye": true,
       "homeTeam": "49er Faith-Fool",
       "awayTeam": null
     },
@@ -146,6 +148,13 @@
       "round": "Championship",
       "homeTeam": null,
       "awayTeam": null
+    },
+    {
+      "id": "third",
+      "week": 17,
+      "round": "Third Place",
+      "homeTeam": null,
+      "awayTeam": null
     }
   ],
   "ultimateLoser": {
@@ -153,42 +162,17 @@
     "advancementRule": "LOWER_SCORE_ADVANCES",
     "currentWeek": 3,
     "status": "PROJECTED",
-    "playoffLosers": [],
     "entrants": [
       {
         "seed": 1,
-        "teamId": 8,
-        "team": "Mr. Action Jackson",
+        "teamId": 12,
+        "team": "Beautiful Dark Twisted Fantasy",
         "source": "REGULAR_SEASON",
-        "regularSeasonSeed": 7,
-        "pointsFor": 258.26
+        "regularSeasonSeed": 12,
+        "pointsFor": 164.44
       },
       {
         "seed": 2,
-        "teamId": 1,
-        "team": "Ramosverse",
-        "source": "REGULAR_SEASON",
-        "regularSeasonSeed": 8,
-        "pointsFor": 249.6
-      },
-      {
-        "seed": 3,
-        "teamId": 7,
-        "team": "Ruffing the Passer",
-        "source": "REGULAR_SEASON",
-        "regularSeasonSeed": 9,
-        "pointsFor": 246.64
-      },
-      {
-        "seed": 4,
-        "teamId": 9,
-        "team": "The Mahomies",
-        "source": "REGULAR_SEASON",
-        "regularSeasonSeed": 10,
-        "pointsFor": 238.24
-      },
-      {
-        "seed": 5,
         "teamId": 2,
         "team": "TDsMaGee",
         "source": "REGULAR_SEASON",
@@ -196,63 +180,106 @@
         "pointsFor": 210.4
       },
       {
-        "seed": 6,
-        "teamId": 12,
-        "team": "Beautiful Dark Twisted Fantasy",
+        "seed": 3,
+        "teamId": 9,
+        "team": "The Mahomies",
         "source": "REGULAR_SEASON",
-        "regularSeasonSeed": 12,
-        "pointsFor": 164.44
+        "regularSeasonSeed": 10,
+        "pointsFor": 238.24
+      },
+      {
+        "seed": 4,
+        "teamId": 7,
+        "team": "Ruffing the Passer",
+        "source": "REGULAR_SEASON",
+        "regularSeasonSeed": 9,
+        "pointsFor": 246.64
+      },
+      {
+        "seed": 5,
+        "teamId": 1,
+        "team": "Ramosverse",
+        "source": "REGULAR_SEASON",
+        "regularSeasonSeed": 8,
+        "pointsFor": 249.6
+      },
+      {
+        "seed": 6,
+        "teamId": 8,
+        "team": "Mr. Action Jackson",
+        "source": "REGULAR_SEASON",
+        "regularSeasonSeed": 7,
+        "pointsFor": 258.26
       }
     ],
+    "playoffLosers": [],
     "schedule": [
       {
         "id": "ul-qf1",
         "week": 16,
         "round": "Quarterfinal",
         "homeSeed": 1,
-        "awaySeed": 8
+        "awaySeed": 6,
+        "homeTeam": "Beautiful Dark Twisted Fantasy",
+        "awayTeam": "Mr. Action Jackson"
       },
       {
         "id": "ul-qf2",
         "week": 16,
         "round": "Quarterfinal",
-        "homeSeed": 4,
-        "awaySeed": 5
+        "homeSeed": 2,
+        "awaySeed": 5,
+        "homeTeam": "TDsMaGee",
+        "awayTeam": "Ramosverse"
       },
       {
         "id": "ul-qf3",
         "week": 16,
         "round": "Quarterfinal",
-        "homeSeed": 2,
-        "awaySeed": 7
+        "homeSeed": 3,
+        "awaySeed": 8,
+        "homeTeam": "The Mahomies"
       },
       {
         "id": "ul-qf4",
         "week": 16,
         "round": "Quarterfinal",
-        "homeSeed": 3,
-        "awaySeed": 6
+        "homeSeed": 4,
+        "awaySeed": 7,
+        "homeTeam": "Ruffing the Passer"
       },
       {
         "id": "ul-sf1",
         "week": 17,
         "round": "Semifinal",
         "homeFrom": "ul-qf1",
-        "awayFrom": "ul-qf2"
+        "awayFrom": "ul-qf2",
+        "homeTeam": null,
+        "awayTeam": null,
+        "homeSeed": null,
+        "awaySeed": null
       },
       {
         "id": "ul-sf2",
         "week": 17,
         "round": "Semifinal",
         "homeFrom": "ul-qf3",
-        "awayFrom": "ul-qf4"
+        "awayFrom": "ul-qf4",
+        "homeTeam": null,
+        "awayTeam": null,
+        "homeSeed": null,
+        "awaySeed": null
       },
       {
         "id": "ul-final",
         "week": 18,
         "round": "Championship",
         "homeFrom": "ul-sf1",
-        "awayFrom": "ul-sf2"
+        "awayFrom": "ul-sf2",
+        "homeTeam": null,
+        "awayTeam": null,
+        "homeSeed": null,
+        "awaySeed": null
       }
     ],
     "note": "Six regular-season non-playoff teams enter as seeds 1-6; the two Week 15 playoff losers enter as seeds 7-8. The lower-scoring team advances each round."

@@ -2,6 +2,12 @@
   "season": 2026,
   "currentWeek": 3,
   "awards": {
+    "prizePool": {
+      "raffleWinner": 100,
+      "firstPlace": 375,
+      "secondPlace": 225,
+      "thirdPlace": 100
+    },
     "highestScore": {
       "week": 1,
       "teamId": 10,
@@ -80,6 +86,53 @@
           "points": 2.1
         }
       ]
+    },
+    "negotiator": null,
+    "getALife": {
+      "teamId": 11,
+      "team": "Brock You Like a Hurricane",
+      "trades": 0,
+      "moves": 22
+    },
+    "heatingUp": {
+      "teamId": 6,
+      "team": "Claremont In Yo Stace!",
+      "slope": 60.86,
+      "weeks": [
+        1,
+        2
+      ],
+      "scores": [
+        107.66,
+        168.52
+      ]
+    },
+    "coolingOff": {
+      "teamId": 8,
+      "team": "Mr. Action Jackson",
+      "slope": -79.06,
+      "weeks": [
+        1,
+        2
+      ],
+      "scores": [
+        168.66,
+        89.6
+      ]
+    },
+    "luckBox": {
+      "actual": 2,
+      "expected": 1.1818181818181819,
+      "teamId": 6,
+      "team": "Claremont In Yo Stace!",
+      "luck": 0.8181818181818181
+    },
+    "unluckiest": {
+      "actual": 0,
+      "expected": 1.1818181818181819,
+      "teamId": 4,
+      "team": "Kirbo Crushers",
+      "luck": -1.1818181818181819
     }
   }
 }
