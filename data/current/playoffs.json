@@ -1,0 +1,151 @@
+{
+  "season": 2026,
+  "currentWeek": 3,
+  "playoffTeamCount": 6,
+  "playoffReseed": true,
+  "playoffSeedingRule": "TOTAL_POINTS_SCORED",
+  "status": "PROJECTED",
+  "seeds": [
+    {
+      "seed": 1,
+      "teamId": 10,
+      "team": "Gibb it to Me Baby",
+      "wins": 2,
+      "losses": 0,
+      "pointsFor": 313.62
+    },
+    {
+      "seed": 2,
+      "teamId": 5,
+      "team": "49er Faith-Fool",
+      "wins": 2,
+      "losses": 0,
+      "pointsFor": 308.66
+    },
+    {
+      "seed": 3,
+      "teamId": 11,
+      "team": "Brock You Like a Hurricane",
+      "wins": 2,
+      "losses": 0,
+      "pointsFor": 294.96
+    },
+    {
+      "seed": 4,
+      "teamId": 3,
+      "team": "Kyle Tucker",
+      "wins": 1,
+      "losses": 1,
+      "pointsFor": 284.78
+    },
+    {
+      "seed": 5,
+      "teamId": 6,
+      "team": "Claremont In Yo Stace!",
+      "wins": 2,
+      "losses": 0,
+      "pointsFor": 276.18
+    },
+    {
+      "seed": 6,
+      "teamId": 4,
+      "team": "Kirbo Crushers",
+      "wins": 0,
+      "losses": 2,
+      "pointsFor": 262.78
+    }
+  ],
+  "nonPlayoffTeams": [
+    {
+      "seed": 7,
+      "teamId": 8,
+      "team": "Mr. Action Jackson",
+      "wins": 1,
+      "losses": 1,
+      "pointsFor": 258.26
+    },
+    {
+      "seed": 8,
+      "teamId": 1,
+      "team": "Ramosverse",
+      "wins": 1,
+      "losses": 1,
+      "pointsFor": 249.6
+    },
+    {
+      "seed": 9,
+      "teamId": 7,
+      "team": "Ruffing the Passer",
+      "wins": 0,
+      "losses": 2,
+      "pointsFor": 246.64
+    },
+    {
+      "seed": 10,
+      "teamId": 9,
+      "team": "The Mahomies",
+      "wins": 1,
+      "losses": 1,
+      "pointsFor": 238.24
+    },
+    {
+      "seed": 11,
+      "teamId": 2,
+      "team": "TDsMaGee",
+      "wins": 0,
+      "losses": 2,
+      "pointsFor": 210.4
+    },
+    {
+      "seed": 12,
+      "teamId": 12,
+      "team": "Beautiful Dark Twisted Fantasy",
+      "wins": 0,
+      "losses": 2,
+      "pointsFor": 164.44
+    }
+  ],
+  "schedule": [
+    {
+      "id": "qf1",
+      "week": 15,
+      "round": "Quarterfinal",
+      "homeSeed": 3,
+      "awaySeed": 6,
+      "homeTeam": "Brock You Like a Hurricane",
+      "awayTeam": "Kirbo Crushers"
+    },
+    {
+      "id": "qf2",
+      "week": 15,
+      "round": "Quarterfinal",
+      "homeSeed": 4,
+      "awaySeed": 5,
+      "homeTeam": "Kyle Tucker",
+      "awayTeam": "Claremont In Yo Stace!"
+    },
+    {
+      "id": "sf1",
+      "week": 16,
+      "round": "Semifinal",
+      "homeSeed": 1,
+      "homeTeam": "Gibb it to Me Baby",
+      "awayTeam": "Lowest remaining seed"
+    },
+    {
+      "id": "sf2",
+      "week": 16,
+      "round": "Semifinal",
+      "homeSeed": 2,
+      "homeTeam": "49er Faith-Fool",
+      "awayTeam": "Other remaining seed"
+    },
+    {
+      "id": "final",
+      "week": 17,
+      "round": "Championship",
+      "homeTeam": "Semifinal Winner",
+      "awayTeam": "Semifinal Winner"
+    }
+  ]
+}
