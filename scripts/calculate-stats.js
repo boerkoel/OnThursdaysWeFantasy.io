@@ -53,16 +53,67 @@ for (const g of allLiveSchedules) {
   }
 }
 
+// ESPN's roster player stats include the weekly projected fantasy total
+// as appliedTotal. Sum those projections for active lineup slots (bench=20
+// excluded) so the scoreboard has a team-level ESPN projection even when
+// ESPN's totalProjectedPointsLive field is unavailable in the response.
+const espnProjectionByTeam = new Map();
+for (const g of boxscoreSchedule) {
+  for (const side of [g.home, g.away]) {
+    if (!side?.teamId) continue;
+    const projection = (side.rosterForCurrentScoringPeriod?.entries || [])
+      .filter(entry => Number(entry.lineupSlotId) !== 20)
+      .reduce((sum, entry) => {
+        const stats = entry.playerPoolEntry?.player?.stats || [];
+        const current = stats.find(s =>
+          Number(s.scoringPeriodId) === currentWeek &&
+          Number(s.statSourceId) === 1
+        );
+        return sum + Number(current?.appliedTotal ?? 0);
+      }, 0);
+    espnProjectionByTeam.set(side.teamId, round(projection));
+  }
+}
+
 const currentScores = currentWeekMatchups.flatMap(m => [
   { teamId:m.homeTeamId, opponentId:m.awayTeamId, score:liveByTeam.get(m.homeTeamId) ?? m.homeScore, opponentScore:liveByTeam.get(m.awayTeamId) ?? m.awayScore, matchupId:m.id },
   { teamId:m.awayTeamId, opponentId:m.homeTeamId, score:liveByTeam.get(m.awayTeamId) ?? m.awayScore, opponentScore:liveByTeam.get(m.homeTeamId) ?? m.homeScore, matchupId:m.id }
-]).map(x => ({...x, team:name(x.teamId), opponent:name(x.opponentId), logo:teams.get(x.teamId)?.logo || null,
-  status: currentWeekMatchups.find(m => m.id === x.matchupId)?.completed ? "FINAL" : "LIVE"}))
-.sort((a,b)=>b.score-a.score);
+]).map(x => ({
+  ...x,
+  team:name(x.teamId),
+  opponent:name(x.opponentId),
+  logo:teams.get(x.teamId)?.logo || null,
+  projection:{
+    espn:espnProjectionByTeam.get(x.teamId) ?? null,
+    sleeper:null,
+    fantasypros:null,
+    yahoo:null
+  },
+  projectionAverage:espnProjectionByTeam.get(x.teamId) ?? null,
+  status: currentWeekMatchups.find(m => m.id === x.matchupId)?.completed ? "FINAL" : "LIVE"
+})).sort((a,b)=>b.score-a.score);
+
 const median = currentScores.length % 2
   ? currentScores[Math.floor(currentScores.length / 2)].score
   : currentScores.length ? round((currentScores[currentScores.length / 2 - 1].score + currentScores[currentScores.length / 2].score) / 2) : null;
-const currentScoreboard = { week:currentWeek, scores:currentScores, median };
+
+const projectedValues = currentScores
+  .map(s => Number(s.projectionAverage))
+  .filter(Number.isFinite)
+  .sort((a,b)=>a-b);
+const projectedMedian = projectedValues.length % 2
+  ? projectedValues[Math.floor(projectedValues.length / 2)]
+  : projectedValues.length
+    ? round((projectedValues[projectedValues.length / 2 - 1] + projectedValues[projectedValues.length / 2]) / 2)
+    : null;
+
+const currentScoreboard = {
+  week:currentWeek,
+  scores:currentScores,
+  median,
+  projectedMedian,
+  projectionSources:["ESPN","Sleeper","FantasyPros","Yahoo"]
+};
 
 const standings = [...teams.values()].map(team => {
   const games=completed.filter(m=>m.homeTeamId===team.id||m.awayTeamId===team.id);
