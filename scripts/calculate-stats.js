@@ -80,6 +80,8 @@ const raffleTickets = [...teams.values()].map(team => ({
   winningWeeks: raffleWinners.filter(x => x.teamId === team.id).map(x => x.week)
 })).sort((a,b) => b.tickets - a.tickets || a.team.localeCompare(b.team));
 
+const prizePool = {raffleWinner:100,firstPlace:375,secondPlace:225,thirdPlace:100};
+
 const awards={prizePool,highestScore:scoreAward(highestScore),lowestScore:scoreAward(lowestScore),
   highestScoringLoser:scoreAward(highestScoringLoser),lowestScoringWinner:scoreAward(lowestScoringWinner),
   blowoutKing:matchupAward(blowout),
@@ -169,8 +171,6 @@ const playoffSchedule = [
   homeTeam:g.homeSeed?playoffSeedMap.get(g.homeSeed)?.name:null,
   awayTeam:g.awaySeed?playoffSeedMap.get(g.awaySeed)?.name:null
 }));
-
-const prizePool = {raffleWinner:100,firstPlace:375,secondPlace:225,thirdPlace:100};
 
 const week15Completed = matchups.filter(m=>m.week===15 && m.completed);
 const playoffLosers = week15Completed.map(m => {
