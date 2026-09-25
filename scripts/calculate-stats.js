@@ -327,13 +327,22 @@ const playoffLosers = week15Completed.map(m => {
   return {teamId:loserId,team:name(loserId),playoffSeed:loserSeed,week:15,opponentId:winnerId,opponent:name(winnerId)};
 }).filter(x=>x.teamId);
 
+const sortedNonPlayoffTeams = [...nonPlayoffTeams].sort((a,b)=>a.seed-b.seed);
+const sortedPlayoffLosers = [...playoffLosers].sort((a,b)=>(a.playoffSeed??99)-(b.playoffSeed??99));
+
+// The Ultimate Loser field is an 8-team bracket: the six regular-season
+// non-playoff teams are seeded first, followed by the two Week 15 playoff
+// losers. Until Week 15 is complete, those final two spots remain labeled.
 const ultimateEntrants = [
-  ...nonPlayoffTeams
-    .sort((a,b)=>b.seed-a.seed)
+  ...sortedNonPlayoffTeams
+    .slice(0,6)
     .map((t,i)=>({seed:i+1,teamId:t.id,team:t.name,source:"REGULAR_SEASON",regularSeasonSeed:t.seed,pointsFor:t.pointsFor})),
-  ...playoffLosers
-    .sort((a,b)=>(b.playoffSeed??0)-(a.playoffSeed??0))
-    .map((t,i)=>({seed:5+i,teamId:t.teamId,team:t.team,source:"WEEK_15_PLAYOFF_LOSER",playoffSeed:t.playoffSeed,opponent:t.opponent}))
+  sortedPlayoffLosers[0]
+    ? {seed:7,teamId:sortedPlayoffLosers[0].teamId,team:sortedPlayoffLosers[0].team,source:"WEEK_15_PLAYOFF_LOSER",playoffSeed:sortedPlayoffLosers[0].playoffSeed,opponent:sortedPlayoffLosers[0].opponent}
+    : {seed:7,teamId:null,team:"Highest ranked loser from Week 15 playoff matchup",source:"WEEK_15_PLAYOFF_LOSER",playoffSeed:null,opponent:null},
+  sortedPlayoffLosers[1]
+    ? {seed:8,teamId:sortedPlayoffLosers[1].teamId,team:sortedPlayoffLosers[1].team,source:"WEEK_15_PLAYOFF_LOSER",playoffSeed:sortedPlayoffLosers[1].playoffSeed,opponent:sortedPlayoffLosers[1].opponent}
+    : {seed:8,teamId:null,team:"Other Week 15 playoff loser",source:"WEEK_15_PLAYOFF_LOSER",playoffSeed:null,opponent:null}
 ];
 
 function completedUltimateLoserGame(teamAId, teamBId, week) {
@@ -367,10 +376,10 @@ function reseededPairs(teamsInRound) {
 }
 
 const ulRound16Pairs = [
-  {home:ultimateEntrants.find(t=>t.seed===1),away:ultimateEntrants.find(t=>t.seed===6)},
-  {home:ultimateEntrants.find(t=>t.seed===2),away:ultimateEntrants.find(t=>t.seed===5)},
-  {home:ultimateEntrants.find(t=>t.seed===3),away:ultimateEntrants.find(t=>t.seed===8)},
-  {home:ultimateEntrants.find(t=>t.seed===4),away:ultimateEntrants.find(t=>t.seed===7)}
+  {home:ultimateEntrants.find(t=>t.seed===1),away:ultimateEntrants.find(t=>t.seed===8)},
+  {home:ultimateEntrants.find(t=>t.seed===2),away:ultimateEntrants.find(t=>t.seed===7)},
+  {home:ultimateEntrants.find(t=>t.seed===3),away:ultimateEntrants.find(t=>t.seed===6)},
+  {home:ultimateEntrants.find(t=>t.seed===4),away:ultimateEntrants.find(t=>t.seed===5)}
 ].filter(p=>p.home && p.away);
 
 const ulRound16Results = ulRound16Pairs
@@ -424,7 +433,7 @@ const ultimateLoser = {
   entrants:ultimateEntrants,
   playoffLosers,
   schedule:ultimateLoserSchedule,
-  note:"Six regular-season non-playoff teams enter as seeds 1-6; the two Week 15 playoff losers enter as seeds 7-8. The lower-scoring team advances each round, and the remaining teams are reseeded highest-vs-lowest before the next round."
+  note:"Six regular-season non-playoff teams enter as seeds 1-6; the highest-ranked Week 15 playoff loser enters as seed 7 and the other Week 15 playoff loser enters as seed 8. The lower-scoring team advances each round, and the remaining teams are reseeded highest-vs-lowest before the next round."
 };
 
 const playoffs = {
