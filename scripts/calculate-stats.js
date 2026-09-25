@@ -82,11 +82,10 @@ const raffleTickets = [...teams.values()].map(team => ({
 
 const prizePool = {raffleWinner:100,firstPlace:375,secondPlace:225,thirdPlace:100};
 
-const awards={prizePool,highestScore:scoreAward(highestScore),lowestScore:scoreAward(lowestScore),
+const baseAwards={highestScore:scoreAward(highestScore),lowestScore:scoreAward(lowestScore),
   highestScoringLoser:scoreAward(highestScoringLoser),lowestScoringWinner:scoreAward(lowestScoringWinner),
   blowoutKing:matchupAward(blowout),
-  benchWarmerChampion:bench[0]?{week:currentWeek,teamId:bench[0].teamId,team:name(bench[0].teamId),points:bench[0].points,players:bench[0].players}:null,
-  ...newAwards};
+  benchWarmerChampion:bench[0]?{week:currentWeek,teamId:bench[0].teamId,team:name(bench[0].teamId),points:bench[0].points,players:bench[0].players}:null};
 
 const weeklyTeamScores = new Map();
 for (const row of rows) {
@@ -148,6 +147,7 @@ const newAwards={
   luckBox,
   unluckiest
 };
+const awards={prizePool,...baseAwards,...newAwards};
 
 await mkdir("data/current",{recursive:true});
 const playoffTeamCount = Number(settings.settings?.scheduleSettings?.playoffTeamCount || 6);
