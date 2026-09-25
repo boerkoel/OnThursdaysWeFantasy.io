@@ -57,11 +57,17 @@ function App() {
       </section>
 
       <section id="awards" className="section">
-        <div className="section-heading"><div><span className="section-kicker">THE GOOD STUFF</span><h2>League Awards</h2></div></div>
+        <div className="section-heading">
+          <div><span className="section-kicker">THE GOOD STUFF</span><h2>League Awards</h2></div>
+          <span className="record-count">THROUGH WEEK {awards.currentWeek}</span>
+        </div>
         <div className="award-grid">
-          <article><span>💔</span><small>HEARTBREAK AWARD</small><strong>{awards.highestScoringLoser?.team || "—"}</strong><p>{awards.highestScoringLoser ? `${money(awards.highestScoringLoser.score)} points in a loss` : "—"}</p></article>
-          <article><span>💥</span><small>BLOWOUT KING</small><strong>{awards.blowoutKing?.winner || "—"}</strong><p>{awards.blowoutKing ? `${money(awards.blowoutKing.margin)}-point margin` : "—"}</p></article>
-          <article><span>🪑</span><small>BENCH WARMER CHAMPION</small><strong>{awards.benchWarmerChampion?.team || "—"}</strong><p>{awards.benchWarmerChampion ? `${money(awards.benchWarmerChampion.points)} points on the bench` : "—"}</p></article>
+          <article className="award-card"><span>💔</span><small>HEARTBREAK AWARD</small><strong>{awards.awards?.highestScoringLoser?.team || "—"}</strong><p>{awards.awards?.highestScoringLoser ? `${money(awards.awards.highestScoringLoser.score)} points in a loss · Week ${awards.awards.highestScoringLoser.week}` : "—"}</p></article>
+          <article className="award-card"><span>💥</span><small>BLOWOUT KING</small><strong>{awards.awards?.blowoutKing?.winner || "—"}</strong><p>{awards.awards?.blowoutKing ? `${money(awards.awards.blowoutKing.margin)}-point margin · Week ${awards.awards.blowoutKing.week}` : "—"}</p></article>
+          <article className="award-card"><span>🪑</span><small>BENCH WARMER CHAMPION</small><strong>{awards.awards?.benchWarmerChampion?.team || "—"}</strong><p>{awards.awards?.benchWarmerChampion ? `${money(awards.awards.benchWarmerChampion.points)} points on the bench · Week ${awards.awards.benchWarmerChampion.week}` : "—"}</p></article>
+          <article className="award-card"><span>🔥</span><small>HIGHEST SCORE</small><strong>{awards.awards?.highestScore?.team || "—"}</strong><p>{awards.awards?.highestScore ? `${money(awards.awards.highestScore.score)} points · Week ${awards.awards.highestScore.week}` : "—"}</p></article>
+          <article className="award-card"><span>🫠</span><small>LOWEST SCORE</small><strong>{awards.awards?.lowestScore?.team || "—"}</strong><p>{awards.awards?.lowestScore ? `${money(awards.awards.lowestScore.score)} points · Week ${awards.awards.lowestScore.week}` : "—"}</p></article>
+          <article className="award-card"><span>🥴</span><small>BAD BEAT</small><strong>{awards.awards?.lowestScoringWinner?.team || "—"}</strong><p>{awards.awards?.lowestScoringWinner ? `${money(awards.awards.lowestScoringWinner.score)} points in a win · Week ${awards.awards.lowestScoringWinner.week}` : "—"}</p></article>
         </div>
       </section>
 
