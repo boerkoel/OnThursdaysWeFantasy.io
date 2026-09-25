@@ -243,3 +243,14 @@
 .bracket-final-label{display:block;color:#b8c69b;font-size:9px;font-weight:900;letter-spacing:.08em}
 .seed-row{grid-template-columns:42px minmax(0,1fr) 110px 80px}
 @media(max-width:700px){.bracket-game-wrap{gap:7px}.bracket-game-wrap .bracket-advance,.bracket-final-label{font-size:8px}.seed-row{grid-template-columns:32px minmax(0,1fr) 92px 65px;gap:8px}}
+
+
+/* Tighten Ultimate Loser advancement labels while separating consecutive matchups. */
+.bracket-round:first-child .bracket-game-wrap .bracket-game{margin-bottom:0}
+.bracket-game-wrap{gap:4px}
+.bracket-round:first-child .bracket-game-wrap{margin-bottom:16px}
+.bracket-round:first-child .bracket-game-wrap:last-child{margin-bottom:0}
+@media(max-width:700px){
+  .bracket-game-wrap{gap:3px}
+  .bracket-round:first-child .bracket-game-wrap{margin-bottom:12px}
+}
