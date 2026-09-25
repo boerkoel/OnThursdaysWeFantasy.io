@@ -78,14 +78,7 @@ function App() {
   const scores = scoreboard.scores || [];
   const median = scoreboard.median;
   const [scoreSort, setScoreSort] = useState("current");
-  const sortedScores = [...scores].sort((a, b) => {
-    const aProjection = Number(a.projectionAverage);
-    const bProjection = Number(b.projectionAverage);
-    if (Number.isFinite(aProjection) && Number.isFinite(bProjection)) return bProjection - aProjection;
-    if (Number.isFinite(aProjection)) return -1;
-    if (Number.isFinite(bProjection)) return 1;
-    return Number(b.score) - Number(a.score);
-  });
+  const sortedScores = [...scores].sort((a, b) => Number(b.score) - Number(a.score));
   const projectedSortScores = [...scores].sort((a, b) => {
     const aProjection = Number(a.projectionAverage);
     const bProjection = Number(b.projectionAverage);
