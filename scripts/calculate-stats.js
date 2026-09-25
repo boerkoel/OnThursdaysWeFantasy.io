@@ -6,6 +6,7 @@ const matchupData = await readJson("data/current/mMatchup.json");
 const rosterData = await readJson("data/current/mRoster.json");
 const liveScoringData = await readJson("data/current/mLiveScoring.json");
 const boxscoreData = await readJson("data/current/mBoxscore.json");
+const scoreboardData = await readJson("data/current/mScoreboard.json");
 
 const teams = new Map((teamData.teams || []).map(t => [t.id, { id:t.id, name:(t.name||"").trim(), abbrev:t.abbrev||"", logo:t.logo||null }]));
 const matchups = (matchupData.schedule || []).filter(m => m.home?.teamId && m.away?.teamId).map(m => ({
@@ -48,29 +49,47 @@ for (const g of allLiveSchedules) {
         ? playerTotal
         : Number.isFinite(reportedTotal)
           ? reportedTotal
-          : Number(side.cumulativeScore?.score ?? 0);
-    liveByTeam.set(side.teamId, liveScore);
-  }
-}
-
-// ESPN's roster player stats include the weekly projected fantasy total
-// as appliedTotal. Sum those projections for active lineup slots (bench=20
-// excluded) so the scoreboard has a team-level ESPN projection even when
-// ESPN's totalProjectedPointsLive field is unavailable in the response.
+          : Number(side.cumulativ// ESPN's mScoreboard/mLiveScoring responses expose the best live projection:
+// totalProjectedPointsLive = current score + projected remaining points.
+// Fall back to the weekly player projection when ESPN does not expose the
+// live team projection.
 const espnProjectionByTeam = new Map();
-for (const g of boxscoreSchedule) {
+
+const projectionSchedules = [
+  ...(scoreboardData.schedule || []),
+  ...(liveScoringData.schedule || []),
+  ...(boxscoreSchedule || [])
+].filter(g => Number(g.matchupPeriodId) === currentWeek);
+
+for (const g of projectionSchedules) {
   for (const side of [g.home, g.away]) {
     if (!side?.teamId) continue;
+
+    const liveProjection = Number(side.totalProjectedPointsLive);
+    if (Number.isFinite(liveProjection) && liveProjection > 0) {
+      espnProjectionByTeam.set(side.teamId, round(liveProjection));
+      continue;
+    }
+
     const projection = (side.rosterForCurrentScoringPeriod?.entries || [])
       .filter(entry => Number(entry.lineupSlotId) !== 20)
       .reduce((sum, entry) => {
         const stats = entry.playerPoolEntry?.player?.stats || [];
-        const current = stats.find(s =>
+        const weeklyProjection = stats.find(s =>
           Number(s.scoringPeriodId) === currentWeek &&
-          Number(s.statSourceId) === 1
+          Number(s.statSourceId) === 1 &&
+          Number(s.statSplitTypeId) === 1
         );
-        return sum + Number(current?.appliedTotal ?? 0);
+        return sum + Number(weeklyProjection?.appliedTotal ?? 0);
       }, 0);
+
+    if (projection > 0) {
+      espnProjectionByTeam.set(side.teamId, round(projection));
+    }
+  }
+}
+
+);
     espnProjectionByTeam.set(side.teamId, round(projection));
   }
 }
