@@ -316,7 +316,7 @@ function App() {
               const away = playoffs.ultimateLoser.entrants.find(s=>s.seed===g.awaySeed);
               return <div className="bracket-game" key={g.id}>
                 <div><small>{g.homeSeed >= 7 ? "TBD" : "#" + g.homeSeed}</small><strong>{home?.team || "TBD"}</strong></div>
-                <span className="bracket-vs">LOSER ADVANCES</span>
+                <span className="bracket-vs">VS.</span><small className="bracket-advance">LOSER ADVANCES</small>
                 <div><small>{g.awaySeed >= 7 ? "TBD" : "#" + g.awaySeed}</small><strong>{away?.team || "TBD"}</strong></div>
               </div>;
             })}
@@ -326,12 +326,12 @@ function App() {
             {playoffs.ultimateLoser?.schedule.filter(g=>g.round==="Semifinal").length
               ? playoffs.ultimateLoser.schedule.filter(g=>g.round==="Semifinal").map(g => <div className="bracket-game" key={g.id}>
                   <div><small>{g.reseeded ? "RESEEDED" : "QF"}</small><strong>{g.homeTeam || "QF Losers"}</strong></div>
-                  <span className="bracket-vs">LOSER ADVANCES</span>
+                  <span className="bracket-vs">VS.</span><small className="bracket-advance">LOSER ADVANCES</small>
                   <div><small>{g.reseeded ? "RESEEDED" : "QF"}</small><strong>{g.awayTeam || "QF Losers"}</strong></div>
                 </div>)
               : [1,2].map(i => <div className="bracket-game" key={`ul-sf-placeholder-${i}`}>
                   <div><small>RESEED</small><strong>QF Losers</strong></div>
-                  <span className="bracket-vs">LOSER ADVANCES</span>
+                  <span className="bracket-vs">VS.</span><small className="bracket-advance">LOSER ADVANCES</small>
                   <div><small>RESEED</small><strong>QF Losers</strong></div>
                 </div>)}
           </div>
@@ -339,7 +339,7 @@ function App() {
             <div className="bracket-round-title">WEEK 18 · ULTIMATE LOSER CHAMPIONSHIP</div>
             <div className="bracket-game championship-game">
               <div><small>FINALISTS</small><strong>SF Losers</strong></div>
-              <span className="bracket-vs">LOSER ADVANCES</span>
+              <span className="bracket-vs">VS.</span><small className="bracket-advance">LOSER ADVANCES</small>
               <div><small>FINALISTS</small><strong>SF Losers</strong></div>
             </div>
           </div>
