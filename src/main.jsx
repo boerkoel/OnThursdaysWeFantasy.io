@@ -93,7 +93,7 @@ function App() {
 
       <section className="hero-strip">
         <div><span className="section-kicker">2026 SEASON</span><h2>Week {scoreboard.week}</h2><p>{preGame ? "The Week is set. Scores will appear here once the games begin." : "The league is live. Here’s how everyone is doing."}</p></div>
-        <div className="hero-stat"><strong>{preGame ? "—" : money(median)}</strong><span>{preGame ? "Games not started" : "Current median score"}</span></div>
+        <div className="hero-stat"><strong>{scoreboard.projectedMedian != null ? money(scoreboard.projectedMedian) : "—"}</strong><span>Projected median</span></div>
       </section>
 
       <section id="scores" className="section">
@@ -105,9 +105,9 @@ function App() {
             const a = teams[0], b = teams[1];
             if (!a || !b) return null;
             return <article className="matchup" key={matchupId}>
-              <div className={a.score >= b.score ? "team winning" : "team"}><span>{a.team}</span><strong>{money(a.score)}</strong></div>
+              <div className={a.score >= b.score ? "team winning" : "team"}><span>{a.team}</span><strong>{money(a.score)}</strong><small>PROJ {a.projectionAverage != null ? money(a.projectionAverage) : "—"}</small></div>
               <div className="versus">vs</div>
-              <div className={b.score >= a.score ? "team winning" : "team"}><span>{b.team}</span><strong>{money(b.score)}</strong></div>
+              <div className={b.score >= a.score ? "team winning" : "team"}><span>{b.team}</span><strong>{money(b.score)}</strong><small>PROJ {b.projectionAverage != null ? money(b.projectionAverage) : "—"}</small></div>
             </article>;
           })}
         </div>
@@ -117,11 +117,11 @@ function App() {
         <div className="section-heading"><div><span className="section-kicker">MEDIAN SCORING</span><h2>Week {scoreboard.week} Scoreboard</h2></div></div>
         <div className="score-list">
           {scores.map((s, i) => <React.Fragment key={s.teamId}>
-            {i === Math.floor(scores.length / 2) && <div className="median-line"><span>MEDIAN {preGame ? "—" : money(median)}</span></div>}
-            <div className="score-row"><span className="rank">{i + 1}</span><span className="score-team">{s.team}{i === 0 && !preGame ? <em className="raffle-badge">🎟️ {currentWeekComplete ? "RAFFLE SPOT" : "CURRENT LEADER"}</em> : null}</span><span className="score-opponent">vs {s.opponent}</span><strong>{money(s.score)}</strong></div>
+            {i === Math.floor(scores.length / 2) && <div className="median-line"><span>MEDIAN {preGame ? "—" : money(median)}</span><span>PROJECTED MEDIAN {scoreboard.projectedMedian != null ? money(scoreboard.projectedMedian) : "—"}</span></div>}
+            <div className="score-row"><span className="rank">{i + 1}</span><span className="score-team">{s.team}{i === 0 && !preGame ? <em className="raffle-badge">🎟️ {currentWeekComplete ? "RAFFLE SPOT" : "CURRENT LEADER"}</em> : null}</span><span className="score-opponent">vs {s.opponent}</span><span className="score-projection">PROJ {s.projectionAverage != null ? money(s.projectionAverage) : "—"}</span><strong>{money(s.score)}</strong></div>
           </React.Fragment>)}
         </div>
-        <p className="median-note">{preGame ? "The median will appear once scoring begins. In your median-scoring format, six teams score above the median and six below it." : "The line marks the median of the 12 current scores. In your median-scoring format, six teams are above it and six are below it."}</p>
+        <p className="median-note">{preGame ? "Current scores will appear once scoring begins. The projected median is based on the average of available projection sources." : "The current median uses live scores. The projected median uses the average of available projection sources; additional sources will be added as their feeds are connected."}</p>
       </section>
 
       <section id="playoffs" className="section">
