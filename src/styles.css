@@ -205,3 +205,18 @@
   .bracket-round:nth-child(2){padding:24px 0}
   .bracket-vs{padding:0 5px;font-size:8px}
 }
+
+
+/* Keep each playoff round comfortably spaced within its own column. */
+.bracket{align-items:stretch}
+.bracket-round:first-child .bracket-game{margin-bottom:20px}
+.bracket-round:first-child .bracket-game:last-child{margin-bottom:0}
+.bracket-round:nth-child(2){justify-content:flex-start;padding:58px 0 0}
+.bracket-round:nth-child(2) .bracket-game{margin-bottom:72px}
+.bracket-round:nth-child(2) .bracket-game:last-child{margin-bottom:0}
+.bracket-vs{display:flex;align-items:center;justify-content:center;padding:0 7px;min-width:0;white-space:nowrap;line-height:1.3}
+@media(max-width:700px){
+  .bracket-round:first-child .bracket-game{margin-bottom:14px}
+  .bracket-round:nth-child(2){padding:30px 0 0}
+  .bracket-round:nth-child(2) .bracket-game{margin-bottom:38px}
+}
