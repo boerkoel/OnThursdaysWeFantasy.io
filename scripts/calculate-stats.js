@@ -336,6 +336,7 @@ const sortedPlayoffLosers = [...playoffLosers].sort((a,b)=>(a.playoffSeed??99)-(
 const ultimateEntrants = [
   ...sortedNonPlayoffTeams
     .slice(0,6)
+    .sort((a,b)=>b.seed-a.seed)
     .map((t,i)=>({seed:i+1,teamId:t.id,team:t.name,source:"REGULAR_SEASON",regularSeasonSeed:t.seed,pointsFor:t.pointsFor})),
   sortedPlayoffLosers[0]
     ? {seed:7,teamId:sortedPlayoffLosers[0].teamId,team:sortedPlayoffLosers[0].team,source:"WEEK_15_PLAYOFF_LOSER",playoffSeed:sortedPlayoffLosers[0].playoffSeed,opponent:sortedPlayoffLosers[0].opponent}
