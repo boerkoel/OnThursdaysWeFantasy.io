@@ -225,3 +225,9 @@
 /* When sorting by projected score, emphasize projection and mute actual score. */
 .team .score-value.projected-score{font-size:20px;font-weight:900}
 .score-primary{white-space:nowrap}.score-primary.projected-score{font-size:18px;font-weight:900}.score-projection{font-size:12px;color:#7f857d;white-space:nowrap}.score-primary.projected-score + .score-projection{font-size:11px;opacity:.7}
+
+/* Simplify Ultimate Loser bracket matchup labels and spacing. */
+.bracket-game{position:relative}
+.bracket-vs{font-size:10px;font-weight:900;letter-spacing:.08em}
+.bracket-advance{grid-column:1 / -1;display:block;margin-top:-8px;text-align:center;color:#8f978c;font-size:8px;font-weight:900;letter-spacing:.08em}
+@media(max-width:700px){.bracket-advance{font-size:7px}}
