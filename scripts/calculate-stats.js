@@ -4,7 +4,7 @@ const settings = await readJson("data/current/mSettings.json");
 const teamData = await readJson("data/current/mTeam.json");
 const matchupData = await readJson("data/current/mMatchup.json");
 const rosterData = await readJson("data/current/mRoster.json");
-const transactionData = await readJson("data/current/mTransactions.json");
+const liveScoringData = await readJson("data/current/mLiveScoring.json");
 
 const teams = new Map((teamData.teams || []).map(t => [t.id, { id:t.id, name:(t.name||"").trim(), abbrev:t.abbrev||"", logo:t.logo||null }]));
 const matchups = (matchupData.schedule || []).filter(m => m.home?.teamId && m.away?.teamId).map(m => ({
@@ -18,9 +18,18 @@ const currentWeek = Number(matchupData.scoringPeriodId || 1);
 const completedWeeks = [...new Set(completed.map(m=>m.week))].sort((a,b)=>a-b);
 
 const currentWeekMatchups = matchups.filter(m => m.week === currentWeek);
+const liveSchedule = liveScoringData.schedule || [];
+const liveByTeam = new Map();
+for (const g of liveSchedule) {
+  for (const side of [g.home, g.away]) {
+    if (!side?.teamId) continue;
+    const liveScore = Number(side.totalPointsLive ?? side.totalPoints ?? side.cumulativeScore?.score ?? 0);
+    liveByTeam.set(side.teamId, liveScore);
+  }
+}
 const currentScores = currentWeekMatchups.flatMap(m => [
-  { teamId:m.homeTeamId, opponentId:m.awayTeamId, score:m.homeScore, opponentScore:m.awayScore, matchupId:m.id },
-  { teamId:m.awayTeamId, opponentId:m.homeTeamId, score:m.awayScore, opponentScore:m.homeScore, matchupId:m.id }
+  { teamId:m.homeTeamId, opponentId:m.awayTeamId, score:liveByTeam.get(m.homeTeamId) ?? m.homeScore, opponentScore:liveByTeam.get(m.awayTeamId) ?? m.awayScore, matchupId:m.id },
+  { teamId:m.awayTeamId, opponentId:m.homeTeamId, score:liveByTeam.get(m.awayTeamId) ?? m.awayScore, opponentScore:liveByTeam.get(m.homeTeamId) ?? m.homeScore, matchupId:m.id }
 ]).map(x => ({...x, team:name(x.teamId), opponent:name(x.opponentId), logo:teams.get(x.teamId)?.logo || null,
   status: currentWeekMatchups.find(m => m.id === x.matchupId)?.completed ? "FINAL" : "LIVE"}))
 .sort((a,b)=>b.score-a.score);
@@ -120,17 +129,11 @@ const luckAwards=[...expected.entries()].map(([teamId,x])=>({...x,teamId,team:na
 const luckBox=maxBy(luckAwards,x=>x.luck);
 const unluckiest=minBy(luckAwards,x=>x.luck);
 
-const transactions=transactionData.transactions || transactionData.transactionItems || [];
 const activity=new Map([...teams.keys()].map(id=>[id,{teamId:id,team:name(id),trades:0,moves:0}]));
-for (const tx of transactions) {
-  const type=String(tx.type||tx.transactionType||"").toUpperCase();
-  const teamIds=[tx.teamId,tx.fromTeamId,tx.toTeamId,tx.memberId,tx.rosterForTeamId].map(Number).filter(Number.isFinite);
-  const unique=[...new Set(teamIds)];
-  for (const id of unique) {
-    if (!activity.has(id)) continue;
-    activity.get(id).moves += 1;
-    if (type.includes("TRADE")) activity.get(id).trades += 1;
-  }
+for (const t of (teamData.teams || [])) {
+  const c=t.transactionCounter || {};
+  if (!activity.has(t.id)) continue;
+  activity.set(t.id,{teamId:t.id,team:name(t.id),trades:Number(c.trades||0),moves:Number(c.acquisitions||0)+Number(c.drops||0)});
 }
 const negotiator=maxBy([...activity.values()],x=>x.trades);
 const getALife=maxBy([...activity.values()],x=>x.moves);
