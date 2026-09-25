@@ -7,6 +7,7 @@ import awards from "../data/current/awards.json";
 import raffle from "../data/current/raffle.json";
 import playoffs from "../data/current/playoffs.json";
 import teamsData from "../data/current/teams.json";
+import weekly from "../data/current/weekly.json";
 
 const money = (n) => Number(n).toFixed(2);
 
@@ -94,6 +95,13 @@ function App() {
   const currentWeekComplete = raffle.completedWeeks?.includes(scoreboard.week);
   const teamLogos = Object.fromEntries((teamsData.teams || []).map(t => [t.id, t.logo]));
   const totalRaffleTickets = (raffle.tickets || []).reduce((sum, t) => sum + Number(t.tickets || 0), 0);
+  const completedHistoryWeeks = weekly.weeks || [];
+  const [historyWeek, setHistoryWeek] = useState(completedHistoryWeeks.length ? completedHistoryWeeks[completedHistoryWeeks.length - 1].week : null);
+  const history = completedHistoryWeeks.find(w => w.week === historyWeek);
+  const historyMatchups = history?.matchups || [];
+  const historyScores = historyMatchups.flatMap(m => [Number(m.homeScore || 0), Number(m.awayScore || 0)]).sort((a, b) => a - b);
+  const historyAverage = historyScores.length ? historyScores.reduce((sum, score) => sum + score, 0) / historyScores.length : null;
+  const historyMedian = historyScores.length ? (historyScores.length % 2 ? historyScores[Math.floor(historyScores.length / 2)] : (historyScores[historyScores.length / 2 - 1] + historyScores[historyScores.length / 2]) / 2) : null;
 
   const projectedMedian = Number(scoreboard.projectedMedian);
   const projectedWithScores = scores.filter(s => Number.isFinite(Number(s.projectionAverage)) && Number.isFinite(projectedMedian));
@@ -115,7 +123,7 @@ function App() {
           <h1>On Thursdays We Fantasy</h1>
           <p className="subtitle">The Officially Unofficial League Record Book</p>
         </div>
-        <nav><a href="#scores">Scores</a><a href="#playoffs">Playoffs</a><a href="#ultimate-loser">Ultimate Loser</a><a href="#raffle">Raffle</a><a href="#standings">Standings</a><a href="#awards">Awards</a></nav>
+        <nav><a href="#scores">Scores</a><a href="#history">History</a><a href="#playoffs">Playoffs</a><a href="#ultimate-loser">Ultimate Loser</a><a href="#raffle">Raffle</a><a href="#standings">Standings</a><a href="#awards">Awards</a></nav>
       </header>
 
 <div className="data-timestamp">LAST REFRESHED <strong>{scoreboard.lastUpdated ? new Date(scoreboard.lastUpdated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "—"}</strong></div>
@@ -154,6 +162,35 @@ function App() {
           </React.Fragment>)}
         </div>
         <p className="median-note">{preGame ? "Current scores will appear once scoring begins. The projected median is based on ESPN’s projected final scores." : "The current median uses live scores. The projected median uses ESPN’s projected final scores."}</p>
+      </section>
+
+      <section id="history" className="section">
+        <div className="section-heading">
+          <div><span className="section-kicker">THE SEASON SO FAR</span><h2>Weekly History</h2></div>
+          <span className="record-count">{completedHistoryWeeks.length} WEEKS COMPLETE</span>
+        </div>
+        <div className="history-week-tabs" role="tablist" aria-label="Select completed week">
+          {completedHistoryWeeks.map(w => <button key={w.week} className={historyWeek === w.week ? "active" : ""} type="button" onClick={() => setHistoryWeek(w.week)}>WEEK {w.week}</button>)}
+        </div>
+        {history ? <>
+          <div className="history-summary">
+            <div><small>LEAGUE AVERAGE</small><strong>{money(historyAverage)}</strong></div>
+            <div><small>LEAGUE MEDIAN</small><strong>{money(historyMedian)}</strong></div>
+            <div><small>HIGH SCORE</small><strong>{history.highestScore ? money(history.highestScore.score) + " · " + history.highestScore.team : "—"}</strong></div>
+            <div><small>LARGEST BLOWOUT</small><strong>{history.largestBlowout ? money(history.largestBlowout.margin) + " pts" : "—"}</strong></div>
+          </div>
+          <div className="history-matchups">
+            {historyMatchups.map(m => {
+              const homeWon = m.winner === "HOME";
+              const awayWon = m.winner === "AWAY";
+              return <article className="history-matchup" key={m.id}>
+                <div className={homeWon ? "history-team winner" : "history-team"}><span><TeamLogo src={teamLogos[m.homeTeamId]} />{m.homeTeam}</span><strong>{money(m.homeScore)}</strong></div>
+                <span className="history-vs">FINAL</span>
+                <div className={awayWon ? "history-team winner" : "history-team"}><span><TeamLogo src={teamLogos[m.awayTeamId]} />{m.awayTeam}</span><strong>{money(m.awayScore)}</strong></div>
+              </article>;
+            })}
+          </div>
+        </> : <p className="median-note">No completed weeks yet.</p>}
       </section>
 
       <section id="playoffs" className="section">
