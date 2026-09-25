@@ -224,4 +224,4 @@
 
 /* When sorting by projected score, emphasize projection and mute actual score. */
 .team .score-value.projected-score{font-size:20px;font-weight:900}
-.team .score-value.actual-score-muted{font-size:12px;font-weight:600;color:#7f857d;opacity:.7}
+.score-primary{white-space:nowrap}.score-primary.projected-score{font-size:18px;font-weight:900}.score-projection{font-size:12px;color:#7f857d;white-space:nowrap}.score-primary.projected-score + .score-projection{font-size:11px;opacity:.7}
