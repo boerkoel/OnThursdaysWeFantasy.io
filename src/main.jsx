@@ -4,6 +4,7 @@ import "./styles.css";
 import scoreboard from "../data/current/scoreboard.json";
 import standingsData from "../data/current/standings.json";
 import awards from "../data/current/awards.json";
+import raffle from "../data/current/raffle.json";
 
 const money = (n) => Number(n).toFixed(2);
 
@@ -11,6 +12,7 @@ function App() {
   const scores = scoreboard.scores || [];
   const median = scoreboard.median;
   const preGame = scores.length > 0 && scores.every(s => Number(s.score) === 0 && Number(s.opponentScore) === 0);
+  const currentWeekComplete = raffle.completedWeeks?.includes(scoreboard.week);
 
   return (
     <main className="site">
@@ -20,7 +22,7 @@ function App() {
           <h1>On Thursdays We Fantasy</h1>
           <p className="subtitle">The Officially Unofficial League Record Book</p>
         </div>
-        <nav><a href="#scores">Scores</a><a href="#standings">Standings</a><a href="#awards">Awards</a></nav>
+        <nav><a href="#scores">Scores</a><a href="#raffle">Raffle</a><a href="#standings">Standings</a><a href="#awards">Awards</a></nav>
       </header>
 
       <section className="hero-strip">
@@ -50,7 +52,7 @@ function App() {
         <div className="score-list">
           {scores.map((s, i) => <React.Fragment key={s.teamId}>
             {i === Math.floor(scores.length / 2) && <div className="median-line"><span>MEDIAN {preGame ? "—" : money(median)}</span></div>}
-            <div className="score-row"><span className="rank">{i + 1}</span><span className="score-team">{s.team}</span><span className="score-opponent">vs {s.opponent}</span><strong>{money(s.score)}</strong></div>
+            <div className="score-row"><span className="rank">{i + 1}</span><span className="score-team">{s.team}{i === 0 && !preGame ? <em className="raffle-badge">🎟️ {currentWeekComplete ? "RAFFLE SPOT" : "CURRENT LEADER"}</em> : null}</span><span className="score-opponent">vs {s.opponent}</span><strong>{money(s.score)}</strong></div>
           </React.Fragment>)}
         </div>
         <p className="median-note">{preGame ? "The median will appear once scoring begins. In your median-scoring format, six teams score above the median and six below it." : "The line marks the median of the 12 current scores. In your median-scoring format, six teams are above it and six are below it."}</p>
@@ -68,6 +70,22 @@ function App() {
           <article className="award-card"><span>🔥</span><small>HIGHEST SCORE</small><strong>{awards.awards?.highestScore?.team || "—"}</strong><p>{awards.awards?.highestScore ? `${money(awards.awards.highestScore.score)} points · Week ${awards.awards.highestScore.week}` : "—"}</p></article>
           <article className="award-card"><span>🫠</span><small>LOWEST SCORE</small><strong>{awards.awards?.lowestScore?.team || "—"}</strong><p>{awards.awards?.lowestScore ? `${money(awards.awards.lowestScore.score)} points · Week ${awards.awards.lowestScore.week}` : "—"}</p></article>
           <article className="award-card"><span>🥴</span><small>BAD BEAT</small><strong>{awards.awards?.lowestScoringWinner?.team || "—"}</strong><p>{awards.awards?.lowestScoringWinner ? `${money(awards.awards.lowestScoringWinner.score)} points in a win · Week ${awards.awards.lowestScoringWinner.week}` : "—"}</p></article>
+        </div>
+      </section>
+
+      <section className="section" id="raffle">
+        <div className="section-heading">
+          <div><span className="section-kicker">SEASON RAFFLE</span><h2>Raffle Tickets</h2></div>
+          <span className="record-count">{raffle.completedWeeks?.length || 0} TICKET WEEKS COMPLETE</span>
+        </div>
+        <p className="raffle-intro">Each week's highest-scoring team earns one entry into the end-of-season prize raffle.</p>
+        <div className="raffle-board">
+          {raffle.tickets?.map((t, i) => <div className="raffle-row" key={t.teamId}>
+            <span className="rank">{i + 1}</span>
+            <span className="score-team">{t.team}</span>
+            <span className="raffle-weeks">{t.winningWeeks?.length ? ("Won Week" + (t.winningWeeks.length > 1 ? "s " : " ") + t.winningWeeks.join(", ")) : "No tickets yet"}</span>
+            <strong>{t.tickets} {t.tickets === 1 ? "ticket" : "tickets"}</strong>
+          </div>)}
         </div>
       </section>
 
