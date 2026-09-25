@@ -115,9 +115,9 @@ function App() {
             const a = teams[0], b = teams[1];
             if (!a || !b) return null;
             return <article className="matchup" key={matchupId}>
-              <div className={a.score >= b.score ? "team winning" : "team"}><span>{a.team}</span><strong>{money(a.score)}</strong><small>PROJ {a.projectionAverage != null ? money(a.projectionAverage) : "—"}</small></div>
+              <div className={a.score >= b.score ? "team winning" : "team"}><span>{a.team}</span><strong className={Number.isFinite(Number(a.projectionAverage)) && Number.isFinite(Number(scoreboard.projectedMedian)) ? (Number(a.projectionAverage) >= Number(scoreboard.projectedMedian) ? "projected-above" : "projected-below") : ""}>{money(a.score)}</strong><small>PROJ {a.projectionAverage != null ? money(a.projectionAverage) : "—"}</small></div>
               <div className="versus">vs</div>
-              <div className={b.score >= a.score ? "team winning" : "team"}><span>{b.team}</span><strong>{money(b.score)}</strong><small>PROJ {b.projectionAverage != null ? money(b.projectionAverage) : "—"}</small></div>
+              <div className={b.score >= a.score ? "team winning" : "team"}><span>{b.team}</span><strong className={Number.isFinite(Number(b.projectionAverage)) && Number.isFinite(Number(scoreboard.projectedMedian)) ? (Number(b.projectionAverage) >= Number(scoreboard.projectedMedian) ? "projected-above" : "projected-below") : ""}>{money(b.score)}</strong><small>PROJ {b.projectionAverage != null ? money(b.projectionAverage) : "—"}</small></div>
             </article>;
           })}
         </div>
