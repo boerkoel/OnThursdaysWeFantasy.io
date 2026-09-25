@@ -23,7 +23,7 @@ function App() {
           <h1>On Thursdays We Fantasy</h1>
           <p className="subtitle">The Officially Unofficial League Record Book</p>
         </div>
-        <nav><a href="#scores">Scores</a><a href="#playoffs">Playoffs</a><a href="#raffle">Raffle</a><a href="#standings">Standings</a><a href="#awards">Awards</a></nav>
+        <nav><a href="#scores">Scores</a><a href="#playoffs">Playoffs</a><a href="#ultimate-loser">Ultimate Loser</a><a href="#raffle">Raffle</a><a href="#standings">Standings</a><a href="#awards">Awards</a></nav>
       </header>
 
       <section className="hero-strip">
