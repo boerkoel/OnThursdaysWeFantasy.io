@@ -7,8 +7,9 @@ const rosterData = await readJson("data/current/mRoster.json");
 const liveScoringData = await readJson("data/current/mLiveScoring.json");
 const boxscoreData = await readJson("data/current/mBoxscore.json");
 const scoreboardData = await readJson("data/current/mScoreboard.json");
+const logoMap = await readJson("data/current/logo-map.json").catch(() => ({}));
 
-const teams = new Map((teamData.teams || []).map(t => [t.id, { id:t.id, name:(t.name||"").trim(), abbrev:t.abbrev||"", logo:t.logo||null }]));
+const teams = new Map((teamData.teams || []).map(t => [t.id, { id:t.id, name:(t.name||"").trim(), abbrev:t.abbrev||"", logo:logoMap[String(t.id)] || t.logo || null }]));
 const matchups = (matchupData.schedule || []).filter(m => m.home?.teamId && m.away?.teamId).map(m => ({
   id:m.id, week:m.matchupPeriodId, homeTeamId:m.home.teamId, awayTeamId:m.away.teamId,
   homeScore:Number(m.home.totalPoints||0), awayScore:Number(m.away.totalPoints||0),
