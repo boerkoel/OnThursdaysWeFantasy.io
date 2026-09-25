@@ -1,6 +1,8 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 
 const settings = await readJson("data/current/mSettings.json");
+const previousScoreboard = await readJson("data/current/scoreboard.json").catch(() => null);
+const previousProjectionHistory = previousScoreboard?.projectionHistory || [];
 const teamData = await readJson("data/current/mTeam.json");
 const matchupData = await readJson("data/current/mMatchup.json");
 const rosterData = await readJson("data/current/mRoster.json");
@@ -106,6 +108,42 @@ for (const g of projectionSchedules) {
   }
 }
 
+const previousProjections = new Map();
+for (const snapshot of previousProjectionHistory) {
+  for (const score of snapshot.scores || []) {
+    const projection = Number(score.projectionAverage ?? score.projection?.espn);
+    if (Number.isFinite(projection)) previousProjections.set(score.teamId, projection);
+  }
+}
+
+const currentProjectionSnapshot = {
+  timestamp: new Date().toISOString(),
+  week: currentWeek,
+  scores: [...espnProjectionByTeam.entries()].map(([teamId, projection]) => ({teamId, projection}))
+};
+const projectionHistory = [
+  ...previousProjectionHistory.filter(snapshot => Number(snapshot.week) === currentWeek),
+  currentProjectionSnapshot
+].slice(-4);
+
+const priorThreeSnapshots = projectionHistory.slice(0, -1).slice(-3);
+const recentProjectionAverage = new Map();
+for (const teamId of teams.keys()) {
+  const values = priorThreeSnapshots
+    .map(snapshot => (snapshot.scores || []).find(s => s.teamId === teamId)?.projection)
+    .map(Number)
+    .filter(Number.isFinite);
+  if (values.length) recentProjectionAverage.set(teamId, values.reduce((sum, value) => sum + value, 0) / values.length);
+}
+
+const projectionTrend = (teamId, projection) => {
+  const baseline = recentProjectionAverage.get(teamId);
+  if (!Number.isFinite(projection) || !Number.isFinite(baseline)) return null;
+  const delta = projection - baseline;
+  if (Math.abs(delta) < 0.25) return null;
+  return delta > 0 ? "up" : "down";
+};
+
 const currentScores = currentWeekMatchups.flatMap(m => [
   { teamId:m.homeTeamId, opponentId:m.awayTeamId, score:liveByTeam.get(m.homeTeamId) ?? m.homeScore, opponentScore:liveByTeam.get(m.awayTeamId) ?? m.awayScore, matchupId:m.id },
   { teamId:m.awayTeamId, opponentId:m.homeTeamId, score:liveByTeam.get(m.awayTeamId) ?? m.awayScore, opponentScore:liveByTeam.get(m.homeTeamId) ?? m.homeScore, matchupId:m.id }
@@ -118,6 +156,7 @@ const currentScores = currentWeekMatchups.flatMap(m => [
     espn:espnProjectionByTeam.get(x.teamId) ?? null
   },
   projectionAverage:espnProjectionByTeam.get(x.teamId) ?? null,
+  projectionTrend:projectionTrend(x.teamId, espnProjectionByTeam.get(x.teamId)),
   status: currentWeekMatchups.find(m => m.id === x.matchupId)?.completed ? "FINAL" : "LIVE"
 })).sort((a,b)=>b.score-a.score);
 
@@ -141,7 +180,8 @@ const currentScoreboard = {
   scores:currentScores,
   median,
   projectedMedian,
-  projectionSources:["ESPN"]
+  projectionSources:["ESPN"],
+  projectionHistory
 };
 
 const standings = [...teams.values()].map(team => {
