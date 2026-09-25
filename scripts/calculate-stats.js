@@ -6,6 +6,7 @@ const previousProjectionHistory = previousScoreboard?.projectionHistory || [];
 const teamData = await readJson("data/current/mTeam.json");
 const matchupData = await readJson("data/current/mMatchup.json");
 const rosterData = await readJson("data/current/mRoster.json");
+const draftData = await readJson("data/current/mDraftDetail.json").catch(() => ({draftDetail:{picks:[]}}));
 const liveScoringData = await readJson("data/current/mLiveScoring.json");
 const boxscoreData = await readJson("data/current/mBoxscore.json");
 const scoreboardData = await readJson("data/current/mScoreboard.json");
@@ -384,7 +385,83 @@ await writeJson("data/current/scoreboard.json",currentScoreboard);
 await writeJson("data/current/awards.json",{season:settings.seasonId,currentWeek,awards});
 await writeJson("data/current/leaders.json",{season:settings.seasonId,currentWeek,leaders:{highestScore:scoreAward(highestScore),lowestScore:scoreAward(lowestScore),highestScoringLoser:scoreAward(highestScoringLoser),lowestScoringWinner:scoreAward(lowestScoringWinner),largestBlowout:matchupAward(blowout)}});
 await writeJson("data/current/weekly.json",{season:settings.seasonId,currentWeek,weeks:completedWeeks.map(week=>({week,matchups:completed.filter(m=>m.week===week),highestScore:scoreAward(maxBy(rows.filter(x=>x.week===week),x=>x.score)),largestBlowout:matchupAward(maxBy(completed.filter(m=>m.week===week),x=>x.margin))}))});
-await writeJson("data/current/teams.json",{season:settings.seasonId,currentWeek,teams:[...teams.values()].map(t=>({...t,standings:standings.find(s=>s.id===t.id)||null,weeklyResults:completed.filter(m=>m.homeTeamId===t.id||m.awayTeamId===t.id).map(m=>({week:m.week,opponentId:m.homeTeamId===t.id?m.awayTeamId:m.homeTeamId,opponent:name(m.homeTeamId===t.id?m.awayTeamId:m.homeTeamId),score:m.homeTeamId===t.id?m.homeScore:m.awayScore,opponentScore:m.homeTeamId===t.id?m.awayScore:m.homeScore,result:(m.homeTeamId===t.id?m.winner==="HOME":m.winner==="AWAY")?"W":"L"}))}))});
+const draftPicks = draftData?.draftDetail?.picks || [];
+const draftByPlayer = new Map(draftPicks.map(p => [Number(p.playerId), p]));
+
+function playerSeasonPoints(entry) {
+  const stats = entry.playerPoolEntry?.player?.stats || [];
+  const historical = stats
+    .filter(s => Number(s.statSourceId) === 0 && Number(s.statSplitTypeId) === 1 && Number(s.scoringPeriodId) <= currentWeek)
+    .map(s => Number(s.appliedTotal))
+    .filter(Number.isFinite);
+  if (historical.length) return round(historical.reduce((sum, value) => sum + value, 0));
+  return round(Number(entry.playerPoolEntry?.appliedStatTotal || 0));
+}
+
+function playerWeeklyScores(entry) {
+  const stats = entry.playerPoolEntry?.player?.stats || [];
+  return stats
+    .filter(s => Number(s.statSourceId) === 0 && Number(s.statSplitTypeId) === 1 && Number(s.scoringPeriodId) <= currentWeek)
+    .map(s => ({week:Number(s.scoringPeriodId), score:Number(s.appliedTotal)}))
+    .filter(s => Number.isFinite(s.score) && completedWeeks.includes(s.week));
+}
+
+const allRosterPlayers = (rosterData.teams || []).flatMap(team =>
+  (team.roster?.entries || []).map(entry => ({
+    teamId:team.id,
+    playerId:Number(entry.playerId),
+    name:entry.playerPoolEntry?.player?.fullName || `Player #${entry.playerId}`,
+    position:entry.playerPoolEntry?.player?.defaultPositionId || null,
+    points:playerSeasonPoints(entry),
+    weekly:playerWeeklyScores(entry),
+    draft:draftByPlayer.get(Number(entry.playerId)) || null
+  }))
+);
+
+const rankedPlayers = [...allRosterPlayers]
+  .sort((a,b)=>b.points-a.points)
+  .map((player,index)=>({...player,seasonRank:index+1}));
+
+function stddev(values) {
+  if (values.length < 2) return null;
+  const mean = values.reduce((sum,v)=>sum+v,0) / values.length;
+  return Math.sqrt(values.reduce((sum,v)=>sum+(v-mean)**2,0) / values.length);
+}
+
+const playerAwardsByTeam = new Map();
+
+for (const team of teams.values()) {
+  const players = rankedPlayers.filter(p => p.teamId === team.id);
+  const drafted = players.filter(p => p.draft && Number(p.draft.overallPickNumber) > 0);
+  const withValue = drafted.map(p => ({
+    ...p,
+    draftPick:Number(p.draft.overallPickNumber),
+    round:Number(p.draft.roundId || 0),
+    valueGap:Number(p.draft.overallPickNumber) - p.seasonRank
+  }));
+  const bestValue = maxBy(withValue, p => p.valueGap);
+  const worstValue = minBy(withValue, p => p.valueGap);
+  const mvp = maxBy(players, p => p.points);
+  const boom = maxBy(players.flatMap(p => p.weekly.map(w => ({...p,week:w.week,weekScore:w.score}))), p => p.weekScore);
+  const consistentCandidates = players
+    .map(p => ({...p,variance:stddev(p.weekly.map(w=>w.score))}))
+    .filter(p => Number.isFinite(p.variance));
+  const mostConsistent = minBy(consistentCandidates, p => p.variance);
+  const lateRound = maxBy(withValue.filter(p => p.round >= 8), p => p.valueGap);
+  const boomBust = maxBy(players.map(p => ({...p,range:p.weekly.length>1 ? Math.max(...p.weekly.map(w=>w.score))-Math.min(...p.weekly.map(w=>w.score)) : 0})), p => p.range);
+
+  playerAwardsByTeam.set(team.id, {
+    mvp:mvp ? {playerId:mvp.playerId,player:mvp.name,position:mvp.position,points:mvp.points,seasonRank:mvp.seasonRank} : null,
+    bestDraftValue:bestValue ? {playerId:bestValue.playerId,player:bestValue.name,points:bestValue.points,seasonRank:bestValue.seasonRank,draftPick:bestValue.draftPick,round:bestValue.round,valueGap:bestValue.valueGap} : null,
+    worstDraftValue:worstValue ? {playerId:worstValue.playerId,player:worstValue.name,points:worstValue.points,seasonRank:worstValue.seasonRank,draftPick:worstValue.draftPick,round:worstValue.round,valueGap:worstValue.valueGap} : null,
+    boomMachine:boom ? {playerId:boom.playerId,player:boom.name,week:boom.week,score:round(boom.weekScore)} : null,
+    mostConsistent:mostConsistent ? {playerId:mostConsistent.playerId,player:mostConsistent.name,variance:round(mostConsistent.variance)} : null,
+    lateRoundWizard:lateRound ? {playerId:lateRound.playerId,player:lateRound.name,round:lateRound.round,draftPick:lateRound.draftPick,valueGap:lateRound.valueGap,points:lateRound.points} : null,
+    boomBust:boomBust ? {playerId:boomBust.playerId,player:boomBust.name,range:round(boomBust.range)} : null
+  });
+}
+
+await writeJson("data/current/teams.json",{season:settings.seasonId,currentWeek,teams:[...teams.values()].map(t=>({...t,standings:standings.find(s=>s.id===t.id)||null,weeklyResults:completed.filter(m=>m.homeTeamId===t.id||m.awayTeamId===t.id).map(m=>({week:m.week,opponentId:m.homeTeamId===t.id?m.awayTeamId:m.homeTeamId,opponent:name(m.homeTeamId===t.id?m.awayTeamId:m.homeTeamId),score:m.homeTeamId===t.id?m.homeScore:m.awayScore,opponentScore:m.homeTeamId===t.id?m.awayScore:m.homeScore,result:(m.homeTeamId===t.id?m.winner==="HOME":m.winner==="AWAY")?"W":"L"})),playerAwards:playerAwardsByTeam.get(t.id)||null}))});
 
 function name(id){return teams.get(id)?.name||"Team "+id}
 function streak(id){const gs=completed.filter(m=>m.homeTeamId===id||m.awayTeamId===id).sort((a,b)=>a.week-b.week);if(!gs.length)return{type:"NONE",length:0};const last=gs[gs.length-1],type=(last.homeTeamId===id?last.winner==="HOME":last.winner==="AWAY")?"W":"L";let length=0;for(let i=gs.length-1;i>=0;i--){const g=gs[i],t=(g.homeTeamId===id?g.winner==="HOME":g.winner==="AWAY")?"W":"L";if(t!==type)break;length++}return{type,length}}
