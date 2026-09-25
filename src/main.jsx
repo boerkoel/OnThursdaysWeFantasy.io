@@ -72,9 +72,9 @@ function App() {
               const home = playoffs.seeds.find(s=>s.seed===g.homeSeed);
               const away = playoffs.seeds.find(s=>s.seed===g.awaySeed);
               return <div className="bracket-game" key={g.id}>
-                <div><small>#{g.homeSeed}</small><strong>{home?.team || "TBD"}</strong></div>
+                <div><small>{home ? "#" + home.regularSeasonSeed : "TBD"}</small><strong>{home?.team || "TBD"}</strong></div>
                 <span>vs</span>
-                <div><small>#{g.awaySeed}</small><strong>{away?.team || "TBD"}</strong></div>
+                <div><small>{away ? "#" + away.regularSeasonSeed : "TBD"}</small><strong>{away?.team || "TBD"}</strong></div>
               </div>;
             })}
           </div>
@@ -96,7 +96,7 @@ function App() {
           </div>
         </div>
         <div className="seed-board">
-          {playoffs.seeds.map(s => <div className="seed-row" key={s.seed}><span>#{s.seed}</span><strong>{s.team}</strong><span>{s.wins}-{s.losses}</span><span>{money(s.pointsFor)} PF</span>{s.seed<=2 ? <em>BYE</em> : null}</div>)}
+          {playoffs.seeds.map(s => <div className="seed-row" key={s.seed}><span>#{s.regularSeasonSeed || s.playoffSeed}</span><strong>{s.team}</strong><span>{s.wins}-{s.losses}</span><span>{money(s.pointsFor)} PF</span>{s.seed<=2 ? <em>BYE</em> : null}</div>)}
         </div>
       </section>
 
