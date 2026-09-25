@@ -22,3 +22,50 @@
   .championship-game{margin-top:0}
   .seed-row{grid-template-columns:35px 1fr 48px 70px auto}
 }
+
+.team-cards-intro{margin:-4px 0 18px;color:#999c94;font-size:13px;line-height:1.5}
+.team-card-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.team-card{appearance:none;text-align:left;width:100%;padding:0;border:1px solid #30332d;border-radius:18px;background:linear-gradient(145deg,#1a1c18,#121310);color:#f7f7f2;cursor:pointer;overflow:hidden;transition:transform .18s ease,border-color .18s ease,background .18s ease}
+.team-card:hover,.team-card.selected{transform:translateY(-3px);border-color:#667052;background:linear-gradient(145deg,#22261e,#151713)}
+.card-top{display:flex;justify-content:space-between;padding:13px 14px 0;color:#777a72;font-size:9px;font-weight:800;letter-spacing:.1em}
+.card-season{color:#555850}
+.card-logo-wrap{height:92px;display:flex;align-items:center;justify-content:center;padding:12px}
+.team-logo{width:70px;height:70px;object-fit:contain;filter:drop-shadow(0 5px 8px #0008)}
+.team-card h3{min-height:40px;margin:2px 14px 5px;font-size:15px;line-height:1.15;letter-spacing:-.02em}
+.card-record{margin:0 14px;color:#b8c69b;font-size:13px;font-weight:800}
+.card-record span{color:#555850;margin:0 3px}
+.card-stats{display:grid;grid-template-columns:repeat(3,1fr);margin:15px 14px 0;border-top:1px solid #292c27;padding-top:11px}
+.card-stats span{display:flex;flex-direction:column;gap:3px}
+.card-stats small{color:#666960;font-size:8px;font-weight:800;letter-spacing:.08em}
+.card-stats strong{font-size:12px}
+.card-footer{display:flex;justify-content:space-between;margin-top:15px;padding:10px 14px;border-top:1px solid #292c27;color:#777a72;font-size:9px;font-weight:800;letter-spacing:.08em}
+.team-card.selected .card-footer{color:#b8c69b}
+.team-profile{margin-top:14px;border:1px solid #4a533e;border-radius:20px;background:radial-gradient(circle at top right,#252b20,#151713 55%);overflow:hidden}
+.profile-header{display:flex;justify-content:space-between;gap:20px;padding:24px}
+.profile-identity{display:flex;gap:18px;align-items:center}
+.profile-logo-wrap{width:88px;height:88px;display:flex;align-items:center;justify-content:center;border:1px solid #343a2f;border-radius:16px;background:#0e100d}
+.profile-logo{width:70px;height:70px;object-fit:contain}
+.profile-identity h3{margin:2px 0 5px;font-size:28px;letter-spacing:-.04em}
+.profile-identity p{margin:0;color:#999c94;font-size:12px}
+.profile-close{border:1px solid #34372f;background:#ffffff05;color:#999c94;border-radius:999px;width:32px;height:32px;font-size:22px;line-height:1;cursor:pointer}
+.profile-metrics{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #292c27;border-bottom:1px solid #292c27}
+.profile-metrics div{padding:15px 20px;border-right:1px solid #292c27}
+.profile-metrics div:last-child{border-right:0}
+.profile-metrics small{display:block;color:#666960;font-size:9px;font-weight:800;letter-spacing:.1em}
+.profile-metrics strong{display:block;margin-top:4px;font-size:20px}
+.profile-history{padding:20px 24px}
+.profile-history-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.profile-history-heading strong{font-size:13px}
+.profile-week{display:grid;grid-template-columns:55px 1fr auto;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #242620}
+.profile-week:last-child{border-bottom:0}
+.profile-week>strong{font-size:14px}
+.profile-week div{display:flex;align-items:center;gap:10px}
+.profile-week div strong{font-size:11px;width:20px}
+.profile-week div span{color:#999c94;font-size:12px}
+.profile-week.win div strong{color:#b8c69b}
+.profile-week.loss div strong{color:#999c94}
+.week-number{color:#666960;font-size:10px;font-weight:800;letter-spacing:.08em}
+.profile-empty{color:#777a72;font-size:12px}
+@media(max-width:1000px){.team-card-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:800px){.team-card-grid{grid-template-columns:repeat(2,1fr)}.profile-metrics{grid-template-columns:repeat(2,1fr)}.profile-metrics div:nth-child(2){border-right:0}.profile-metrics div:nth-child(-n+2){border-bottom:1px solid #292c27}.profile-header{padding:18px}.profile-identity h3{font-size:22px}.profile-history{padding:18px}}
+@media(max-width:520px){.team-card-grid{grid-template-columns:1fr}.profile-week{grid-template-columns:42px 1fr auto}.profile-week div{display:block}.profile-week div span{display:block;margin-top:2px}.profile-logo-wrap{width:68px;height:68px}.profile-logo{width:54px;height:54px}}
