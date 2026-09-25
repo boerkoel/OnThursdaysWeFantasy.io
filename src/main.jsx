@@ -77,6 +77,14 @@ function TeamCards({ teams }) {
 function App() {
   const scores = scoreboard.scores || [];
   const median = scoreboard.median;
+  const projectedScores = [...scores].sort((a, b) => {
+    const aProjection = Number(a.projectionAverage);
+    const bProjection = Number(b.projectionAverage);
+    if (Number.isFinite(aProjection) && Number.isFinite(bProjection)) return bProjection - aProjection;
+    if (Number.isFinite(aProjection)) return -1;
+    if (Number.isFinite(bProjection)) return 1;
+    return Number(b.score) - Number(a.score);
+  });
   const preGame = scores.length > 0 && scores.every(s => Number(s.score) === 0 && Number(s.opponentScore) === 0);
   const currentWeekComplete = raffle.completedWeeks?.includes(scoreboard.week);
 
@@ -115,12 +123,12 @@ function App() {
       <section id="standings" className="section">
         <div className="section-heading"><div><span className="section-kicker">MEDIAN SCORING</span><h2>Week {scoreboard.week} Scoreboard</h2></div></div>
         <div className="score-list">
-          {scores.map((s, i) => <React.Fragment key={s.teamId}>
+          {projectedScores.map((s, i) => <React.Fragment key={s.teamId}>
             {i === Math.floor(scores.length / 2) && <div className="median-line"><span>MEDIAN {preGame ? "—" : money(median)}</span><span>PROJECTED MEDIAN {scoreboard.projectedMedian != null ? money(scoreboard.projectedMedian) : "—"}</span></div>}
             <div className="score-row"><span className="rank">{i + 1}</span><span className="score-team">{s.team}{i === 0 && !preGame ? <em className="raffle-badge">🎟️ {currentWeekComplete ? "RAFFLE SPOT" : "CURRENT LEADER"}</em> : null}</span><span className="score-opponent">vs {s.opponent}</span><span className="score-projection">PROJ {s.projectionAverage != null ? money(s.projectionAverage) : "—"}</span><strong>{money(s.score)}</strong></div>
           </React.Fragment>)}
         </div>
-        <p className="median-note">{preGame ? "Current scores will appear once scoring begins. The projected median is based on the average of available projection sources." : "The current median uses live scores. The projected median uses the average of available projection sources; additional sources will be added as their feeds are connected."}</p>
+        <p className="median-note">{preGame ? "Current scores will appear once scoring begins. The projected median is based on the average of available projection sources." : "The current median uses live scores. The projected median uses ESPN’s projected final scores."}</p>
       </section>
 
       <section id="playoffs" className="section">
