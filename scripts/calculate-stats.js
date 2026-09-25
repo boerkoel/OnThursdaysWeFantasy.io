@@ -32,27 +32,35 @@ const liveByTeam = new Map();
 for (const g of allLiveSchedules) {
   for (const side of [g.home, g.away]) {
     if (!side?.teamId) continue;
-    // ESPN's boxscore currently reports totalPoints=0 while games are live,
-    // but the roster entries contain the live player scores. Sum active lineup
-    // slots (exclude bench slot 20) as the fallback live score.
+
+    // ESPN's boxscore can report totalPoints=0 while games are live,
+    // while the roster entries contain the actual live player scores.
     const playerTotal = (side.rosterForCurrentScoringPeriod?.entries || [])
       .filter(entry => Number(entry.lineupSlotId) !== 20)
       .reduce(
         (sum, entry) => sum + Number(entry.playerPoolEntry?.appliedStatTotal ?? 0),
         0
       );
+
     const reportedLive = Number(side.totalPointsLive);
     const reportedTotal = Number(side.totalPoints);
+    const fallbackScore = Number(side.cumulativeScore?.score ?? 0);
+
     const liveScore = Number.isFinite(reportedLive) && reportedLive > 0
       ? reportedLive
       : playerTotal > 0
         ? playerTotal
         : Number.isFinite(reportedTotal)
           ? reportedTotal
-          : Number(side.cumulativ// ESPN's mScoreboard/mLiveScoring responses expose the best live projection:
-// totalProjectedPointsLive = current score + projected remaining points.
-// Fall back to the weekly player projection when ESPN does not expose the
-// live team projection.
+          : fallbackScore;
+
+    liveByTeam.set(side.teamId, liveScore);
+  }
+}
+
+// ESPN can expose totalProjectedPointsLive directly. When it does not,
+// calculate the ESPN weekly projection by summing active roster players'
+// projected appliedTotal values (statSourceId 1).
 const espnProjectionByTeam = new Map();
 
 const projectionSchedules = [
@@ -83,14 +91,11 @@ for (const g of projectionSchedules) {
         return sum + Number(weeklyProjection?.appliedTotal ?? 0);
       }, 0);
 
-    if (projection > 0) {
+    // Do not let a later ESPN response overwrite a valid projection
+    // with a weaker fallback from another view.
+    if (!espnProjectionByTeam.has(side.teamId) && projection > 0) {
       espnProjectionByTeam.set(side.teamId, round(projection));
     }
-  }
-}
-
-);
-    espnProjectionByTeam.set(side.teamId, round(projection));
   }
 }
 
@@ -103,10 +108,7 @@ const currentScores = currentWeekMatchups.flatMap(m => [
   opponent:name(x.opponentId),
   logo:teams.get(x.teamId)?.logo || null,
   projection:{
-    espn:espnProjectionByTeam.get(x.teamId) ?? null,
-    sleeper:null,
-    fantasypros:null,
-    yahoo:null
+    espn:espnProjectionByTeam.get(x.teamId) ?? null
   },
   projectionAverage:espnProjectionByTeam.get(x.teamId) ?? null,
   status: currentWeekMatchups.find(m => m.id === x.matchupId)?.completed ? "FINAL" : "LIVE"
@@ -131,7 +133,7 @@ const currentScoreboard = {
   scores:currentScores,
   median,
   projectedMedian,
-  projectionSources:["ESPN","Sleeper","FantasyPros","Yahoo"]
+  projectionSources:["ESPN"]
 };
 
 const standings = [...teams.values()].map(team => {
