@@ -64,33 +64,60 @@ function TeamCards({ teams }) {
     </article>
   );
 
+  const renderCard = (team, i) => {
+    const s = team.standings || {};
+    const avg = s.games ? s.pointsFor / s.games : 0;
+    return (
+      <div className="team-card-item" key={team.id}>
+        <button className={selectedId === team.id ? "team-card selected" : "team-card"} type="button" aria-expanded={selectedId === team.id} onClick={() => setSelectedId(selectedId === team.id ? null : team.id)}>
+          <div className="card-top"><span className="card-rank">#{i + 1}</span><span className="card-season">2026</span></div>
+          <div className="card-logo-wrap"><img src={team.logo} alt="" className="team-logo" /></div>
+          <h3>{team.name.trim()}</h3>
+          <div className="card-record">{s.wins}-{s.losses} <span>·</span> {money(avg)} PPG</div>
+          <div className="card-stats">
+            <span><small>PF</small><strong>{money(s.pointsFor)}</strong></span>
+            <span><small>PA</small><strong>{money(s.pointsAgainst)}</strong></span>
+            <span><small>STREAK</small><strong>{s.streak?.length ? s.streak.type + s.streak.length : "—"}</strong></span>
+          </div>
+          <div className="card-footer"><span>{selectedId === team.id ? "CLOSE PROFILE" : "VIEW PROFILE"}</span><span>↗</span></div>
+        </button>
+        {selectedId === team.id ? <div className="mobile-profile"><Profile team={team} /></div> : null}
+      </div>
+    );
+  };
+
+  const renderDesktopRows = (columns, className) => {
+    const rows = [];
+    for (let i = 0; i < teams.length; i += columns) {
+      const rowTeams = teams.slice(i, i + columns);
+      rows.push(
+        <div className="team-card-row" key={i}>
+          <div className={className}>
+            {rowTeams.map((team, offset) => renderCard(team, i + offset))}
+          </div>
+          {selected && rowTeams.some(team => team.id === selectedId) ? <Profile team={selected} /> : null}
+        </div>
+      );
+    }
+    return rows;
+  };
+
   return (
     <>
-      <div className="team-card-grid">
-        {teams.map((team, i) => {
-          const s = team.standings || {};
-          const avg = s.games ? s.pointsFor / s.games : 0;
-          return (
-            <div className="team-card-item" key={team.id}>
-              <button className={selectedId === team.id ? "team-card selected" : "team-card"} type="button" aria-expanded={selectedId === team.id} onClick={() => setSelectedId(selectedId === team.id ? null : team.id)}>
-                <div className="card-top"><span className="card-rank">#{i + 1}</span><span className="card-season">2026</span></div>
-                <div className="card-logo-wrap"><img src={team.logo} alt="" className="team-logo" /></div>
-                <h3>{team.name.trim()}</h3>
-                <div className="card-record">{s.wins}-{s.losses} <span>·</span> {money(avg)} PPG</div>
-                <div className="card-stats">
-                  <span><small>PF</small><strong>{money(s.pointsFor)}</strong></span>
-                  <span><small>PA</small><strong>{money(s.pointsAgainst)}</strong></span>
-                  <span><small>STREAK</small><strong>{s.streak?.length ? s.streak.type + s.streak.length : "—"}</strong></span>
-                </div>
-                <div className="card-footer"><span>{selectedId === team.id ? "CLOSE PROFILE" : "VIEW PROFILE"}</span><span>↗</span></div>
-              </button>
-              {selectedId === team.id ? <div className="mobile-profile"><Profile team={team} /></div> : null}
-            </div>
-          );
-        })}
+      <div className="team-card-layout team-card-layout-4">
+        {renderDesktopRows(4, "team-card-grid")}
       </div>
-
-      {selected ? <div className="desktop-profile"><Profile team={selected} /></div> : null}
+      <div className="team-card-layout team-card-layout-3">
+        {renderDesktopRows(3, "team-card-grid")}
+      </div>
+      <div className="team-card-layout team-card-layout-2">
+        {renderDesktopRows(2, "team-card-grid")}
+      </div>
+      <div className="team-card-layout team-card-layout-mobile">
+        <div className="team-card-grid">
+          {teams.map((team, i) => renderCard(team, i))}
+        </div>
+      </div>
     </>
   );
 }
