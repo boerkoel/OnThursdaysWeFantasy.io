@@ -336,22 +336,85 @@ const ultimateEntrants = [
     .map((t,i)=>({seed:5+i,teamId:t.teamId,team:t.team,source:"WEEK_15_PLAYOFF_LOSER",playoffSeed:t.playoffSeed,opponent:t.opponent}))
 ];
 
-const ulSeedMap = new Map(ultimateEntrants.map(t=>[t.seed,t]));
+function completedUltimateLoserGame(teamAId, teamBId, week) {
+  const game = matchups.find(m =>
+    m.week === week &&
+    ((m.homeTeamId === teamAId && m.awayTeamId === teamBId) ||
+     (m.homeTeamId === teamBId && m.awayTeamId === teamAId))
+  );
+  if (!game || !game.completed) return null;
+  const aScore = game.homeTeamId === teamAId ? game.homeScore : game.awayScore;
+  const bScore = game.homeTeamId === teamBId ? game.homeScore : game.awayScore;
+  // Ultimate Loser advances the lower-scoring team.
+  return {
+    teamAId,
+    teamBId,
+    week,
+    teamAScore:aScore,
+    teamBScore:bScore,
+    advancingTeamId:aScore <= bScore ? teamAId : teamBId,
+    completed:true
+  };
+}
+
+function reseededPairs(teamsInRound) {
+  const ordered = [...teamsInRound].sort((a,b)=>a.seed-b.seed);
+  const pairs = [];
+  for (let i=0; i<ordered.length/2; i++) {
+    pairs.push({home:ordered[i], away:ordered[ordered.length-1-i]});
+  }
+  return pairs;
+}
+
+const ulRound16Pairs = [
+  {home:ultimateEntrants.find(t=>t.seed===1),away:ultimateEntrants.find(t=>t.seed===6)},
+  {home:ultimateEntrants.find(t=>t.seed===2),away:ultimateEntrants.find(t=>t.seed===5)},
+  {home:ultimateEntrants.find(t=>t.seed===3),away:ultimateEntrants.find(t=>t.seed===8)},
+  {home:ultimateEntrants.find(t=>t.seed===4),away:ultimateEntrants.find(t=>t.seed===7)}
+].filter(p=>p.home && p.away);
+
+const ulRound16Results = ulRound16Pairs
+  .map(p=>completedUltimateLoserGame(p.home.teamId,p.away.teamId,16))
+  .filter(Boolean);
+
+const ulRound17Advancers = ulRound16Results
+  .map(r=>ultimateEntrants.find(t=>t.teamId===r.advancingTeamId))
+  .filter(Boolean);
+const ulRound17Pairs = ulRound17Advancers.length === 4
+  ? reseededPairs(ulRound17Advancers)
+  : [];
+
+const ulRound17Results = ulRound17Pairs
+  .map(p=>completedUltimateLoserGame(p.home.teamId,p.away.teamId,17))
+  .filter(Boolean);
+
+const ulRound18Advancers = ulRound17Results
+  .map(r=>ultimateEntrants.find(t=>t.teamId===r.advancingTeamId))
+  .filter(Boolean);
+const ulRound18Pairs = ulRound18Advancers.length === 2
+  ? reseededPairs(ulRound18Advancers)
+  : [];
+
 const ultimateLoserSchedule = [
-  {id:"ul-qf1",week:16,round:"Quarterfinal",homeSeed:1,awaySeed:6},
-  {id:"ul-qf2",week:16,round:"Quarterfinal",homeSeed:2,awaySeed:5},
-  {id:"ul-qf3",week:16,round:"Quarterfinal",homeSeed:3,awaySeed:8},
-  {id:"ul-qf4",week:16,round:"Quarterfinal",homeSeed:4,awaySeed:7},
-  {id:"ul-sf1",week:17,round:"Semifinal",homeFrom:"ul-qf1",awayFrom:"ul-qf2"},
-  {id:"ul-sf2",week:17,round:"Semifinal",homeFrom:"ul-qf3",awayFrom:"ul-qf4"},
-  {id:"ul-final",week:18,round:"Championship",homeFrom:"ul-sf1",awayFrom:"ul-sf2"}
-].map(g=>({
-  ...g,
-  homeTeam:g.homeSeed?ulSeedMap.get(g.homeSeed)?.team:null,
-  awayTeam:g.awaySeed?ulSeedMap.get(g.awaySeed)?.team:null,
-  homeSeed:g.homeSeed??null,
-  awaySeed:g.awaySeed??null
-}));
+  ...ulRound16Pairs.map((p,i)=>({
+    id:`ul-qf${i+1}`,week:16,round:"Quarterfinal",
+    homeSeed:p.home.seed,awaySeed:p.away.seed,
+    homeTeam:p.home.team,awayTeam:p.away.team
+  })),
+  ...ulRound17Pairs.map((p,i)=>({
+    id:`ul-sf${i+1}`,week:17,round:"Semifinal",
+    homeSeed:p.home.seed,awaySeed:p.away.seed,
+    homeTeam:p.home.team,awayTeam:p.away.team,
+    reseeded:true
+  })),
+  ...ulRound18Pairs.map((p,i)=>({
+    id:"ul-final",week:18,round:"Championship",
+    homeSeed:p.home.seed,awaySeed:p.away.seed,
+    homeTeam:p.home.team,awayTeam:p.away.team,
+    reseeded:true
+  }))
+];
+
 
 const ultimateLoser = {
   format:"3-week single elimination",
@@ -361,7 +424,7 @@ const ultimateLoser = {
   entrants:ultimateEntrants,
   playoffLosers,
   schedule:ultimateLoserSchedule,
-  note:"Six regular-season non-playoff teams enter as seeds 1-6; the two Week 15 playoff losers enter as seeds 7-8. The lower-scoring team advances each round."
+  note:"Six regular-season non-playoff teams enter as seeds 1-6; the two Week 15 playoff losers enter as seeds 7-8. The lower-scoring team advances each round, and the remaining teams are reseeded highest-vs-lowest before the next round."
 };
 
 const playoffs = {
