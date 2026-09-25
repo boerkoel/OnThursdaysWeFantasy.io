@@ -340,10 +340,10 @@ const ultimateEntrants = [
     .map((t,i)=>({seed:i+1,teamId:t.id,team:t.name,source:"REGULAR_SEASON",regularSeasonSeed:t.seed,pointsFor:t.pointsFor})),
   sortedPlayoffLosers[0]
     ? {seed:7,teamId:sortedPlayoffLosers[0].teamId,team:sortedPlayoffLosers[0].team,source:"WEEK_15_PLAYOFF_LOSER",playoffSeed:sortedPlayoffLosers[0].playoffSeed,opponent:sortedPlayoffLosers[0].opponent}
-    : {seed:7,teamId:null,team:"Highest ranked loser from Week 15 playoff matchup",source:"WEEK_15_PLAYOFF_LOSER",playoffSeed:null,opponent:null},
+    : {seed:7,teamId:null,team:"TBD",source:"WEEK_15_PLAYOFF_LOSER",playoffSeed:null,opponent:null},
   sortedPlayoffLosers[1]
     ? {seed:8,teamId:sortedPlayoffLosers[1].teamId,team:sortedPlayoffLosers[1].team,source:"WEEK_15_PLAYOFF_LOSER",playoffSeed:sortedPlayoffLosers[1].playoffSeed,opponent:sortedPlayoffLosers[1].opponent}
-    : {seed:8,teamId:null,team:"Other Week 15 playoff loser",source:"WEEK_15_PLAYOFF_LOSER",playoffSeed:null,opponent:null}
+    : {seed:8,teamId:null,team:"TBD",source:"WEEK_15_PLAYOFF_LOSER",playoffSeed:null,opponent:null}
 ];
 
 function completedUltimateLoserGame(teamAId, teamBId, week) {
