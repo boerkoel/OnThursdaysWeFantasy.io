@@ -11,10 +11,10 @@ const boxscoreData = await readJson("data/current/mBoxscore.json");
 const scoreboardData = await readJson("data/current/mScoreboard.json");
 const logoMap = await readJson("data/current/logo-map.json").catch(() => ({}));
 const manualLogoMap = {
-  "4": "/OnThursdaysWeFantasy.io/team-logos/team-4.png",
-  "7": "/OnThursdaysWeFantasy.io/team-logos/team-7.png",
-  "10": "/OnThursdaysWeFantasy.io/team-logos/team-10.png",
-  "11": "/OnThursdaysWeFantasy.io/team-logos/team-11.png"
+  "4": "/OnThursdaysWeFantasy.io/team-logos/team-11.png",
+  "7": "/OnThursdaysWeFantasy.io/team-logos/team-10.png",
+  "10": "/OnThursdaysWeFantasy.io/team-logos/team-7.png",
+  "11": "/OnThursdaysWeFantasy.io/team-logos/team-4.png"
 };
 
 const teams = new Map((teamData.teams || []).map(t => [t.id, { id:t.id, name:(t.name||"").trim(), abbrev:t.abbrev||"", logo:manualLogoMap[String(t.id)] || logoMap[String(t.id)] || t.logo || null }]));
