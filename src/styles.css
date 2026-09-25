@@ -82,3 +82,5 @@
 .championship-payouts strong+strong{border-left:1px solid #4a533e;padding-left:18px}
 @media(max-width:520px){.championship-payouts{gap:10px}.championship-payouts strong{font-size:12px}.championship-payouts strong+strong{padding-left:10px}}
 .championship-match-title{margin-bottom:12px}
+
+.score-sort-controls{display:flex;gap:6px;margin:0 0 10px;justify-content:flex-end}.score-sort-controls button{border:1px solid #30332d;background:#ffffff04;color:#777a72;border-radius:999px;padding:7px 10px;font-size:9px;font-weight:800;letter-spacing:.07em;cursor:pointer}.score-sort-controls button.active{color:#dfe5d5;border-color:#4a533e;background:#4a533e33}.score-sort-controls button:hover{color:#dfe5d5}@media(max-width:520px){.score-sort-controls{justify-content:stretch}.score-sort-controls button{flex:1;font-size:8px}}
