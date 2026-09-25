@@ -10,6 +10,8 @@ import teamsData from "../data/current/teams.json";
 
 const money = (n) => Number(n).toFixed(2);
 
+const TeamLogo = ({ src, size = "sm" }) => src ? <img src={src} alt="" className={`inline-team-logo ${size}`} /> : null;
+
 function TeamCards({ teams }) {
   const [selectedId, setSelectedId] = useState(null);
   const selected = teams.find(t => t.id === selectedId);
@@ -90,6 +92,8 @@ function App() {
   const displayScores = scoreSort === "projected" ? projectedSortScores : sortedScores;
   const preGame = scores.length > 0 && scores.every(s => Number(s.score) === 0 && Number(s.opponentScore) === 0);
   const currentWeekComplete = raffle.completedWeeks?.includes(scoreboard.week);
+  const teamLogos = Object.fromEntries((teamsData.teams || []).map(t => [t.id, t.logo]));
+  const totalRaffleTickets = (raffle.tickets || []).reduce((sum, t) => sum + Number(t.tickets || 0), 0);
 
   const projectedMedian = Number(scoreboard.projectedMedian);
   const projectedWithScores = scores.filter(s => Number.isFinite(Number(s.projectionAverage)) && Number.isFinite(projectedMedian));
@@ -129,9 +133,9 @@ function App() {
             const a = teams[0], b = teams[1];
             if (!a || !b) return null;
             return <article className="matchup" key={matchupId}>
-              <div className={a.score >= b.score ? "team winning" : "team"}><span>{a.team}</span><strong className="score-value"><span className={projectedMedianEdgeTeams.has(a.teamId) ? "projection-dot yellow" : (Number.isFinite(Number(a.projectionAverage)) && Number.isFinite(projectedMedian) ? (Number(a.projectionAverage) >= projectedMedian ? "projection-dot green" : "projection-dot red") : "")} aria-hidden="true"></span>{money(a.score)}</strong><small>PROJ {a.projectionTrend === "up" ? <span className="projection-trend up" aria-label="Projection trending up">↑</span> : a.projectionTrend === "down" ? <span className="projection-trend down" aria-label="Projection trending down">↓</span> : null}{a.projectionAverage != null ? money(a.projectionAverage) : "—"}</small></div>
+              <div className={a.score >= b.score ? "team winning" : "team"}><span className="matchup-team-name"><TeamLogo src={teamLogos[a.teamId]} />{a.team}</span><strong className="score-value"><span className={projectedMedianEdgeTeams.has(a.teamId) ? "projection-dot yellow" : (Number.isFinite(Number(a.projectionAverage)) && Number.isFinite(projectedMedian) ? (Number(a.projectionAverage) >= projectedMedian ? "projection-dot green" : "projection-dot red") : "")} aria-hidden="true"></span>{money(a.score)}</strong><small>PROJ {a.projectionTrend === "up" ? <span className="projection-trend up" aria-label="Projection trending up">↑</span> : a.projectionTrend === "down" ? <span className="projection-trend down" aria-label="Projection trending down">↓</span> : null}{a.projectionAverage != null ? money(a.projectionAverage) : "—"}</small></div>
               <div className="versus">vs</div>
-              <div className={b.score >= a.score ? "team winning" : "team"}><span>{b.team}</span><strong className="score-value"><span className={projectedMedianEdgeTeams.has(b.teamId) ? "projection-dot yellow" : (Number.isFinite(Number(b.projectionAverage)) && Number.isFinite(projectedMedian) ? (Number(b.projectionAverage) >= projectedMedian ? "projection-dot green" : "projection-dot red") : "")} aria-hidden="true"></span>{money(b.score)}</strong><small>PROJ {b.projectionTrend === "up" ? <span className="projection-trend up" aria-label="Projection trending up">↑</span> : b.projectionTrend === "down" ? <span className="projection-trend down" aria-label="Projection trending down">↓</span> : null}{b.projectionAverage != null ? money(b.projectionAverage) : "—"}</small></div>
+              <div className={b.score >= a.score ? "team winning" : "team"}><span className="matchup-team-name"><TeamLogo src={teamLogos[b.teamId]} />{b.team}</span><strong className="score-value"><span className={projectedMedianEdgeTeams.has(b.teamId) ? "projection-dot yellow" : (Number.isFinite(Number(b.projectionAverage)) && Number.isFinite(projectedMedian) ? (Number(b.projectionAverage) >= projectedMedian ? "projection-dot green" : "projection-dot red") : "")} aria-hidden="true"></span>{money(b.score)}</strong><small>PROJ {b.projectionTrend === "up" ? <span className="projection-trend up" aria-label="Projection trending up">↑</span> : b.projectionTrend === "down" ? <span className="projection-trend down" aria-label="Projection trending down">↓</span> : null}{b.projectionAverage != null ? money(b.projectionAverage) : "—"}</small></div>
             </article>;
           })}
         </div>
@@ -146,7 +150,7 @@ function App() {
         </div>
         {displayScores.map((s, i) => <React.Fragment key={s.teamId}>
             {i === Math.floor(displayScores.length / 2) && <div className="median-line"><span>MEDIAN {preGame ? "—" : money(median)}</span><span>PROJECTED MEDIAN {scoreboard.projectedMedian != null ? money(scoreboard.projectedMedian) : "—"}</span></div>}
-            <div className="score-row"><span className="rank">{i + 1}</span><span className="score-team">{s.team}{i === 0 && !preGame ? <em className="raffle-badge">🎟️ {currentWeekComplete ? "RAFFLE SPOT" : "CURRENT LEADER"}</em> : null}</span><span className="score-opponent">vs {s.opponent}</span><span className="score-projection">PROJ {s.projectionTrend === "up" ? <span className="projection-trend up" aria-hidden="true">↑</span> : s.projectionTrend === "down" ? <span className="projection-trend down" aria-hidden="true">↓</span> : null}{s.projectionAverage != null ? money(s.projectionAverage) : "—"}</span><strong>{money(s.score)}</strong></div>
+            <div className="score-row"><span className="rank">{i + 1}</span><span className="score-team"><TeamLogo src={teamLogos[s.teamId]} />{s.team}{i === 0 && !preGame ? <em className="raffle-badge">🎟️ {currentWeekComplete ? "RAFFLE SPOT" : "CURRENT LEADER"}</em> : null}</span><span className="score-opponent">vs {s.opponent}</span><span className="score-projection">PROJ {s.projectionTrend === "up" ? <span className="projection-trend up" aria-hidden="true">↑</span> : s.projectionTrend === "down" ? <span className="projection-trend down" aria-hidden="true">↓</span> : null}{s.projectionAverage != null ? money(s.projectionAverage) : "—"}</span><strong>{money(s.score)}</strong></div>
           </React.Fragment>)}
         </div>
         <p className="median-note">{preGame ? "Current scores will appear once scoring begins. The projected median is based on ESPN’s projected final scores." : "The current median uses live scores. The projected median uses ESPN’s projected final scores."}</p>
@@ -291,7 +295,7 @@ function App() {
             <span className="rank">{i + 1}</span>
             <span className="score-team">{t.team}</span>
             <span className="raffle-weeks">{t.winningWeeks?.length ? ("Won Week" + (t.winningWeeks.length > 1 ? "s " : " ") + t.winningWeeks.join(", ")) : "No tickets yet"}</span>
-            <strong>{t.tickets} {t.tickets === 1 ? "ticket" : "tickets"}</strong>
+            <strong>{t.tickets} {t.tickets === 1 ? "ticket" : "tickets"}{totalRaffleTickets > 0 ? <em className="raffle-odds">{((Number(t.tickets) / totalRaffleTickets) * 100).toFixed(1)}% odds</em> : null}</strong>
           </div>)}
         </div>
       </section>
@@ -299,7 +303,7 @@ function App() {
       <section className="section">
         <div className="section-heading"><div><span className="section-kicker">RECORD BOOK</span><h2>Standings</h2></div></div>
         <div className="standings-table">
-          {standingsData.standings.map((t, i) => <div className="standing-row" key={t.id}><span>{i+1}</span><strong>{t.name}</strong><span>{t.wins}-{t.losses}</span><span>{money(t.pointsFor)} PF</span></div>)}
+          {standingsData.standings.map((t, i) => <div className="standing-row" key={t.id}><span>{i+1}</span><strong><TeamLogo src={teamLogos[t.id]} />{t.name}</strong><span>{t.wins}-{t.losses}</span><span>{money(t.pointsFor)} PF</span></div>)}
         </div>
       </section>
       <footer>On Thursdays We Fantasy · 2026 · Officially unofficial.</footer>
