@@ -175,18 +175,20 @@ const playoffLosers = week15Completed.map(m => {
 }).filter(x=>x.teamId);
 
 const ultimateEntrants = [
-  ...nonPlayoffTeams.map(t=>({seed:t.seed-playoffTeamCount,teamId:t.id,team:t.name,source:"REGULAR_SEASON",regularSeasonSeed:t.seed,pointsFor:t.pointsFor})),
+  ...nonPlayoffTeams
+    .sort((a,b)=>b.seed-a.seed)
+    .map((t,i)=>({seed:i+1,teamId:t.id,team:t.name,source:"REGULAR_SEASON",regularSeasonSeed:t.seed,pointsFor:t.pointsFor})),
   ...playoffLosers
-    .sort((a,b)=>(a.playoffSeed??99)-(b.playoffSeed??99))
-    .map((t,i)=>({seed:7+i,teamId:t.teamId,team:t.team,source:"WEEK_15_PLAYOFF_LOSER",playoffSeed:t.playoffSeed,opponent:t.opponent}))
+    .sort((a,b)=>(b.playoffSeed??0)-(a.playoffSeed??0))
+    .map((t,i)=>({seed:5+i,teamId:t.teamId,team:t.team,source:"WEEK_15_PLAYOFF_LOSER",playoffSeed:t.playoffSeed,opponent:t.opponent}))
 ];
 
 const ulSeedMap = new Map(ultimateEntrants.map(t=>[t.seed,t]));
 const ultimateLoserSchedule = [
-  {id:"ul-qf1",week:16,round:"Quarterfinal",homeSeed:1,awaySeed:8},
-  {id:"ul-qf2",week:16,round:"Quarterfinal",homeSeed:4,awaySeed:5},
-  {id:"ul-qf3",week:16,round:"Quarterfinal",homeSeed:2,awaySeed:7},
-  {id:"ul-qf4",week:16,round:"Quarterfinal",homeSeed:3,awaySeed:6},
+  {id:"ul-qf1",week:16,round:"Quarterfinal",homeSeed:1,awaySeed:6},
+  {id:"ul-qf2",week:16,round:"Quarterfinal",homeSeed:2,awaySeed:5},
+  {id:"ul-qf3",week:16,round:"Quarterfinal",homeSeed:3,awaySeed:8},
+  {id:"ul-qf4",week:16,round:"Quarterfinal",homeSeed:4,awaySeed:7},
   {id:"ul-sf1",week:17,round:"Semifinal",homeFrom:"ul-qf1",awayFrom:"ul-qf2"},
   {id:"ul-sf2",week:17,round:"Semifinal",homeFrom:"ul-qf3",awayFrom:"ul-qf4"},
   {id:"ul-final",week:18,round:"Championship",homeFrom:"ul-sf1",awayFrom:"ul-sf2"}
