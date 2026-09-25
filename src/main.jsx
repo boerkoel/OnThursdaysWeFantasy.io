@@ -307,7 +307,7 @@ function App() {
           <div><span className="section-kicker">THE OTHER ROAD</span><h2>Ultimate Loser</h2></div>
           <span className="record-count">WEEKS 16–18 · 8 TEAMS</span>
         </div>
-        <p className="playoff-intro">Three weeks. Single elimination. The lower-scoring team advances. Six regular-season non-playoff teams enter first, then the two Week 15 playoff losers join them.</p>
+        <p className="playoff-intro">Three weeks. Eight-team single elimination. The lower-scoring team advances. The six regular-season non-playoff teams are seeded 1–6, followed by the highest-ranked Week 15 playoff loser at #7 and the other Week 15 playoff loser at #8.</p>
         <div className="bracket">
           <div className="bracket-round">
             <div className="bracket-round-title">WEEK 16 · QUARTERFINALS</div>
