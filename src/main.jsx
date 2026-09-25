@@ -346,17 +346,21 @@ function App() {
           </div>
           <div className="bracket-round">
             <div className="bracket-round-title">WEEK 18 · ULTIMATE LOSER CHAMPIONSHIP</div>
-            <div className="bracket-game championship-game">
-              <div><small>FINALISTS</small><strong>SF Losers</strong></div>
-              <span className="bracket-vs">ULTIMATE LOSER</span>
-              <div><small>FINALISTS</small><strong>SF Losers</strong></div>
+            <div className="bracket-game-wrap championship-wrap">
+              <div className="bracket-game championship-game">
+                <div><small>FINALISTS</small><strong>SF Losers</strong></div>
+                <span className="bracket-vs">VS.</span>
+                <div><small>FINALISTS</small><strong>SF Losers</strong></div>
+              </div>
+              <small className="bracket-final-label">ULTIMATE LOSER</small>
             </div>
           </div>
         </div>
         <div className="seed-board">
           {(playoffs.ultimateLoser?.entrants || []).map(s => <div className="seed-row" key={s.seed}>
-            <span>{s.seed >= 7 ? "TBD" : "#" + s.seed}</span><strong>{s.team}</strong>
-            <span>{s.source==="REGULAR_SEASON" ? "REG SEED" : "W15 LOSER"}</span>
+            <span>{"#" + s.seed}</span>
+            <strong>{s.team}</strong>
+            <span>{s.source==="REGULAR_SEASON" ? "REG SEED #" + s.regularSeasonSeed : "W15 LOSER"}</span>
             <span>{s.pointsFor != null ? money(s.pointsFor) + " PF" : "TBD"}</span>
           </div>)}
         </div>
