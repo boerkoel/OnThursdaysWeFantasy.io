@@ -4,6 +4,7 @@ const settings = await readJson("data/current/mSettings.json");
 const teamData = await readJson("data/current/mTeam.json");
 const matchupData = await readJson("data/current/mMatchup.json");
 const rosterData = await readJson("data/current/mRoster.json");
+const transactionData = await readJson("data/current/mTransactions.json");
 
 const teams = new Map((teamData.teams || []).map(t => [t.id, { id:t.id, name:(t.name||"").trim(), abbrev:t.abbrev||"", logo:t.logo||null }]));
 const matchups = (matchupData.schedule || []).filter(m => m.home?.teamId && m.away?.teamId).map(m => ({
@@ -73,7 +74,75 @@ const raffleTickets = [...teams.values()].map(team => ({
 const awards={highestScore:scoreAward(highestScore),lowestScore:scoreAward(lowestScore),
   highestScoringLoser:scoreAward(highestScoringLoser),lowestScoringWinner:scoreAward(lowestScoringWinner),
   blowoutKing:matchupAward(blowout),
-  benchWarmerChampion:bench[0]?{week:currentWeek,teamId:bench[0].teamId,team:name(bench[0].teamId),points:bench[0].points,players:bench[0].players}:null};
+  benchWarmerChampion:bench[0]?{week:currentWeek,teamId:bench[0].teamId,team:name(bench[0].teamId),points:bench[0].points,players:bench[0].players}:null,
+  ...newAwards};
+
+const weeklyTeamScores = new Map();
+for (const row of rows) {
+  if (!weeklyTeamScores.has(row.teamId)) weeklyTeamScores.set(row.teamId, []);
+  weeklyTeamScores.get(row.teamId).push({week:row.week,score:row.score});
+}
+
+function trendFor(teamId) {
+  const series=(weeklyTeamScores.get(teamId)||[]).sort((a,b)=>a.week-b.week).slice(-4);
+  if (series.length < 2) return null;
+  const n=series.length;
+  const meanX=(n+1)/2;
+  const meanY=series.reduce((sum,p)=>sum+p.score,0)/n;
+  const slope=series.reduce((sum,p,i)=>sum+(i+1-meanX)*(p.score-meanY),0)/
+    series.reduce((sum,p,i)=>sum+(i+1-meanX)**2,0);
+  return {teamId,team:name(teamId),slope:round(slope),weeks:series.map(p=>p.week),scores:series.map(p=>round(p.score))};
+}
+const trends=[...teams.keys()].map(trendFor).filter(Boolean);
+const heatingUp=maxBy(trends,x=>x.slope);
+const coolingOff=minBy(trends,x=>x.slope);
+
+const weeklyLeagueScores = new Map();
+for (const row of rows) {
+  if (!weeklyLeagueScores.has(row.week)) weeklyLeagueScores.set(row.week, []);
+  weeklyLeagueScores.get(row.week).push(row.score);
+}
+const expected = new Map([...teams.keys()].map(id=>[id,{actual:0,expected:0}]));
+for (const [week,scoresForWeek] of weeklyLeagueScores) {
+  const sorted=scoresForWeek.slice().sort((a,b)=>b-a);
+  const n=sorted.length;
+  for (const row of rows.filter(x=>x.week===week)) {
+    const rank=sorted.findIndex(score=>score===row.score);
+    const better=sorted.filter(score=>score>row.score).length;
+    const equal=sorted.filter(score=>score===row.score).length;
+    const allPlay=(better + (equal-1)/2);
+    const winExpectation=n>1 ? (n-1-allPlay)/(n-1) : 0;
+    expected.get(row.teamId).expected += winExpectation;
+    if (row.result==="W") expected.get(row.teamId).actual += 1;
+  }
+}
+const luckAwards=[...expected.entries()].map(([teamId,x])=>({...x,teamId,team:name(teamId),luck:x.actual-x.expected}));
+const luckBox=maxBy(luckAwards,x=>x.luck);
+const unluckiest=minBy(luckAwards,x=>x.luck);
+
+const transactions=transactionData.transactions || transactionData.transactionItems || [];
+const activity=new Map([...teams.keys()].map(id=>[id,{teamId:id,team:name(id),trades:0,moves:0}]));
+for (const tx of transactions) {
+  const type=String(tx.type||tx.transactionType||"").toUpperCase();
+  const teamIds=[tx.teamId,tx.fromTeamId,tx.toTeamId,tx.memberId,tx.rosterForTeamId].map(Number).filter(Number.isFinite);
+  const unique=[...new Set(teamIds)];
+  for (const id of unique) {
+    if (!activity.has(id)) continue;
+    activity.get(id).moves += 1;
+    if (type.includes("TRADE")) activity.get(id).trades += 1;
+  }
+}
+const negotiator=maxBy([...activity.values()],x=>x.trades);
+const getALife=maxBy([...activity.values()],x=>x.moves);
+
+const newAwards={
+  negotiator:negotiator?.trades ? negotiator : null,
+  getALife:getALife?.moves ? getALife : null,
+  heatingUp,
+  coolingOff,
+  luckBox,
+  unluckiest
+};
 
 await mkdir("data/current",{recursive:true});
 const playoffTeamCount = Number(settings.settings?.scheduleSettings?.playoffTeamCount || 6);
