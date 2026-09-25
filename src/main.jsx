@@ -114,7 +114,7 @@ function App() {
         <nav><a href="#scores">Scores</a><a href="#playoffs">Playoffs</a><a href="#ultimate-loser">Ultimate Loser</a><a href="#raffle">Raffle</a><a href="#standings">Standings</a><a href="#awards">Awards</a></nav>
       </header>
 
-<div className="refresh-data-wrap"><a className="refresh-data-button" href="https://github.com/boerkoel/OnThursdaysWeFantasy.io/actions/workflows/update-espn.yml" target="_blank" rel="noreferrer" title="Open the ESPN data workflow in GitHub"><span>↻</span> REFRESH LIVE DATA</a></div>
+<div className="data-timestamp">LAST REFRESHED <strong>{scoreboard.lastUpdated ? new Date(scoreboard.lastUpdated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "—"}</strong></div>
 
       <section className="hero-strip">
         <div><span className="section-kicker">2026 SEASON</span><h2>Week {scoreboard.week}</h2><p>{preGame ? "The Week is set. Scores will appear here once the games begin." : "The league is live. Here’s how everyone is doing."}</p></div>
