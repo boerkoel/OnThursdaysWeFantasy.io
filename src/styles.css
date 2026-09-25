@@ -190,3 +190,18 @@
 .bracket-vs{display:flex;align-items:center;justify-content:center;min-width:72px;padding:0 4px;text-align:center;white-space:nowrap;font-size:9px;font-weight:900;letter-spacing:.08em;color:#8f978c}
 .bracket-game strong{overflow-wrap:anywhere}
 @media(max-width:700px){.bracket-game{gap:8px}.bracket-vs{min-width:58px;font-size:8px;white-space:normal;line-height:1.15}}
+
+
+/* Bracket geometry: stagger the rounds so feeder games visually flow into the next round. */
+.bracket{align-items:stretch}
+.bracket-round{display:flex;flex-direction:column}
+.bracket-round:first-child .bracket-game{margin-bottom:28px}
+.bracket-round:first-child .bracket-game:last-child{margin-bottom:0}
+.bracket-round:nth-child(2){justify-content:space-around;padding:42px 0}
+.bracket-round:nth-child(2) .bracket-game{margin:0}
+.bracket-vs{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:auto;padding:0 8px;white-space:nowrap;text-align:center;line-height:1.3;font-size:9px;font-weight:900;letter-spacing:.08em;color:#8f978c}
+@media(max-width:700px){
+  .bracket-round:first-child .bracket-game{margin-bottom:18px}
+  .bracket-round:nth-child(2){padding:24px 0}
+  .bracket-vs{padding:0 5px;font-size:8px}
+}
