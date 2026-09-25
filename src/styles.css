@@ -163,3 +163,22 @@
   .team-card-layout-mobile{display:block}
   .team-card-row>.team-profile{display:none}
 }
+
+/* Weekly history: keep team names readable while separating winner and median status. */
+.history-team{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;padding:8px 9px;border:1px solid transparent;border-radius:10px}
+.history-team.winner{border-color:#667052;background:#b8c69b08}
+.history-team-name{display:flex;align-items:center;gap:7px;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.history-score-block{display:flex;flex-direction:column;align-items:flex-end;min-width:78px}
+.history-score.above-median{background:#536348;color:#f0f5e9;box-shadow:inset 0 0 0 1px #718260}
+.history-score.below-median{background:#2a2926;color:#c1c0b9;box-shadow:inset 0 0 0 1px #4a4840}
+.history-score.at-median{background:#30332d;color:#dfe2da;box-shadow:inset 0 0 0 1px #4a4d45}
+.history-score{display:inline-block;padding:4px 7px;border-radius:7px;font-size:16px;white-space:nowrap}
+.median-badge{display:block;margin-top:3px;color:#8fa27f;font-size:7px;font-style:normal;font-weight:900;letter-spacing:.08em;text-align:right;white-space:nowrap}
+.history-team.winner .median-badge{color:#b8c69b}
+.winner-badge{display:block;margin-top:3px;color:#dfe9c7;font-size:7px;font-style:normal;font-weight:900;letter-spacing:.08em;white-space:nowrap}
+.history-team.winner .history-score{box-shadow:inset 0 0 0 1px #9aaa82,0 0 0 1px #4a533e}
+@media(max-width:520px){
+  .history-team{padding:7px 5px;gap:6px}
+  .history-score-block{min-width:70px}
+  .history-score{font-size:15px}
+}
