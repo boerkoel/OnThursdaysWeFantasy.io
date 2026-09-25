@@ -98,6 +98,7 @@ function App() {
   const completedHistoryWeeks = weekly.weeks || [];
   const [historyWeek, setHistoryWeek] = useState(completedHistoryWeeks.length ? completedHistoryWeeks[completedHistoryWeeks.length - 1].week : null);
   const history = completedHistoryWeeks.find(w => w.week === historyWeek);
+  const historyTeamNames = Object.fromEntries((teamsData.teams || []).map(t => [t.id, t.name.trim()]));
   const historyMatchups = history?.matchups || [];
   const historyScores = historyMatchups.flatMap(m => [Number(m.homeScore || 0), Number(m.awayScore || 0)]).sort((a, b) => a - b);
   const historyAverage = historyScores.length ? historyScores.reduce((sum, score) => sum + score, 0) / historyScores.length : null;
@@ -184,9 +185,9 @@ function App() {
               const homeWon = m.winner === "HOME";
               const awayWon = m.winner === "AWAY";
               return <article className="history-matchup" key={m.id}>
-                <div className={homeWon ? "history-team winner" : "history-team"}><span><TeamLogo src={teamLogos[m.homeTeamId]} />{m.homeTeam}</span><strong>{money(m.homeScore)}</strong></div>
+                <div className={homeWon ? "history-team winner" : "history-team"}><span><TeamLogo src={teamLogos[m.homeTeamId]} />{historyTeamNames[m.homeTeamId] || "Unknown team"}</span><strong className={Number(m.homeScore) >= Number(historyMedian) ? "history-score above-median" : "history-score"}>{money(m.homeScore)}</strong>{Number(m.homeScore) >= Number(historyMedian) ? <em className="median-badge">ABOVE MEDIAN</em> : null}</div>
                 <span className="history-vs">FINAL</span>
-                <div className={awayWon ? "history-team winner" : "history-team"}><span><TeamLogo src={teamLogos[m.awayTeamId]} />{m.awayTeam}</span><strong>{money(m.awayScore)}</strong></div>
+                <div className={awayWon ? "history-team winner" : "history-team"}><span><TeamLogo src={teamLogos[m.awayTeamId]} />{historyTeamNames[m.awayTeamId] || "Unknown team"}</span><strong className={Number(m.awayScore) >= Number(historyMedian) ? "history-score above-median" : "history-score"}>{money(m.awayScore)}</strong>{Number(m.awayScore) >= Number(historyMedian) ? <em className="median-badge">ABOVE MEDIAN</em> : null}</div>
               </article>;
             })}
           </div>
