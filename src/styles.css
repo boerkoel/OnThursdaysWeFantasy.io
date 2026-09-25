@@ -77,6 +77,8 @@
 
 .championship-round{padding:18px}
 .championship-week-title{font-size:12px;color:#b8c69b;letter-spacing:.14em;margin-bottom:16px}
-.championship-payouts{display:flex;flex-direction:column;gap:9px;padding:14px 16px;margin:0 0 20px;border:1px solid #30372a;border-radius:12px;background:#ffffff06}
+.championship-payouts{display:flex;align-items:center;justify-content:center;gap:18px;padding:14px 16px;margin:0 0 20px;border:1px solid #30372a;border-radius:12px;background:#ffffff06}
 .championship-payouts strong{font-size:14px;line-height:1.3;letter-spacing:.01em}
+.championship-payouts strong+strong{border-left:1px solid #4a533e;padding-left:18px}
+@media(max-width:520px){.championship-payouts{gap:10px}.championship-payouts strong{font-size:12px}.championship-payouts strong+strong{padding-left:10px}}
 .championship-match-title{margin-bottom:12px}
