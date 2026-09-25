@@ -31,16 +31,24 @@ const liveByTeam = new Map();
 for (const g of allLiveSchedules) {
   for (const side of [g.home, g.away]) {
     if (!side?.teamId) continue;
-    const playerTotal = (side.rosterForCurrentScoringPeriod?.entries || []).reduce(
-      (sum, entry) => sum + Number(entry.playerPoolEntry?.appliedStatTotal ?? 0),
-      0
-    );
-    const liveScore = Number(
-      side.totalPointsLive ??
-      side.totalPoints ??
-      side.cumulativeScore?.score ??
-      (Number.isFinite(playerTotal) ? playerTotal : 0)
-    );
+    // ESPN's boxscore currently reports totalPoints=0 while games are live,
+    // but the roster entries contain the live player scores. Sum active lineup
+    // slots (exclude bench slot 20) as the fallback live score.
+    const playerTotal = (side.rosterForCurrentScoringPeriod?.entries || [])
+      .filter(entry => Number(entry.lineupSlotId) !== 20)
+      .reduce(
+        (sum, entry) => sum + Number(entry.playerPoolEntry?.appliedStatTotal ?? 0),
+        0
+      );
+    const reportedLive = Number(side.totalPointsLive);
+    const reportedTotal = Number(side.totalPoints);
+    const liveScore = Number.isFinite(reportedLive) && reportedLive > 0
+      ? reportedLive
+      : playerTotal > 0
+        ? playerTotal
+        : Number.isFinite(reportedTotal)
+          ? reportedTotal
+          : Number(side.cumulativeScore?.score ?? 0);
     liveByTeam.set(side.teamId, liveScore);
   }
 }
