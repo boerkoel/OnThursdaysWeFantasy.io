@@ -921,12 +921,18 @@ for (const team of teams.values()) {
   const sortedPartners = partners.sort((a,b) => b.score - a.score).slice(0,3);
   const targets = [];
   const strengthPositions = new Set(fit.strengths.map(p => p.position));
+  const needPositions = new Set(fit.needs.map(p => p.position));
 
   // Evaluate every current bench player in the league against this team.
   for (const other of teams.values()) {
     if (Number(other.id) === Number(team.id)) continue;
 
     for (const player of benchTargetsByTeam.get(Number(other.id)) || []) {
+      // Don't recommend a player at a position this team already identifies
+      // as a need. A trade target should address a roster strength/need fit,
+      // not add another hole at the destination position.
+      if (player.position && needPositions.has(player.position)) continue;
+
       let boost = 0;
       let h2hWinsAdded = 0;
       let medianWinsAdded = 0;
