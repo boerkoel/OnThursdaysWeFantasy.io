@@ -264,3 +264,43 @@
   .bracket-game-wrap{gap:3px}
   .bracket-round:first-child .bracket-game-wrap{margin-bottom:12px}
 }
+
+
+/* Teams close to the projected median are visually bracketed on the scoreboard. */
+.score-row.median-near{
+  position:relative;
+  margin-left:10px;
+  margin-right:10px;
+  border-left:2px solid #e6c85c;
+  border-right:2px solid #e6c85c;
+  background:#e6c85c08;
+}
+.score-row.median-near::before,
+.score-row.median-near::after{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  color:#e6c85c;
+  font-size:15px;
+  font-weight:900;
+  line-height:1;
+}
+.score-row.median-near::before{content:"[";left:-8px}
+.score-row.median-near::after{content:"]";right:-8px}
+.median-near-label{
+  display:inline-block;
+  margin-left:7px;
+  padding:2px 5px;
+  border:1px solid #6d6230;
+  border-radius:999px;
+  color:#e6c85c;
+  font-size:7px;
+  font-style:normal;
+  font-weight:900;
+  letter-spacing:.06em;
+  white-space:nowrap;
+}
+@media(max-width:700px){
+  .score-row.median-near{margin-left:7px;margin-right:7px}
+  .median-near-label{font-size:6px;margin-left:4px}
+}
