@@ -121,6 +121,41 @@ for (const g of projectionSchedules) {
   }
 }
 
+const positionFitByTeam = new Map();
+const positionNames = {1:"QB",2:"RB",3:"WR",4:"TE",5:"K",16:"DST"};
+const positionProjectedByTeam = new Map();
+
+for (const game of projectionSchedules) {
+  for (const side of [game.home, game.away]) {
+    if (!side?.teamId) continue;
+    const totals = Object.fromEntries(Object.values(positionNames).map(pos => [pos, 0]));
+    for (const entry of side.rosterForCurrentScoringPeriod?.entries || []) {
+      if ([20,21].includes(Number(entry.lineupSlotId))) continue;
+      const position = positionNames[Number(entry.playerPoolEntry?.player?.defaultPositionId)];
+      if (!position) continue;
+      const stats = entry.playerPoolEntry?.player?.stats || [];
+      const weeklyProjection = stats.find(s => Number(s.scoringPeriodId) === currentWeek && Number(s.statSourceId) === 1 && Number(s.statSplitTypeId) === 1);
+      const projection = Number(weeklyProjection?.appliedTotal ?? 0);
+      if (Number.isFinite(projection)) totals[position] += projection;
+    }
+    positionProjectedByTeam.set(Number(side.teamId), totals);
+  }
+}
+const positionLeagueAverages = Object.fromEntries(Object.values(positionNames).map(position => {
+  const values = [...positionProjectedByTeam.values()].map(t => Number(t[position])).filter(Number.isFinite);
+  return [position, values.length ? values.reduce((sum,v)=>sum+v,0)/values.length : 0];
+}));
+for (const team of teams.values()) {
+  const totals = positionProjectedByTeam.get(Number(team.id)) || {};
+  const comparisons = Object.values(positionNames).map(position => {
+    const projected = Number(totals[position] || 0);
+    const average = Number(positionLeagueAverages[position] || 0);
+    return {position, projected:round(projected), average, ratio:average ? projected/average : 1};
+  });
+  const strengths = comparisons.filter(p => p.average > 0 && p.ratio >= 1.10).sort((a,b)=>b.ratio-a.ratio).slice(0,2);
+  const needs = comparisons.filter(p => p.average > 0 && p.ratio <= 0.90).sort((a,b)=>a.ratio-b.ratio).slice(0,2);
+  positionFitByTeam.set(Number(team.id), {strengths, needs});
+}
 const previousProjections = new Map();
 for (const snapshot of previousProjectionHistory) {
   for (const score of snapshot.scores || []) {
@@ -981,7 +1016,7 @@ await writeJson("data/current/teams.json",{season:settings.seasonId,currentWeek,
     startSit,
     profileAnalytics:{
       optimalLineup:startSit ? {actualPoints:startSit.actualPoints,optimalPoints:startSit.optimalPoints,pointsLeft:startSit.pointsLeft,efficiency:startSit.score} : null,
-      positionFit:null,
+      positionFit:positionFitByTeam.get(Number(t.id))||null,
       trend:trend ? {...trend,direction:trend.slope >= 2 ? "up" : trend.slope <= -2 ? "down" : "steady"} : null,
       luck:luck ? {actualWins:round(luck.actual),expectedWins:round(luck.expected),difference:round(luck.luck)} : null
     }
