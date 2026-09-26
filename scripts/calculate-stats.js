@@ -836,7 +836,29 @@ for (const team of teams.values()) {
   const totalActual = round(weeks.reduce((sum, w) => sum + w.actualPoints, 0));
   const totalOptimal = round(weeks.reduce((sum, w) => sum + w.optimalPoints, 0));
   const score = totalOptimal > 0 ? round((totalActual / totalOptimal) * 100) : null;
-  const winsLost = weeks.filter(w => w.winLostToMistake).length;
+  const winsLost = weeks.reduce((sum, w) => {
+    const actual = Number(w.actualPoints);
+    const optimal = Number(w.optimalPoints);
+    const opponent = Number(w.opponentScore);
+    const h2hMissed = actual < opponent && optimal > opponent ? 1 : 0;
+
+    // Median wins are awarded to teams above the weekly median. A start/sit
+    // mistake costs a median win when the actual lineup is at/below the
+    // median but the optimal lineup would have finished above it.
+    const weekScores = completed
+      .filter(m => m.week === w.week)
+      .flatMap(m => [Number(m.homeScore), Number(m.awayScore)])
+      .filter(Number.isFinite)
+      .sort((a, b) => a - b);
+    const median = weekScores.length
+      ? (weekScores.length % 2
+        ? weekScores[Math.floor(weekScores.length / 2)]
+        : (weekScores[weekScores.length / 2 - 1] + weekScores[weekScores.length / 2]) / 2)
+      : null;
+    const medianMissed = Number.isFinite(median) && actual <= median && optimal > median ? 1 : 0;
+
+    return sum + h2hMissed + medianMissed;
+  }, 0);
   startSitByTeam.set(team.id, {
     score,
     actualPoints:totalActual,
