@@ -44,7 +44,7 @@ function TeamCards({ teams }) {
           <span>{money(team.startSit.pointsLeft)} pts left on bench</span>
         </div>
         <div className="profile-startsit-bar"><span style={{width: Math.max(0, Math.min(100, Number(team.startSit.score))) + "%"}}></span></div>
-        <div className="profile-startsit-summary"><span>Actual <strong>{money(team.startSit.actualPoints)}</strong></span><span>Optimal <strong>{money(team.startSit.optimalPoints)}</strong></span></div>
+        <div className="profile-startsit-summary"><span>Actual <strong>{money(team.startSit.actualPoints)}</strong></span><span>Optimal <strong>{money(team.startSit.optimalPoints)}</strong></span><span>Wins lost to mistakes <strong>{team.startSit.winsLost ?? 0}</strong></span></div>
         <div className="profile-startsit-weeks">
           {team.startSit.weeks.map(w => <span key={w.week}>W{w.week} <strong>{money(w.efficiency)}%</strong></span>)}
         </div>
