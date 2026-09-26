@@ -50,6 +50,23 @@ function TeamCards({ teams }) {
         </div>
       </div>) : null}
 
+      {team.powerIndex?.thisWeek?.positions ? (<div className="profile-roster-fit">
+        <div className="profile-roster-fit-heading"><span className="section-kicker">ROSTER FIT</span><strong>Strengths & Weaknesses</strong></div>
+        <div className="position-fit-grid">
+          <div><small>STRENGTHS</small><div className="position-fit-list">{Object.entries(team.powerIndex.thisWeek.positions).filter(([,p])=>Number(p?.starter)>102).sort((a,b)=>b[1].starter-a[1].starter).map(([pos,p])=><span className="position-fit strength" key={pos}><b>{pos}</b><strong>{p.starter}</strong></span>)}</div></div>
+          <div><small>NEEDS</small><div className="position-fit-list">{Object.entries(team.powerIndex.thisWeek.positions).filter(([,p])=>Number(p?.starter)<98).sort((a,b)=>a[1].starter-b[1].starter).map(([pos,p])=><span className="position-fit weakness" key={pos}><b>{pos}</b><strong>{p.starter}</strong></span>)}</div></div>
+        </div>
+        <p className="profile-fit-note">Based on this week's projected starter strength. 100 = league average.</p>
+        {team.profileAnalytics?.rosterFit?.partners?.length ? <div className="trade-section">
+          <div className="trade-section-heading"><span>🤝</span><div><small>POTENTIAL TRADE PARTNERS</small><em>Complementary roster needs</em></div></div>
+          <div className="trade-partner-list">{team.profileAnalytics.rosterFit.partners.map(p=><div className="trade-partner" key={p.teamId}><strong>{p.team}</strong><span>You need {p.needs.join(" / ")} · They need {p.offers.join(" / ")}</span></div>)}</div>
+        </div> : null}
+        {team.profileAnalytics?.rosterFit?.targets?.length ? <div className="trade-section">
+          <div className="trade-section-heading"><span>🎯</span><div><small>POTENTIAL TRADE TARGETS</small><em>Opponent bench players who project into your lineup</em></div></div>
+          <div className="trade-target-list">{team.profileAnalytics.rosterFit.targets.slice(0,4).map(p=><div className="trade-target" key={p.playerId}><div><strong>{p.player}</strong><span>{p.position} · {p.team}</span></div><b>{money(p.projection)}</b><small>PROJ</small>{p.rosRank ? <em>ROS #{p.rosRank}</em> : null}</div>)}</div>
+        </div> : null}
+      </div>) : null}
+
       {team.profileAnalytics ? (<div className="profile-insights">
         <div className="profile-insights-heading"><span className="section-kicker">TEAM PULSE</span><strong>Season So Far</strong></div>
         <div className="profile-insight-grid">
