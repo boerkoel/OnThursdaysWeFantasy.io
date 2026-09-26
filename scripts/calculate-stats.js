@@ -870,18 +870,47 @@ for (const team of teams.values()) {
     const startedWeeks = history.weekly.filter(w => w.started).length;
     const startRate = startedWeeks / rosteredWeeks;
     let boost = 0;
+    let clearMistake = false;
 
     for (const weekEntry of history.weekly.filter(w => !w.started)) {
       const weeklyTeam = weeklyRosterForTeam(weekEntry.week, team.id);
       const fullOptimal = lineupEfficiency(weeklyTeam);
       const withoutPlayer = lineupEfficiency(weeklyTeam, null, playerId);
       if (fullOptimal && withoutPlayer) {
-        boost += Math.max(0, Number(fullOptimal.optimalPoints) - Number(withoutPlayer.optimalPoints));
+        const improvement = Math.max(0, Number(fullOptimal.optimalPoints) - Number(withoutPlayer.optimalPoints));
+        boost += improvement;
+
+        // If benching this player cost the source team an H2H or median win,
+        // treat it as a clear sit/start mistake rather than a trade target.
+        const game = completed.find(m =>
+          m.week === weekEntry.week &&
+          (m.homeTeamId === Number(team.id) || m.awayTeamId === Number(team.id))
+        );
+        if (game && improvement > 0) {
+          const actual = game.homeTeamId === Number(team.id) ? game.homeScore : game.awayScore;
+          const opponent = game.homeTeamId === Number(team.id) ? game.awayScore : game.homeScore;
+
+          const weekScores = completed
+            .filter(m => m.week === weekEntry.week)
+            .flatMap(m => [Number(m.homeScore), Number(m.awayScore)])
+            .filter(Number.isFinite)
+            .sort((a,b) => a-b);
+          const median = weekScores.length
+            ? (weekScores.length % 2
+              ? weekScores[Math.floor(weekScores.length/2)]
+              : (weekScores[weekScores.length/2-1] + weekScores[weekScores.length/2]) / 2)
+            : null;
+
+          const h2hWinLost = actual <= opponent && Number(fullOptimal.optimalPoints) > opponent;
+          const medianWinLost = Number.isFinite(median) && actual <= median && Number(fullOptimal.optimalPoints) > median;
+          if (h2hWinLost || medianWinLost) clearMistake = true;
+        }
       }
     }
 
-    // Keep only meaningful targets: a clear win added, or at least 5 points of cumulative optimal-lineup improvement.
-    if (h2hWinsAdded + medianWinsAdded > 0 || boost >= 5) {
+    // Keep meaningful targets, but exclude players whose current team clearly
+    // lost an H2H or median win because they were benched.
+    if (!clearMistake && boost >= 5) {
       targets.push({
         playerId,
         player:entry.playerPoolEntry?.player?.fullName || history.name || `Player #${playerId}`,
