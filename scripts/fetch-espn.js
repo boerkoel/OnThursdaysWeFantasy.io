@@ -41,77 +41,34 @@ function decodeHtml(value) {
     .replace(/&nbsp;/g, " ");
 }
 
-function extractFantasyProsEcrData(html) {
-  const assignment = html.match(/(?:var|let|const)\s+ecrData\s*=\s*/);
-  if (!assignment) return null;
+function parseFantasyProsRosNotes(html) {
+  const text = decodeHtml(
+    html
+      .replace(/<script[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style[\s\S]*?<\/style>/gi, " ")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+  );
 
-  const start = assignment.index + assignment[0].length;
-  const openBrace = html.indexOf("{", start);
-  if (openBrace < 0) return null;
-
-  let depth = 0;
-  let inString = false;
-  let escaped = false;
-
-  for (let i = openBrace; i < html.length; i++) {
-    const char = html[i];
-
-    if (inString) {
-      if (escaped) {
-        escaped = false;
-      } else if (char === "\\") {
-        escaped = true;
-      } else if (char === '"') {
-        inString = false;
-      }
-      continue;
-    }
-
-    if (char === '"') {
-      inString = true;
-    } else if (char === "{") {
-      depth++;
-    } else if (char === "}") {
-      depth--;
-      if (depth === 0) {
-        try {
-          return JSON.parse(html.slice(openBrace, i + 1));
-        } catch {
-          return null;
-        }
-      }
-    }
-  }
-
-  return null;
-}
-
-function parseFantasyProsTable(html) {
   const rankings = [];
-  const rowPattern = /<tr[^>]*class=["'][^"']*player-row[^"']*["'][^>]*>([\s\S]*?)<\/tr>/gi;
+  const pattern = /(?:\||\b)(\d{1,3})\.\s+(.+?)\s+(QB|RB|WR|TE|K|DST)\s*-\s*([A-Z]{2,3})\b/g;
 
-  for (const rowMatch of html.matchAll(rowPattern)) {
-    const cells = [...rowMatch[1].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/gi)].map(m =>
-      decodeHtml(m[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim())
-    );
-    if (cells.length < 3) continue;
+  for (const match of text.matchAll(pattern)) {
+    const rank = Number(match[1]);
+    const name = match[2].trim();
+    const position = match[3];
+    const team = match[4];
 
-    const rank = Number(cells[0]);
-    const playerCell = cells[2] || "";
-    const nameMatch = playerCell.match(/^(.+?)\s*\(([A-Z]{2,3})\)$/);
-    const name = (nameMatch ? nameMatch[1] : playerCell).trim();
-    const team = nameMatch ? nameMatch[2] : "";
-
-    if (Number.isFinite(rank) && rank > 0 && name && !rankings.some(p => p.rank === rank)) {
-      rankings.push({ rank, name, team });
-    }
+    if (!rank || !name || rankings.some(p => p.rank === rank)) continue;
+    rankings.push({ rank, name, team, position });
   }
 
-  return rankings;
+  return rankings.sort((a, b) => a.rank - b.rank);
 }
 
 async function fetchFantasyProsRosPpr() {
-  const url = "https://www.fantasypros.com/nfl/rankings/?scoring=PPR&type=ros";
+  const url = "https://www.fantasypros.com/nfl/notes/ros-overall.php?type=PPR";
   try {
     const response = await fetch(url, {
       headers: {
@@ -122,34 +79,10 @@ async function fetchFantasyProsRosPpr() {
     if (!response.ok) throw new Error(`FantasyPros request failed: ${response.status} ${response.statusText}`);
 
     const html = await response.text();
-    const ecrData = extractFantasyProsEcrData(html);
-    let rankings = [];
-
-    if (ecrData?.players && Array.isArray(ecrData.players)) {
-      rankings = ecrData.players
-        .map(player => ({
-          rank: Number(player.rank_ecr ?? player.rank ?? player.ecr),
-          name: player.player_name ?? player.name,
-          team: player.player_team_id ?? player.team ?? "",
-          position: player.player_position_id ?? player.position ?? ""
-        }))
-        .filter(player => Number.isFinite(player.rank) && player.rank > 0 && player.name);
-    }
+    const rankings = parseFantasyProsRosNotes(html);
 
     if (rankings.length < 200) {
-      rankings = parseFantasyProsTable(html);
-    }
-
-    const uniqueRankings = [];
-    const seenRanks = new Set();
-    for (const player of rankings.sort((a, b) => a.rank - b.rank)) {
-      if (seenRanks.has(player.rank)) continue;
-      seenRanks.add(player.rank);
-      uniqueRankings.push(player);
-    }
-
-    if (uniqueRankings.length < 200) {
-      throw new Error(`FantasyPros parser found only ${uniqueRankings.length} rankings; refusing to replace the previous dataset.`);
+      throw new Error(`FantasyPros parser found only ${rankings.length} rankings; refusing to replace the previous dataset.`);
     }
 
     await writeFile(
@@ -159,10 +92,10 @@ async function fetchFantasyProsRosPpr() {
         rankingType: "Rest of Season",
         scoring: "PPR",
         fetchedAt: new Date().toISOString(),
-        rankings: uniqueRankings
+        rankings
       }, null, 2) + "\n"
     );
-    console.log(`Fetched ${uniqueRankings.length} FantasyPros ROS PPR rankings.`);
+    console.log(`Fetched ${rankings.length} FantasyPros ROS PPR rankings.`);
   } catch (error) {
     console.warn(`FantasyPros ROS PPR fetch skipped: ${error.message}`);
     try {
