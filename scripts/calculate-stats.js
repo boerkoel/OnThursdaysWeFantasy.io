@@ -639,20 +639,20 @@ function playerSeasonPoints(entry) {
 function playerWeeklyScores(entry) {
   const playerId = Number(entry.playerId);
   const scores = [];
+
   for (const week of completedWeeks) {
-    const weeklyRoster = historicalRosterData.get(week);
-    const weeklyTeam = (weeklyRoster?.teams || []).find(t =>
-      (t.roster?.entries || []).some(e => Number(e.playerId) === playerId)
-    );
-    const weeklyEntry = weeklyTeam?.roster?.entries?.find(e => Number(e.playerId) === playerId);
+    const boxscore = historicalBoxscoreData.get(week);
+    const weeklyEntry = (boxscore?.schedule || [])
+      .flatMap(game => [game.home, game.away])
+      .flatMap(side => side?.rosterForCurrentScoringPeriod?.entries || [])
+      .find(e => Number(e.playerId) === playerId);
+
     if (weeklyEntry) {
       const score = Number(weeklyEntry.playerPoolEntry?.appliedStatTotal);
       if (Number.isFinite(score)) scores.push({week, score});
     }
   }
 
-  // Fall back to player stats when a week-specific roster snapshot is not
-  // available, preserving the previous behavior.
   if (!scores.length) {
     const stats = entry.playerPoolEntry?.player?.stats || [];
     return stats
@@ -660,6 +660,7 @@ function playerWeeklyScores(entry) {
       .map(s => ({week:Number(s.scoringPeriodId), score:Number(s.appliedTotal)}))
       .filter(s => Number.isFinite(s.score) && completedWeeks.includes(s.week));
   }
+
   return scores;
 }
 
