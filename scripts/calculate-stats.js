@@ -328,10 +328,28 @@ function buildMarqueeStories() {
     const a=currentScores.find(s=>s.teamId===m.homeTeamId), b=currentScores.find(s=>s.teamId===m.awayTeamId);
     if(!a||!b) return null;
     const pa=previousScores.get(a.teamId), pb=previousScores.get(b.teamId);
-    return {m,a,b,diff:Math.abs(Number(a.score)-Number(b.score)),currentDiff:Number(a.score)-Number(b.score),previousDiff:pa&&pb?Number(pa.score)-Number(pb.score):null};
+    const aProj=Number(a.projectionAverage), bProj=Number(b.projectionAverage);
+    const paProj=pa ? Number(pa.projectionAverage ?? pa.projection?.espn) : NaN;
+    const pbProj=pb ? Number(pb.projectionAverage ?? pb.projection?.espn) : NaN;
+    const projectedDiff=Number.isFinite(aProj)&&Number.isFinite(bProj)?aProj-bProj:null;
+    const previousProjectedDiff=Number.isFinite(paProj)&&Number.isFinite(pbProj)?paProj-pbProj:null;
+    return {m,a,b,diff:Math.abs(Number(a.score)-Number(b.score)),currentDiff:Number(a.score)-Number(b.score),previousDiff:pa&&pb?Number(pa.score)-Number(pb.score):null,projectedDiff,previousProjectedDiff,projectedDiffAbs:Number.isFinite(projectedDiff)?Math.abs(projectedDiff):null};
   }).filter(Boolean);
-  const close=matchupStates.filter(x=>!x.m.completed&&x.diff<=8).sort((a,b)=>a.diff-b.diff)[0];
-  if(close) add("MATCHUP ALERT","⚔️ " + close.a.team + " vs " + close.b.team + " is getting interesting — just " + money(close.diff) + " pts apart.",30-close.diff);
+  const close=matchupStates.filter(x=>!x.m.completed&&Number.isFinite(x.projectedDiff)&&x.projectedDiffAbs<=8).sort((a,b)=>a.projectedDiffAbs-b.projectedDiffAbs)[0];
+  if(close) add("MATCHUP ALERT","⚔️ " + close.a.team + " vs " + close.b.team + " is projected to finish just " + money(close.projectedDiffAbs) + " pts apart.",30-close.projectedDiffAbs);
+  const projectionFlip=matchupStates.find(x=>!x.m.completed&&Number.isFinite(x.previousProjectedDiff)&&Number.isFinite(x.projectedDiff)&&((x.previousProjectedDiff>0&&x.projectedDiff<0)||(x.previousProjectedDiff<0&&x.projectedDiff>0)));
+  if(projectionFlip){
+    const leader=projectionFlip.projectedDiff>0?projectionFlip.a.team:projectionFlip.b.team;
+    const trailer=projectionFlip.projectedDiff>0?projectionFlip.b.team:projectionFlip.a.team;
+    add("PROJECTION FLIP","🔮 PROJECTION FLIP: " + leader + " is now projected to beat " + trailer + ".",98);
+  } else {
+    const narrowing=matchupStates
+      .filter(x=>!x.m.completed&&Number.isFinite(x.previousProjectedDiff)&&Number.isFinite(x.projectedDiff))
+      .map(x=>({...x,projectionChange:x.projectedDiffAbs-Math.abs(x.previousProjectedDiff)}))
+      .filter(x=>x.projectionChange<=-3)
+      .sort((a,b)=>a.projectionChange-b.projectionChange)[0];
+    if(narrowing) add("PROJECTION TIGHTENING","🔮 " + narrowing.a.team + " vs " + narrowing.b.team + " is tightening — the projected margin shrank to " + money(narrowing.projectedDiffAbs) + " pts.",82);
+  }
   const flip=matchupStates.find(x=>Number.isFinite(x.previousDiff)&&((x.previousDiff>0&&x.currentDiff<0)||(x.previousDiff<0&&x.currentDiff>0)));
   if(flip){const leader=flip.currentDiff>0?flip.a.team:flip.b.team;const trailer=flip.currentDiff>0?flip.b.team:flip.a.team;add("MATCHUP FLIP","🚨 LEAD CHANGE: " + leader + " just jumped in front of " + trailer + ".",100);}
 
@@ -731,12 +749,12 @@ function buildWeeklyRecap(week) {
   const biggestBench = weeklyEntries.filter(e => Number(e.lineupSlotId) === 20).sort((a,b)=>b.score-a.score)[0];
   if (biggestBench && biggestBench.score >= 8) add("BIGGEST REGRET","🪑 " + name(biggestBench.teamId) + " left " + money(biggestBench.score) + " points on the bench with " + biggestBench.name + ".",85);
 
-  if (Number.isFinite(median)) {
-    const above = games.flatMap(m => [
-      {teamId:m.homeTeamId,score:Number(m.homeScore)},
-      {teamId:m.awayTeamId,score:Number(m.awayScore)}
-    ]).filter(x=>x.score>median);
-    add("MEDIAN WATCH","🎯 " + above.length + " teams finished above the " + money(median) + " median.",60);
+  const toughLoss = games.flatMap(m => [
+    {teamId:m.homeTeamId,score:Number(m.homeScore),result:m.winner==="HOME"},
+    {teamId:m.awayTeamId,score:Number(m.awayScore),result:m.winner==="AWAY"}
+  ]).filter(x=>!x.result).sort((a,b)=>b.score-a.score)[0];
+  if (toughLoss && toughLoss.score >= 100) {
+    add("TOUGH LUCK","😬 " + name(toughLoss.teamId) + " scored " + money(toughLoss.score) + " and still took the L.",82);
   }
 
   if (topGame && topGame.margin >= 25) {
