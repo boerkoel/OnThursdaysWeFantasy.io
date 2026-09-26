@@ -917,6 +917,7 @@ for (const team of teams.values()) {
 
   const sortedPartners = partners.sort((a,b) => b.score - a.score).slice(0,3);
   const targets = [];
+  const strengthPositions = new Set(fit.strengths.map(p => p.position));
 
   // Evaluate every current bench player in the league against this team.
   for (const other of teams.values()) {
@@ -976,7 +977,11 @@ for (const team of teams.values()) {
           teamId:Number(other.id),
           team:other.name,
           boost:round(boost),
-          winsAdded:round(winsAdded)
+          winsAdded:round(winsAdded),
+          otherNeeds:(positionFitByTeam.get(Number(other.id))?.needs || []).map(p => ({position:p.position, percent:p.percent})),
+          needsMatch:(positionFitByTeam.get(Number(other.id))?.needs || [])
+            .filter(p => strengthPositions.has(p.position))
+            .map(p => p.position)
         });
       }
     }
@@ -985,7 +990,7 @@ for (const team of teams.values()) {
   rosterFitByTeam.set(Number(team.id), {
     partners:sortedPartners,
     targets:targets
-      .sort((a,b) => b.boost - a.boost || b.winsAdded - a.winsAdded || a.startRate - b.startRate)
+      .sort((a,b) => b.needsMatch.length - a.needsMatch.length || b.boost - a.boost || b.winsAdded - a.winsAdded || a.startRate - b.startRate)
       .slice(0,3)
   });
 }
