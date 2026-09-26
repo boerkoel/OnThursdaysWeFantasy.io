@@ -804,12 +804,9 @@ for (const team of teams.values()) {
     return result ? {week, ...result} : null;
   }).filter(Boolean);
 
-  const totalActual = weeks.reduce((sum, w) => sum + w.actualPoints, 0);
-  const totalOptimal = weeks.reduce((sum, w) => sum + w.optimalPoints, 0);
-  const score = totalOptimal > 0 ? round((totalActual / totalOptimal) * 100) : null;
-
   const totalActual = round(weeks.reduce((sum, w) => sum + w.actualPoints, 0));
   const totalOptimal = round(weeks.reduce((sum, w) => sum + w.optimalPoints, 0));
+  const score = totalOptimal > 0 ? round((totalActual / totalOptimal) * 100) : null;
   startSitByTeam.set(team.id, {
     score,
     actualPoints:totalActual,
