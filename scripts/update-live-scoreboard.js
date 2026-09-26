@@ -16,40 +16,6 @@ function teamName(teams, id) {
   return teams.get(Number(id))?.name || `Team ${id}`;
 }
 
-async function fetchNflSchedule() {
-  const now = new Date();
-  const dates = [new Date(now), new Date(now.getTime() + 86400000)];
-  const games = [];
-
-  for (const date of dates) {
-    const dateString = date.toISOString().slice(0, 10).replace(/-/g, "");
-    const response = await fetch(
-      `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=${dateString}`,
-      { headers: { Accept: "application/json", "User-Agent": "OnThursdaysWeFantasy/1.0" } }
-    );
-    if (!response.ok) throw new Error(`NFL schedule request failed: ${response.status} ${response.statusText}`);
-    const data = await response.json();
-    for (const event of data.events || []) {
-      const kickoff = new Date(event.date);
-      if (Number.isFinite(kickoff.getTime())) games.push(kickoff);
-    }
-  }
-
-  return games;
-}
-
-const nflKickoffs = await fetchNflSchedule();
-const now = Date.now();
-const activeGame = nflKickoffs.some(kickoff => {
-  const start = kickoff.getTime();
-  return now >= start - 15 * 60 * 1000 && now <= start + 5 * 60 * 60 * 1000;
-});
-
-if (!activeGame) {
-  console.log("No NFL game is within the live-update window. Skipping ESPN live fetch.");
-  process.exit(0);
-}
-
 const matchup = JSON.parse(await readFile("data/current/mMatchup.json", "utf8"));
 const previousScoreboard = await readFile("data/current/scoreboard.json", "utf8").then(JSON.parse).catch(() => null);
 const teamData = JSON.parse(await readFile("data/current/mTeam.json", "utf8"));
