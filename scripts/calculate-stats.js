@@ -1,5 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 
+function money(n){return Number.isFinite(Number(n)) ? Number(n).toFixed(2) : "0.00"}
+
 const settings = await readJson("data/current/mSettings.json");
 const previousScoreboard = await readJson(process.env.PREVIOUS_SCOREBOARD_PATH || "data/current/scoreboard.json").catch(() => null);
 const previousProjectionHistory = previousScoreboard?.projectionHistory || [];
