@@ -82,7 +82,8 @@ function TeamCards({ teams }) {
           <div className="trade-target-list">
             {team.profileAnalytics.rosterFit.targets.map(p => <div className="trade-target" key={p.teamId + "-" + p.playerId}>
               <div className="trade-target-info">
-                <strong>{p.team} Needs</strong>
+                <strong>{p.player}{p.position ? `, ${p.position}` : ""}</strong>
+                <span>{p.team} Needs</span>
                 <span>has only started {p.startRate}% of the time</span>
                 <span>Needs: {p.otherNeeds?.length ? p.otherNeeds.map(x => x.position).join(" / ") : "None"}</span>
               </div>
