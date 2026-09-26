@@ -2,6 +2,12 @@ name: Update Live Data
 
 on:
   workflow_dispatch:
+    inputs:
+      force_update:
+        description: "Force a live-data refresh for testing"
+        required: false
+        default: false
+        type: boolean
   schedule:
     - cron: "*/2 * * * *"
 
@@ -26,7 +32,7 @@ jobs:
         id: window
         run: node scripts/check-nfl-live-window.js
       - name: Fetch live ESPN data
-        if: steps.window.outputs.active == 'true' || steps.window.outputs.safety == 'true'
+        if: steps.window.outputs.active == 'true' || steps.window.outputs.safety == 'true' || inputs.force_update == true
         env:
           ESPN_SEASON: "2026"
           ESPN_LEAGUE_ID: "998599827"
@@ -34,18 +40,18 @@ jobs:
           ESPN_SWID: ${{ secrets.ESPN_SWID }}
         run: node scripts/fetch-live.js
       - name: Preserve previous scoreboard for live story detection
-        if: steps.window.outputs.active == 'true'
+        if: steps.window.outputs.active == 'true' || inputs.force_update == true
         run: cp data/current/scoreboard.json /tmp/previous-scoreboard.json || true
       - name: Update live scoreboard
-        if: steps.window.outputs.active == 'true'
+        if: steps.window.outputs.active == 'true' || inputs.force_update == true
         run: node scripts/update-live-scoreboard.js
       - name: Recalculate live stories
-        if: steps.window.outputs.active == 'true'
+        if: steps.window.outputs.active == 'true' || inputs.force_update == true
         env:
           PREVIOUS_SCOREBOARD_PATH: /tmp/previous-scoreboard.json
         run: node scripts/calculate-stats.js
       - name: Commit live data
-        if: steps.window.outputs.active == 'true'
+        if: steps.window.outputs.active == 'true' || inputs.force_update == true
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
