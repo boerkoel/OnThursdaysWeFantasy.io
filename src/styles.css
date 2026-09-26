@@ -346,3 +346,13 @@
 .power-index-legend b{color:#aeb1a9}
 @media(max-width:900px){.power-index-row{grid-template-columns:24px minmax(130px,1fr) 48px 48px 48px}.power-positions{grid-column:2/-1}.power-positions span{padding-top:5px;border-top:1px solid #292c27}}
 @media(max-width:520px){.power-index-row{grid-template-columns:22px minmax(0,1fr) 48px}.power-index-row>span:nth-of-type(3),.power-index-row>span:nth-of-type(4){display:none}.power-positions{grid-template-columns:repeat(3,1fr);gap:6px}.power-index-legend{gap:8px;display:grid}.power-index-row{padding:10px}.power-team{font-size:11px}}
+
+.power-index-views{display:flex;flex-direction:column;gap:10px}
+.power-index-view{border:1px solid #30332d;border-radius:12px;background:#ffffff04;overflow:hidden}
+.power-index-view summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;padding:13px 15px}
+.power-index-view summary::-webkit-details-marker{display:none}
+.power-index-view summary>span{display:flex;flex-direction:column;gap:3px}
+.power-index-view summary b{font-size:12px;letter-spacing:.06em}
+.power-index-view summary small{color:#777a72;font-size:9px}
+.power-index-view summary em{font-style:normal;color:#666960;font-size:8px;text-transform:uppercase;letter-spacing:.08em}
+.power-index-view .power-index-table{padding:0 8px 8px}
