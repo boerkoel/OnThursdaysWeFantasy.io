@@ -438,7 +438,7 @@ const ultimateLoser = {
   entrants:ultimateEntrants,
   playoffLosers,
   schedule:ultimateLoserSchedule,
-  note:"Six regular-season non-playoff teams enter as seeds 1-6; the highest-ranked Week 15 playoff loser enters as seed 7 and the other Week 15 playoff loser enters as seed 8. The lower-scoring team advances each round, and the remaining teams are reseeded highest-vs-lowest before the next round."
+  note:"Six regular-season non-playoff teams enter as seeds 1-6; the lower-ranked Week 15 playoff loser enters as seed 7 and the higher-ranked Week 15 playoff loser enters as seed 8. The lower-scoring team advances each round, and the remaining teams are reseeded highest-vs-lowest before the next round."
 };
 
 const playoffs = {
