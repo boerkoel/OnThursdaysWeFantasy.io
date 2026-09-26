@@ -33,14 +33,22 @@ jobs:
           ESPN_S2: ${{ secrets.ESPN_S2 }}
           ESPN_SWID: ${{ secrets.ESPN_SWID }}
         run: node scripts/fetch-live.js
+      - name: Preserve previous scoreboard for live story detection
+        if: steps.window.outputs.active == 'true'
+        run: cp data/current/scoreboard.json /tmp/previous-scoreboard.json || true
       - name: Update live scoreboard
         if: steps.window.outputs.active == 'true'
         run: node scripts/update-live-scoreboard.js
+      - name: Recalculate live stories
+        if: steps.window.outputs.active == 'true'
+        env:
+          PREVIOUS_SCOREBOARD_PATH: /tmp/previous-scoreboard.json
+        run: node scripts/calculate-stats.js
       - name: Commit live data
         if: steps.window.outputs.active == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/current/mLiveScoring.json data/current/mBoxscore.json data/current/mScoreboard.json data/current/scoreboard.json
+          git add data/current/mLiveScoring.json data/current/mBoxscore.json data/current/mScoreboard.json data/current/scoreboard.json data/current/marquee.json
           git diff --cached --quiet || git commit -m "Update live fantasy scores"
           git push
