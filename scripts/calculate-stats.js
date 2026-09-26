@@ -925,7 +925,8 @@ for (const team of teams.values()) {
 
     for (const player of benchTargetsByTeam.get(Number(other.id)) || []) {
       let boost = 0;
-      let winsAdded = 0;
+      let h2hWinsAdded = 0;
+      let medianWinsAdded = 0;
 
       for (const week of completedWeeks) {
         const sourceRoster = weeklyRosterForTeam(week, other.id);
@@ -967,8 +968,8 @@ for (const team of teams.values()) {
             : (weekScores[weekScores.length/2-1] + weekScores[weekScores.length/2]) / 2)
           : null;
 
-        if (hypotheticalOptimal.optimalPoints > opponent && actual <= opponent) winsAdded += 1;
-        if (Number.isFinite(median) && hypotheticalOptimal.optimalPoints > median && actual <= median) winsAdded += 1;
+        if (hypotheticalOptimal.optimalPoints > opponent && actual <= opponent) h2hWinsAdded += 1;
+        if (Number.isFinite(median) && hypotheticalOptimal.optimalPoints > median && actual <= median) medianWinsAdded += 1;
       }
 
       if (boost > 0.25) {
@@ -977,7 +978,9 @@ for (const team of teams.values()) {
           teamId:Number(other.id),
           team:other.name,
           boost:round(boost),
-          winsAdded:round(winsAdded),
+          h2hWinsAdded:round(h2hWinsAdded),
+          medianWinsAdded:round(medianWinsAdded),
+          winsAdded:round(h2hWinsAdded + medianWinsAdded),
           otherNeeds:(positionFitByTeam.get(Number(other.id))?.needs || []).map(p => ({position:p.position, percent:p.percent})),
           needsMatch:(positionFitByTeam.get(Number(other.id))?.needs || [])
             .filter(p => strengthPositions.has(p.position))
