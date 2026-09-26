@@ -42,7 +42,7 @@ function decodeHtml(value) {
 }
 
 function extractFantasyProsEcrData(html) {
-  const match = html.match(/(?:var|let|const)\\s+ecrData\\s*=\\s*(\\{[\\s\\S]*?\\})\\s*;?/);
+  const match = html.match(/(?:var|let|const)\s+ecrData\s*=\s*(\{[\s\S]*?\})\s*;?/);
   if (!match) return null;
 
   try {
@@ -54,17 +54,17 @@ function extractFantasyProsEcrData(html) {
 
 function parseFantasyProsTable(html) {
   const rankings = [];
-  const rowPattern = /<tr[^>]*class=["'][^"']*player-row[^"']*["'][^>]*>([\\s\\S]*?)<\\/tr>/gi;
+  const rowPattern = /<tr[^>]*class=["'][^"']*player-row[^"']*["'][^>]*>([\s\S]*?)<\/tr>/gi;
 
   for (const rowMatch of html.matchAll(rowPattern)) {
-    const cells = [...rowMatch[1].matchAll(/<td[^>]*>([\\s\\S]*?)<\\/td>/gi)].map(m =>
-      decodeHtml(m[1].replace(/<[^>]+>/g, " ").replace(/\\s+/g, " ").trim())
+    const cells = [...rowMatch[1].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/gi)].map(m =>
+      decodeHtml(m[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim())
     );
     if (cells.length < 3) continue;
 
     const rank = Number(cells[0]);
     const playerCell = cells[2] || "";
-    const nameMatch = playerCell.match(/^(.+?)\\s*\\(([A-Z]{2,3})\\)$/);
+    const nameMatch = playerCell.match(/^(.+?)\s*\(([A-Z]{2,3})\)$/);
     const name = (nameMatch ? nameMatch[1] : playerCell).trim();
     const team = nameMatch ? nameMatch[2] : "";
 
@@ -126,7 +126,7 @@ async function fetchFantasyProsRosPpr() {
         scoring: "PPR",
         fetchedAt: new Date().toISOString(),
         rankings: uniqueRankings
-      }, null, 2) + "\\n"
+      }, null, 2) + "\n"
     );
     console.log(`Fetched ${uniqueRankings.length} FantasyPros ROS PPR rankings.`);
   } catch (error) {
@@ -150,12 +150,10 @@ for (const view of views) {
   results[view] = await fetchView(view);
   await writeFile(
     `data/current/${view}.json`,
-    JSON.stringify(results[view], null, 2) + "\\n"
+    JSON.stringify(results[view], null, 2) + "\n"
   );
 }
 
-// Keep week-specific roster snapshots so player awards can use actual weekly
-// fantasy scores from completed weeks, rather than only the current roster view.
 const currentScoringPeriod = Number(results.mMatchup?.scoringPeriodId || 1);
 for (let week = 1; week <= currentScoringPeriod; week++) {
   console.log(`Fetching historical roster/boxscore data for week ${week}...`);
@@ -163,17 +161,17 @@ for (let week = 1; week <= currentScoringPeriod; week++) {
   const weeklyBoxscore = await fetchView("mBoxscore", week);
   await writeFile(
     `data/current/mRoster-week-${week}.json`,
-    JSON.stringify(weeklyRoster, null, 2) + "\\n"
+    JSON.stringify(weeklyRoster, null, 2) + "\n"
   );
   await writeFile(
     `data/current/mBoxscore-week-${week}.json`,
-    JSON.stringify(weeklyBoxscore, null, 2) + "\\n"
+    JSON.stringify(weeklyBoxscore, null, 2) + "\n"
   );
 }
 
 await writeFile(
   "data/current/metadata.json",
-  JSON.stringify({ season, leagueId, fetchedAt, views }, null, 2) + "\\n"
+  JSON.stringify({ season, leagueId, fetchedAt, views }, null, 2) + "\n"
 );
 
 await fetchFantasyProsRosPpr();
