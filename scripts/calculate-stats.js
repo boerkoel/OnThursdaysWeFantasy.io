@@ -981,7 +981,7 @@ for (const team of teams.values()) {
         if (Number.isFinite(median) && hypotheticalOptimal.optimalPoints > median && actual <= median) medianWinsAdded += 1;
       }
 
-      if (boost > 0.25) {
+      // The Trade Desk should only show targets that meet the same 5-point\n      // minimum used when identifying meaningful bench targets above.\n      if (boost >= 5) {
         // Look for a reciprocal bench player who would also improve the
         // source team's optimal lineup. This identifies genuine win-win
         // trade possibilities rather than one-sided trade targets.
