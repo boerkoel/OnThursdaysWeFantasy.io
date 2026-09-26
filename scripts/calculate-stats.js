@@ -777,8 +777,8 @@ function starterEligible(entry, slotId) {
   return eligibleSlots.includes(Number(slotId));
 }
 
-function lineupEfficiency(weeklyTeam, actualPointsOverride = null) {
-  const entries = (weeklyTeam?.roster?.entries || []).filter(e => Number(e.lineupSlotId) !== 21);
+function lineupEfficiency(weeklyTeam, actualPointsOverride = null, excludedPlayerId = null) {
+  const entries = (weeklyTeam?.roster?.entries || []).filter(e => Number(e.lineupSlotId) !== 21 && Number(e.playerId) !== Number(excludedPlayerId));
   const starterSlots = [];
   const lineupSlotCounts = settings.settings?.rosterSettings?.lineupSlotCounts || {};
   for (const [slotId, count] of Object.entries(lineupSlotCounts)) {
@@ -875,6 +875,100 @@ for (const team of teams.values()) {
   const strengths = comparisons.filter(p => p.percent >= 15).sort((a,b)=>b.percent-a.percent).slice(0,3);
   const needs = comparisons.filter(p => p.percent <= -15).sort((a,b)=>a.percent-b.percent).slice(0,3);
   positionFitByTeam.set(Number(team.id), {strengths, needs});
+}
+
+const benchTargetsByTeam = new Map();
+
+function weeklyRosterForTeam(week, teamId) {
+  const boxscore = historicalBoxscoreData.get(week);
+  const side = (boxscore?.schedule || [])
+    .filter(g => Number(g.matchupPeriodId) === Number(week))
+    .flatMap(g => [g.home, g.away])
+    .find(s => Number(s?.teamId) === Number(teamId));
+  if (side?.rosterForCurrentScoringPeriod?.entries) {
+    return {id:Number(teamId), roster:{entries:side.rosterForCurrentScoringPeriod.entries}};
+  }
+  return (historicalRosterData.get(week)?.teams || []).find(t => Number(t.id) === Number(teamId)) || null;
+}
+
+for (const team of teams.values()) {
+  const currentTeam = (rosterData.teams || []).find(t => Number(t.id) === Number(team.id));
+  const targets = [];
+  for (const entry of currentTeam?.roster?.entries || []) {
+    if (![20].includes(Number(entry.lineupSlotId))) continue;
+    const playerId = Number(entry.playerId);
+    const history = playerTeamHistory.get(`${team.id}|${playerId}`);
+    if (!history?.weekly?.length) continue;
+
+    const rosteredWeeks = history.weekly.length;
+    const startedWeeks = history.weekly.filter(w => w.started).length;
+    const startRate = startedWeeks / rosteredWeeks;
+    let boost = 0;
+
+    for (const weekEntry of history.weekly.filter(w => !w.started)) {
+      const weeklyTeam = weeklyRosterForTeam(weekEntry.week, team.id);
+      const fullOptimal = lineupEfficiency(weeklyTeam);
+      const withoutPlayer = lineupEfficiency(weeklyTeam, null, playerId);
+      if (fullOptimal && withoutPlayer) {
+        boost += Math.max(0, Number(fullOptimal.optimalPoints) - Number(withoutPlayer.optimalPoints));
+      }
+    }
+
+    if (boost > 0.25) {
+      targets.push({
+        playerId,
+        player:entry.playerPoolEntry?.player?.fullName || history.name || `Player #${playerId}`,
+        position:positionNames[Number(entry.playerPoolEntry?.player?.defaultPositionId || history.position)] || history.position || null,
+        startRate:round(startRate * 100),
+        rosteredWeeks,
+        startedWeeks,
+        boost:round(boost)
+      });
+    }
+  }
+  benchTargetsByTeam.set(Number(team.id), targets.sort((a,b) => b.boost - a.boost || a.startRate - b.startRate));
+}
+
+const rosterFitByTeam = new Map();
+for (const team of teams.values()) {
+  const fit = positionFitByTeam.get(Number(team.id)) || {strengths:[], needs:[]};
+  const partners = [];
+
+  for (const other of teams.values()) {
+    if (Number(other.id) === Number(team.id)) continue;
+    const otherFit = positionFitByTeam.get(Number(other.id)) || {strengths:[], needs:[]};
+
+    const give = fit.strengths.filter(s => otherFit.needs.some(n => n.position === s.position));
+    const get = fit.needs.filter(n => otherFit.strengths.some(s => s.position === n.position));
+    if (!give.length || !get.length) continue;
+
+    const score = give.reduce((sum,p) => sum + Math.abs(Number(p.percent)), 0)
+      + get.reduce((sum,p) => sum + Math.abs(Number(p.percent)), 0);
+
+    partners.push({
+      teamId:Number(other.id),
+      team:other.name,
+      score:round(score),
+      give:give.slice(0,2).map(p => ({position:p.position, percent:p.percent})),
+      get:get.slice(0,2).map(p => ({position:p.position, percent:p.percent}))
+    });
+  }
+
+  const sortedPartners = partners.sort((a,b) => b.score - a.score).slice(0,3);
+  const partnerIds = new Set(sortedPartners.map(p => p.teamId));
+  const targets = sortedPartners
+    .flatMap(p => (benchTargetsByTeam.get(p.teamId) || []).map(t => ({
+      ...t,
+      teamId:p.teamId,
+      team:p.team
+    })))
+    .sort((a,b) => b.boost - a.boost || a.startRate - b.startRate)
+    .slice(0,4);
+
+  rosterFitByTeam.set(Number(team.id), {
+    partners:sortedPartners,
+    targets
+  });
 }
 
 const startSitByTeam = new Map();
@@ -1061,6 +1155,7 @@ await writeJson("data/current/teams.json",{season:settings.seasonId,currentWeek,
     profileAnalytics:{
       optimalLineup:startSit ? {actualPoints:startSit.actualPoints,optimalPoints:startSit.optimalPoints,pointsLeft:startSit.pointsLeft,efficiency:startSit.score} : null,
       positionFit:positionFitByTeam.get(Number(t.id))||null,
+      rosterFit:rosterFitByTeam.get(Number(t.id))||null,
       trend:trend ? {...trend,direction:trend.slope >= 2 ? "up" : trend.slope <= -2 ? "down" : "steady"} : null,
       luck:luck ? {actualWins:round(luck.actual),expectedWins:round(luck.expected),difference:round(luck.luck)} : null
     }
