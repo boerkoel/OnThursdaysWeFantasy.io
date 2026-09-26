@@ -95,7 +95,7 @@ function TeamCards({ teams }) {
           </div>
         </> : null}
         {team.profileAnalytics.winWinTrades?.length ? <>
-          <div className="trade-section-heading trade-target-heading"><span>🤝</span><div><small>1-FOR-1 WIN-WIN TRADES</small><strong>Trades That Help Both Teams</strong><em>Historical optimal-lineup simulation through completed weeks · only meaningful gains shown</em></div></div>
+          <div className="trade-section-heading trade-target-heading"><span>🤝</span><div><small>1-FOR-1 WIN-WIN TRADES</small><strong>Trades That Help Both Teams</strong><em>Historical simulation through completed weeks · assumes the traded player was in your lineup all season</em></div></div>
           <div className="trade-target-list">
             {team.profileAnalytics.winWinTrades.map((t, i) => <div className="trade-target win-win-trade" key={t.otherTeamId + "-" + t.givePlayerId + "-" + t.getPlayerId + "-" + i}>
               <div className="trade-target-info">
@@ -103,9 +103,9 @@ function TeamCards({ teams }) {
                 <span>Get {t.getPlayer}{t.getPosition ? `, ${t.getPosition}` : ""} <small>ROS #{t.getRosRank}</small> from {t.otherTeam}</span>
               </div>
               <div className="trade-target-impact">
-                <b>Your lineup +{money(t.yourBoost)} pts</b>
-                <em>Your gains: {t.yourWinsAdded} wins ({t.yourH2hWinsAdded} H2H + {t.yourMedianWinsAdded} median)</em>
-                <em>{t.otherTeam}: +{money(t.theirBoost)} pts · {t.theirWinsAdded} wins ({t.theirH2hWinsAdded} H2H + {t.theirMedianWinsAdded} median)</em>
+                <b>Your historical optimal lineup: +{money(t.yourBoost)} pts</b>
+                <em>With {t.getPlayer} in your lineup all season, you would have gained {t.yourWinsAdded} wins ({t.yourH2hWinsAdded} H2H + {t.yourMedianWinsAdded} median)</em>
+                <em>{t.otherTeam}: +{money(t.theirBoost)} historical optimal-lineup pts · {t.theirWinsAdded} wins ({t.theirH2hWinsAdded} H2H + {t.theirMedianWinsAdded} median)</em>
               </div>
             </div>)}
           </div>
