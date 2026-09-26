@@ -870,7 +870,6 @@ for (const team of teams.values()) {
     const startedWeeks = history.weekly.filter(w => w.started).length;
     const startRate = startedWeeks / rosteredWeeks;
     let boost = 0;
-    let clearMistake = false;
 
     for (const weekEntry of history.weekly.filter(w => !w.started)) {
       const weeklyTeam = weeklyRosterForTeam(weekEntry.week, team.id);
@@ -879,38 +878,12 @@ for (const team of teams.values()) {
       if (fullOptimal && withoutPlayer) {
         const improvement = Math.max(0, Number(fullOptimal.optimalPoints) - Number(withoutPlayer.optimalPoints));
         boost += improvement;
-
-        // If benching this player cost the source team an H2H or median win,
-        // treat it as a clear sit/start mistake rather than a trade target.
-        const game = completed.find(m =>
-          m.week === weekEntry.week &&
-          (m.homeTeamId === Number(team.id) || m.awayTeamId === Number(team.id))
-        );
-        if (game && improvement > 0) {
-          const actual = game.homeTeamId === Number(team.id) ? game.homeScore : game.awayScore;
-          const opponent = game.homeTeamId === Number(team.id) ? game.awayScore : game.homeScore;
-
-          const weekScores = completed
-            .filter(m => m.week === weekEntry.week)
-            .flatMap(m => [Number(m.homeScore), Number(m.awayScore)])
-            .filter(Number.isFinite)
-            .sort((a,b) => a-b);
-          const median = weekScores.length
-            ? (weekScores.length % 2
-              ? weekScores[Math.floor(weekScores.length/2)]
-              : (weekScores[weekScores.length/2-1] + weekScores[weekScores.length/2]) / 2)
-            : null;
-
-          const h2hWinLost = actual <= opponent && Number(fullOptimal.optimalPoints) > opponent;
-          const medianWinLost = Number.isFinite(median) && actual <= median && Number(fullOptimal.optimalPoints) > median;
-          if (h2hWinLost || medianWinLost) clearMistake = true;
-        }
       }
     }
 
-    // Keep meaningful targets, but exclude players whose current team clearly
-    // lost an H2H or median win because they were benched.
-    if (!clearMistake && boost >= 5) {
+    // Keep meaningful bench targets. Repeated sit/start mistakes do not
+    // disqualify a player; they can still be useful trade targets.
+    if (boost >= 5) {
       targets.push({
         playerId,
         player:entry.playerPoolEntry?.player?.fullName || history.name || `Player #${playerId}`,
@@ -1003,6 +976,73 @@ for (const team of teams.values()) {
       }
 
       if (boost > 0.25) {
+        // Look for a reciprocal bench player who would also improve the
+        // source team's optimal lineup. This identifies genuine win-win
+        // trade possibilities rather than one-sided trade targets.
+        let mutual = null;
+        for (const reciprocal of benchTargetsByTeam.get(Number(team.id)) || []) {
+          let reciprocalBoost = 0;
+          let reciprocalH2hWins = 0;
+          let reciprocalMedianWins = 0;
+
+          for (const week of completedWeeks) {
+            const reciprocalSourceRoster = weeklyRosterForTeam(week, team.id);
+            const reciprocalEntry = reciprocalSourceRoster?.roster?.entries?.find(e => Number(e.playerId) === Number(reciprocal.playerId));
+            if (!reciprocalEntry || Number(reciprocalEntry.lineupSlotId) !== 20) continue;
+
+            const receivingRoster = weeklyRosterForTeam(week, other.id);
+            if (!receivingRoster?.roster?.entries) continue;
+
+            const baseOptimal = lineupEfficiency(receivingRoster);
+            const hypotheticalTeam = {
+              id:Number(other.id),
+              roster:{entries:receivingRoster.roster.entries.concat([{...reciprocalEntry, lineupSlotId:20}])}
+            };
+            const hypotheticalOptimal = lineupEfficiency(hypotheticalTeam);
+            if (!baseOptimal || !hypotheticalOptimal) continue;
+
+            const improvement = Math.max(0, Number(hypotheticalOptimal.optimalPoints) - Number(baseOptimal.optimalPoints));
+            reciprocalBoost += improvement;
+            if (improvement <= 0) continue;
+
+            const game = completed.find(m =>
+              m.week === week &&
+              (m.homeTeamId === Number(other.id) || m.awayTeamId === Number(other.id))
+            );
+            if (!game) continue;
+
+            const actual = game.homeTeamId === Number(other.id) ? game.homeScore : game.awayScore;
+            const opponent = game.homeTeamId === Number(other.id) ? game.awayScore : game.homeScore;
+            const weekScores = completed
+              .filter(m => m.week === week)
+              .flatMap(m => [Number(m.homeScore), Number(m.awayScore)])
+              .filter(Number.isFinite)
+              .sort((a,b) => a-b);
+            const median = weekScores.length
+              ? (weekScores.length % 2
+                ? weekScores[Math.floor(weekScores.length/2)]
+                : (weekScores[weekScores.length/2-1] + weekScores[weekScores.length/2]) / 2)
+              : null;
+
+            if (hypotheticalOptimal.optimalPoints > opponent && actual <= opponent) reciprocalH2hWins += 1;
+            if (Number.isFinite(median) && hypotheticalOptimal.optimalPoints > median && actual <= median) reciprocalMedianWins += 1;
+          }
+
+          const reciprocalWins = reciprocalH2hWins + reciprocalMedianWins;
+          if (reciprocalBoost > 0.25 && (!mutual || reciprocalWins > mutual.winsAdded || (reciprocalWins === mutual.winsAdded && reciprocalBoost > mutual.boost))) {
+            mutual = {
+              playerId:Number(reciprocal.playerId),
+              player:reciprocal.player,
+              position:reciprocal.position,
+              startRate:reciprocal.startRate,
+              boost:round(reciprocalBoost),
+              h2hWinsAdded:round(reciprocalH2hWins),
+              medianWinsAdded:round(reciprocalMedianWins),
+              winsAdded:round(reciprocalWins)
+            };
+          }
+        }
+
         targets.push({
           ...player,
           teamId:Number(other.id),
@@ -1011,6 +1051,7 @@ for (const team of teams.values()) {
           h2hWinsAdded:round(h2hWinsAdded),
           medianWinsAdded:round(medianWinsAdded),
           winsAdded:round(h2hWinsAdded + medianWinsAdded),
+          mutualTrade:mutual,
           otherNeeds:(positionFitByTeam.get(Number(other.id))?.needs || []).map(p => ({position:p.position, percent:p.percent})),
           needsMatch:(positionFitByTeam.get(Number(other.id))?.needs || [])
             .filter(p => strengthPositions.has(p.position))
