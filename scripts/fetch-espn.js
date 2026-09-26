@@ -33,7 +33,48 @@ async function fetchView(view, scoringPeriodId = null) {
   return response.json();
 }
 
+function decodeHtml(value) {
+  return value
+    .replace(/&amp;/g, "&")
+    .replace(/&#039;|&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&nbsp;/g, " ");
+}
 
+function extractFantasyProsEcrData(html) {
+  const match = html.match(/(?:var|let|const)\\s+ecrData\\s*=\\s*(\\{[\\s\\S]*?\\})\\s*;?/);
+  if (!match) return null;
+
+  try {
+    return JSON.parse(match[1]);
+  } catch {
+    return null;
+  }
+}
+
+function parseFantasyProsTable(html) {
+  const rankings = [];
+  const rowPattern = /<tr[^>]*class=["'][^"']*player-row[^"']*["'][^>]*>([\\s\\S]*?)<\\/tr>/gi;
+
+  for (const rowMatch of html.matchAll(rowPattern)) {
+    const cells = [...rowMatch[1].matchAll(/<td[^>]*>([\\s\\S]*?)<\\/td>/gi)].map(m =>
+      decodeHtml(m[1].replace(/<[^>]+>/g, " ").replace(/\\s+/g, " ").trim())
+    );
+    if (cells.length < 3) continue;
+
+    const rank = Number(cells[0]);
+    const playerCell = cells[2] || "";
+    const nameMatch = playerCell.match(/^(.+?)\\s*\\(([A-Z]{2,3})\\)$/);
+    const name = (nameMatch ? nameMatch[1] : playerCell).trim();
+    const team = nameMatch ? nameMatch[2] : "";
+
+    if (Number.isFinite(rank) && rank > 0 && name && !rankings.some(p => p.rank === rank)) {
+      rankings.push({ rank, name, team });
+    }
+  }
+
+  return rankings;
+}
 
 async function fetchFantasyProsRosPpr() {
   const url = "https://www.fantasypros.com/nfl/rankings/?scoring=PPR&type=ros";
@@ -41,34 +82,40 @@ async function fetchFantasyProsRosPpr() {
     const response = await fetch(url, {
       headers: {
         Accept: "text/html,application/xhtml+xml",
-        "User-Agent": "OnThursdaysWeFantasy/1.0"
+        "User-Agent": "Mozilla/5.0 (compatible; OnThursdaysWeFantasy/1.0)"
       }
     });
     if (!response.ok) throw new Error(`FantasyPros request failed: ${response.status} ${response.statusText}`);
 
     const html = await response.text();
-    const text = html
-      .replace(/<script[\s\S]*?<\/script>/gi, " ")
-      .replace(/<style[\s\S]*?<\/style>/gi, " ")
-      .replace(/<[^>]+>/g, " ")
-      .replace(/&amp;/g, "&")
-      .replace(/&#039;|&#39;/g, "'")
-      .replace(/&quot;/g, '"')
-      .replace(/&nbsp;/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
+    const ecrData = extractFantasyProsEcrData(html);
+    let rankings = [];
 
-    const rankings = [];
-    const pattern = /(?:^|\|)\s*(\d{1,3})\s*\|\s*([^|]+?)\s*\((QB|RB|WR|TE|K|DST)\s*-\s*([A-Z]{2})\)/g;
-    for (const match of text.matchAll(pattern)) {
-      const rank = Number(match[1]);
-      const name = match[2].trim();
-      if (!rank || !name || rankings.some(p => p.rank === rank)) continue;
-      rankings.push({ rank, name, team: match[4], position: match[3] });
+    if (ecrData?.players && Array.isArray(ecrData.players)) {
+      rankings = ecrData.players
+        .map(player => ({
+          rank: Number(player.rank_ecr ?? player.rank ?? player.ecr),
+          name: player.player_name ?? player.name,
+          team: player.player_team_id ?? player.team ?? "",
+          position: player.player_position_id ?? player.position ?? ""
+        }))
+        .filter(player => Number.isFinite(player.rank) && player.rank > 0 && player.name);
     }
 
     if (rankings.length < 200) {
-      throw new Error(`FantasyPros parser found only ${rankings.length} rankings; refusing to replace the previous dataset.`);
+      rankings = parseFantasyProsTable(html);
+    }
+
+    const uniqueRankings = [];
+    const seenRanks = new Set();
+    for (const player of rankings.sort((a, b) => a.rank - b.rank)) {
+      if (seenRanks.has(player.rank)) continue;
+      seenRanks.add(player.rank);
+      uniqueRankings.push(player);
+    }
+
+    if (uniqueRankings.length < 200) {
+      throw new Error(`FantasyPros parser found only ${uniqueRankings.length} rankings; refusing to replace the previous dataset.`);
     }
 
     await writeFile(
@@ -78,10 +125,10 @@ async function fetchFantasyProsRosPpr() {
         rankingType: "Rest of Season",
         scoring: "PPR",
         fetchedAt: new Date().toISOString(),
-        rankings
-      }, null, 2) + "\n"
+        rankings: uniqueRankings
+      }, null, 2) + "\\n"
     );
-    console.log(`Fetched ${rankings.length} FantasyPros ROS PPR rankings.`);
+    console.log(`Fetched ${uniqueRankings.length} FantasyPros ROS PPR rankings.`);
   } catch (error) {
     console.warn(`FantasyPros ROS PPR fetch skipped: ${error.message}`);
     try {
@@ -103,7 +150,7 @@ for (const view of views) {
   results[view] = await fetchView(view);
   await writeFile(
     `data/current/${view}.json`,
-    JSON.stringify(results[view], null, 2) + "\n"
+    JSON.stringify(results[view], null, 2) + "\\n"
   );
 }
 
@@ -116,17 +163,17 @@ for (let week = 1; week <= currentScoringPeriod; week++) {
   const weeklyBoxscore = await fetchView("mBoxscore", week);
   await writeFile(
     `data/current/mRoster-week-${week}.json`,
-    JSON.stringify(weeklyRoster, null, 2) + "\n"
+    JSON.stringify(weeklyRoster, null, 2) + "\\n"
   );
   await writeFile(
     `data/current/mBoxscore-week-${week}.json`,
-    JSON.stringify(weeklyBoxscore, null, 2) + "\n"
+    JSON.stringify(weeklyBoxscore, null, 2) + "\\n"
   );
 }
 
 await writeFile(
   "data/current/metadata.json",
-  JSON.stringify({ season, leagueId, fetchedAt, views }, null, 2) + "\n"
+  JSON.stringify({ season, leagueId, fetchedAt, views }, null, 2) + "\\n"
 );
 
 await fetchFantasyProsRosPpr();
