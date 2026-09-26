@@ -78,13 +78,13 @@ function TeamCards({ teams }) {
             : <span className="position-fit-empty">No obvious complementary trade partner yet.</span>}
         </div>
         {team.profileAnalytics.rosterFit.targets?.length ? <>
-          <div className="trade-section-heading trade-target-heading"><span>🎯</span><div><small>PLAYERS TO TARGET</small><strong>Bench upgrades</strong><em>Players currently sitting on a rival bench who would have improved your optimal lineup</em></div></div>
+          <div className="trade-section-heading trade-target-heading"><span>🎯</span><div><small>PLAYERS TO TARGET</small><strong>Top bench upgrades</strong><em>League-wide: players currently riding another team's bench who would have helped your lineup</em></div></div>
           <div className="trade-target-list">
             {team.profileAnalytics.rosterFit.targets.map(p => <div className="trade-target" key={p.teamId + "-" + p.playerId}>
               <div><strong>{p.player}</strong><span>{p.team} · {p.position}</span></div>
               <b>+{money(p.boost)} pts</b>
-              <small>{p.startRate}% started</small>
-              <em>Would have improved your optimal lineup</em>
+              <small>{p.startRate}% started · +{money(p.winsAdded)} wins</small>
+              <em>Optimal lineup improvement · {money(p.winsAdded)} wins added</em>
             </div>)}
           </div>
         </> : null}
