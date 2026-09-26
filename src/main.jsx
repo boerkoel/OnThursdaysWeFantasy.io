@@ -38,6 +38,17 @@ function TeamCards({ teams }) {
         <div><small>WIN %</small><strong>{money((team.standings.winPct || 0) * 100)}%</strong></div>
       </div>
 
+      {team.startSit?.score != null ? (<div className="profile-startsit">
+        <div className="profile-startsit-heading">
+          <div><span className="section-kicker">START / SIT SCORE</span><strong>{money(team.startSit.score)}%</strong></div>
+          <span>{money(team.startSit.pointsLeft)} pts left on bench</span>
+        </div>
+        <div className="profile-startsit-bar"><span style={{width: Math.max(0, Math.min(100, Number(team.startSit.score))) + "%"}}></span></div>
+        <div className="profile-startsit-weeks">
+          {team.startSit.weeks.map(w => <span key={w.week}>W{w.week} <strong>{money(w.efficiency)}%</strong></span>)}
+        </div>
+      </div>) : null}
+
       {team.playerAwards && (<div className="profile-awards">
         <div className="profile-awards-heading"><span className="section-kicker">PLAYER AWARDS</span><strong>Season So Far</strong></div>
         <div className="profile-award-grid">
