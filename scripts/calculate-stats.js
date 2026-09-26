@@ -344,8 +344,9 @@ const standings = [...teams.values()].map(team => {
       else { ties++; }
     }
   }
-  const totalGames = games.length * 2;
-  return {...team,wins,losses,ties,h2hWins,h2hLosses,medianWins,medianLosses,games:totalGames,
+  const weeksPlayed = games.length;
+  const totalGames = weeksPlayed * 2;
+  return {...team,wins,losses,ties,h2hWins,h2hLosses,medianWins,medianLosses,games:weeksPlayed,
     winPct:totalGames?(wins + ties * 0.5)/totalGames:0,
     pointsFor:round(pointsFor),pointsAgainst:round(pointsAgainst),streak:streak(team.id)};
 }).sort((a,b)=>b.wins-a.wins||b.winPct-a.winPct||b.pointsFor-a.pointsFor);
