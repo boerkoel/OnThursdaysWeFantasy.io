@@ -1142,7 +1142,7 @@ function swapOptimalImpact(teamId, outgoingPlayerId, incomingEntryByWeek) {
     const swappedOptimal = lineupEfficiency({id:Number(teamId),roster:{entries:swappedEntries}});
     if (!baseOptimal || !swappedOptimal) continue;
 
-    const improvement = Math.max(0, Number(swappedOptimal.optimalPoints) - Number(baseOptimal.optimalPoints));
+    const improvement = Number(swappedOptimal.optimalPoints) - Number(baseOptimal.optimalPoints);
     boost += improvement;
     weeksEvaluated++;
 
@@ -1154,15 +1154,23 @@ function swapOptimalImpact(teamId, outgoingPlayerId, incomingEntryByWeek) {
 
     const opponent = game.homeTeamId === Number(teamId) ? game.awayScore : game.homeScore;
     const median = weeklyMedianByWeek.get(week);
-    if (swappedOptimal.optimalPoints > opponent && baseOptimal.optimalPoints <= opponent) h2hWinsAdded++;
-    if (Number.isFinite(median) && swappedOptimal.optimalPoints > median && baseOptimal.optimalPoints <= median) medianWinsAdded++;
+
+    const beforeH2h = baseOptimal.optimalPoints > opponent ? 1 : baseOptimal.optimalPoints === opponent ? 0.5 : 0;
+    const afterH2h = swappedOptimal.optimalPoints > opponent ? 1 : swappedOptimal.optimalPoints === opponent ? 0.5 : 0;
+    h2hWinsAdded += afterH2h - beforeH2h;
+
+    if (Number.isFinite(median)) {
+      const beforeMedian = baseOptimal.optimalPoints > median ? 1 : baseOptimal.optimalPoints === median ? 0.5 : 0;
+      const afterMedian = swappedOptimal.optimalPoints > median ? 1 : swappedOptimal.optimalPoints === median ? 0.5 : 0;
+      medianWinsAdded += afterMedian - beforeMedian;
+    }
   }
 
   return {
     boost:round(boost),
-    h2hWinsAdded,
-    medianWinsAdded,
-    winsAdded:h2hWinsAdded + medianWinsAdded,
+    h2hWinsAdded:round(h2hWinsAdded),
+    medianWinsAdded:round(medianWinsAdded),
+    winsAdded:round(h2hWinsAdded + medianWinsAdded),
     weeksEvaluated
   };
 }
@@ -1187,6 +1195,9 @@ for (let i = 0; i < teamIdsForTrades.length; i++) {
       if (!incomingForB.size) continue;
 
       for (const playerB of teamBPlayers) {
+        // Same-position swaps are excluded from this signal.
+        if (playerA.position && playerB.position && playerA.position === playerB.position) continue;
+
         const incomingForA = new Map();
         for (const week of completedWeeks) {
           const rosterB = weeklyRosterForTeam(week, teamBId);
@@ -1199,8 +1210,12 @@ for (let i = 0; i < teamIdsForTrades.length; i++) {
         const impactB = swapOptimalImpact(teamBId, playerB.playerId, incomingForB);
         if (!impactA.weeksEvaluated || !impactB.weeksEvaluated) continue;
 
-        const meaningfulA = impactA.winsAdded >= 1 || impactA.boost >= 5;
-        const meaningfulB = impactB.winsAdded >= 1 || impactB.boost >= 5;
+        const meaningfulA = impactA.boost > 0 &&
+          impactA.winsAdded >= 0 &&
+          (impactA.winsAdded >= 1 || impactA.boost >= 5);
+        const meaningfulB = impactB.boost > 0 &&
+          impactB.winsAdded >= 0 &&
+          (impactB.winsAdded >= 1 || impactB.boost >= 5);
         if (!meaningfulA || !meaningfulB) continue;
 
         trades.push({
