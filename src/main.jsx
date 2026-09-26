@@ -162,15 +162,18 @@ function App() {
 
   const projectedMedian = Number(scoreboard.projectedMedian);
   const projectedWithScores = scores.filter(s => Number.isFinite(Number(s.projectionAverage)) && Number.isFinite(projectedMedian));
-  const closestAbove = projectedWithScores
-    .filter(s => Number(s.projectionAverage) >= projectedMedian)
-    .sort((a, b) => Number(a.projectionAverage) - Number(b.projectionAverage))[0];
-  const closestBelow = projectedWithScores
-    .filter(s => Number(s.projectionAverage) < projectedMedian)
-    .sort((a, b) => Number(b.projectionAverage) - Number(a.projectionAverage))[0];
-  const projectedMedianEdgeTeams = new Set(
-    [closestAbove?.teamId, closestBelow?.teamId].filter(Boolean)
+  const closestToMedianTeams = new Set(
+    [...projectedWithScores]
+      .sort((a, b) => Math.abs(Number(a.projectionAverage) - projectedMedian) - Math.abs(Number(b.projectionAverage) - projectedMedian))
+      .slice(0, 2)
+      .map(s => s.teamId)
   );
+  const projectedMedianEdgeTeams = new Set(
+    projectedWithScores
+      .filter(s => Math.abs(Number(s.projectionAverage) - projectedMedian) <= 2.5)
+      .map(s => s.teamId)
+  );
+  closestToMedianTeams.forEach(teamId => projectedMedianEdgeTeams.add(teamId));
 
   return (
     <main className="site">
@@ -215,7 +218,7 @@ function App() {
         </div>
         {displayScores.map((s, i) => <React.Fragment key={s.teamId}>
             {i === Math.floor(displayScores.length / 2) && <div className="median-line"><span>MEDIAN {preGame ? "—" : money(median)}</span><span>PROJECTED MEDIAN {scoreboard.projectedMedian != null ? money(scoreboard.projectedMedian) : "—"}</span></div>}
-            <div className="score-row"><span className="rank">{i + 1}</span><span className="score-team"><TeamLogo src={teamLogos[s.teamId]} />{s.team}{i === 0 && !preGame ? <em className="raffle-badge">🎟️ {currentWeekComplete ? "RAFFLE SPOT" : "CURRENT LEADER"}</em> : null}</span><span className="score-opponent">vs {s.opponent}</span><strong className={scoreSort === "projected" ? "score-primary projected-score" : "score-primary"}>{money(scoreSort === "projected" ? s.projectionAverage : s.score)}</strong><span className="score-projection">{scoreSort === "projected" ? "ACT " + money(s.score) : "PROJ "}{scoreSort === "projected" ? "" : (s.projectionTrend === "up" ? "↑ " : s.projectionTrend === "down" ? "↓ " : "")}{scoreSort === "projected" ? "" : (s.projectionAverage != null ? money(s.projectionAverage) : "—")}</span></div>
+            <div className={projectedMedianEdgeTeams.has(s.teamId) ? "score-row median-near" : "score-row"}><span className="rank">{i + 1}</span><span className="score-team"><TeamLogo src={teamLogos[s.teamId]} />{s.team}{projectedMedianEdgeTeams.has(s.teamId) ? <em className="median-near-label">NEAR MEDIAN</em> : null}{i === 0 && !preGame ? <em className="raffle-badge">🎟️ {currentWeekComplete ? "RAFFLE SPOT" : "CURRENT LEADER"}</em> : null}</span><span className="score-opponent">vs {s.opponent}</span><strong className={scoreSort === "projected" ? "score-primary projected-score" : "score-primary"}>{money(scoreSort === "projected" ? s.projectionAverage : s.score)}</strong><span className="score-projection">{scoreSort === "projected" ? "ACT " + money(s.score) : "PROJ "}{scoreSort === "projected" ? "" : (s.projectionTrend === "up" ? "↑ " : s.projectionTrend === "down" ? "↓ " : "")}{scoreSort === "projected" ? "" : (s.projectionAverage != null ? money(s.projectionAverage) : "—")}</span></div>
           </React.Fragment>)}
         </div>
         <p className="median-note">{preGame ? "Current scores will appear once scoring begins. The projected median is based on ESPN’s projected final scores." : "The current median uses live scores. The projected median uses ESPN’s projected final scores."}</p>
@@ -302,9 +305,9 @@ function App() {
             </div>
             <div className="bracket-round-title third-place-title">WEEK 17 · THIRD PLACE</div>
             <div className="bracket-game third-place-game">
-              <div><small>3RD PLACE</small><strong>SF Losers</strong></div>
+              <div><small>3RD PLACE</small><strong>SF Loser</strong></div>
               <span>vs</span>
-              <div><small>3RD PLACE</small><strong>SF Losers</strong></div>
+              <div><small>3RD PLACE</small><strong>SF Loser</strong></div>
             </div>
           </div>
         </div>
@@ -318,7 +321,7 @@ function App() {
           <div><span className="section-kicker">THE OTHER ROAD</span><h2>Ultimate Loser</h2></div>
           <span className="record-count">WEEKS 16–18 · 8 TEAMS</span>
         </div>
-        <p className="playoff-intro">Three weeks. Eight-team single elimination. The lower-scoring team advances. The six regular-season non-playoff teams are seeded 1–6, followed by the highest-ranked Week 15 playoff loser at #7 and the other Week 15 playoff loser at #8.</p>
+        <p className="playoff-intro">Three weeks. Eight-team single elimination. The lower-scoring team advances. The six regular-season non-playoff teams are seeded 1–6, followed by the lower-ranked Week 15 playoff loser at #7 and the higher-ranked Week 15 playoff loser at #8.</p>
         <div className="bracket">
           <div className="bracket-round">
             <div className="bracket-round-title">WEEK 16 · QUARTERFINALS</div>
@@ -340,17 +343,17 @@ function App() {
             {playoffs.ultimateLoser?.schedule.filter(g=>g.round==="Semifinal").length
               ? playoffs.ultimateLoser.schedule.filter(g=>g.round==="Semifinal").map(g => <div className="bracket-game-wrap" key={g.id}>
                   <div className="bracket-game">
-                    <div><small>{g.reseeded ? "RESEEDED" : "QF"}</small><strong>{g.homeTeam || "QF Losers"}</strong></div>
+                    <div><small>{g.reseeded ? "RESEEDED" : "QF"}</small><strong>{g.homeTeam || "QF Loser"}</strong></div>
                     <span className="bracket-vs">VS.</span>
-                    <div><small>{g.reseeded ? "RESEEDED" : "QF"}</small><strong>{g.awayTeam || "QF Losers"}</strong></div>
+                    <div><small>{g.reseeded ? "RESEEDED" : "QF"}</small><strong>{g.awayTeam || "QF Loser"}</strong></div>
                   </div>
                   <small className="bracket-advance">LOSER ADVANCES</small>
                 </div>)
               : [1,2].map(i => <div className="bracket-game-wrap" key={`ul-sf-placeholder-${i}`}>
                   <div className="bracket-game">
-                    <div><small>RESEED</small><strong>QF Losers</strong></div>
+                    <div><small>RESEED</small><strong>QF Loser</strong></div>
                     <span className="bracket-vs">VS.</span>
-                    <div><small>RESEED</small><strong>QF Losers</strong></div>
+                    <div><small>RESEED</small><strong>QF Loser</strong></div>
                   </div>
                   <small className="bracket-advance">LOSER ADVANCES</small>
                 </div>)}
@@ -359,9 +362,9 @@ function App() {
             <div className="bracket-round-title">WEEK 18 · ULTIMATE LOSER CHAMPIONSHIP</div>
             <div className="bracket-game-wrap championship-wrap">
               <div className="bracket-game championship-game">
-                <div><small>FINALISTS</small><strong>SF Losers</strong></div>
+                <div><small>FINALISTS</small><strong>SF Loser</strong></div>
                 <span className="bracket-vs">VS.</span>
-                <div><small>FINALISTS</small><strong>SF Losers</strong></div>
+                <div><small>FINALISTS</small><strong>SF Loser</strong></div>
               </div>
               <small className="bracket-final-label">ULTIMATE LOSER</small>
             </div>
