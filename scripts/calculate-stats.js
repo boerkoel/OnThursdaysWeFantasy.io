@@ -313,18 +313,42 @@ const currentScoreboard = {
   projectionHistory
 };
 
+const weeklyMedianByWeek = new Map();
+for (const week of completedWeeks) {
+  const weekScores = completed
+    .filter(m => m.week === week)
+    .flatMap(m => [Number(m.homeScore), Number(m.awayScore)])
+    .filter(Number.isFinite)
+    .sort((a,b) => a-b);
+  if (!weekScores.length) continue;
+  const median = weekScores.length % 2
+    ? weekScores[Math.floor(weekScores.length / 2)]
+    : (weekScores[weekScores.length / 2 - 1] + weekScores[weekScores.length / 2]) / 2;
+  weeklyMedianByWeek.set(week, round(median));
+}
+
 const standings = [...teams.values()].map(team => {
   const games=completed.filter(m=>m.homeTeamId===team.id||m.awayTeamId===team.id);
-  let wins=0,losses=0,pointsFor=0,pointsAgainst=0;
+  let wins=0,losses=0,ties=0,h2hWins=0,h2hLosses=0,medianWins=0,medianLosses=0,pointsFor=0,pointsAgainst=0;
   for(const g of games){
     const home=g.homeTeamId===team.id;
     pointsFor += home?g.homeScore:g.awayScore;
     pointsAgainst += home?g.awayScore:g.homeScore;
-    if(home?g.winner==="HOME":g.winner==="AWAY") wins++; else losses++;
+    if(home?g.winner==="HOME":g.winner==="AWAY"){ wins++; h2hWins++; } else { losses++; h2hLosses++; }
+
+    const teamScore = home ? g.homeScore : g.awayScore;
+    const median = weeklyMedianByWeek.get(g.week);
+    if (Number.isFinite(median)) {
+      if (teamScore > median) { wins++; medianWins++; }
+      else if (teamScore < median) { losses++; medianLosses++; }
+      else { ties++; }
+    }
   }
-  return {...team,wins,losses,games:games.length,winPct:games.length?wins/games.length:0,
+  const totalGames = games.length * 2;
+  return {...team,wins,losses,ties,h2hWins,h2hLosses,medianWins,medianLosses,games:totalGames,
+    winPct:totalGames?(wins + ties * 0.5)/totalGames:0,
     pointsFor:round(pointsFor),pointsAgainst:round(pointsAgainst),streak:streak(team.id)};
-}).sort((a,b)=>b.wins-a.wins||b.pointsFor-a.pointsFor);
+}).sort((a,b)=>b.wins-a.wins||b.winPct-a.winPct||b.pointsFor-a.pointsFor);
 
 const rows=completed.flatMap(g=>[
   {week:g.week,teamId:g.homeTeamId,opponentId:g.awayTeamId,score:g.homeScore,result:g.winner==="HOME"?"W":"L"},
@@ -1082,6 +1106,171 @@ for (const team of teams.values()) {
   });
 }
 
+const winWinTradesByTeam = new Map([...teams.keys()].map(teamId => [Number(teamId), []]));
+
+const currentRosterPlayersByTeam = new Map();
+for (const team of teams.values()) {
+  const currentTeam = (rosterData.teams || []).find(t => Number(t.id) === Number(team.id));
+  const players = (currentTeam?.roster?.entries || [])
+    .filter(e => Number(e.playerId) > 0)
+    .map(e => ({
+      playerId:Number(e.playerId),
+      player:e.playerPoolEntry?.player?.fullName || `Player #${e.playerId}`,
+      position:positionNames[Number(e.playerPoolEntry?.player?.defaultPositionId)] || null
+    }));
+  currentRosterPlayersByTeam.set(Number(team.id), players);
+}
+
+function swapOptimalImpact(teamId, outgoingPlayerId, incomingEntryByWeek) {
+  let boost = 0;
+  let h2hWinsAdded = 0;
+  let medianWinsAdded = 0;
+  let weeksEvaluated = 0;
+
+  for (const week of completedWeeks) {
+    const roster = weeklyRosterForTeam(week, teamId);
+    if (!roster?.roster?.entries) continue;
+
+    const outgoing = roster.roster.entries.find(e => Number(e.playerId) === Number(outgoingPlayerId));
+    const incoming = incomingEntryByWeek.get(week);
+    if (!outgoing || !incoming) continue;
+
+    const baseOptimal = lineupEfficiency(roster);
+    const swappedEntries = roster.roster.entries
+      .filter(e => Number(e.playerId) !== Number(outgoingPlayerId))
+      .concat([{...incoming, lineupSlotId:20}]);
+    const swappedOptimal = lineupEfficiency({id:Number(teamId),roster:{entries:swappedEntries}});
+    if (!baseOptimal || !swappedOptimal) continue;
+
+    const improvement = Math.max(0, Number(swappedOptimal.optimalPoints) - Number(baseOptimal.optimalPoints));
+    boost += improvement;
+    weeksEvaluated++;
+
+    const game = completed.find(m =>
+      m.week === week &&
+      (m.homeTeamId === Number(teamId) || m.awayTeamId === Number(teamId))
+    );
+    if (!game) continue;
+
+    const opponent = game.homeTeamId === Number(teamId) ? game.awayScore : game.homeScore;
+    const median = weeklyMedianByWeek.get(week);
+    if (swappedOptimal.optimalPoints > opponent && baseOptimal.optimalPoints <= opponent) h2hWinsAdded++;
+    if (Number.isFinite(median) && swappedOptimal.optimalPoints > median && baseOptimal.optimalPoints <= median) medianWinsAdded++;
+  }
+
+  return {
+    boost:round(boost),
+    h2hWinsAdded,
+    medianWinsAdded,
+    winsAdded:h2hWinsAdded + medianWinsAdded,
+    weeksEvaluated
+  };
+}
+
+const teamIdsForTrades = [...teams.keys()].map(Number);
+for (let i = 0; i < teamIdsForTrades.length; i++) {
+  const teamAId = teamIdsForTrades[i];
+  const teamAPlayers = currentRosterPlayersByTeam.get(teamAId) || [];
+
+  for (let j = i + 1; j < teamIdsForTrades.length; j++) {
+    const teamBId = teamIdsForTrades[j];
+    const teamBPlayers = currentRosterPlayersByTeam.get(teamBId) || [];
+    const trades = [];
+
+    for (const playerA of teamAPlayers) {
+      const incomingForB = new Map();
+      for (const week of completedWeeks) {
+        const rosterA = weeklyRosterForTeam(week, teamAId);
+        const entryA = rosterA?.roster?.entries?.find(e => Number(e.playerId) === playerA.playerId);
+        if (entryA) incomingForB.set(week, entryA);
+      }
+      if (!incomingForB.size) continue;
+
+      for (const playerB of teamBPlayers) {
+        const incomingForA = new Map();
+        for (const week of completedWeeks) {
+          const rosterB = weeklyRosterForTeam(week, teamBId);
+          const entryB = rosterB?.roster?.entries?.find(e => Number(e.playerId) === playerB.playerId);
+          if (entryB) incomingForA.set(week, entryB);
+        }
+        if (!incomingForA.size) continue;
+
+        const impactA = swapOptimalImpact(teamAId, playerA.playerId, incomingForA);
+        const impactB = swapOptimalImpact(teamBId, playerB.playerId, incomingForB);
+        if (!impactA.weeksEvaluated || !impactB.weeksEvaluated) continue;
+
+        const meaningfulA = impactA.winsAdded >= 1 || impactA.boost >= 5;
+        const meaningfulB = impactB.winsAdded >= 1 || impactB.boost >= 5;
+        if (!meaningfulA || !meaningfulB) continue;
+
+        trades.push({
+          otherTeamId:teamBId,
+          otherTeam:teams.get(teamBId)?.name || `Team ${teamBId}`,
+          givePlayerId:playerA.playerId,
+          givePlayer:playerA.player,
+          givePosition:playerA.position,
+          getPlayerId:playerB.playerId,
+          getPlayer:playerB.player,
+          getPosition:playerB.position,
+          yourBoost:impactA.boost,
+          yourH2hWinsAdded:impactA.h2hWinsAdded,
+          yourMedianWinsAdded:impactA.medianWinsAdded,
+          yourWinsAdded:impactA.winsAdded,
+          theirBoost:impactB.boost,
+          theirH2hWinsAdded:impactB.h2hWinsAdded,
+          theirMedianWinsAdded:impactB.medianWinsAdded,
+          theirWinsAdded:impactB.winsAdded,
+          weeksEvaluated:Math.min(impactA.weeksEvaluated, impactB.weeksEvaluated)
+        });
+      }
+    }
+
+    trades.sort((a,b) =>
+      Math.max(b.yourWinsAdded, b.theirWinsAdded) - Math.max(a.yourWinsAdded, a.theirWinsAdded) ||
+      (b.yourBoost + b.theirBoost) - (a.yourBoost + a.theirBoost)
+    );
+
+    if (trades.length) {
+      winWinTradesByTeam.get(teamAId).push(...trades.slice(0,5).map(t => ({...t, perspective:"A"})));
+      winWinTradesByTeam.get(teamBId).push({
+        ...trades[0],
+        otherTeamId:teamAId,
+        otherTeam:teams.get(teamAId)?.name || `Team ${teamAId}`,
+        givePlayerId:trades[0].getPlayerId,
+        givePlayer:trades[0].getPlayer,
+        givePosition:trades[0].getPosition,
+        getPlayerId:trades[0].givePlayerId,
+        getPlayer:trades[0].givePlayer,
+        getPosition:trades[0].givePosition,
+        yourBoost:trades[0].theirBoost,
+        yourH2hWinsAdded:trades[0].theirH2hWinsAdded,
+        yourMedianWinsAdded:trades[0].theirMedianWinsAdded,
+        yourWinsAdded:trades[0].theirWinsAdded,
+        theirBoost:trades[0].yourBoost,
+        theirH2hWinsAdded:trades[0].yourH2hWinsAdded,
+        theirMedianWinsAdded:trades[0].yourMedianWinsAdded,
+        theirWinsAdded:trades[0].yourWinsAdded,
+        weeksEvaluated:trades[0].weeksEvaluated,
+        perspective:"B"
+      });
+    }
+  }
+}
+
+for (const teamId of teams.keys()) {
+  const unique = new Map();
+  for (const trade of winWinTradesByTeam.get(Number(teamId)) || []) {
+    const key = [trade.otherTeamId, trade.givePlayerId, trade.getPlayerId].join("|");
+    if (!unique.has(key)) unique.set(key, trade);
+  }
+  winWinTradesByTeam.set(Number(teamId), [...unique.values()]
+    .sort((a,b) =>
+      Math.max(b.yourWinsAdded,b.theirWinsAdded) - Math.max(a.yourWinsAdded,a.theirWinsAdded) ||
+      (b.yourBoost+b.theirBoost) - (a.yourBoost+a.theirBoost)
+    )
+    .slice(0,3));
+}
+
 const startSitByTeam = new Map();
 for (const team of teams.values()) {
   const weeks = completedWeeks.map(week => {
@@ -1267,6 +1456,7 @@ await writeJson("data/current/teams.json",{season:settings.seasonId,currentWeek,
       optimalLineup:startSit ? {actualPoints:startSit.actualPoints,optimalPoints:startSit.optimalPoints,pointsLeft:startSit.pointsLeft,efficiency:startSit.score} : null,
       positionFit:positionFitByTeam.get(Number(t.id))||null,
       rosterFit:rosterFitByTeam.get(Number(t.id))||null,
+      winWinTrades:winWinTradesByTeam.get(Number(t.id))||[],
       trend:trend ? {...trend,direction:trend.slope >= 2 ? "up" : trend.slope <= -2 ? "down" : "steady"} : null,
       luck:luck ? {actualWins:round(luck.actual),expectedWins:round(luck.expected),difference:round(luck.luck)} : null
     }
