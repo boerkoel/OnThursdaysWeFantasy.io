@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 import scoreboard from "../data/current/scoreboard.json";
@@ -8,6 +8,7 @@ import raffle from "../data/current/raffle.json";
 import playoffs from "../data/current/playoffs.json";
 import teamsData from "../data/current/teams.json";
 import weekly from "../data/current/weekly.json";
+import marquee from "../data/current/marquee.json";
 
 const money = (n) => Number(n).toFixed(2);
 
@@ -222,6 +223,13 @@ function App() {
   const scores = scoreboard.scores || [];
   const median = scoreboard.median;
   const [scoreSort, setScoreSort] = useState("current");
+  const marqueeStories = marquee.stories || [];
+  const [marqueeIndex, setMarqueeIndex] = useState(0);
+  useEffect(() => {
+    if (marqueeStories.length < 2) return;
+    const timer = setInterval(() => setMarqueeIndex(i => (i + 1) % marqueeStories.length), 6000);
+    return () => clearInterval(timer);
+  }, [marqueeStories.length]);
   const sortedScores = [...scores].sort((a, b) => Number(b.score) - Number(a.score));
   const projectedSortScores = [...scores].sort((a, b) => {
     const aProjection = Number(a.projectionAverage);
@@ -272,6 +280,16 @@ function App() {
       </header>
 
 <div className="data-timestamp">LAST REFRESHED <strong>{scoreboard.lastUpdated ? new Date(scoreboard.lastUpdated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "—"}</strong></div>
+
+      {marqueeStories.length ? <section className="league-marquee" aria-label="League Wire">
+        <div className="marquee-label"><span>⚡</span><strong>LEAGUE WIRE</strong><small>LIVE</small></div>
+        <div className="marquee-story" key={marqueeStories[marqueeIndex % marqueeStories.length].text}>
+          <b>{marqueeStories[marqueeIndex % marqueeStories.length].type}</b>
+          <span>{marqueeStories[marqueeIndex % marqueeStories.length].text}</span>
+        </div>
+        <div className="marquee-dots">{marqueeStories.map((story, i) => <button key={i} type="button" className={i === marqueeIndex % marqueeStories.length ? "active" : ""} aria-label={"Show " + story.type} onClick={() => setMarqueeIndex(i)}></button>)}</div>
+      </section> : null}
+
 
       <section className="hero-strip">
         <div><span className="section-kicker">2026 SEASON</span><h2>Week {scoreboard.week}</h2><p>{preGame ? "The Week is set. Scores will appear here once the games begin." : "The league is live. Here’s how everyone is doing."}</p></div>
