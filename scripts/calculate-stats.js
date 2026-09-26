@@ -833,6 +833,50 @@ function lineupEfficiency(weeklyTeam, actualPointsOverride = null) {
   };
 }
 
+const positionFitByTeam = new Map();
+const positionNames = {1:"QB",2:"RB",3:"WR",4:"TE",5:"K",16:"DST"};
+const positionWeeklyByTeam = new Map();
+
+for (const team of teams.values()) {
+  const totals = Object.fromEntries(Object.values(positionNames).map(pos => [pos, []]));
+  for (const week of completedWeeks) {
+    const boxscore = historicalBoxscoreData.get(week);
+    const side = (boxscore?.schedule || [])
+      .filter(g => Number(g.matchupPeriodId) === Number(week))
+      .flatMap(g => [g.home, g.away])
+      .find(s => Number(s?.teamId) === Number(team.id));
+    for (const entry of side?.rosterForCurrentScoringPeriod?.entries || []) {
+      if ([20,21].includes(Number(entry.lineupSlotId))) continue;
+      const position = positionNames[Number(entry.playerPoolEntry?.player?.defaultPositionId)];
+      if (!position) continue;
+      const points = Number(entry.playerPoolEntry?.appliedStatTotal ?? 0);
+      if (Number.isFinite(points)) totals[position].push(points);
+    }
+  }
+  positionWeeklyByTeam.set(Number(team.id), totals);
+}
+
+const positionLeagueAverages = Object.fromEntries(Object.values(positionNames).map(position => {
+  const teamAverages = [...positionWeeklyByTeam.values()]
+    .map(t => t[position]?.length ? t[position].reduce((sum,v)=>sum+v,0)/t[position].length : null)
+    .filter(Number.isFinite);
+  return [position, teamAverages.length ? teamAverages.reduce((sum,v)=>sum+v,0)/teamAverages.length : 0];
+}));
+
+for (const team of teams.values()) {
+  const totals = positionWeeklyByTeam.get(Number(team.id)) || {};
+  const comparisons = Object.values(positionNames).map(position => {
+    const values = totals[position] || [];
+    const average = values.length ? values.reduce((sum,v)=>sum+v,0)/values.length : 0;
+    const leagueAverage = Number(positionLeagueAverages[position] || 0);
+    const percent = leagueAverage ? ((average / leagueAverage) - 1) * 100 : 0;
+    return {position, average:round(average), percent:round(percent)};
+  });
+  const strengths = comparisons.filter(p => p.percent >= 15).sort((a,b)=>b.percent-a.percent).slice(0,3);
+  const needs = comparisons.filter(p => p.percent <= -15).sort((a,b)=>a.percent-b.percent).slice(0,3);
+  positionFitByTeam.set(Number(team.id), {strengths, needs});
+}
+
 const startSitByTeam = new Map();
 for (const team of teams.values()) {
   const weeks = completedWeeks.map(week => {
