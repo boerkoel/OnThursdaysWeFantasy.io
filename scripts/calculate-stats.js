@@ -1231,28 +1231,28 @@ for (let i = 0; i < teamIdsForTrades.length; i++) {
     );
 
     if (trades.length) {
-      winWinTradesByTeam.get(teamAId).push(...trades.slice(0,5).map(t => ({...t, perspective:"A"})));
-      winWinTradesByTeam.get(teamBId).push({
-        ...trades[0],
+      const topTrades = trades.slice(0,3);
+      winWinTradesByTeam.get(teamAId).push(...topTrades.map(t => ({...t, perspective:"A"})));
+      winWinTradesByTeam.get(teamBId).push(...topTrades.map(t => ({
+        ...t,
         otherTeamId:teamAId,
         otherTeam:teams.get(teamAId)?.name || `Team ${teamAId}`,
-        givePlayerId:trades[0].getPlayerId,
-        givePlayer:trades[0].getPlayer,
-        givePosition:trades[0].getPosition,
-        getPlayerId:trades[0].givePlayerId,
-        getPlayer:trades[0].givePlayer,
-        getPosition:trades[0].givePosition,
-        yourBoost:trades[0].theirBoost,
-        yourH2hWinsAdded:trades[0].theirH2hWinsAdded,
-        yourMedianWinsAdded:trades[0].theirMedianWinsAdded,
-        yourWinsAdded:trades[0].theirWinsAdded,
-        theirBoost:trades[0].yourBoost,
-        theirH2hWinsAdded:trades[0].yourH2hWinsAdded,
-        theirMedianWinsAdded:trades[0].yourMedianWinsAdded,
-        theirWinsAdded:trades[0].yourWinsAdded,
-        weeksEvaluated:trades[0].weeksEvaluated,
+        givePlayerId:t.getPlayerId,
+        givePlayer:t.getPlayer,
+        givePosition:t.getPosition,
+        getPlayerId:t.givePlayerId,
+        getPlayer:t.givePlayer,
+        getPosition:t.givePosition,
+        yourBoost:t.theirBoost,
+        yourH2hWinsAdded:t.theirH2hWinsAdded,
+        yourMedianWinsAdded:t.theirMedianWinsAdded,
+        yourWinsAdded:t.theirWinsAdded,
+        theirBoost:t.yourBoost,
+        theirH2hWinsAdded:t.yourH2hWinsAdded,
+        theirMedianWinsAdded:t.yourMedianWinsAdded,
+        theirWinsAdded:t.yourWinsAdded,
         perspective:"B"
-      });
+      })));
     }
   }
 }
