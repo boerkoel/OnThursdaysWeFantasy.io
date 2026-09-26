@@ -1205,7 +1205,7 @@ for (let i = 0; i < teamIdsForTrades.length; i++) {
         if (playerA.position && playerB.position && playerA.position === playerB.position) continue;
 
         // Keep only trades whose FantasyPros ROS PPR ranks are within 25 spots.
-        if (!Number.isFinite(playerB.rosRank) || Math.abs(playerA.rosRank - playerB.rosRank) > 25) continue;
+        if (!Number.isFinite(playerB.rosRank) || Math.abs(playerA.rosRank - playerB.rosRank) > 18) continue;
 
         const incomingForA = new Map();
         for (const week of completedWeeks) {
