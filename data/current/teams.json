@@ -122,101 +122,6 @@
         "pointsLeft": 88.72,
         "winsLost": 2
       },
-      "powerIndex": {
-        "season": {
-          "overall": 111.3,
-          "starterIndex": 118.92,
-          "depthIndex": 88.45,
-          "positions": {
-            "QB": {
-              "starter": 92.85,
-              "depth": 45.38
-            },
-            "RB": {
-              "starter": 79.79,
-              "depth": 38.12
-            },
-            "WR": {
-              "starter": 102.68,
-              "depth": 120.65
-            },
-            "TE": {
-              "starter": 251.56,
-              "depth": 164.78
-            },
-            "K": {
-              "starter": 151.46,
-              "depth": null
-            },
-            "DST": {
-              "starter": 240,
-              "depth": null
-            }
-          }
-        },
-        "thisWeek": {
-          "overall": null,
-          "starterIndex": null,
-          "depthIndex": null,
-          "positions": {
-            "QB": {
-              "starter": null,
-              "depth": null
-            },
-            "RB": {
-              "starter": null,
-              "depth": null
-            },
-            "WR": {
-              "starter": null,
-              "depth": null
-            },
-            "TE": {
-              "starter": null,
-              "depth": null
-            },
-            "K": {
-              "starter": null,
-              "depth": null
-            },
-            "DST": {
-              "starter": null,
-              "depth": null
-            }
-          }
-        },
-        "ros": {
-          "overall": 94.09,
-          "starterIndex": 99.56,
-          "depthIndex": 77.69,
-          "positions": {
-            "QB": {
-              "starter": 93.58,
-              "depth": 125.78
-            },
-            "RB": {
-              "starter": 85.49,
-              "depth": 61.49
-            },
-            "WR": {
-              "starter": 86.79,
-              "depth": 61
-            },
-            "TE": {
-              "starter": 190.27,
-              "depth": 145.88
-            },
-            "K": {
-              "starter": 94.16,
-              "depth": null
-            },
-            "DST": {
-              "starter": null,
-              "depth": null
-            }
-          }
-        }
-      },
       "profileAnalytics": {
         "optimalLineup": {
           "actualPoints": 249.6,
@@ -224,9 +129,128 @@
           "pointsLeft": 88.72,
           "efficiency": 73.78
         },
+        "positionFit": {
+          "strengths": [
+            {
+              "position": "DST",
+              "average": 13.5,
+              "percent": 123.45
+            },
+            {
+              "position": "K",
+              "average": 13,
+              "percent": 51.46
+            },
+            {
+              "position": "TE",
+              "average": 12.78,
+              "percent": 15.3
+            }
+          ],
+          "needs": [
+            {
+              "position": "QB",
+              "average": 13.7,
+              "percent": -33.12
+            },
+            {
+              "position": "RB",
+              "average": 12.46,
+              "percent": -18.97
+            },
+            {
+              "position": "WR",
+              "average": 11.16,
+              "percent": -17.94
+            }
+          ]
+        },
         "rosterFit": {
-          "partners": [],
-          "targets": []
+          "partners": [
+            {
+              "teamId": 8,
+              "team": "Mr. Action Jackson",
+              "score": 193.88,
+              "give": [
+                {
+                  "position": "DST",
+                  "percent": 123.45
+                },
+                {
+                  "position": "K",
+                  "percent": 51.46
+                }
+              ],
+              "get": [
+                {
+                  "position": "RB",
+                  "percent": -18.97
+                }
+              ]
+            },
+            {
+              "teamId": 4,
+              "team": "Kirbo Crushers",
+              "score": 192.85,
+              "give": [
+                {
+                  "position": "DST",
+                  "percent": 123.45
+                },
+                {
+                  "position": "K",
+                  "percent": 51.46
+                }
+              ],
+              "get": [
+                {
+                  "position": "WR",
+                  "percent": -17.94
+                }
+              ]
+            },
+            {
+              "teamId": 9,
+              "team": "The Mahomies",
+              "score": 156.57,
+              "give": [
+                {
+                  "position": "DST",
+                  "percent": 123.45
+                }
+              ],
+              "get": [
+                {
+                  "position": "QB",
+                  "percent": -33.12
+                }
+              ]
+            }
+          ],
+          "targets": [
+            {
+              "playerId": 3916433,
+              "player": "Jakobi Meyers",
+              "position": "WR",
+              "startRate": 0,
+              "rosteredWeeks": 2,
+              "startedWeeks": 0,
+              "boost": 5.5,
+              "teamId": 4,
+              "team": "Kirbo Crushers"
+            },
+            {
+              "playerId": 4373678,
+              "player": "Khalil Shakir",
+              "position": "WR",
+              "startRate": 50,
+              "rosteredWeeks": 2,
+              "startedWeeks": 1,
+              "boost": 2.3,
+              "teamId": 4,
+              "team": "Kirbo Crushers"
+            }
+          ]
         },
         "trend": {
           "teamId": 1,
@@ -369,107 +393,32 @@
         "pointsLeft": 5.3,
         "winsLost": 0
       },
-      "powerIndex": {
-        "season": {
-          "overall": 76.51,
-          "starterIndex": 75.82,
-          "depthIndex": 78.57,
-          "positions": {
-            "QB": {
-              "starter": 73.88,
-              "depth": 0
-            },
-            "RB": {
-              "starter": 93.03,
-              "depth": 195.81
-            },
-            "WR": {
-              "starter": 85.88,
-              "depth": 94.5
-            },
-            "TE": {
-              "starter": 11.36,
-              "depth": 0
-            },
-            "K": {
-              "starter": 29.13,
-              "depth": null
-            },
-            "DST": {
-              "starter": 115.56,
-              "depth": null
-            }
-          }
-        },
-        "thisWeek": {
-          "overall": null,
-          "starterIndex": null,
-          "depthIndex": null,
-          "positions": {
-            "QB": {
-              "starter": null,
-              "depth": null
-            },
-            "RB": {
-              "starter": null,
-              "depth": null
-            },
-            "WR": {
-              "starter": null,
-              "depth": null
-            },
-            "TE": {
-              "starter": null,
-              "depth": null
-            },
-            "K": {
-              "starter": null,
-              "depth": null
-            },
-            "DST": {
-              "starter": null,
-              "depth": null
-            }
-          }
-        },
-        "ros": {
-          "overall": 97.98,
-          "starterIndex": 98.09,
-          "depthIndex": 97.65,
-          "positions": {
-            "QB": {
-              "starter": 95.22,
-              "depth": 116.86
-            },
-            "RB": {
-              "starter": 123.9,
-              "depth": 113.91
-            },
-            "WR": {
-              "starter": 85.8,
-              "depth": 149.4
-            },
-            "TE": {
-              "starter": 82.89,
-              "depth": 0
-            },
-            "K": {
-              "starter": 93.04,
-              "depth": null
-            },
-            "DST": {
-              "starter": null,
-              "depth": null
-            }
-          }
-        }
-      },
       "profileAnalytics": {
         "optimalLineup": {
           "actualPoints": 210.4,
           "optimalPoints": 215.7,
           "pointsLeft": 5.3,
           "efficiency": 97.54
+        },
+        "positionFit": {
+          "strengths": [],
+          "needs": [
+            {
+              "position": "TE",
+              "average": 1.75,
+              "percent": -84.21
+            },
+            {
+              "position": "K",
+              "average": 2.5,
+              "percent": -70.87
+            },
+            {
+              "position": "QB",
+              "average": 16.2,
+              "percent": -20.92
+            }
+          ]
         },
         "rosterFit": {
           "partners": [],
@@ -616,101 +565,6 @@
         "pointsLeft": 19.36,
         "winsLost": 0
       },
-      "powerIndex": {
-        "season": {
-          "overall": 110.11,
-          "starterIndex": 106.9,
-          "depthIndex": 119.72,
-          "positions": {
-            "QB": {
-              "starter": 112.74,
-              "depth": 140.8
-            },
-            "RB": {
-              "starter": 115.34,
-              "depth": 194.08
-            },
-            "WR": {
-              "starter": 117.85,
-              "depth": 100.45
-            },
-            "TE": {
-              "starter": 42.2,
-              "depth": 0
-            },
-            "K": {
-              "starter": 110.68,
-              "depth": null
-            },
-            "DST": {
-              "starter": 97.78,
-              "depth": null
-            }
-          }
-        },
-        "thisWeek": {
-          "overall": null,
-          "starterIndex": null,
-          "depthIndex": null,
-          "positions": {
-            "QB": {
-              "starter": null,
-              "depth": null
-            },
-            "RB": {
-              "starter": null,
-              "depth": null
-            },
-            "WR": {
-              "starter": null,
-              "depth": null
-            },
-            "TE": {
-              "starter": null,
-              "depth": null
-            },
-            "K": {
-              "starter": null,
-              "depth": null
-            },
-            "DST": {
-              "starter": null,
-              "depth": null
-            }
-          }
-        },
-        "ros": {
-          "overall": 103.8,
-          "starterIndex": 102.09,
-          "depthIndex": 108.92,
-          "positions": {
-            "QB": {
-              "starter": 102.72,
-              "depth": 136.56
-            },
-            "RB": {
-              "starter": 163.59,
-              "depth": 133.52
-            },
-            "WR": {
-              "starter": 60.74,
-              "depth": 83.83
-            },
-            "TE": {
-              "starter": 89.54,
-              "depth": 0
-            },
-            "K": {
-              "starter": 114.91,
-              "depth": null
-            },
-            "DST": {
-              "starter": null,
-              "depth": null
-            }
-          }
-        }
-      },
       "profileAnalytics": {
         "optimalLineup": {
           "actualPoints": 284.78,
@@ -718,9 +572,110 @@
           "pointsLeft": 19.36,
           "efficiency": 93.63
         },
+        "positionFit": {
+          "strengths": [
+            {
+              "position": "WR",
+              "average": 23.23,
+              "percent": 70.78
+            }
+          ],
+          "needs": [
+            {
+              "position": "TE",
+              "average": 6.5,
+              "percent": -41.34
+            },
+            {
+              "position": "RB",
+              "average": 12.99,
+              "percent": -15.54
+            }
+          ]
+        },
         "rosterFit": {
-          "partners": [],
-          "targets": []
+          "partners": [
+            {
+              "teamId": 1,
+              "team": "Ramosverse",
+              "score": 112.12,
+              "give": [
+                {
+                  "position": "WR",
+                  "percent": 70.78
+                }
+              ],
+              "get": [
+                {
+                  "position": "TE",
+                  "percent": -41.34
+                }
+              ]
+            },
+            {
+              "teamId": 9,
+              "team": "The Mahomies",
+              "score": 112.12,
+              "give": [
+                {
+                  "position": "WR",
+                  "percent": 70.78
+                }
+              ],
+              "get": [
+                {
+                  "position": "TE",
+                  "percent": -41.34
+                }
+              ]
+            }
+          ],
+          "targets": [
+            {
+              "playerId": 4241478,
+              "player": "DeVonta Smith",
+              "position": "WR",
+              "startRate": 50,
+              "rosteredWeeks": 2,
+              "startedWeeks": 1,
+              "boost": 23.2,
+              "teamId": 1,
+              "team": "Ramosverse"
+            },
+            {
+              "playerId": 4426338,
+              "player": "Bo Nix",
+              "position": "QB",
+              "startRate": 0,
+              "rosteredWeeks": 2,
+              "startedWeeks": 0,
+              "boost": 13.32,
+              "teamId": 1,
+              "team": "Ramosverse"
+            },
+            {
+              "playerId": 4036133,
+              "player": "T.J. Hockenson",
+              "position": "TE",
+              "startRate": 50,
+              "rosteredWeeks": 2,
+              "startedWeeks": 1,
+              "boost": 6.3,
+              "teamId": 1,
+              "team": "Ramosverse"
+            },
+            {
+              "playerId": 4428557,
+              "player": "Tyjae Spears",
+              "position": "RB",
+              "startRate": 50,
+              "rosteredWeeks": 2,
+              "startedWeeks": 1,
+              "boost": 2.5,
+              "teamId": 1,
+              "team": "Ramosverse"
+            }
+          ]
         },
         "trend": {
           "teamId": 3,
@@ -863,101 +818,6 @@
         "pointsLeft": 29.7,
         "winsLost": 1
       },
-      "powerIndex": {
-        "season": {
-          "overall": 106.82,
-          "starterIndex": 102.8,
-          "depthIndex": 118.86,
-          "positions": {
-            "QB": {
-              "starter": 93.22,
-              "depth": 148.65
-            },
-            "RB": {
-              "starter": 90.53,
-              "depth": 90.97
-            },
-            "WR": {
-              "starter": 129.74,
-              "depth": 129.57
-            },
-            "TE": {
-              "starter": 110.68,
-              "depth": 106.62
-            },
-            "K": {
-              "starter": 81.55,
-              "depth": null
-            },
-            "DST": {
-              "starter": 8.89,
-              "depth": null
-            }
-          }
-        },
-        "thisWeek": {
-          "overall": null,
-          "starterIndex": null,
-          "depthIndex": null,
-          "positions": {
-            "QB": {
-              "starter": null,
-              "depth": null
-            },
-            "RB": {
-              "starter": null,
-              "depth": null
-            },
-            "WR": {
-              "starter": null,
-              "depth": null
-            },
-            "TE": {
-              "starter": null,
-              "depth": null
-            },
-            "K": {
-              "starter": null,
-              "depth": null
-            },
-            "DST": {
-              "starter": null,
-              "depth": null
-            }
-          }
-        },
-        "ros": {
-          "overall": 103.75,
-          "starterIndex": 100.45,
-          "depthIndex": 113.65,
-          "positions": {
-            "QB": {
-              "starter": 118.37,
-              "depth": 121.08
-            },
-            "RB": {
-              "starter": 84.09,
-              "depth": 81.41
-            },
-            "WR": {
-              "starter": 112.35,
-              "depth": 156.38
-            },
-            "TE": {
-              "starter": 88.32,
-              "depth": 160.87
-            },
-            "K": {
-              "starter": 89.12,
-              "depth": null
-            },
-            "DST": {
-              "starter": null,
-              "depth": null
-            }
-          }
-        }
-      },
       "profileAnalytics": {
         "optimalLineup": {
           "actualPoints": 262.78,
@@ -965,9 +825,114 @@
           "pointsLeft": 29.7,
           "efficiency": 89.85
         },
+        "positionFit": {
+          "strengths": [
+            {
+              "position": "WR",
+              "average": 16.28,
+              "percent": 19.74
+            }
+          ],
+          "needs": [
+            {
+              "position": "DST",
+              "average": 0.5,
+              "percent": -91.72
+            },
+            {
+              "position": "K",
+              "average": 7,
+              "percent": -18.45
+            }
+          ]
+        },
         "rosterFit": {
-          "partners": [],
-          "targets": []
+          "partners": [
+            {
+              "teamId": 1,
+              "team": "Ramosverse",
+              "score": 129.91,
+              "give": [
+                {
+                  "position": "WR",
+                  "percent": 19.74
+                }
+              ],
+              "get": [
+                {
+                  "position": "DST",
+                  "percent": -91.72
+                },
+                {
+                  "position": "K",
+                  "percent": -18.45
+                }
+              ]
+            },
+            {
+              "teamId": 12,
+              "team": "Beautiful Dark Twisted Fantasy",
+              "score": 111.46,
+              "give": [
+                {
+                  "position": "WR",
+                  "percent": 19.74
+                }
+              ],
+              "get": [
+                {
+                  "position": "DST",
+                  "percent": -91.72
+                }
+              ]
+            }
+          ],
+          "targets": [
+            {
+              "playerId": 4241478,
+              "player": "DeVonta Smith",
+              "position": "WR",
+              "startRate": 50,
+              "rosteredWeeks": 2,
+              "startedWeeks": 1,
+              "boost": 23.2,
+              "teamId": 1,
+              "team": "Ramosverse"
+            },
+            {
+              "playerId": 4426338,
+              "player": "Bo Nix",
+              "position": "QB",
+              "startRate": 0,
+              "rosteredWeeks": 2,
+              "startedWeeks": 0,
+              "boost": 13.32,
+              "teamId": 1,
+              "team": "Ramosverse"
+            },
+            {
+              "playerId": 4697815,
+              "player": "Rachaad White",
+              "position": "RB",
+              "startRate": 50,
+              "rosteredWeeks": 2,
+              "startedWeeks": 1,
+              "boost": 11.3,
+              "teamId": 12,
+              "team": "Beautiful Dark Twisted Fantasy"
+            },
+            {
+              "playerId": 4685720,
+              "player": "Bryce Young",
+              "position": "QB",
+              "startRate": 0,
+              "rosteredWeeks": 1,
+              "startedWeeks": 0,
+              "boost": 7.9,
+              "teamId": 12,
+              "team": "Beautiful Dark Twisted Fantasy"
+            }
+          ]
         },
         "trend": {
           "teamId": 4,
@@ -1110,101 +1075,6 @@
         "pointsLeft": 36.1,
         "winsLost": 0
       },
-      "powerIndex": {
-        "season": {
-          "overall": 120.09,
-          "starterIndex": 121.18,
-          "depthIndex": 116.82,
-          "positions": {
-            "QB": {
-              "starter": 100.7,
-              "depth": 129.75
-            },
-            "RB": {
-              "starter": 181.41,
-              "depth": 165.49
-            },
-            "WR": {
-              "starter": 81.98,
-              "depth": 120.65
-            },
-            "TE": {
-              "starter": 134.7,
-              "depth": 0
-            },
-            "K": {
-              "starter": 104.85,
-              "depth": null
-            },
-            "DST": {
-              "starter": 80,
-              "depth": null
-            }
-          }
-        },
-        "thisWeek": {
-          "overall": null,
-          "starterIndex": null,
-          "depthIndex": null,
-          "positions": {
-            "QB": {
-              "starter": null,
-              "depth": null
-            },
-            "RB": {
-              "starter": null,
-              "depth": null
-            },
-            "WR": {
-              "starter": null,
-              "depth": null
-            },
-            "TE": {
-              "starter": null,
-              "depth": null
-            },
-            "K": {
-              "starter": null,
-              "depth": null
-            },
-            "DST": {
-              "starter": null,
-              "depth": null
-            }
-          }
-        },
-        "ros": {
-          "overall": 100.11,
-          "starterIndex": 102.79,
-          "depthIndex": 92.06,
-          "positions": {
-            "QB": {
-              "starter": 113.48,
-              "depth": 153.47
-            },
-            "RB": {
-              "starter": 133.29,
-              "depth": 159.3
-            },
-            "WR": {
-              "starter": 81.12,
-              "depth": 0
-            },
-            "TE": {
-              "starter": 97.7,
-              "depth": 0
-            },
-            "K": {
-              "starter": 97.52,
-              "depth": null
-            },
-            "DST": {
-              "starter": null,
-              "depth": null
-            }
-          }
-        }
-      },
       "profileAnalytics": {
         "optimalLineup": {
           "actualPoints": 308.66,
@@ -1212,9 +1082,131 @@
           "pointsLeft": 36.1,
           "efficiency": 89.53
         },
+        "positionFit": {
+          "strengths": [
+            {
+              "position": "TE",
+              "average": 20.75,
+              "percent": 87.28
+            },
+            {
+              "position": "RB",
+              "average": 18.31,
+              "percent": 19.09
+            }
+          ],
+          "needs": [
+            {
+              "position": "DST",
+              "average": 4.5,
+              "percent": -25.52
+            }
+          ]
+        },
         "rosterFit": {
-          "partners": [],
-          "targets": []
+          "partners": [
+            {
+              "teamId": 12,
+              "team": "Beautiful Dark Twisted Fantasy",
+              "score": 131.89,
+              "give": [
+                {
+                  "position": "TE",
+                  "percent": 87.28
+                },
+                {
+                  "position": "RB",
+                  "percent": 19.09
+                }
+              ],
+              "get": [
+                {
+                  "position": "DST",
+                  "percent": -25.52
+                }
+              ]
+            },
+            {
+              "teamId": 11,
+              "team": "Brock You Like a Hurricane",
+              "score": 112.8,
+              "give": [
+                {
+                  "position": "TE",
+                  "percent": 87.28
+                }
+              ],
+              "get": [
+                {
+                  "position": "DST",
+                  "percent": -25.52
+                }
+              ]
+            },
+            {
+              "teamId": 1,
+              "team": "Ramosverse",
+              "score": 44.61,
+              "give": [
+                {
+                  "position": "RB",
+                  "percent": 19.09
+                }
+              ],
+              "get": [
+                {
+                  "position": "DST",
+                  "percent": -25.52
+                }
+              ]
+            }
+          ],
+          "targets": [
+            {
+              "playerId": 4241478,
+              "player": "DeVonta Smith",
+              "position": "WR",
+              "startRate": 50,
+              "rosteredWeeks": 2,
+              "startedWeeks": 1,
+              "boost": 23.2,
+              "teamId": 1,
+              "team": "Ramosverse"
+            },
+            {
+              "playerId": 4426338,
+              "player": "Bo Nix",
+              "position": "QB",
+              "startRate": 0,
+              "rosteredWeeks": 2,
+              "startedWeeks": 0,
+              "boost": 13.32,
+              "teamId": 1,
+              "team": "Ramosverse"
+            },
+            {
+              "playerId": 4697815,
+              "player": "Rachaad White",
+              "position": "RB",
+              "startRate": 50,
+              "rosteredWeeks": 2,
+              "startedWeeks": 1,
+              "boost": 11.3,
+              "teamId": 12,
+              "team": "Beautiful Dark Twisted Fantasy"
+            },
+            {
+              "playerId": 4685720,
+              "player": "Bryce Young",
+              "position": "QB",
+              "startRate": 0,
+              "rosteredWeeks": 1,
+              "startedWeeks": 0,
+              "boost": 7.9,
+              "teamId": 12,
+              "team": "Beautiful Dark Twisted Fantasy"
+            }
+          ]
         },
         "trend": {
           "teamId": 5,
@@ -1357,101 +1349,6 @@
         "pointsLeft": 26.9,
         "winsLost": 0
       },
-      "powerIndex": {
-        "season": {
-          "overall": 103.52,
-          "starterIndex": 106.53,
-          "depthIndex": 94.49,
-          "positions": {
-            "QB": {
-              "starter": 176.68,
-              "depth": -2.76
-            },
-            "RB": {
-              "starter": 67.03,
-              "depth": 50.25
-            },
-            "WR": {
-              "starter": 94.48,
-              "depth": 137.89
-            },
-            "TE": {
-              "starter": 156.45,
-              "depth": 244.26
-            },
-            "K": {
-              "starter": 99.03,
-              "depth": null
-            },
-            "DST": {
-              "starter": 106.67,
-              "depth": null
-            }
-          }
-        },
-        "thisWeek": {
-          "overall": null,
-          "starterIndex": null,
-          "depthIndex": null,
-          "positions": {
-            "QB": {
-              "starter": null,
-              "depth": null
-            },
-            "RB": {
-              "starter": null,
-              "depth": null
-            },
-            "WR": {
-              "starter": null,
-              "depth": null
-            },
-            "TE": {
-              "starter": null,
-              "depth": null
-            },
-            "K": {
-              "starter": null,
-              "depth": null
-            },
-            "DST": {
-              "starter": null,
-              "depth": null
-            }
-          }
-        },
-        "ros": {
-          "overall": 102.58,
-          "starterIndex": 100.42,
-          "depthIndex": 109.04,
-          "positions": {
-            "QB": {
-              "starter": 121.63,
-              "depth": 130
-            },
-            "RB": {
-              "starter": 77.04,
-              "depth": 77.31
-            },
-            "WR": {
-              "starter": 112.76,
-              "depth": 70.67
-            },
-            "TE": {
-              "starter": 90.44,
-              "depth": 159.07
-            },
-            "K": {
-              "starter": 109.29,
-              "depth": null
-            },
-            "DST": {
-              "starter": null,
-              "depth": null
-            }
-          }
-        }
-      },
       "profileAnalytics": {
         "optimalLineup": {
           "actualPoints": 276.18,
@@ -1459,9 +1356,72 @@
           "pointsLeft": 26.9,
           "efficiency": 91.12
         },
+        "positionFit": {
+          "strengths": [
+            {
+              "position": "QB",
+              "average": 38.74,
+              "percent": 89.11
+            }
+          ],
+          "needs": [
+            {
+              "position": "RB",
+              "average": 10.9,
+              "percent": -29.12
+            }
+          ]
+        },
         "rosterFit": {
-          "partners": [],
-          "targets": []
+          "partners": [
+            {
+              "teamId": 7,
+              "team": "Ruffing the Passer",
+              "score": 118.23,
+              "give": [
+                {
+                  "position": "QB",
+                  "percent": 89.11
+                }
+              ],
+              "get": [
+                {
+                  "position": "RB",
+                  "percent": -29.12
+                }
+              ]
+            },
+            {
+              "teamId": 11,
+              "team": "Brock You Like a Hurricane",
+              "score": 118.23,
+              "give": [
+                {
+                  "position": "QB",
+                  "percent": 89.11
+                }
+              ],
+              "get": [
+                {
+                  "position": "RB",
+                  "percent": -29.12
+                }
+              ]
+            }
+          ],
+          "targets": [
+            {
+              "playerId": 4429096,
+              "player": "Blake Corum",
+              "position": "RB",
+              "startRate": 0,
+              "rosteredWeeks": 2,
+              "startedWeeks": 0,
+              "boost": 1.6,
+              "teamId": 11,
+              "team": "Brock You Like a Hurricane"
+            }
+          ]
         },
         "trend": {
           "teamId": 6,
@@ -1604,101 +1564,6 @@
         "pointsLeft": 23.34,
         "winsLost": 3
       },
-      "powerIndex": {
-        "season": {
-          "overall": 89.56,
-          "starterIndex": 94.9,
-          "depthIndex": 73.55,
-          "positions": {
-            "QB": {
-              "starter": 80.45,
-              "depth": 161.02
-            },
-            "RB": {
-              "starter": 85.16,
-              "depth": 31.19
-            },
-            "WR": {
-              "starter": 114.88,
-              "depth": 45.17
-            },
-            "TE": {
-              "starter": 72.06,
-              "depth": 52.34
-            },
-            "K": {
-              "starter": 81.55,
-              "depth": null
-            },
-            "DST": {
-              "starter": 133.33,
-              "depth": null
-            }
-          }
-        },
-        "thisWeek": {
-          "overall": null,
-          "starterIndex": null,
-          "depthIndex": null,
-          "positions": {
-            "QB": {
-              "starter": null,
-              "depth": null
-            },
-            "RB": {
-              "starter": null,
-              "depth": null
-            },
-            "WR": {
-              "starter": null,
-              "depth": null
-            },
-            "TE": {
-              "starter": null,
-              "depth": null
-            },
-            "K": {
-              "starter": null,
-              "depth": null
-            },
-            "DST": {
-              "starter": null,
-              "depth": null
-            }
-          }
-        },
-        "ros": {
-          "overall": 96.59,
-          "starterIndex": 96.23,
-          "depthIndex": 97.66,
-          "positions": {
-            "QB": {
-              "starter": 100.44,
-              "depth": 137.5
-            },
-            "RB": {
-              "starter": 75.86,
-              "depth": 35.73
-            },
-            "WR": {
-              "starter": 110.54,
-              "depth": 151.55
-            },
-            "TE": {
-              "starter": 88.03,
-              "depth": 127.26
-            },
-            "K": {
-              "starter": 103.13,
-              "depth": null
-            },
-            "DST": {
-              "starter": null,
-              "depth": null
-            }
-          }
-        }
-      },
       "profileAnalytics": {
         "optimalLineup": {
           "actualPoints": 246.64,
@@ -1706,9 +1571,132 @@
           "pointsLeft": 23.34,
           "efficiency": 91.35
         },
+        "positionFit": {
+          "strengths": [
+            {
+              "position": "DST",
+              "average": 7.5,
+              "percent": 24.14
+            },
+            {
+              "position": "RB",
+              "average": 17.85,
+              "percent": 16.08
+            }
+          ],
+          "needs": [
+            {
+              "position": "QB",
+              "average": 11.07,
+              "percent": -45.96
+            },
+            {
+              "position": "K",
+              "average": 7,
+              "percent": -18.45
+            }
+          ]
+        },
         "rosterFit": {
-          "partners": [],
-          "targets": []
+          "partners": [
+            {
+              "teamId": 9,
+              "team": "The Mahomies",
+              "score": 70.1,
+              "give": [
+                {
+                  "position": "DST",
+                  "percent": 24.14
+                }
+              ],
+              "get": [
+                {
+                  "position": "QB",
+                  "percent": -45.96
+                }
+              ]
+            },
+            {
+              "teamId": 6,
+              "team": "Claremont In Yo Stace!",
+              "score": 62.04,
+              "give": [
+                {
+                  "position": "RB",
+                  "percent": 16.08
+                }
+              ],
+              "get": [
+                {
+                  "position": "QB",
+                  "percent": -45.96
+                }
+              ]
+            },
+            {
+              "teamId": 10,
+              "team": "Gibb it to Me Baby",
+              "score": 42.59,
+              "give": [
+                {
+                  "position": "DST",
+                  "percent": 24.14
+                }
+              ],
+              "get": [
+                {
+                  "position": "K",
+                  "percent": -18.45
+                }
+              ]
+            }
+          ],
+          "targets": [
+            {
+              "playerId": 4428718,
+              "player": "Tre Tucker",
+              "position": "WR",
+              "startRate": 0,
+              "rosteredWeeks": 2,
+              "startedWeeks": 0,
+              "boost": 13.9,
+              "teamId": 6,
+              "team": "Claremont In Yo Stace!"
+            },
+            {
+              "playerId": 4361741,
+              "player": "Brock Purdy",
+              "position": "QB",
+              "startRate": 0,
+              "rosteredWeeks": 2,
+              "startedWeeks": 0,
+              "boost": 4.66,
+              "teamId": 10,
+              "team": "Gibb it to Me Baby"
+            },
+            {
+              "playerId": 4360078,
+              "player": "Alec Pierce",
+              "position": "WR",
+              "startRate": 0,
+              "rosteredWeeks": 2,
+              "startedWeeks": 0,
+              "boost": 4.5,
+              "teamId": 6,
+              "team": "Claremont In Yo Stace!"
+            },
+            {
+              "playerId": 4575131,
+              "player": "Jacory Croskey-Merritt",
+              "position": "RB",
+              "startRate": 0,
+              "rosteredWeeks": 2,
+              "startedWeeks": 0,
+              "boost": 3.7,
+              "teamId": 6,
+              "team": "Claremont In Yo Stace!"
+            }
+          ]
         },
         "trend": {
           "teamId": 7,
@@ -1851,101 +1839,6 @@
         "pointsLeft": 17.5,
         "winsLost": 0
       },
-      "powerIndex": {
-        "season": {
-          "overall": 86.47,
-          "starterIndex": 96.93,
-          "depthIndex": 55.1,
-          "positions": {
-            "QB": {
-              "starter": 92.95,
-              "depth": 29.82
-            },
-            "RB": {
-              "starter": 94.34,
-              "depth": 82.31
-            },
-            "WR": {
-              "starter": 113.24,
-              "depth": 13.08
-            },
-            "TE": {
-              "starter": 127.89,
-              "depth": 199.68
-            },
-            "K": {
-              "starter": 17.48,
-              "depth": null
-            },
-            "DST": {
-              "starter": 26.67,
-              "depth": null
-            }
-          }
-        },
-        "thisWeek": {
-          "overall": null,
-          "starterIndex": null,
-          "depthIndex": null,
-          "positions": {
-            "QB": {
-              "starter": null,
-              "depth": null
-            },
-            "RB": {
-              "starter": null,
-              "depth": null
-            },
-            "WR": {
-              "starter": null,
-              "depth": null
-            },
-            "TE": {
-              "starter": null,
-              "depth": null
-            },
-            "K": {
-              "starter": null,
-              "depth": null
-            },
-            "DST": {
-              "starter": null,
-              "depth": null
-            }
-          }
-        },
-        "ros": {
-          "overall": 100.26,
-          "starterIndex": 103.05,
-          "depthIndex": 91.89,
-          "positions": {
-            "QB": {
-              "starter": 120.65,
-              "depth": 0
-            },
-            "RB": {
-              "starter": 76.34,
-              "depth": 122.4
-            },
-            "WR": {
-              "starter": 119.33,
-              "depth": 65.29
-            },
-            "TE": {
-              "starter": 96.5,
-              "depth": 162.69
-            },
-            "K": {
-              "starter": 100.89,
-              "depth": null
-            },
-            "DST": {
-              "starter": null,
-              "depth": null
-            }
-          }
-        }
-      },
       "profileAnalytics": {
         "optimalLineup": {
           "actualPoints": 258.26,
@@ -1953,9 +1846,114 @@
           "pointsLeft": 17.5,
           "efficiency": 93.65
         },
+        "positionFit": {
+          "strengths": [
+            {
+              "position": "RB",
+              "average": 18.55,
+              "percent": 20.63
+            }
+          ],
+          "needs": [
+            {
+              "position": "K",
+              "average": 1.5,
+              "percent": -82.52
+            },
+            {
+              "position": "DST",
+              "average": 1.5,
+              "percent": -75.17
+            }
+          ]
+        },
         "rosterFit": {
-          "partners": [],
-          "targets": []
+          "partners": [
+            {
+              "teamId": 1,
+              "team": "Ramosverse",
+              "score": 178.32,
+              "give": [
+                {
+                  "position": "RB",
+                  "percent": 20.63
+                }
+              ],
+              "get": [
+                {
+                  "position": "K",
+                  "percent": -82.52
+                },
+                {
+                  "position": "DST",
+                  "percent": -75.17
+                }
+              ]
+            },
+            {
+              "teamId": 12,
+              "team": "Beautiful Dark Twisted Fantasy",
+              "score": 95.8,
+              "give": [
+                {
+                  "position": "RB",
+                  "percent": 20.63
+                }
+              ],
+              "get": [
+                {
+                  "position": "DST",
+                  "percent": -75.17
+                }
+              ]
+            }
+          ],
+          "targets": [
+            {
+              "playerId": 4241478,
+              "player": "DeVonta Smith",
+              "position": "WR",
+              "startRate": 50,
+              "rosteredWeeks": 2,
+              "startedWeeks": 1,
+              "boost": 23.2,
+              "teamId": 1,
+              "team": "Ramosverse"
+            },
+            {
+              "playerId": 4426338,
+              "player": "Bo Nix",
+              "position": "QB",
+              "startRate": 0,
+              "rosteredWeeks": 2,
+              "startedWeeks": 0,
+              "boost": 13.32,
+              "teamId": 1,
+              "team": "Ramosverse"
+            },
+            {
+              "playerId": 4697815,
+              "player": "Rachaad White",
+              "position": "RB",
+              "startRate": 50,
+              "rosteredWeeks": 2,
+              "startedWeeks": 1,
+              "boost": 11.3,
+              "teamId": 12,
+              "team": "Beautiful Dark Twisted Fantasy"
+            },
+            {
+              "playerId": 4685720,
+              "player": "Bryce Young",
+              "position": "QB",
+              "startRate": 0,
+              "rosteredWeeks": 1,
+              "startedWeeks": 0,
+              "boost": 7.9,
+              "teamId": 12,
+              "team": "Beautiful Dark Twisted Fantasy"
+            }
+          ]
         },
         "trend": {
           "teamId": 8,
@@ -2098,101 +2096,6 @@
         "pointsLeft": 25.5,
         "winsLost": 1
       },
-      "powerIndex": {
-        "season": {
-          "overall": 90.55,
-          "starterIndex": 92.7,
-          "depthIndex": 84.08,
-          "positions": {
-            "QB": {
-              "starter": 117.76,
-              "depth": 0
-            },
-            "RB": {
-              "starter": 77.05,
-              "depth": 63.25
-            },
-            "WR": {
-              "starter": 90.49,
-              "depth": 120.65
-            },
-            "TE": {
-              "starter": 117.5,
-              "depth": 263.65
-            },
-            "K": {
-              "starter": 110.68,
-              "depth": null
-            },
-            "DST": {
-              "starter": 35.56,
-              "depth": null
-            }
-          }
-        },
-        "thisWeek": {
-          "overall": null,
-          "starterIndex": null,
-          "depthIndex": null,
-          "positions": {
-            "QB": {
-              "starter": null,
-              "depth": null
-            },
-            "RB": {
-              "starter": null,
-              "depth": null
-            },
-            "WR": {
-              "starter": null,
-              "depth": null
-            },
-            "TE": {
-              "starter": null,
-              "depth": null
-            },
-            "K": {
-              "starter": null,
-              "depth": null
-            },
-            "DST": {
-              "starter": null,
-              "depth": null
-            }
-          }
-        },
-        "ros": {
-          "overall": 92.28,
-          "starterIndex": 89.41,
-          "depthIndex": 100.88,
-          "positions": {
-            "QB": {
-              "starter": 0,
-              "depth": 0
-            },
-            "RB": {
-              "starter": 84.91,
-              "depth": 43.34
-            },
-            "WR": {
-              "starter": 112.84,
-              "depth": 154.23
-            },
-            "TE": {
-              "starter": 87.72,
-              "depth": 154.28
-            },
-            "K": {
-              "starter": 105.93,
-              "depth": null
-            },
-            "DST": {
-              "starter": null,
-              "depth": null
-            }
-          }
-        }
-      },
       "profileAnalytics": {
         "optimalLineup": {
           "actualPoints": 238.24,
@@ -2200,9 +2103,136 @@
           "pointsLeft": 25.5,
           "efficiency": 90.33
         },
+        "positionFit": {
+          "strengths": [
+            {
+              "position": "TE",
+              "average": 18.1,
+              "percent": 63.36
+            },
+            {
+              "position": "QB",
+              "average": 25.82,
+              "percent": 26.04
+            }
+          ],
+          "needs": [
+            {
+              "position": "DST",
+              "average": 2,
+              "percent": -66.9
+            },
+            {
+              "position": "WR",
+              "average": 9.34,
+              "percent": -31.34
+            }
+          ]
+        },
         "rosterFit": {
-          "partners": [],
-          "targets": []
+          "partners": [
+            {
+              "teamId": 11,
+              "team": "Brock You Like a Hurricane",
+              "score": 156.3,
+              "give": [
+                {
+                  "position": "TE",
+                  "percent": 63.36
+                },
+                {
+                  "position": "QB",
+                  "percent": 26.04
+                }
+              ],
+              "get": [
+                {
+                  "position": "DST",
+                  "percent": -66.9
+                }
+              ]
+            },
+            {
+              "teamId": 12,
+              "team": "Beautiful Dark Twisted Fantasy",
+              "score": 130.26,
+              "give": [
+                {
+                  "position": "TE",
+                  "percent": 63.36
+                }
+              ],
+              "get": [
+                {
+                  "position": "DST",
+                  "percent": -66.9
+                }
+              ]
+            },
+            {
+              "teamId": 3,
+              "team": "Kyle Tucker",
+              "score": 94.7,
+              "give": [
+                {
+                  "position": "TE",
+                  "percent": 63.36
+                }
+              ],
+              "get": [
+                {
+                  "position": "WR",
+                  "percent": -31.34
+                }
+              ]
+            }
+          ],
+          "targets": [
+            {
+              "playerId": 4832800,
+              "player": "Denzel Boston",
+              "position": "WR",
+              "startRate": 0,
+              "rosteredWeeks": 2,
+              "startedWeeks": 0,
+              "boost": 14.9,
+              "teamId": 3,
+              "team": "Kyle Tucker"
+            },
+            {
+              "playerId": 4697815,
+              "player": "Rachaad White",
+              "position": "RB",
+              "startRate": 50,
+              "rosteredWeeks": 2,
+              "startedWeeks": 1,
+              "boost": 11.3,
+              "teamId": 12,
+              "team": "Beautiful Dark Twisted Fantasy"
+            },
+            {
+              "playerId": 4685720,
+              "player": "Bryce Young",
+              "position": "QB",
+              "startRate": 0,
+              "rosteredWeeks": 1,
+              "startedWeeks": 0,
+              "boost": 7.9,
+              "teamId": 12,
+              "team": "Beautiful Dark Twisted Fantasy"
+            },
+            {
+              "playerId": 4429059,
+              "player": "Woody Marks",
+              "position": "RB",
+              "startRate": 0,
+              "rosteredWeeks": 2,
+              "startedWeeks": 0,
+              "boost": 6.4,
+              "teamId": 12,
+              "team": "Beautiful Dark Twisted Fantasy"
+            }
+          ]
         },
         "trend": {
           "teamId": 9,
@@ -2345,101 +2375,6 @@
         "pointsLeft": 13.96,
         "winsLost": 0
       },
-      "powerIndex": {
-        "season": {
-          "overall": 126.78,
-          "starterIndex": 115.14,
-          "depthIndex": 161.68,
-          "positions": {
-            "QB": {
-              "starter": 118.3,
-              "depth": 326.69
-            },
-            "RB": {
-              "starter": 113.43,
-              "depth": 91.84
-            },
-            "WR": {
-              "starter": 118.36,
-              "depth": 111.14
-            },
-            "TE": {
-              "starter": 117.18,
-              "depth": 0
-            },
-            "K": {
-              "starter": 122.33,
-              "depth": null
-            },
-            "DST": {
-              "starter": 71.11,
-              "depth": null
-            }
-          }
-        },
-        "thisWeek": {
-          "overall": null,
-          "starterIndex": null,
-          "depthIndex": null,
-          "positions": {
-            "QB": {
-              "starter": null,
-              "depth": null
-            },
-            "RB": {
-              "starter": null,
-              "depth": null
-            },
-            "WR": {
-              "starter": null,
-              "depth": null
-            },
-            "TE": {
-              "starter": null,
-              "depth": null
-            },
-            "K": {
-              "starter": null,
-              "depth": null
-            },
-            "DST": {
-              "starter": null,
-              "depth": null
-            }
-          }
-        },
-        "ros": {
-          "overall": 103.67,
-          "starterIndex": 101.02,
-          "depthIndex": 111.63,
-          "positions": {
-            "QB": {
-              "starter": 109.24,
-              "depth": 145.96
-            },
-            "RB": {
-              "starter": 83.62,
-              "depth": 160.17
-            },
-            "WR": {
-              "starter": 116.37,
-              "depth": 136.5
-            },
-            "TE": {
-              "starter": 84.39,
-              "depth": 0
-            },
-            "K": {
-              "starter": 95.84,
-              "depth": null
-            },
-            "DST": {
-              "starter": null,
-              "depth": null
-            }
-          }
-        }
-      },
       "profileAnalytics": {
         "optimalLineup": {
           "actualPoints": 313.62,
@@ -2447,9 +2382,136 @@
           "pointsLeft": 13.96,
           "efficiency": 95.74
         },
+        "positionFit": {
+          "strengths": [
+            {
+              "position": "TE",
+              "average": 18.05,
+              "percent": 62.91
+            },
+            {
+              "position": "WR",
+              "average": 18.08,
+              "percent": 32.97
+            },
+            {
+              "position": "K",
+              "average": 10.5,
+              "percent": 22.33
+            }
+          ],
+          "needs": [
+            {
+              "position": "DST",
+              "average": 4,
+              "percent": -33.79
+            }
+          ]
+        },
         "rosterFit": {
-          "partners": [],
-          "targets": []
+          "partners": [
+            {
+              "teamId": 12,
+              "team": "Beautiful Dark Twisted Fantasy",
+              "score": 129.67,
+              "give": [
+                {
+                  "position": "TE",
+                  "percent": 62.91
+                },
+                {
+                  "position": "WR",
+                  "percent": 32.97
+                }
+              ],
+              "get": [
+                {
+                  "position": "DST",
+                  "percent": -33.79
+                }
+              ]
+            },
+            {
+              "teamId": 11,
+              "team": "Brock You Like a Hurricane",
+              "score": 96.7,
+              "give": [
+                {
+                  "position": "TE",
+                  "percent": 62.91
+                }
+              ],
+              "get": [
+                {
+                  "position": "DST",
+                  "percent": -33.79
+                }
+              ]
+            },
+            {
+              "teamId": 1,
+              "team": "Ramosverse",
+              "score": 66.76,
+              "give": [
+                {
+                  "position": "WR",
+                  "percent": 32.97
+                }
+              ],
+              "get": [
+                {
+                  "position": "DST",
+                  "percent": -33.79
+                }
+              ]
+            }
+          ],
+          "targets": [
+            {
+              "playerId": 4241478,
+              "player": "DeVonta Smith",
+              "position": "WR",
+              "startRate": 50,
+              "rosteredWeeks": 2,
+              "startedWeeks": 1,
+              "boost": 23.2,
+              "teamId": 1,
+              "team": "Ramosverse"
+            },
+            {
+              "playerId": 4426338,
+              "player": "Bo Nix",
+              "position": "QB",
+              "startRate": 0,
+              "rosteredWeeks": 2,
+              "startedWeeks": 0,
+              "boost": 13.32,
+              "teamId": 1,
+              "team": "Ramosverse"
+            },
+            {
+              "playerId": 4697815,
+              "player": "Rachaad White",
+              "position": "RB",
+              "startRate": 50,
+              "rosteredWeeks": 2,
+              "startedWeeks": 1,
+              "boost": 11.3,
+              "teamId": 12,
+              "team": "Beautiful Dark Twisted Fantasy"
+            },
+            {
+              "playerId": 4685720,
+              "player": "Bryce Young",
+              "position": "QB",
+              "startRate": 0,
+              "rosteredWeeks": 1,
+              "startedWeeks": 0,
+              "boost": 7.9,
+              "teamId": 12,
+              "team": "Beautiful Dark Twisted Fantasy"
+            }
+          ]
         },
         "trend": {
           "teamId": 10,
@@ -2582,101 +2644,6 @@
         "pointsLeft": 4,
         "winsLost": 0
       },
-      "powerIndex": {
-        "season": {
-          "overall": 97.5,
-          "starterIndex": 91.36,
-          "depthIndex": 115.92,
-          "positions": {
-            "QB": {
-              "starter": 28.09,
-              "depth": 0
-            },
-            "RB": {
-              "starter": 109.97,
-              "depth": 149.03
-            },
-            "WR": {
-              "starter": 105.35,
-              "depth": 156.91
-            },
-            "TE": {
-              "starter": 34.41,
-              "depth": 143.46
-            },
-            "K": {
-              "starter": 198.06,
-              "depth": null
-            },
-            "DST": {
-              "starter": 71.11,
-              "depth": null
-            }
-          }
-        },
-        "thisWeek": {
-          "overall": null,
-          "starterIndex": null,
-          "depthIndex": null,
-          "positions": {
-            "QB": {
-              "starter": null,
-              "depth": null
-            },
-            "RB": {
-              "starter": null,
-              "depth": null
-            },
-            "WR": {
-              "starter": null,
-              "depth": null
-            },
-            "TE": {
-              "starter": null,
-              "depth": null
-            },
-            "K": {
-              "starter": null,
-              "depth": null
-            },
-            "DST": {
-              "starter": null,
-              "depth": null
-            }
-          }
-        },
-        "ros": {
-          "overall": 110.77,
-          "starterIndex": 106.92,
-          "depthIndex": 122.32,
-          "positions": {
-            "QB": {
-              "starter": 113.16,
-              "depth": 0
-            },
-            "RB": {
-              "starter": 91.96,
-              "depth": 83.16
-            },
-            "WR": {
-              "starter": 116.37,
-              "depth": 171.16
-            },
-            "TE": {
-              "starter": 107.08,
-              "depth": 160.28
-            },
-            "K": {
-              "starter": 102.57,
-              "depth": null
-            },
-            "DST": {
-              "starter": null,
-              "depth": null
-            }
-          }
-        }
-      },
       "profileAnalytics": {
         "optimalLineup": {
           "actualPoints": 125.96,
@@ -2684,9 +2651,141 @@
           "pointsLeft": 4,
           "efficiency": 96.92
         },
+        "positionFit": {
+          "strengths": [
+            {
+              "position": "K",
+              "average": 17,
+              "percent": 98.06
+            },
+            {
+              "position": "RB",
+              "average": 25.57,
+              "percent": 66.31
+            },
+            {
+              "position": "DST",
+              "average": 9,
+              "percent": 48.97
+            }
+          ],
+          "needs": [
+            {
+              "position": "TE",
+              "average": 7.25,
+              "percent": -34.57
+            },
+            {
+              "position": "QB",
+              "average": 16.13,
+              "percent": -21.26
+            }
+          ]
+        },
         "rosterFit": {
-          "partners": [],
-          "targets": []
+          "partners": [
+            {
+              "teamId": 9,
+              "team": "The Mahomies",
+              "score": 104.8,
+              "give": [
+                {
+                  "position": "DST",
+                  "percent": 48.97
+                }
+              ],
+              "get": [
+                {
+                  "position": "TE",
+                  "percent": -34.57
+                },
+                {
+                  "position": "QB",
+                  "percent": -21.26
+                }
+              ]
+            },
+            {
+              "teamId": 1,
+              "team": "Ramosverse",
+              "score": 100.88,
+              "give": [
+                {
+                  "position": "RB",
+                  "percent": 66.31
+                }
+              ],
+              "get": [
+                {
+                  "position": "TE",
+                  "percent": -34.57
+                }
+              ]
+            },
+            {
+              "teamId": 6,
+              "team": "Claremont In Yo Stace!",
+              "score": 87.57,
+              "give": [
+                {
+                  "position": "RB",
+                  "percent": 66.31
+                }
+              ],
+              "get": [
+                {
+                  "position": "QB",
+                  "percent": -21.26
+                }
+              ]
+            }
+          ],
+          "targets": [
+            {
+              "playerId": 4241478,
+              "player": "DeVonta Smith",
+              "position": "WR",
+              "startRate": 50,
+              "rosteredWeeks": 2,
+              "startedWeeks": 1,
+              "boost": 23.2,
+              "teamId": 1,
+              "team": "Ramosverse"
+            },
+            {
+              "playerId": 4428718,
+              "player": "Tre Tucker",
+              "position": "WR",
+              "startRate": 0,
+              "rosteredWeeks": 2,
+              "startedWeeks": 0,
+              "boost": 13.9,
+              "teamId": 6,
+              "team": "Claremont In Yo Stace!"
+            },
+            {
+              "playerId": 4426338,
+              "player": "Bo Nix",
+              "position": "QB",
+              "startRate": 0,
+              "rosteredWeeks": 2,
+              "startedWeeks": 0,
+              "boost": 13.32,
+              "teamId": 1,
+              "team": "Ramosverse"
+            },
+            {
+              "playerId": 4036133,
+              "player": "T.J. Hockenson",
+              "position": "TE",
+              "startRate": 50,
+              "rosteredWeeks": 2,
+              "startedWeeks": 1,
+              "boost": 6.3,
+              "teamId": 1,
+              "team": "Ramosverse"
+            }
+          ]
         },
         "trend": {
           "teamId": 11,
@@ -2829,101 +2928,6 @@
         "pointsLeft": 54.14,
         "winsLost": 0
       },
-      "powerIndex": {
-        "season": {
-          "overall": 80.81,
-          "starterIndex": 76.83,
-          "depthIndex": 92.74,
-          "positions": {
-            "QB": {
-              "starter": 112.37,
-              "depth": 220.65
-            },
-            "RB": {
-              "starter": 92.91,
-              "depth": 47.65
-            },
-            "WR": {
-              "starter": 45.09,
-              "depth": 49.33
-            },
-            "TE": {
-              "starter": 24.02,
-              "depth": 25.2
-            },
-            "K": {
-              "starter": 93.2,
-              "depth": null
-            },
-            "DST": {
-              "starter": 213.33,
-              "depth": null
-            }
-          }
-        },
-        "thisWeek": {
-          "overall": null,
-          "starterIndex": null,
-          "depthIndex": null,
-          "positions": {
-            "QB": {
-              "starter": null,
-              "depth": null
-            },
-            "RB": {
-              "starter": null,
-              "depth": null
-            },
-            "WR": {
-              "starter": null,
-              "depth": null
-            },
-            "TE": {
-              "starter": null,
-              "depth": null
-            },
-            "K": {
-              "starter": null,
-              "depth": null
-            },
-            "DST": {
-              "starter": null,
-              "depth": null
-            }
-          }
-        },
-        "ros": {
-          "overall": 94.13,
-          "starterIndex": 99.97,
-          "depthIndex": 76.61,
-          "positions": {
-            "QB": {
-              "starter": 111.52,
-              "depth": 132.8
-            },
-            "RB": {
-              "starter": 119.91,
-              "depth": 128.26
-            },
-            "WR": {
-              "starter": 84.98,
-              "depth": 0
-            },
-            "TE": {
-              "starter": 97.1,
-              "depth": 129.67
-            },
-            "K": {
-              "starter": 93.6,
-              "depth": null
-            },
-            "DST": {
-              "starter": null,
-              "depth": null
-            }
-          }
-        }
-      },
       "profileAnalytics": {
         "optimalLineup": {
           "actualPoints": 164.44,
@@ -2931,9 +2935,118 @@
           "pointsLeft": 54.14,
           "efficiency": 75.23
         },
+        "positionFit": {
+          "strengths": [
+            {
+              "position": "DST",
+              "average": 12,
+              "percent": 98.62
+            }
+          ],
+          "needs": [
+            {
+              "position": "TE",
+              "average": 2.9,
+              "percent": -73.83
+            },
+            {
+              "position": "WR",
+              "average": 5.38,
+              "percent": -60.41
+            },
+            {
+              "position": "RB",
+              "average": 10.62,
+              "percent": -30.94
+            }
+          ]
+        },
         "rosterFit": {
-          "partners": [],
-          "targets": []
+          "partners": [
+            {
+              "teamId": 10,
+              "team": "Gibb it to Me Baby",
+              "score": 232.86,
+              "give": [
+                {
+                  "position": "DST",
+                  "percent": 98.62
+                }
+              ],
+              "get": [
+                {
+                  "position": "TE",
+                  "percent": -73.83
+                },
+                {
+                  "position": "WR",
+                  "percent": -60.41
+                }
+              ]
+            },
+            {
+              "teamId": 5,
+              "team": "49er Faith-Fool",
+              "score": 203.39,
+              "give": [
+                {
+                  "position": "DST",
+                  "percent": 98.62
+                }
+              ],
+              "get": [
+                {
+                  "position": "TE",
+                  "percent": -73.83
+                },
+                {
+                  "position": "RB",
+                  "percent": -30.94
+                }
+              ]
+            },
+            {
+              "teamId": 9,
+              "team": "The Mahomies",
+              "score": 172.45,
+              "give": [
+                {
+                  "position": "DST",
+                  "percent": 98.62
+                }
+              ],
+              "get": [
+                {
+                  "position": "TE",
+                  "percent": -73.83
+                }
+              ]
+            }
+          ],
+          "targets": [
+            {
+              "playerId": 4361741,
+              "player": "Brock Purdy",
+              "position": "QB",
+              "startRate": 0,
+              "rosteredWeeks": 2,
+              "startedWeeks": 0,
+              "boost": 4.66,
+              "teamId": 10,
+              "team": "Gibb it to Me Baby"
+            },
+            {
+              "playerId": 4373626,
+              "player": "Tyler Allgeier",
+              "position": "RB",
+              "startRate": 0,
+              "rosteredWeeks": 2,
+              "startedWeeks": 0,
+              "boost": 0.5,
+              "teamId": 10,
+              "team": "Gibb it to Me Baby"
+            }
+          ]
         },
         "trend": {
           "teamId": 12,
