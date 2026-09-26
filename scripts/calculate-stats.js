@@ -526,6 +526,85 @@ function stddev(values) {
 
 const playerAwardsByTeam = new Map();
 
+function starterEligible(entry, slotId) {
+  if ([20, 21].includes(Number(slotId))) return false;
+  const eligibleSlots = (entry.playerPoolEntry?.player?.eligibleSlots || []).map(Number);
+  return eligibleSlots.includes(Number(slotId));
+}
+
+function lineupEfficiency(weeklyTeam) {
+  const entries = (weeklyTeam?.roster?.entries || []).filter(e => Number(e.lineupSlotId) !== 21);
+  const starterSlots = [];
+  const lineupSlotCounts = settings.settings?.rosterSettings?.lineupSlotCounts || {};
+  for (const [slotId, count] of Object.entries(lineupSlotCounts)) {
+    const slot = Number(slotId);
+    if ([20, 21].includes(slot)) continue;
+    for (let i = 0; i < Number(count || 0); i++) starterSlots.push(slot);
+  }
+
+  const scoreOf = entry => {
+    const score = Number(entry.playerPoolEntry?.appliedStatTotal);
+    return Number.isFinite(score) ? score : 0;
+  };
+
+  const actualPoints = round(
+    entries
+      .filter(e => Number(e.lineupSlotId) !== 20)
+      .reduce((sum, e) => sum + scoreOf(e), 0)
+  );
+
+  const memo = new Map();
+  const solve = (index, remaining) => {
+    if (index >= entries.length) return remaining.every(x => x === 0) ? 0 : -Infinity;
+    const key = index + "|" + remaining.join(",");
+    if (memo.has(key)) return memo.get(key);
+
+    const entry = entries[index];
+    let best = solve(index + 1, remaining);
+
+    for (let slotIndex = 0; slotIndex < starterSlots.length; slotIndex++) {
+      if (!remaining[slotIndex] || !starterEligible(entry, starterSlots[slotIndex])) continue;
+      const next = remaining.slice();
+      next[slotIndex]--;
+      const candidate = scoreOf(entry) + solve(index + 1, next);
+      if (candidate > best) best = candidate;
+    }
+
+    memo.set(key, best);
+    return best;
+  };
+
+  const optimalPoints = solve(0, starterSlots.map(() => 1));
+  if (!Number.isFinite(optimalPoints) || optimalPoints <= 0) return null;
+
+  return {
+    actualPoints,
+    optimalPoints:round(optimalPoints),
+    efficiency:round(Math.max(0, Math.min(1, actualPoints / optimalPoints)) * 100),
+    pointsLeft:round(Math.max(0, optimalPoints - actualPoints))
+  };
+}
+
+const startSitByTeam = new Map();
+for (const team of teams.values()) {
+  const weeks = completedWeeks.map(week => {
+    const weeklyRoster = historicalRosterData.get(week);
+    const weeklyTeam = (weeklyRoster?.teams || []).find(t => Number(t.id) === Number(team.id));
+    const result = lineupEfficiency(weeklyTeam);
+    return result ? {week, ...result} : null;
+  }).filter(Boolean);
+
+  const totalActual = weeks.reduce((sum, w) => sum + w.actualPoints, 0);
+  const totalOptimal = weeks.reduce((sum, w) => sum + w.optimalPoints, 0);
+  const score = totalOptimal > 0 ? round((totalActual / totalOptimal) * 100) : null;
+
+  startSitByTeam.set(team.id, {
+    score,
+    weeks,
+    pointsLeft:round(weeks.reduce((sum, w) => sum + w.pointsLeft, 0))
+  });
+}
+
 for (const team of teams.values()) {
   const players = rankedPlayers.filter(p => p.teamId === team.id);
   const drafted = players.filter(p => p.draft && Number(p.draft.overallPickNumber) > 0);
@@ -557,7 +636,7 @@ for (const team of teams.values()) {
   });
 }
 
-await writeJson("data/current/teams.json",{season:settings.seasonId,currentWeek,teams:[...teams.values()].map(t=>({...t,standings:standings.find(s=>s.id===t.id)||null,weeklyResults:completed.filter(m=>m.homeTeamId===t.id||m.awayTeamId===t.id).map(m=>({week:m.week,opponentId:m.homeTeamId===t.id?m.awayTeamId:m.homeTeamId,opponent:name(m.homeTeamId===t.id?m.awayTeamId:m.homeTeamId),score:m.homeTeamId===t.id?m.homeScore:m.awayScore,opponentScore:m.homeTeamId===t.id?m.awayScore:m.homeScore,result:(m.homeTeamId===t.id?m.winner==="HOME":m.winner==="AWAY")?"W":"L"})),playerAwards:playerAwardsByTeam.get(t.id)||null}))});
+await writeJson("data/current/teams.json",{season:settings.seasonId,currentWeek,teams:[...teams.values()].map(t=>({...t,standings:standings.find(s=>s.id===t.id)||null,weeklyResults:completed.filter(m=>m.homeTeamId===t.id||m.awayTeamId===t.id).map(m=>({week:m.week,opponentId:m.homeTeamId===t.id?m.awayTeamId:m.homeTeamId,opponent:name(m.homeTeamId===t.id?m.awayTeamId:m.homeTeamId),score:m.homeTeamId===t.id?m.homeScore:m.awayScore,opponentScore:m.homeTeamId===t.id?m.awayScore:m.homeScore,result:(m.homeTeamId===t.id?m.winner==="HOME":m.winner==="AWAY")?"W":"L"})),playerAwards:playerAwardsByTeam.get(t.id)||null,startSit:startSitByTeam.get(t.id)||null}))});
 
 function name(id){return teams.get(id)?.name||"Team "+id}
 function streak(id){const gs=completed.filter(m=>m.homeTeamId===id||m.awayTeamId===id).sort((a,b)=>a.week-b.week);if(!gs.length)return{type:"NONE",length:0};const last=gs[gs.length-1],type=(last.homeTeamId===id?last.winner==="HOME":last.winner==="AWAY")?"W":"L";let length=0;for(let i=gs.length-1;i>=0;i--){const g=gs[i],t=(g.homeTeamId===id?g.winner==="HOME":g.winner==="AWAY")?"W":"L";if(t!==type)break;length++}return{type,length}}
