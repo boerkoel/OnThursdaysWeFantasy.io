@@ -89,7 +89,7 @@ function TeamCards({ teams }) {
               <div className="trade-target-impact">
                 <b>+{money(p.boost)} pts</b>
                 <em>Optimal lineup improvement</em>
-                <em>{(p.winsAdded ?? 0)} total wins added ({p.h2hWinsAdded ?? 0} H2H + {p.medianWinsAdded ?? 0} median)</em>
+                <em>{(p.winsAdded ?? 0)} total wins added ({p.h2hWinsAdded ?? 0} H2H + {p.medianWinsAdded ?? 0} median)</em>{p.mutualTrade ? <em className="trade-mutual">↔ {p.mutualTrade.player} has been on your bench {p.mutualTrade.startRate != null ? (100 - p.mutualTrade.startRate) : 0}% of the time and would improve their optimal lineup by {money(p.mutualTrade.boost)} pts and {p.mutualTrade.winsAdded ?? 0} wins</em> : null}
               </div>
             </div>)}
           </div>
