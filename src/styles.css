@@ -53,6 +53,16 @@
 .profile-metrics div:last-child{border-right:0}
 .profile-metrics small{display:block;color:#666960;font-size:9px;font-weight:800;letter-spacing:.1em}
 .profile-metrics strong{display:block;margin-top:4px;font-size:20px}
+.profile-startsit{padding:16px 20px;border-bottom:1px solid #292c27}
+.profile-startsit-heading{display:flex;justify-content:space-between;align-items:end;gap:12px}
+.profile-startsit-heading div{display:flex;align-items:baseline;gap:10px}
+.profile-startsit-heading strong{font-size:20px}
+.profile-startsit-heading>span{color:#777a72;font-size:9px;font-weight:800;letter-spacing:.06em}
+.profile-startsit-bar{height:6px;margin-top:10px;border-radius:999px;background:#292c27;overflow:hidden}
+.profile-startsit-bar span{display:block;height:100%;border-radius:999px;background:#8fa27f}
+.profile-startsit-weeks{display:flex;gap:14px;margin-top:8px}
+.profile-startsit-weeks span{color:#777a72;font-size:9px;font-weight:800;letter-spacing:.05em}
+.profile-startsit-weeks strong{color:#b8c69b}
 .profile-history{padding:20px 24px}
 .profile-history-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .profile-history-heading strong{font-size:13px}
