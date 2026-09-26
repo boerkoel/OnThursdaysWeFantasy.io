@@ -623,7 +623,15 @@ for (const team of teams.values()) {
     .filter(p => Number.isFinite(p.variance));
   const mostConsistent = minBy(consistentCandidates, p => p.variance);
   const lateRound = maxBy(withValue.filter(p => p.round >= 8), p => p.valueGap);
-  const boomBust = maxBy(players.map(p => ({...p,range:p.weekly.length>1 ? Math.max(...p.weekly.map(w=>w.score))-Math.min(...p.weekly.map(w=>w.score)) : 0})), p => p.range);
+  const boomBustCandidates = players
+    .map(p => ({
+      ...p,
+      weeklyRange:p.weekly.length > 1
+        ? Math.max(...p.weekly.map(w => w.score)) - Math.min(...p.weekly.map(w => w.score))
+        : null
+    }))
+    .filter(p => Number.isFinite(p.weeklyRange) && p.weekly.length > 1);
+  const boomBust = maxBy(boomBustCandidates, p => p.weeklyRange);
 
   playerAwardsByTeam.set(team.id, {
     mvp:mvp ? {playerId:mvp.playerId,player:mvp.name,position:mvp.position,points:mvp.points,seasonRank:mvp.seasonRank} : null,
@@ -632,7 +640,7 @@ for (const team of teams.values()) {
     boomMachine:boom ? {playerId:boom.playerId,player:boom.name,week:boom.week,score:round(boom.weekScore)} : null,
     mostConsistent:mostConsistent ? {playerId:mostConsistent.playerId,player:mostConsistent.name,variance:round(mostConsistent.variance)} : null,
     lateRoundWizard:lateRound ? {playerId:lateRound.playerId,player:lateRound.name,round:lateRound.round,draftPick:lateRound.draftPick,valueGap:lateRound.valueGap,points:lateRound.points} : null,
-    boomBust:boomBust ? {playerId:boomBust.playerId,player:boomBust.name,range:round(boomBust.range)} : null
+    boomBust:boomBust ? {playerId:boomBust.playerId,player:boomBust.name,range:round(boomBust.weeklyRange)} : null
   });
 }
 
