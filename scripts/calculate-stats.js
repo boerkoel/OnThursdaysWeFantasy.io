@@ -90,7 +90,7 @@ function buildPowerFromEntries(entries, scoreOf) {
     positions[positionName]={starterPoints:round(starters.reduce((sum,e)=>sum+scoreOf(e),0)),depthPoints:round(depth.reduce((sum,e)=>sum+scoreOf(e),0))};
   }
   const depthPool=roster.filter(e=>!pickedIds.has(Number(e.playerId))&&scoreOf(e)>0).sort((a,b)=>scoreOf(b)-scoreOf(a));
-  return {starterPoints:round(optimal.points),depthPoints:round(depthPool.slice(0,5).reduce((sum,e)=>sum+scoreOf(e),0)),positions};
+  return {starterPoints:round(optimal.points),depthPoints:round(depthPool.slice(0,5).reduce((sum,e)=>sum+scoreOf(e),0)),positions,starterPlayerIds:[...pickedIds]};
 }
 
 function indexPowerMap(rawByTeam) {
@@ -160,6 +160,86 @@ for(const team of teams.values()){
   const entries=(rosterData.teams||[]).find(t=>Number(t.id)===Number(team.id))?.roster?.entries||[];
   const power=buildPowerFromEntries(entries,rosScore);
   if(power) rosRaw.set(Number(team.id),power);
+}
+
+const currentRosterByTeam = new Map((boxscoreData.schedule||[])
+  .filter(g=>Number(g.matchupPeriodId)===Number(currentWeek))
+  .flatMap(g=>[g.home,g.away])
+  .filter(Boolean)
+  .map(side=>[Number(side.teamId),side.rosterForCurrentScoringPeriod?.entries||[]]));
+
+const projectedEntriesByTeam = new Map();
+for(const [teamId,entries] of currentRosterByTeam){
+  projectedEntriesByTeam.set(teamId,entries.map(e=>({...e,tradeProjection:Number(e.playerPoolEntry?.appliedTotal??0)})));
+}
+
+const teamPowerPositions = new Map();
+for(const [teamId,power] of thisWeekRaw) teamPowerPositions.set(teamId,power);
+
+function projectedLineupForTeam(teamId){
+  const entries=projectedEntriesByTeam.get(Number(teamId))||[];
+  return buildPowerFromEntries(entries,e=>Number(e.tradeProjection||0));
+}
+
+const tradeFitByTeam=new Map();
+for(const team of teams.values()){
+  const teamId=Number(team.id);
+  const mine=teamPowerPositions.get(teamId);
+  if(!mine) continue;
+  const partners=[];
+  for(const opponent of teams.values()){
+    const opponentId=Number(opponent.id);
+    if(opponentId===teamId) continue;
+    const theirs=teamPowerPositions.get(opponentId);
+    if(!theirs) continue;
+    let score=0;
+    const needs=[];
+    const offers=[];
+    for(const pos of positionsList){
+      const mineStarter=mine.positions?.[pos]?.starter;
+      const theirStarter=theirs.positions?.[pos]?.starter;
+      const mineDepth=mine.positions?.[pos]?.depth;
+      const theirDepth=theirs.positions?.[pos]?.depth;
+      if(Number.isFinite(mineStarter)&&Number.isFinite(theirStarter)){
+        if(mineStarter<98 && theirStarter>102){score+=(102-mineStarter)+(theirStarter-102);needs.push(pos);}
+        if(theirStarter<98 && mineStarter>102){score+=(102-theirStarter)+(mineStarter-102);offers.push(pos);}
+      }
+      if(Number.isFinite(mineDepth)&&Number.isFinite(theirDepth)){
+        if(mineDepth<95 && theirDepth>105) score+=2;
+        if(theirDepth<95 && mineDepth>105) score+=2;
+      }
+    }
+    if(needs.length&&offers.length) partners.push({teamId:opponentId,team:name(opponentId),score:round(score),needs:[...new Set(needs)],offers:[...new Set(offers)]});
+  }
+  partners.sort((a,b)=>b.score-a.score||a.team.localeCompare(b.team));
+
+  const myLineup=projectedLineupForTeam(teamId);
+  const myEntries=projectedEntriesByTeam.get(teamId)||[];
+  const myStarterIds=new Set(myLineup?.starterPlayerIds||[]);
+  const myStarterEntries=myEntries.filter(e=>myStarterIds.has(Number(e.playerId)));
+  const targets=[];
+  for(const opponent of teams.values()){
+    const opponentId=Number(opponent.id);
+    if(opponentId===teamId) continue;
+    for(const entry of projectedEntriesByTeam.get(opponentId)||[]){
+      if(Number(entry.lineupSlotId)!==20) continue;
+      const player=entry.playerPoolEntry?.player;
+      if(!player) continue;
+      const projection=Number(entry.tradeProjection||0);
+      if(projection<=0) continue;
+      const eligibleSlots=(player.eligibleSlots||[]).map(Number);
+      const eligibleForStarter=Object.keys(settings.settings?.rosterSettings?.lineupSlotCounts||{}).some(slotId=>!([20,21].includes(Number(slotId)))&&eligibleSlots.includes(Number(slotId)));
+      if(!eligibleForStarter) continue;
+      const weakestAtPosition=myStarterEntries.filter(e=>Number(e.playerPoolEntry?.player?.defaultPositionId)===Number(player.defaultPositionId)).reduce((m,e)=>Math.min(m,Number(e.tradeProjection||0)),Infinity);
+      const weakestOverall=myStarterEntries.reduce((m,e)=>Math.min(m,Number(e.tradeProjection||0)),Infinity);
+      const wouldCrack=projection>weakestAtPosition+1 || projection>weakestOverall+4;
+      if(!wouldCrack) continue;
+      const ros=rosRanks.get(normalizePlayerName(player.fullName||""));
+      targets.push({playerId:Number(entry.playerId),player:player.fullName||"Unknown player",position:positionNames[Number(player.defaultPositionId)]||"—",teamId:opponentId,team:name(opponentId),projection:round(projection),rosRank:ros?.rank??null,upgrade:round(Math.max(0,projection-(Number.isFinite(weakestAtPosition)?weakestAtPosition:weakestOverall)))});
+    }
+  }
+  targets.sort((a,b)=>b.upgrade-a.upgrade||b.projection-a.projection);
+  tradeFitByTeam.set(teamId,{partners:partners.slice(0,3),targets:targets.slice(0,6)});
 }
 
 const powerIndexByTeam=new Map();
@@ -1104,6 +1184,7 @@ await writeJson("data/current/teams.json",{season:settings.seasonId,currentWeek,
     startSit,
     profileAnalytics:{
       optimalLineup:startSit ? {actualPoints:startSit.actualPoints,optimalPoints:startSit.optimalPoints,pointsLeft:startSit.pointsLeft,efficiency:startSit.score} : null,
+      rosterFit:tradeFitByTeam.get(Number(t.id))||null,
       trend:trend ? {...trend,direction:trend.slope >= 2 ? "up" : trend.slope <= -2 ? "down" : "steady"} : null,
       luck:luck ? {actualWins:round(luck.actual),expectedWins:round(luck.expected),difference:round(luck.luck)} : null
     }
