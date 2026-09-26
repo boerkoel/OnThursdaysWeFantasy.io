@@ -336,11 +336,46 @@ const highestScoringLoser=maxBy(rows.filter(x=>x.result==="L"),x=>x.score);
 const lowestScoringWinner=minBy(rows.filter(x=>x.result==="W"),x=>x.score);
 const blowout=maxBy(completed,x=>x.margin);
 
-const bench=(rosterData.teams||[]).map(t=>{
-  const players=(t.roster?.entries||[]).filter(e=>Number(e.lineupSlotId)===20);
-  return {teamId:t.id,week:currentWeek,points:round(players.reduce((s,e)=>s+Number(e.playerPoolEntry?.appliedStatTotal||0),0)),
-    players:players.map(e=>({playerId:e.playerId,name:e.playerPoolEntry?.player?.fullName||"Unknown player",points:round(Number(e.playerPoolEntry?.appliedStatTotal||0))})).sort((a,b)=>b.points-a.points)};
-}).sort((a,b)=>b.points-a.points);
+// Bench Warmer Champion is based only on completed weeks. The current
+// live week is intentionally excluded so in-progress bench points cannot
+// change the award during the matchup.
+const benchByTeam = new Map([...teams.keys()].map(teamId => [teamId, {
+  teamId,
+  points:0,
+  weeks:[]
+}]));
+
+for (const week of completedWeeks) {
+  const weeklyRoster = historicalRosterData.get(week);
+  for (const t of weeklyRoster?.teams || []) {
+    const benchPlayers = (t.roster?.entries || []).filter(e => Number(e.lineupSlotId) === 20);
+    const points = round(
+      benchPlayers.reduce((sum, e) => sum + Number(e.playerPoolEntry?.appliedStatTotal || 0), 0)
+    );
+    const record = benchByTeam.get(Number(t.id));
+    if (!record) continue;
+
+    record.points = round(record.points + points);
+    record.weeks.push({
+      week,
+      points,
+      players:benchPlayers
+        .map(e => ({
+          playerId:e.playerId,
+          name:e.playerPoolEntry?.player?.fullName || "Unknown player",
+          points:round(Number(e.playerPoolEntry?.appliedStatTotal || 0))
+        }))
+        .sort((a,b) => b.points - a.points)
+    });
+  }
+}
+
+const bench = [...benchByTeam.values()]
+  .map(record => ({
+    ...record,
+    team:name(record.teamId)
+  }))
+  .sort((a,b) => b.points - a.points || a.team.localeCompare(b.team));
 
 const raffleWinners = completedWeeks.map(week => {
   const weekRows = rows.filter(x => x.week === week);
@@ -360,7 +395,12 @@ const prizePool = {raffleWinner:100,firstPlace:375,secondPlace:225,thirdPlace:10
 const baseAwards={highestScore:scoreAward(highestScore),lowestScore:scoreAward(lowestScore),
   highestScoringLoser:scoreAward(highestScoringLoser),lowestScoringWinner:scoreAward(lowestScoringWinner),
   blowoutKing:matchupAward(blowout),
-  benchWarmerChampion:bench[0]?{week:currentWeek,teamId:bench[0].teamId,team:name(bench[0].teamId),points:bench[0].points,players:bench[0].players}:null};
+  benchWarmerChampion:bench[0] && bench[0].points > 0 ? {
+    teamId:bench[0].teamId,
+    team:bench[0].team,
+    points:bench[0].points,
+    weeks:bench[0].weeks
+  }:null};
 
 const weeklyTeamScores = new Map();
 for (const row of rows) {
