@@ -8,6 +8,8 @@ const matchupData = await readJson("data/current/mMatchup.json");
 const rosterData = await readJson("data/current/mRoster.json");
 const historicalRosterData = new Map();
 const draftData = await readJson("data/current/mDraftDetail.json").catch(() => ({draftDetail:{picks:[]}}));
+const draftPicks = draftData?.draftDetail?.picks || [];
+const draftByPlayer = new Map(draftPicks.map(p => [Number(p.playerId), p]));
 const liveScoringData = await readJson("data/current/mLiveScoring.json");
 const boxscoreData = await readJson("data/current/mBoxscore.json");
 const scoreboardData = await readJson("data/current/mScoreboard.json");
@@ -464,9 +466,6 @@ await writeJson("data/current/scoreboard.json",currentScoreboard);
 await writeJson("data/current/awards.json",{season:settings.seasonId,currentWeek,awards});
 await writeJson("data/current/leaders.json",{season:settings.seasonId,currentWeek,leaders:{highestScore:scoreAward(highestScore),lowestScore:scoreAward(lowestScore),highestScoringLoser:scoreAward(highestScoringLoser),lowestScoringWinner:scoreAward(lowestScoringWinner),largestBlowout:matchupAward(blowout)}});
 await writeJson("data/current/weekly.json",{season:settings.seasonId,currentWeek,weeks:completedWeeks.map(week=>({week,matchups:completed.filter(m=>m.week===week),highestScore:scoreAward(maxBy(rows.filter(x=>x.week===week),x=>x.score)),largestBlowout:matchupAward(maxBy(completed.filter(m=>m.week===week),x=>x.margin))}))});
-const draftPicks = draftData?.draftDetail?.picks || [];
-const draftByPlayer = new Map(draftPicks.map(p => [Number(p.playerId), p]));
-
 function playerSeasonPoints(entry) {
   const stats = entry.playerPoolEntry?.player?.stats || [];
   const historical = stats
@@ -553,6 +552,7 @@ for (const week of completedWeeks) {
         playerId:entry.playerId,
         name:entry.name,
         position:entry.position,
+        draft:draftByPlayer.get(entry.playerId) || null,
         weekly:[]
       });
     }
