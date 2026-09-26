@@ -44,6 +44,11 @@ jobs:
         run: cp data/current/scoreboard.json /tmp/previous-scoreboard.json || true
       - name: Update live scoreboard
         if: steps.window.outputs.active == 'true' || inputs.force_update == true
+        env:
+          ESPN_SEASON: "2026"
+          ESPN_LEAGUE_ID: "998599827"
+          ESPN_S2: ${{ secrets.ESPN_S2 }}
+          ESPN_SWID: ${{ secrets.ESPN_SWID }}
         run: node scripts/update-live-scoreboard.js
       - name: Recalculate live stories
         if: steps.window.outputs.active == 'true' || inputs.force_update == true
