@@ -392,3 +392,7 @@
 .marquee-dots{display:flex;gap:4px;align-items:center}.marquee-dots button{width:5px;height:5px;padding:0;border:0;border-radius:50%;background:#4a4e47;cursor:pointer}.marquee-dots button.active{background:#b8c69b;transform:scale(1.35)}
 @keyframes marquee-fade{from{opacity:.25;transform:translateY(2px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:600px){.league-marquee{grid-template-columns:auto minmax(0,1fr);gap:9px 10px;padding:11px 12px}.marquee-dots{grid-column:1 / -1;justify-content:center}.marquee-story{display:block}.marquee-story b{display:block;margin-bottom:3px}.marquee-story span{display:block;font-size:11px}.marquee-label strong{font-size:9px}.marquee-label small{display:none}}
+
+
+/* Weekly recap story tiles */
+.weekly-recap{margin:18px 0 22px}.weekly-recap-heading{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}.weekly-recap-heading strong{font-size:15px}.weekly-recap-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.weekly-recap-tile{padding:14px 15px;border:1px solid #dfe2db;border-radius:13px;background:#fafbf8;min-height:86px}.weekly-recap-tile small{font-size:8px;font-weight:900;letter-spacing:.1em;color:#747a6d}.weekly-recap-tile p{margin:7px 0 0;font-size:12px;line-height:1.45;color:#34382f}@media(max-width:800px){.weekly-recap-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.weekly-recap-grid{grid-template-columns:1fr}.weekly-recap-heading{display:block}.weekly-recap-heading strong{display:block;margin-top:3px}}
