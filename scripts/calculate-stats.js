@@ -48,6 +48,150 @@ for (const week of completedWeeks) {
 // zero-valued future matchups can overwrite the live totals for the same team.
 const liveSchedule = (liveScoringData.schedule || []).filter(g => Number(g.matchupPeriodId) === currentWeek);
 const boxscoreSchedule = (boxscoreData.schedule || []).filter(g => Number(g.matchupPeriodId) === currentWeek);
+const currentRosterEntriesByTeam = new Map();
+for (const g of boxscoreSchedule) {
+  for (const side of [g.home, g.away]) {
+    if (!side?.teamId) continue;
+    const entries = (side.rosterForCurrentScoringPeriod?.entries || []).map(entry => {
+      const player = entry.playerPoolEntry?.player || {};
+      const stats = player.stats || [];
+      const projection = stats.find(s =>
+        Number(s.scoringPeriodId) === currentWeek &&
+        Number(s.statSourceId) === 1 &&
+        Number(s.statSplitTypeId) === 1
+      );
+      return {
+        ...entry,
+        projectedPoints: Number(projection?.appliedTotal ?? 0),
+        position: Number(player.defaultPositionId || 0),
+        eligibleSlots: (player.eligibleSlots || []).map(Number)
+      };
+    });
+    currentRosterEntriesByTeam.set(Number(side.teamId), entries);
+  }
+}
+
+function buildProjectedPower(entries) {
+  const roster = entries.filter(e => Number(e.lineupSlotId) !== 21);
+  const lineupSlotCounts = settings.settings?.rosterSettings?.lineupSlotCounts || {};
+  const starterSlots = [];
+  for (const [slotId, count] of Object.entries(lineupSlotCounts)) {
+    const slot = Number(slotId);
+    if ([20, 21].includes(slot)) continue;
+    for (let i = 0; i < Number(count || 0); i++) starterSlots.push(slot);
+  }
+
+  const memo = new Map();
+  const solve = (index, remaining) => {
+    if (index >= roster.length) return {points: remaining.every(x => x === 0) ? 0 : -Infinity, picked:[]};
+    const key = index + "|" + remaining.join(",");
+    if (memo.has(key)) return memo.get(key);
+
+    const entry = roster[index];
+    let best = solve(index + 1, remaining);
+    for (let slotIndex = 0; slotIndex < starterSlots.length; slotIndex++) {
+      if (!remaining[slotIndex] || !entry.eligibleSlots.includes(starterSlots[slotIndex])) continue;
+      const next = remaining.slice();
+      next[slotIndex]--;
+      const candidate = solve(index + 1, next);
+      const value = Number(entry.projectedPoints || 0) + candidate.points;
+      if (value > best.points) best = {points:value, picked:[entry, ...candidate.picked]};
+    }
+    memo.set(key, best);
+    return best;
+  };
+
+  const optimal = solve(0, starterSlots.map(() => 1));
+  if (!Number.isFinite(optimal.points)) return null;
+
+  const pickedIds = new Set(optimal.picked.map(e => Number(e.playerId)));
+  const starterCounts = {1:1,2:2,3:2,4:1,5:1,16:1};
+  const depthCounts = {1:1,2:2,3:2,4:1,5:1,16:1};
+  const positionNames = {1:"QB",2:"RB",3:"WR",4:"TE",5:"K",16:"DST"};
+  const positions = {};
+
+  for (const [positionId, starterCount] of Object.entries(starterCounts)) {
+    const pos = Number(positionId);
+    const pool = roster
+      .filter(e => Number(e.position) === pos)
+      .sort((a,b) => Number(b.projectedPoints || 0) - Number(a.projectedPoints || 0));
+    const starters = pool.slice(0, starterCount);
+    const starterIds = new Set(starters.map(e => Number(e.playerId)));
+    const depth = pool.filter(e => !starterIds.has(Number(e.playerId))).slice(0, depthCounts[pos]);
+    positions[positionNames[pos]] = {
+      starterPoints:round(starters.reduce((sum,e)=>sum+Number(e.projectedPoints||0),0)),
+      depthPoints:round(depth.reduce((sum,e)=>sum+Number(e.projectedPoints||0),0)),
+      starters:starters.map(e=>({playerId:Number(e.playerId),name:e.playerPoolEntry?.player?.fullName||"Unknown",points:round(e.projectedPoints)})),
+      depth:depth.map(e=>({playerId:Number(e.playerId),name:e.playerPoolEntry?.player?.fullName||"Unknown",points:round(e.projectedPoints)}))
+    };
+  }
+
+  const depthPool = roster
+    .filter(e => !pickedIds.has(Number(e.playerId)) && Number(e.projectedPoints || 0) > 0)
+    .sort((a,b) => Number(b.projectedPoints || 0) - Number(a.projectedPoints || 0));
+  const depthPoints = depthPool.slice(0, 5).reduce((sum,e)=>sum+Number(e.projectedPoints||0),0);
+
+  return {
+    starterPoints:round(optimal.points),
+    depthPoints:round(depthPoints),
+    positions
+  };
+}
+
+const rawPowerByTeam = new Map();
+for (const team of teams.values()) {
+  const power = buildProjectedPower(currentRosterEntriesByTeam.get(Number(team.id)) || []);
+  if (power) rawPowerByTeam.set(Number(team.id), power);
+}
+
+const avgStarterPower = rawPowerByTeam.size
+  ? [...rawPowerByTeam.values()].reduce((sum,p)=>sum+p.starterPoints,0) / rawPowerByTeam.size
+  : 0;
+const avgDepthPower = rawPowerByTeam.size
+  ? [...rawPowerByTeam.values()].reduce((sum,p)=>sum+p.depthPoints,0) / rawPowerByTeam.size
+  : 0;
+const positionAverages = {};
+for (const position of ["QB","RB","WR","TE","K","DST"]) {
+  const values = [...rawPowerByTeam.values()].map(p => p.positions[position]?.starterPoints).filter(Number.isFinite);
+  const depths = [...rawPowerByTeam.values()].map(p => p.positions[position]?.depthPoints).filter(Number.isFinite);
+  positionAverages[position] = {
+    starter:values.length ? values.reduce((sum,v)=>sum+v,0)/values.length : 0,
+    depth:depths.length ? depths.reduce((sum,v)=>sum+v,0)/depths.length : 0
+  };
+}
+
+const powerIndexByTeam = new Map();
+for (const team of teams.values()) {
+  const raw = rawPowerByTeam.get(Number(team.id));
+  if (!raw) continue;
+  const starterIndex = avgStarterPower > 0 ? round(raw.starterPoints / avgStarterPower * 100) : null;
+  const depthIndex = avgDepthPower > 0 ? round(raw.depthPoints / avgDepthPower * 100) : null;
+  const overallIndex = starterIndex != null && depthIndex != null
+    ? round(starterIndex * 0.75 + depthIndex * 0.25)
+    : starterIndex;
+  const positions = {};
+  for (const position of ["QB","RB","WR","TE","K","DST"]) {
+    const p = raw.positions[position];
+    const a = positionAverages[position];
+    positions[position] = {
+      starter: p && a.starter > 0 ? round(p.starterPoints / a.starter * 100) : null,
+      depth: p && a.depth > 0 ? round(p.depthPoints / a.depth * 100) : null,
+      starterPoints:p?.starterPoints ?? null,
+      depthPoints:p?.depthPoints ?? null,
+      starters:p?.starters || [],
+      depthPlayers:p?.depth || []
+    };
+  }
+  powerIndexByTeam.set(Number(team.id), {
+    overall:overallIndex,
+    starterIndex,
+    depthIndex,
+    starterPoints:raw.starterPoints,
+    depthPoints:raw.depthPoints,
+    positions
+  });
+}
+
 const allLiveSchedules = [...liveSchedule, ...boxscoreSchedule];
 const liveByTeam = new Map();
 
@@ -973,6 +1117,7 @@ await writeJson("data/current/teams.json",{season:settings.seasonId,currentWeek,
   const trend = trendByTeam.get(Number(t.id)) || null;
   const luck = luckByTeam.get(Number(t.id)) || null;
   const startSit = startSitByTeam.get(t.id) || null;
+   const powerIndex = powerIndexByTeam.get(Number(t.id)) || null;
   return {
     ...t,
     standings:standings.find(s=>s.id===t.id)||null,
