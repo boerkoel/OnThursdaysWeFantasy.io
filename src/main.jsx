@@ -55,7 +55,7 @@ function TeamCards({ teams }) {
         <div className="position-fit-grid">
           <div><small>STRENGTHS</small><div className="position-fit-list">
             {team.profileAnalytics.positionFit.strengths.length
-              ? team.profileAnalytics.positionFit.strengths.map(p => <span className="position-fit strength" key={p.position}><b>{p.position}</b><strong>{money(p.projected)} proj</strong></span>)
+              ? team.profileAnalytics.positionFit.strengths.map(p => <span className="position-fit strength" key={p.position}><b>{p.position}</b><strong>{Math.abs(p.percent)}% {p.percent >= 0 ? "above" : "below"} avg</strong></span>)
               : <span className="position-fit-empty">No standout strength</span>}
           </div></div>
           <div><small>NEEDS</small><div className="position-fit-list">
