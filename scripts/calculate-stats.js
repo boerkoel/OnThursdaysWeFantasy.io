@@ -301,6 +301,62 @@ for (const score of currentScores) {
   if (probabilities) Object.assign(score, probabilities);
 }
 
+function buildMarqueeStories() {
+  const stories = [];
+  const previousScores = new Map((previousScoreboard?.week === currentWeek ? (previousScoreboard.scores || []) : []).map(s => [s.teamId, s]));
+  const previousMedian = previousScoreboard?.week === currentWeek ? Number(previousScoreboard.median) : null;
+  const add = (type, text, score) => stories.push({type, text, score:Number.isFinite(score) ? round(score) : 0});
+  const playerEntries = [];
+  for (const g of allLiveSchedules) for (const side of [g.home, g.away]) for (const entry of side?.rosterForCurrentScoringPeriod?.entries || []) {
+    const player = entry.playerPoolEntry?.player;
+    if (!player?.fullName) continue;
+    const actual = Number(entry.playerPoolEntry?.appliedStatTotal ?? 0);
+    const projection = Number((player.stats || []).find(s => Number(s.scoringPeriodId) === currentWeek && Number(s.statSourceId) === 1 && Number(s.statSplitTypeId) === 1)?.appliedTotal);
+    playerEntries.push({name:player.fullName,actual,projection,teamId:Number(side.teamId),team:name(Number(side.teamId)),bench:Number(entry.lineupSlotId) === 20});
+  }
+  const hot = playerEntries.filter(p => p.actual >= 10 && Number.isFinite(p.projection) && p.actual-p.projection >= 4).sort((a,b) => (b.actual-b.projection)-(a.actual-a.projection))[0];
+  if (hot) add("HOT PLAYER","🔥 " + hot.name + " is on fire — " + money(hot.actual) + " pts, " + money(hot.actual-hot.projection) + " over projection for " + hot.team + ".",hot.actual-hot.projection+20);
+  const buster = playerEntries.filter(p => p.actual >= 8 && Number.isFinite(p.projection)).sort((a,b) => (b.actual-b.projection)-(a.actual-a.projection))[0];
+  if (buster && (!hot || buster.name !== hot.name)) add("PROJECTION BUSTER","🎯 " + buster.name + " is " + money(buster.actual-buster.projection) + " pts above ESPN projection for " + buster.team + ".",buster.actual-buster.projection+10);
+  const regret = playerEntries.filter(p => p.bench && p.actual >= 8).sort((a,b) => b.actual-a.actual)[0];
+  if (regret) add("BIGGEST REGRET","🪑 Biggest bench regret: " + regret.team + " left " + money(regret.actual) + " points on the bench with " + regret.name + ".",regret.actual);
+
+  const matchupStates = currentWeekMatchups.map(m => {
+    const a=currentScores.find(s=>s.teamId===m.homeTeamId), b=currentScores.find(s=>s.teamId===m.awayTeamId);
+    if(!a||!b) return null;
+    const pa=previousScores.get(a.teamId), pb=previousScores.get(b.teamId);
+    return {m,a,b,diff:Math.abs(Number(a.score)-Number(b.score)),currentDiff:Number(a.score)-Number(b.score),previousDiff:pa&&pb?Number(pa.score)-Number(pb.score):null};
+  }).filter(Boolean);
+  const close=matchupStates.filter(x=>!x.m.completed&&x.diff<=8).sort((a,b)=>a.diff-b.diff)[0];
+  if(close) add("MATCHUP ALERT","⚔️ " + close.a.team + " vs " + close.b.team + " is getting interesting — just " + money(close.diff) + " pts apart.",30-close.diff);
+  const flip=matchupStates.find(x=>Number.isFinite(x.previousDiff)&&((x.previousDiff>0&&x.currentDiff<0)||(x.previousDiff<0&&x.currentDiff>0)));
+  if(flip){const leader=flip.currentDiff>0?flip.a.team:flip.b.team;const trailer=flip.currentDiff>0?flip.b.team:flip.a.team;add("MATCHUP FLIP","🚨 LEAD CHANGE: " + leader + " just jumped in front of " + trailer + ".",100);}
+
+  if(Number.isFinite(median)){
+    const above=currentScores.filter(s=>Number(s.score)>Number(median)).length;
+    add("MEDIAN WATCH","🎯 Median watch: " + above + " of " + currentScores.length + " teams are above the " + money(median) + " median.",18);
+    if(Number.isFinite(previousMedian)){
+      const mf=currentScores.find(s=>{const p=previousScores.get(s.teamId);if(!p)return false;return(Number(p.score)>previousMedian)!==(Number(s.score)>Number(median))&&Number(s.score)!==Number(median);});
+      if(mf){const direction=Number(mf.score)>Number(median)?"above":"below";add("MEDIAN FLIP","🚨 MEDIAN FLIP: " + mf.team + " just moved " + direction + " the league median.",95);}
+    }
+  }
+  const rising=currentScores.filter(s=>s.projectionTrend==="up").sort((a,b)=>Number(b.projectionAverage)-Number(a.projectionAverage))[0];
+  if(rising) add("STOCK RISING","📈 Stock rising: " + rising.team + " has its ESPN projection trending up.",22);
+  const falling=currentScores.filter(s=>s.projectionTrend==="down").sort((a,b)=>Number(a.projectionAverage)-Number(b.projectionAverage))[0];
+  if(falling) add("STOCK FALLING","📉 Stock falling: " + falling.team + "'s ESPN projection is trending down.",20);
+  const benchPoints=playerEntries.filter(p=>p.bench).reduce((sum,p)=>sum+p.actual,0);
+  if(benchPoints>=15) add("LINEUP REGRET","🤦 Lineup regret is brewing: " + money(benchPoints) + " points are currently sitting on benches around the league.",benchPoints);
+  else if(benchPoints<8) add("LINEUP GENIUS","🧠 Bench watch: only " + money(benchPoints) + " pts are currently stranded on benches.",8);
+
+  const biggestLead=matchupStates.filter(x=>!x.m.completed).sort((a,b)=>b.diff-a.diff)[0];
+  if(biggestLead&&biggestLead.diff>=20){const leader=biggestLead.currentDiff>0?biggestLead.a.team:biggestLead.b.team;const trailer=biggestLead.currentDiff>0?biggestLead.b.team:biggestLead.a.team;add("LEAGUE GOSSIP","👀 League gossip: " + leader + " has " + money(biggestLead.diff) + " pts to play with against " + trailer + ".",28);}
+  else if(regret) add("LEAGUE GOSSIP","👀 League gossip: " + regret.team + " may be wishing they trusted " + regret.name + " — " + money(regret.actual) + " pts are sitting on the bench.",regret.actual+5);
+  else if(close) add("LEAGUE GOSSIP","👀 League gossip: " + close.a.team + " and " + close.b.team + " are separated by " + money(close.diff) + " pts. Somebody's Sunday just got interesting.",26-close.diff);
+  return stories.filter((story,i,arr)=>arr.findIndex(x=>x.text===story.text)===i).sort((a,b)=>b.score-a.score);
+}
+const marqueeStories=buildMarqueeStories();
+await writeJson("data/current/marquee.json",{week:currentWeek,lastUpdated:new Date().toISOString(),stories:marqueeStories});
+
 const currentScoreboard = {
   week:currentWeek,
   lastUpdated:new Date().toISOString(),
@@ -310,7 +366,8 @@ const currentScoreboard = {
   projectionSources:["ESPN"],
   probabilityModel:"Site-calculated Monte Carlo using ESPN live projections and historical team scoring volatility",
   probabilitySimulations:SIMULATIONS,
-  projectionHistory
+  projectionHistory,
+  marqueeStories
 };
 
 const weeklyMedianByWeek = new Map();
