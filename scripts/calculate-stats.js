@@ -31,8 +31,10 @@ const currentWeek = Number(matchupData.scoringPeriodId || 1);
 const completedWeeks = [...new Set(completed.map(m=>m.week))].sort((a,b)=>a-b);
 
 const currentWeekMatchups = matchups.filter(m => m.week === currentWeek);
+const historicalBoxscoreData = new Map();
 for (const week of completedWeeks) {
   historicalRosterData.set(week, await readJson(`data/current/mRoster-week-${week}.json`).catch(() => null));
+  historicalBoxscoreData.set(week, await readJson(`data/current/mBoxscore-week-${week}.json`).catch(() => null));
 }
 
 // ESPN's mBoxscore response includes schedule entries for many/all matchup
@@ -502,21 +504,71 @@ function playerWeeklyScores(entry) {
   return scores;
 }
 
-const allRosterPlayers = (rosterData.teams || []).flatMap(team =>
-  (team.roster?.entries || []).map(entry => ({
-    teamId:team.id,
-    playerId:Number(entry.playerId),
-    name:entry.playerPoolEntry?.player?.fullName || `Player #${entry.playerId}`,
-    position:entry.playerPoolEntry?.player?.defaultPositionId || null,
-    points:playerSeasonPoints(entry),
-    weekly:playerWeeklyScores(entry),
-    draft:draftByPlayer.get(Number(entry.playerId)) || null
-  }))
-);
+function weeklyTeamEntries(week) {
+  const boxscore = historicalBoxscoreData.get(week);
+  const roster = historicalRosterData.get(week);
+  const entries = [];
 
-const rankedPlayers = [...allRosterPlayers]
-  .sort((a,b)=>b.points-a.points)
-  .map((player,index)=>({...player,seasonRank:index+1}));
+  for (const matchup of boxscore?.schedule || []) {
+    for (const side of [matchup.home, matchup.away]) {
+      if (!side?.teamId) continue;
+      for (const entry of side.rosterForCurrentScoringPeriod?.entries || []) {
+        entries.push({
+          teamId:Number(side.teamId),
+          playerId:Number(entry.playerId),
+          lineupSlotId:Number(entry.lineupSlotId),
+          score:Number(entry.playerPoolEntry?.appliedStatTotal),
+          name:entry.playerPoolEntry?.player?.fullName || `Player #${entry.playerId}`,
+          position:entry.playerPoolEntry?.player?.defaultPositionId || null
+        });
+      }
+    }
+  }
+
+  if (entries.length) return entries;
+
+  for (const team of roster?.teams || []) {
+    for (const entry of team.roster?.entries || []) {
+      entries.push({
+        teamId:Number(team.id),
+        playerId:Number(entry.playerId),
+        lineupSlotId:Number(entry.lineupSlotId),
+        score:Number(entry.playerPoolEntry?.appliedStatTotal),
+        name:entry.playerPoolEntry?.player?.fullName || `Player #${entry.playerId}`,
+        position:entry.playerPoolEntry?.player?.defaultPositionId || null
+      });
+    }
+  }
+  return entries;
+}
+
+const playerTeamHistory = new Map();
+for (const week of completedWeeks) {
+  for (const entry of weeklyTeamEntries(week)) {
+    if (!Number.isFinite(entry.score)) continue;
+    const key = `${entry.teamId}|${entry.playerId}`;
+    if (!playerTeamHistory.has(key)) {
+      playerTeamHistory.set(key, {
+        teamId:entry.teamId,
+        playerId:entry.playerId,
+        name:entry.name,
+        position:entry.position,
+        weekly:[]
+      });
+    }
+    playerTeamHistory.get(key).weekly.push({
+      week,
+      score:entry.score,
+      started:![20, 21].includes(entry.lineupSlotId)
+    });
+  }
+}
+
+const awardPlayersByTeam = new Map();
+for (const player of playerTeamHistory.values()) {
+  if (!awardPlayersByTeam.has(player.teamId)) awardPlayersByTeam.set(player.teamId, []);
+  awardPlayersByTeam.get(player.teamId).push(player);
+}
 
 function stddev(values) {
   if (values.length < 2) return null;
@@ -526,121 +578,90 @@ function stddev(values) {
 
 const playerAwardsByTeam = new Map();
 
-function starterEligible(entry, slotId) {
-  if ([20, 21].includes(Number(slotId))) return false;
-  const eligibleSlots = (entry.playerPoolEntry?.player?.eligibleSlots || []).map(Number);
-  return eligibleSlots.includes(Number(slotId));
-}
+for (const team of teams.values()) {
+  const players = awardPlayersByTeam.get(Number(team.id)) || [];
 
-function lineupEfficiency(weeklyTeam) {
-  const entries = (weeklyTeam?.roster?.entries || []).filter(e => Number(e.lineupSlotId) !== 21);
-  const starterSlots = [];
-  const lineupSlotCounts = settings.settings?.rosterSettings?.lineupSlotCounts || {};
-  for (const [slotId, count] of Object.entries(lineupSlotCounts)) {
-    const slot = Number(slotId);
-    if ([20, 21].includes(slot)) continue;
-    for (let i = 0; i < Number(count || 0); i++) starterSlots.push(slot);
-  }
+  // MVP / scoring awards use only points actually scored for this team,
+  // and only when the player was in a starting slot that week.
+  const teamScoringPlayers = players.map(p => ({
+    ...p,
+    points:p.weekly.filter(w => w.started).reduce((sum,w) => sum + w.score, 0)
+  }));
 
-  const scoreOf = entry => {
-    const score = Number(entry.playerPoolEntry?.appliedStatTotal);
-    return Number.isFinite(score) ? score : 0;
-  };
+  const mvp = maxBy(teamScoringPlayers.filter(p => p.points > 0), p => p.points);
 
-  const actualPoints = round(
-    entries
-      .filter(e => Number(e.lineupSlotId) !== 20)
-      .reduce((sum, e) => sum + scoreOf(e), 0)
+  // Draft-value awards are restricted to players this team actually drafted.
+  const draftedByTeam = players.filter(p =>
+    p.draft &&
+    Number(p.draft.overallPickNumber) > 0 &&
+    Number(p.draft.teamId) === Number(team.id)
   );
 
-  const memo = new Map();
-  const solve = (index, remaining) => {
-    if (index >= entries.length) return remaining.every(x => x === 0) ? 0 : -Infinity;
-    const key = index + "|" + remaining.join(",");
-    if (memo.has(key)) return memo.get(key);
-
-    const entry = entries[index];
-    let best = solve(index + 1, remaining);
-
-    for (let slotIndex = 0; slotIndex < starterSlots.length; slotIndex++) {
-      if (!remaining[slotIndex] || !starterEligible(entry, starterSlots[slotIndex])) continue;
-      const next = remaining.slice();
-      next[slotIndex]--;
-      const candidate = scoreOf(entry) + solve(index + 1, next);
-      if (candidate > best) best = candidate;
-    }
-
-    memo.set(key, best);
-    return best;
-  };
-
-  const optimalPoints = solve(0, starterSlots.map(() => 1));
-  if (!Number.isFinite(optimalPoints) || optimalPoints <= 0) return null;
-
-  return {
-    actualPoints,
-    optimalPoints:round(optimalPoints),
-    efficiency:round(Math.max(0, Math.min(1, actualPoints / optimalPoints)) * 100),
-    pointsLeft:round(Math.max(0, optimalPoints - actualPoints))
-  };
-}
-
-const startSitByTeam = new Map();
-for (const team of teams.values()) {
-  const weeks = completedWeeks.map(week => {
-    const weeklyRoster = historicalRosterData.get(week);
-    const weeklyTeam = (weeklyRoster?.teams || []).find(t => Number(t.id) === Number(team.id));
-    const result = lineupEfficiency(weeklyTeam);
-    return result ? {week, ...result} : null;
-  }).filter(Boolean);
-
-  const totalActual = weeks.reduce((sum, w) => sum + w.actualPoints, 0);
-  const totalOptimal = weeks.reduce((sum, w) => sum + w.optimalPoints, 0);
-  const score = totalOptimal > 0 ? round((totalActual / totalOptimal) * 100) : null;
-
-  startSitByTeam.set(team.id, {
-    score,
-    weeks,
-    pointsLeft:round(weeks.reduce((sum, w) => sum + w.pointsLeft, 0))
-  });
-}
-
-for (const team of teams.values()) {
-  const players = rankedPlayers.filter(p => p.teamId === team.id);
-  const drafted = players.filter(p => p.draft && Number(p.draft.overallPickNumber) > 0);
-  const withValue = drafted.map(p => ({
+  const draftPool = draftedByTeam.map(p => ({
     ...p,
     draftPick:Number(p.draft.overallPickNumber),
     round:Number(p.draft.roundId || 0),
-    valueGap:Number(p.draft.overallPickNumber) - p.seasonRank
+    valueGap:Number(p.draft.overallPickNumber) - p.points
   }));
-  const bestValue = maxBy(withValue, p => p.valueGap);
-  const worstValue = minBy(withValue, p => p.valueGap);
-  const mvp = maxBy(players, p => p.points);
-  const boom = maxBy(players.flatMap(p => p.weekly.map(w => ({...p,week:w.week,weekScore:w.score}))), p => p.weekScore);
+
+  const bestValue = maxBy(draftPool, p => p.valueGap);
+  const worstValue = minBy(draftPool, p => p.valueGap);
+
+  const boomCandidates = players.flatMap(p =>
+    p.weekly.filter(w => w.started).map(w => ({...p,week:w.week,weekScore:w.score}))
+  );
+  const boom = maxBy(boomCandidates, p => p.weekScore);
+
   const consistentCandidates = players
-    .map(p => ({...p,variance:stddev(p.weekly.map(w=>w.score))}))
-    .filter(p => Number.isFinite(p.variance));
-  const mostConsistent = minBy(consistentCandidates, p => p.variance);
-  const lateRound = maxBy(withValue.filter(p => p.round >= 8), p => p.valueGap);
-  const boomBustCandidates = players
     .map(p => ({
       ...p,
-      weeklyRange:p.weekly.length > 1
-        ? Math.max(...p.weekly.map(w => w.score)) - Math.min(...p.weekly.map(w => w.score))
-        : null
+      variance:stddev(p.weekly.filter(w => w.started).map(w => w.score))
     }))
-    .filter(p => Number.isFinite(p.weeklyRange) && p.weekly.length > 1);
+    .filter(p => Number.isFinite(p.variance));
+  const mostConsistent = minBy(consistentCandidates, p => p.variance);
+
+  const lateRound = maxBy(draftPool.filter(p => p.round >= 8), p => p.valueGap);
+
+  const boomBustCandidates = players
+    .map(p => {
+      const weekly = p.weekly.filter(w => w.started);
+      return {
+        ...p,
+        weeklyRange:weekly.length > 1
+          ? Math.max(...weekly.map(w => w.score)) - Math.min(...weekly.map(w => w.score))
+          : null
+      };
+    })
+    .filter(p => Number.isFinite(p.weeklyRange));
+
   const boomBust = maxBy(boomBustCandidates, p => p.weeklyRange);
 
   playerAwardsByTeam.set(team.id, {
-    mvp:mvp ? {playerId:mvp.playerId,player:mvp.name,position:mvp.position,points:mvp.points,seasonRank:mvp.seasonRank} : null,
-    bestDraftValue:bestValue ? {playerId:bestValue.playerId,player:bestValue.name,points:bestValue.points,seasonRank:bestValue.seasonRank,draftPick:bestValue.draftPick,round:bestValue.round,valueGap:bestValue.valueGap} : null,
-    worstDraftValue:worstValue ? {playerId:worstValue.playerId,player:worstValue.name,points:worstValue.points,seasonRank:worstValue.seasonRank,draftPick:worstValue.draftPick,round:worstValue.round,valueGap:worstValue.valueGap} : null,
-    boomMachine:boom ? {playerId:boom.playerId,player:boom.name,week:boom.week,score:round(boom.weekScore)} : null,
-    mostConsistent:mostConsistent ? {playerId:mostConsistent.playerId,player:mostConsistent.name,variance:round(mostConsistent.variance)} : null,
-    lateRoundWizard:lateRound ? {playerId:lateRound.playerId,player:lateRound.name,round:lateRound.round,draftPick:lateRound.draftPick,valueGap:lateRound.valueGap,points:lateRound.points} : null,
-    boomBust:boomBust ? {playerId:boomBust.playerId,player:boomBust.name,range:round(boomBust.weeklyRange)} : null
+    mvp:mvp ? {
+      playerId:mvp.playerId,player:mvp.name,position:mvp.position,points:round(mvp.points),
+      seasonRank:null
+    } : null,
+    bestDraftValue:bestValue ? {
+      playerId:bestValue.playerId,player:bestValue.name,points:round(bestValue.points),
+      draftPick:bestValue.draftPick,round:bestValue.round,valueGap:round(bestValue.valueGap)
+    } : null,
+    worstDraftValue:worstValue ? {
+      playerId:worstValue.playerId,player:worstValue.name,points:round(worstValue.points),
+      draftPick:worstValue.draftPick,round:worstValue.valueGap
+    } : null,
+    boomMachine:boom ? {
+      playerId:boom.playerId,player:boom.name,week:boom.week,score:round(boom.weekScore)
+    } : null,
+    mostConsistent:mostConsistent ? {
+      playerId:mostConsistent.playerId,player:mostConsistent.name,variance:round(mostConsistent.variance)
+    } : null,
+    lateRoundWizard:lateRound ? {
+      playerId:lateRound.playerId,player:lateRound.name,round:lateRound.round,
+      draftPick:lateRound.draftPick,valueGap:round(lateRound.valueGap),points:round(lateRound.points)
+    } : null,
+    boomBust:boomBust ? {
+      playerId:boomBust.playerId,player:boomBust.name,range:round(boomBust.weeklyRange)
+    } : null
   });
 }
 
