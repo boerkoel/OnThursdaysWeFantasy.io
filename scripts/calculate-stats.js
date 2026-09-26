@@ -808,8 +808,12 @@ for (const team of teams.values()) {
   const totalOptimal = weeks.reduce((sum, w) => sum + w.optimalPoints, 0);
   const score = totalOptimal > 0 ? round((totalActual / totalOptimal) * 100) : null;
 
+  const totalActual = round(weeks.reduce((sum, w) => sum + w.actualPoints, 0));
+  const totalOptimal = round(weeks.reduce((sum, w) => sum + w.optimalPoints, 0));
   startSitByTeam.set(team.id, {
     score,
+    actualPoints:totalActual,
+    optimalPoints:totalOptimal,
     weeks,
     pointsLeft:round(weeks.reduce((sum, w) => sum + w.pointsLeft, 0))
   });
@@ -912,7 +916,26 @@ for (const team of teams.values()) {
   });
 }
 
-await writeJson("data/current/teams.json",{season:settings.seasonId,currentWeek,teams:[...teams.values()].map(t=>({...t,standings:standings.find(s=>s.id===t.id)||null,weeklyResults:completed.filter(m=>m.homeTeamId===t.id||m.awayTeamId===t.id).map(m=>({week:m.week,opponentId:m.homeTeamId===t.id?m.awayTeamId:m.homeTeamId,opponent:name(m.homeTeamId===t.id?m.awayTeamId:m.homeTeamId),score:m.homeTeamId===t.id?m.homeScore:m.awayScore,opponentScore:m.homeTeamId===t.id?m.awayScore:m.homeScore,result:(m.homeTeamId===t.id?m.winner==="HOME":m.winner==="AWAY")?"W":"L"})),playerAwards:playerAwardsByTeam.get(t.id)||null,startSit:startSitByTeam.get(t.id)||null}))});
+const trendByTeam = new Map(trends.map(t => [Number(t.teamId), t]));
+const luckByTeam = new Map(luckAwards.map(t => [Number(t.teamId), t]));
+
+await writeJson("data/current/teams.json",{season:settings.seasonId,currentWeek,teams:[...teams.values()].map(t=>{
+  const trend = trendByTeam.get(Number(t.id)) || null;
+  const luck = luckByTeam.get(Number(t.id)) || null;
+  const startSit = startSitByTeam.get(t.id) || null;
+  return {
+    ...t,
+    standings:standings.find(s=>s.id===t.id)||null,
+    weeklyResults:completed.filter(m=>m.homeTeamId===t.id||m.awayTeamId===t.id).map(m=>({week:m.week,opponentId:m.homeTeamId===t.id?m.awayTeamId:m.homeTeamId,opponent:name(m.homeTeamId===t.id?m.awayTeamId:m.homeTeamId),score:m.homeTeamId===t.id?m.homeScore:m.awayScore,opponentScore:m.homeTeamId===t.id?m.awayScore:m.homeScore,result:(m.homeTeamId===t.id?m.winner==="HOME":m.winner==="AWAY")?"W":"L"})),
+    playerAwards:playerAwardsByTeam.get(t.id)||null,
+    startSit,
+    profileAnalytics:{
+      optimalLineup:startSit ? {actualPoints:startSit.actualPoints,optimalPoints:startSit.optimalPoints,pointsLeft:startSit.pointsLeft,efficiency:startSit.score} : null,
+      trend:trend ? {...trend,direction:trend.slope >= 2 ? "up" : trend.slope <= -2 ? "down" : "steady"} : null,
+      luck:luck ? {actualWins:round(luck.actual),expectedWins:round(luck.expected),difference:round(luck.luck)} : null
+    }
+  };
+})});
 
 function normalizePlayerName(value) {
   return String(value || "")
