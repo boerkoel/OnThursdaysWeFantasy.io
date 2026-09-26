@@ -81,7 +81,7 @@ function TeamCards({ teams }) {
           <div className="trade-section-heading trade-target-heading"><span>🎯</span><div><small>PLAYERS TO TARGET</small><strong>Potential Trade Targets</strong><em>League-wide: players currently riding another team's bench who would have helped your lineup</em></div></div>
           <div className="trade-target-list">
             {team.profileAnalytics.rosterFit.targets.map(p => <div className="trade-target" key={p.teamId + "-" + p.playerId}>
-              <div><span>{p.team} Needs: {p.otherNeeds?.length ? p.otherNeeds.map(x => x.position).join(" / ") : "None"}</span></div>
+              <div><strong>{p.team} Needs: {p.otherNeeds?.length ? p.otherNeeds.map(x => x.position).join(" / ") : "None"}</strong></div>
               <b>+{money(p.boost)} pts</b>
               <small>{p.startRate}% started · {(p.winsAdded ?? 0)} win{(p.winsAdded ?? 0) === 1 ? "" : "s"} added</small>
               <em>Optimal lineup improvement · {(p.winsAdded ?? 0)} total wins added ({p.h2hWinsAdded ?? 0} H2H + {p.medianWinsAdded ?? 0} median)</em>
