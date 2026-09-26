@@ -55,16 +55,39 @@ function TeamCards({ teams }) {
         <div className="position-fit-grid">
           <div><small>STRENGTHS</small><div className="position-fit-list">
             {team.profileAnalytics.positionFit.strengths.length
-              ? team.profileAnalytics.positionFit.strengths.map(p => <span className="position-fit strength" key={p.position}><b>{p.position}</b><strong>{Math.abs(p.percent)}% {p.percent >= 0 ? "above" : "below"} avg</strong></span>)
+              ? team.profileAnalytics.positionFit.strengths.map(p => <span className="position-fit strength" key={p.position}><b>{p.position}</b><strong>{Math.abs(p.percent)}% more pts than league avg.</strong></span>)
               : <span className="position-fit-empty">No standout strength</span>}
           </div></div>
           <div><small>NEEDS</small><div className="position-fit-list">
             {team.profileAnalytics.positionFit.needs.length
-              ? team.profileAnalytics.positionFit.needs.map(p => <span className="position-fit weakness" key={p.position}><b>{p.position}</b><strong>{money(p.projected)} proj</strong></span>)
+              ? team.profileAnalytics.positionFit.needs.map(p => <span className="position-fit weakness" key={p.position}><b>{p.position}</b><strong>{Math.abs(p.percent)}% fewer pts than league avg.</strong></span>)
               : <span className="position-fit-empty">No obvious need</span>}
           </div></div>
         </div>
-        <p className="profile-fit-note">Based on this week's ESPN projections for current starters. Only meaningful differences from the league average are shown.</p>
+        <p className="profile-fit-note">Based on average scoring through completed weeks. League average is calculated across all teams.</p>
+      </div>) : null}
+
+      {team.profileAnalytics?.rosterFit ? (<div className="trade-section">
+        <div className="trade-section-heading"><span>🤝</span><div><small>TRADE DESK</small><strong>Potential Trade Partners</strong><em>Teams with complementary strengths and weaknesses</em></div></div>
+        <div className="trade-partner-list">
+          {team.profileAnalytics.rosterFit.partners?.length
+            ? team.profileAnalytics.rosterFit.partners.map(p => <div className="trade-partner" key={p.teamId}>
+                <strong>{p.team}</strong>
+                <span>They need {p.give?.map(x => x.position).join(" / ")} · You need {p.get?.map(x => x.position).join(" / ")}</span>
+              </div>)
+            : <span className="position-fit-empty">No obvious complementary trade partner yet.</span>}
+        </div>
+        {team.profileAnalytics.rosterFit.targets?.length ? <>
+          <div className="trade-section-heading trade-target-heading"><span>🎯</span><div><small>PLAYERS TO TARGET</small><strong>Bench upgrades</strong><em>Players currently sitting on a rival bench who would have improved your optimal lineup</em></div></div>
+          <div className="trade-target-list">
+            {team.profileAnalytics.rosterFit.targets.map(p => <div className="trade-target" key={p.teamId + "-" + p.playerId}>
+              <div><strong>{p.player}</strong><span>{p.team} · {p.position}</span></div>
+              <b>+{money(p.boost)} pts</b>
+              <small>{p.startRate}% started</small>
+              <em>Would have improved your optimal lineup</em>
+            </div>)}
+          </div>
+        </> : null}
       </div>) : null}
 
       {team.profileAnalytics ? (<div className="profile-insights">
