@@ -737,7 +737,13 @@ function buildWeeklyRecap(week) {
     add("MEDIAN WATCH","🎯 " + above.length + " teams finished above the " + money(median) + " median.",60);
   }
 
-  if (topGame && topGame.margin >= 25) add("BLOWOUT","💥 " + name(topGame.winner === "HOME" ? topGame.homeTeamId : topGame.awayTeamId) + " delivered a " + money(topGame.margin) + "-point beatdown.",75);
+  if (topGame && topGame.margin >= 25) {
+    const winnerId = topGame.winner === "HOME" ? topGame.homeTeamId : topGame.awayTeamId;
+    const loserId = topGame.winner === "HOME" ? topGame.awayTeamId : topGame.homeTeamId;
+    const winnerScore = topGame.winner === "HOME" ? topGame.homeScore : topGame.awayScore;
+    const loserScore = topGame.winner === "HOME" ? topGame.awayScore : topGame.homeScore;
+    add("BLOWOUT","💥 " + name(winnerId) + " beat " + name(loserId) + " " + money(winnerScore) + "-" + money(loserScore) + " (" + money(topGame.margin) + " points).",75);
+  }
 
   const loser = games.flatMap(m => [
     {teamId:m.homeTeamId,score:Number(m.homeScore),result:m.winner==="HOME"},
