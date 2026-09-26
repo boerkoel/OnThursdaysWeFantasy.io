@@ -708,7 +708,54 @@ await writeJson("data/current/matchups.json",{season:settings.seasonId,currentWe
 await writeJson("data/current/scoreboard.json",currentScoreboard);
 await writeJson("data/current/awards.json",{season:settings.seasonId,currentWeek,awards});
 await writeJson("data/current/leaders.json",{season:settings.seasonId,currentWeek,leaders:{highestScore:scoreAward(highestScore),lowestScore:scoreAward(lowestScore),highestScoringLoser:scoreAward(highestScoringLoser),lowestScoringWinner:scoreAward(lowestScoringWinner),largestBlowout:matchupAward(blowout)}});
-await writeJson("data/current/weekly.json",{season:settings.seasonId,currentWeek,weeks:completedWeeks.map(week=>({week,matchups:completed.filter(m=>m.week===week),highestScore:scoreAward(maxBy(rows.filter(x=>x.week===week),x=>x.score)),largestBlowout:matchupAward(maxBy(completed.filter(m=>m.week===week),x=>x.margin))}))});
+function buildWeeklyRecap(week) {
+  const games = completed.filter(m => Number(m.week) === Number(week));
+  const scores = games.flatMap(m => [Number(m.homeScore), Number(m.awayScore)]).filter(Number.isFinite).sort((a,b) => a-b);
+  const median = scores.length ? (scores.length % 2 ? scores[Math.floor(scores.length/2)] : (scores[scores.length/2-1] + scores[scores.length/2]) / 2) : null;
+  const stories = [];
+  const add = (type,text,priority) => stories.push({type,text,priority});
+
+  const topGame = games.slice().sort((a,b) => b.margin-a.margin)[0];
+  const closeGame = games.slice().sort((a,b) => a.margin-b.margin)[0];
+  const highScore = games.flatMap(m => [
+    {teamId:m.homeTeamId,score:Number(m.homeScore),opponentId:m.awayTeamId,opponentScore:Number(m.awayScore),result:m.winner==="HOME"?"W":"L"},
+    {teamId:m.awayTeamId,score:Number(m.awayScore),opponentId:m.homeTeamId,opponentScore:Number(m.homeScore),result:m.winner==="AWAY"?"W":"L"}
+  ]).sort((a,b)=>b.score-a.score)[0];
+
+  if (highScore) add("HIGH SCORE","🔥 " + name(highScore.teamId) + " dropped " + money(highScore.score) + " points — the week's highest score.",100);
+  if (closeGame) add("CLOSEST MATCHUP","⚔️ " + name(closeGame.homeTeamId) + " edged " + name(closeGame.awayTeamId) + " by just " + money(closeGame.margin) + " points.",90);
+
+  const weeklyEntries = weeklyTeamEntries(week).filter(e => Number.isFinite(e.score));
+  const biggestBench = weeklyEntries.filter(e => Number(e.lineupSlotId) === 20).sort((a,b)=>b.score-a.score)[0];
+  if (biggestBench && biggestBench.score >= 8) add("BIGGEST REGRET","🪑 " + name(biggestBench.teamId) + " left " + money(biggestBench.score) + " points on the bench with " + biggestBench.name + ".",85);
+
+  if (Number.isFinite(median)) {
+    const above = games.flatMap(m => [
+      {teamId:m.homeTeamId,score:Number(m.homeScore)},
+      {teamId:m.awayTeamId,score:Number(m.awayScore)}
+    ]).filter(x=>x.score>median);
+    add("MEDIAN WATCH","🎯 " + above.length + " teams finished above the " + money(median) + " median.",60);
+  }
+
+  if (topGame && topGame.margin >= 25) add("BLOWOUT","💥 " + name(topGame.winner === "HOME" ? topGame.homeTeamId : topGame.awayTeamId) + " delivered a " + money(topGame.margin) + "-point beatdown.",75);
+
+  const loser = games.flatMap(m => [
+    {teamId:m.homeTeamId,score:Number(m.homeScore),result:m.winner==="HOME"},
+    {teamId:m.awayTeamId,score:Number(m.awayScore),result:m.winner==="AWAY"}
+  ]).filter(x=>!x.result).sort((a,b)=>b.score-a.score)[0];
+  if (loser && loser.score >= 100) add("LEAGUE GOSSIP","👀 " + name(loser.teamId) + " scored " + money(loser.score) + " and still took the L. That's a rough one.",70);
+
+  return stories.sort((a,b)=>b.priority-a.priority).slice(0,6).map(({type,text})=>({type,text}));
+}
+
+const weeklyRecaps = completedWeeks.map(week => ({
+  week,
+  recap:buildWeeklyRecap(week),
+  matchups:completed.filter(m=>m.week===week),
+  highestScore:scoreAward(maxBy(rows.filter(x=>x.week===week),x=>x.score)),
+  largestBlowout:matchupAward(maxBy(completed.filter(m=>m.week===week),x=>x.margin))
+}));
+await writeJson("data/current/weekly.json",{season:settings.seasonId,currentWeek,weeks:weeklyRecaps});
 function playerSeasonPoints(entry) {
   const stats = entry.playerPoolEntry?.player?.stats || [];
   const historical = stats
