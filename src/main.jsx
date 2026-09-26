@@ -99,8 +99,8 @@ function TeamCards({ teams }) {
           <div className="trade-target-list">
             {team.profileAnalytics.winWinTrades.map((t, i) => <div className="trade-target win-win-trade" key={t.otherTeamId + "-" + t.givePlayerId + "-" + t.getPlayerId + "-" + i}>
               <div className="trade-target-info">
-                <strong>Give {t.givePlayer}{t.givePosition ? `, ${t.givePosition}` : ""}</strong>
-                <span>Get {t.getPlayer}{t.getPosition ? `, ${t.getPosition}` : ""} from {t.otherTeam}</span>
+                <strong>Give {t.givePlayer}{t.givePosition ? `, ${t.givePosition}` : ""} <small>ROS #{t.giveRosRank}</small></strong>
+                <span>Get {t.getPlayer}{t.getPosition ? `, ${t.getPosition}` : ""} <small>ROS #{t.getRosRank}</small> from {t.otherTeam}</span>
               </div>
               <div className="trade-target-impact">
                 <b>Your lineup +{money(t.yourBoost)} pts</b>
