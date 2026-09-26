@@ -42,14 +42,48 @@ function decodeHtml(value) {
 }
 
 function extractFantasyProsEcrData(html) {
-  const match = html.match(/(?:var|let|const)\s+ecrData\s*=\s*(\{[\s\S]*?\})\s*;?/);
-  if (!match) return null;
+  const assignment = html.match(/(?:var|let|const)\s+ecrData\s*=\s*/);
+  if (!assignment) return null;
 
-  try {
-    return JSON.parse(match[1]);
-  } catch {
-    return null;
+  const start = assignment.index + assignment[0].length;
+  const openBrace = html.indexOf("{", start);
+  if (openBrace < 0) return null;
+
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+
+  for (let i = openBrace; i < html.length; i++) {
+    const char = html[i];
+
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+      } else if (char === "\\") {
+        escaped = true;
+      } else if (char === '"') {
+        inString = false;
+      }
+      continue;
+    }
+
+    if (char === '"') {
+      inString = true;
+    } else if (char === "{") {
+      depth++;
+    } else if (char === "}") {
+      depth--;
+      if (depth === 0) {
+        try {
+          return JSON.parse(html.slice(openBrace, i + 1));
+        } catch {
+          return null;
+        }
+      }
+    }
   }
+
+  return null;
 }
 
 function parseFantasyProsTable(html) {
