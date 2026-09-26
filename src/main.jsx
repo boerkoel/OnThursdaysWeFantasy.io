@@ -25,7 +25,7 @@ function TeamCards({ teams }) {
           <div>
             <span className="section-kicker">2026 TEAM PROFILE</span>
             <h3>{team.name.trim()}</h3>
-            <p>{team.abbrev} · {team.standings.wins}-{team.standings.losses} · {team.standings.streak?.length ? (team.standings.streak.type === "W" ? "Win" : "Loss") + " streak: " + team.standings.streak.length : "No streak"}</p>
+            <p>{team.abbrev} · {team.standings.wins}-{team.standings.losses}{team.standings.ties ? `-${team.standings.ties}` : ""} · {team.standings.streak?.length ? (team.standings.streak.type === "W" ? "Win" : "Loss") + " streak: " + team.standings.streak.length : "No streak"}</p>
           </div>
         </div>
         <button className="profile-close" type="button" onClick={() => setSelectedId(null)}>×</button>
@@ -94,6 +94,22 @@ function TeamCards({ teams }) {
             </div>)}
           </div>
         </> : null}
+        {team.profileAnalytics.winWinTrades?.length ? <>
+          <div className="trade-section-heading trade-target-heading"><span>🤝</span><div><small>1-FOR-1 WIN-WIN TRADES</small><strong>Trades That Help Both Teams</strong><em>Historical optimal-lineup simulation through completed weeks · only meaningful gains shown</em></div></div>
+          <div className="trade-target-list">
+            {team.profileAnalytics.winWinTrades.map((t, i) => <div className="trade-target win-win-trade" key={t.otherTeamId + "-" + t.givePlayerId + "-" + t.getPlayerId + "-" + i}>
+              <div className="trade-target-info">
+                <strong>Give {t.givePlayer}{t.givePosition ? `, ${t.givePosition}` : ""}</strong>
+                <span>Get {t.getPlayer}{t.getPosition ? `, ${t.getPosition}` : ""} from {t.otherTeam}</span>
+              </div>
+              <div className="trade-target-impact">
+                <b>Your lineup +{money(t.yourBoost)} pts</b>
+                <em>Your gains: {t.yourWinsAdded} wins ({t.yourH2hWinsAdded} H2H + {t.yourMedianWinsAdded} median)</em>
+                <em>{t.otherTeam}: +{money(t.theirBoost)} pts · {t.theirWinsAdded} wins ({t.theirH2hWinsAdded} H2H + {t.theirMedianWinsAdded} median)</em>
+              </div>
+            </div>)}
+          </div>
+        </> : null}
       </div>) : null}
 
       {team.profileAnalytics ? (<div className="profile-insights">
@@ -149,7 +165,7 @@ function TeamCards({ teams }) {
           <div className="card-top"><span className="card-rank">#{i + 1}</span><span className="card-season">2026</span></div>
           <div className="card-logo-wrap"><img src={team.logo} alt="" className="team-logo" /></div>
           <h3>{team.name.trim()}</h3>
-          <div className="card-record">{s.wins}-{s.losses} <span>·</span> {money(avg)} PPG</div>
+          <div className="card-record">{s.wins}-{s.losses}{s.ties ? `-${s.ties}` : ""} <span>·</span> {money(avg)} PPG</div>
           <div className="card-stats">
             <span><small>PF</small><strong>{money(s.pointsFor)}</strong></span>
             <span><small>PA</small><strong>{money(s.pointsAgainst)}</strong></span>
@@ -499,7 +515,7 @@ function App() {
       <section className="section">
         <div className="section-heading"><div><span className="section-kicker">RECORD BOOK</span><h2>Standings</h2></div></div>
         <div className="standings-table">
-          {standingsData.standings.map((t, i) => <div className="standing-row" key={t.id}><span>{i+1}</span><strong><TeamLogo src={teamLogos[t.id]} />{t.name}</strong><span>{t.wins}-{t.losses}</span><span>{money(t.pointsFor)} PF</span></div>)}
+          {standingsData.standings.map((t, i) => <div className="standing-row" key={t.id}><span>{i+1}</span><strong><TeamLogo src={teamLogos[t.id]} />{t.name}</strong><span>{t.wins}-{t.losses}{t.ties ? `-${t.ties}` : ""}</span><span>{money(t.pointsFor)} PF</span></div>)}
         </div>
       </section>
       <footer>On Thursdays We Fantasy · 2026 · Officially unofficial.</footer>
