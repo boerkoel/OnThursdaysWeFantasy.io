@@ -981,6 +981,11 @@ for (const team of teams.values()) {
         // trade possibilities rather than one-sided trade targets.
         let mutual = null;
         for (const reciprocal of benchTargetsByTeam.get(Number(team.id)) || []) {
+          // Only show reciprocal opportunities when the two players are at
+          // different positions. Same-position swaps mostly signal that
+          // both managers have simply been making the same start/sit mistake.
+          if (reciprocal.position && player.position && reciprocal.position === player.position) continue;
+
           let reciprocalBoost = 0;
           let reciprocalH2hWins = 0;
           let reciprocalMedianWins = 0;
