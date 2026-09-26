@@ -337,6 +337,15 @@ function App() {
           {completedHistoryWeeks.map(w => <button key={w.week} className={historyWeek === w.week ? "active" : ""} type="button" onClick={() => setHistoryWeek(w.week)}>WEEK {w.week}</button>)}
         </div>
         {history ? <>
+          {history.recap?.length ? <div className="weekly-recap">
+            <div className="weekly-recap-heading"><span className="section-kicker">WEEKLY RECAP</span><strong>The stories that mattered</strong></div>
+            <div className="weekly-recap-grid">
+              {history.recap.map((story, i) => <article className="weekly-recap-tile" key={story.type + i}>
+                <small>{story.type}</small>
+                <p>{story.text}</p>
+              </article>)}
+            </div>
+          </div> : null}
           <div className="history-summary">
             <div><small>LEAGUE AVERAGE</small><strong>{money(historyAverage)}</strong></div>
             <div><small>LEAGUE MEDIAN</small><strong>{money(historyMedian)}</strong></div>
