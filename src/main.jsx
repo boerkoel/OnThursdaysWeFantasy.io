@@ -40,12 +40,31 @@ function TeamCards({ teams }) {
 
       {team.startSit?.score != null ? (<div className="profile-startsit">
         <div className="profile-startsit-heading">
-          <div><span className="section-kicker">START / SIT SCORE</span><strong>{money(team.startSit.score)}%</strong></div>
+          <div><span className="section-kicker">LINEUP EFFICIENCY</span><strong>{money(team.startSit.score)}%</strong></div>
           <span>{money(team.startSit.pointsLeft)} pts left on bench</span>
         </div>
         <div className="profile-startsit-bar"><span style={{width: Math.max(0, Math.min(100, Number(team.startSit.score))) + "%"}}></span></div>
+        <div className="profile-startsit-summary"><span>Actual <strong>{money(team.startSit.actualPoints)}</strong></span><span>Optimal <strong>{money(team.startSit.optimalPoints)}</strong></span></div>
         <div className="profile-startsit-weeks">
           {team.startSit.weeks.map(w => <span key={w.week}>W{w.week} <strong>{money(w.efficiency)}%</strong></span>)}
+        </div>
+      </div>) : null}
+
+      {team.profileAnalytics ? (<div className="profile-insights">
+        <div className="profile-insights-heading"><span className="section-kicker">TEAM PULSE</span><strong>Season So Far</strong></div>
+        <div className="profile-insight-grid">
+          <div className="profile-insight">
+            <span className="profile-insight-icon">🎯</span>
+            <div><small>OPTIMAL LINEUP</small><strong>{team.profileAnalytics.optimalLineup ? `${money(team.profileAnalytics.optimalLineup.pointsLeft)} pts left` : "—"}</strong><em>{team.profileAnalytics.optimalLineup ? `${money(team.profileAnalytics.optimalLineup.efficiency)}% lineup efficiency · ${money(team.profileAnalytics.optimalLineup.optimalPoints)} optimal pts` : "No completed weeks yet."}</em></div>
+          </div>
+          <div className="profile-insight">
+            <span className="profile-insight-icon">{team.profileAnalytics.trend?.direction === "up" ? "🔥" : team.profileAnalytics.trend?.direction === "down" ? "❄️" : "➡️"}</span>
+            <div><small>{team.profileAnalytics.trend?.direction === "up" ? "HEATING UP" : team.profileAnalytics.trend?.direction === "down" ? "COOLING OFF" : "TRENDING STEADY"}</small><strong>{team.profileAnalytics.trend ? `${team.profileAnalytics.trend.slope > 0 ? "+" : ""}${money(team.profileAnalytics.trend.slope)} pts/week` : "—"}</strong><em>{team.profileAnalytics.trend ? `Last ${team.profileAnalytics.trend.weeks.length} weeks · ${team.profileAnalytics.trend.scores.map(s => money(s)).join(" → ")}` : "No completed weeks yet."}</em></div>
+          </div>
+          <div className="profile-insight">
+            <span className="profile-insight-icon">{(team.profileAnalytics.luck?.difference || 0) > 0.2 ? "🍀" : (team.profileAnalytics.luck?.difference || 0) < -0.2 ? "💀" : "⚖️"}</span>
+            <div><small>LUCK METER</small><strong>{team.profileAnalytics.luck ? `${team.profileAnalytics.luck.difference >= 0 ? "+" : ""}${money(team.profileAnalytics.luck.difference)} wins` : "—"}</strong><em>{team.profileAnalytics.luck ? `${money(team.profileAnalytics.luck.actualWins)} actual · ${money(team.profileAnalytics.luck.expectedWins)} expected` : "No completed weeks yet."}</em></div>
+          </div>
         </div>
       </div>) : null}
 
@@ -89,6 +108,10 @@ function TeamCards({ teams }) {
             <span><small>PF</small><strong>{money(s.pointsFor)}</strong></span>
             <span><small>PA</small><strong>{money(s.pointsAgainst)}</strong></span>
             <span><small>STREAK</small><strong>{s.streak?.length ? s.streak.type + s.streak.length : "—"}</strong></span>
+          </div>
+          <div className="card-signals" aria-label="Team pulse">
+            {team.profileAnalytics?.trend?.direction === "up" ? <span title="Heating up">🔥</span> : team.profileAnalytics?.trend?.direction === "down" ? <span title="Cooling off">❄️</span> : null}
+            {team.profileAnalytics?.luck?.difference > 0.2 ? <span title="Lucky">🍀</span> : team.profileAnalytics?.luck?.difference < -0.2 ? <span title="Unlucky">💀</span> : null}
           </div>
           <div className="card-footer"><span>{selectedId === team.id ? "CLOSE PROFILE" : "VIEW PROFILE"}</span><span>↗</span></div>
         </button>
