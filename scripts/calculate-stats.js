@@ -742,7 +742,7 @@ function starterEligible(entry, slotId) {
   return eligibleSlots.includes(Number(slotId));
 }
 
-function lineupEfficiency(weeklyTeam) {
+function lineupEfficiency(weeklyTeam, actualPointsOverride = null) {
   const entries = (weeklyTeam?.roster?.entries || []).filter(e => Number(e.lineupSlotId) !== 21);
   const starterSlots = [];
   const lineupSlotCounts = settings.settings?.rosterSettings?.lineupSlotCounts || {};
@@ -757,11 +757,14 @@ function lineupEfficiency(weeklyTeam) {
     return Number.isFinite(score) ? score : 0;
   };
 
-  const actualPoints = round(
+  const rosterActualPoints = round(
     entries
       .filter(e => Number(e.lineupSlotId) !== 20)
       .reduce((sum, e) => sum + scoreOf(e), 0)
   );
+  const actualPoints = Number.isFinite(Number(actualPointsOverride))
+    ? round(Number(actualPointsOverride))
+    : rosterActualPoints;
 
   const memo = new Map();
   const solve = (index, remaining) => {
@@ -798,21 +801,49 @@ function lineupEfficiency(weeklyTeam) {
 const startSitByTeam = new Map();
 for (const team of teams.values()) {
   const weeks = completedWeeks.map(week => {
+    const game = completed.find(m =>
+      m.week === week &&
+      (m.homeTeamId === Number(team.id) || m.awayTeamId === Number(team.id))
+    );
+    if (!game) return null;
+
+    const boxscore = historicalBoxscoreData.get(week);
+    const boxscoreSide = (boxscore?.schedule || [])
+      .filter(g => Number(g.matchupPeriodId) === Number(week))
+      .flatMap(g => [g.home, g.away])
+      .find(side => Number(side?.teamId) === Number(team.id));
+
     const weeklyRoster = historicalRosterData.get(week);
-    const weeklyTeam = (weeklyRoster?.teams || []).find(t => Number(t.id) === Number(team.id));
-    const result = lineupEfficiency(weeklyTeam);
-    return result ? {week, ...result} : null;
+    const rosterTeam = (weeklyRoster?.teams || []).find(t => Number(t.id) === Number(team.id));
+    const weeklyTeam = boxscoreSide?.rosterForCurrentScoringPeriod?.entries
+      ? {id:Number(team.id), roster:{entries:boxscoreSide.rosterForCurrentScoringPeriod.entries}}
+      : rosterTeam;
+
+    const actualScore = game.homeTeamId === Number(team.id) ? game.homeScore : game.awayScore;
+    const opponentScore = game.homeTeamId === Number(team.id) ? game.awayScore : game.homeScore;
+    const result = lineupEfficiency(weeklyTeam, actualScore);
+    if (!result) return null;
+
+    return {
+      week,
+      ...result,
+      opponentScore:round(opponentScore),
+      result:actualScore > opponentScore ? "W" : "L",
+      winLostToMistake:actualScore < opponentScore && result.optimalPoints > opponentScore
+    };
   }).filter(Boolean);
 
   const totalActual = round(weeks.reduce((sum, w) => sum + w.actualPoints, 0));
   const totalOptimal = round(weeks.reduce((sum, w) => sum + w.optimalPoints, 0));
   const score = totalOptimal > 0 ? round((totalActual / totalOptimal) * 100) : null;
+  const winsLost = weeks.filter(w => w.winLostToMistake).length;
   startSitByTeam.set(team.id, {
     score,
     actualPoints:totalActual,
     optimalPoints:totalOptimal,
     weeks,
-    pointsLeft:round(weeks.reduce((sum, w) => sum + w.pointsLeft, 0))
+    pointsLeft:round(weeks.reduce((sum, w) => sum + w.pointsLeft, 0)),
+    winsLost
   });
 }
 
