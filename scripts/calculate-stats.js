@@ -306,7 +306,7 @@ function buildMarqueeStories() {
   const previousScores = new Map((previousScoreboard?.week === currentWeek ? (previousScoreboard.scores || []) : []).map(s => [s.teamId, s]));
   const previousMedian = previousScoreboard?.week === currentWeek ? Number(previousScoreboard.median) : null;
   const add = (type, text, score) => stories.push({type, text, score:Number.isFinite(score) ? round(score) : 0});
-  const playerEntries = [];
+  let playerEntries = [];
   for (const g of allLiveSchedules) for (const side of [g.home, g.away]) for (const entry of side?.rosterForCurrentScoringPeriod?.entries || []) {
     const player = entry.playerPoolEntry?.player;
     if (!player?.fullName) continue;
@@ -314,6 +314,7 @@ function buildMarqueeStories() {
     const projection = Number((player.stats || []).find(s => Number(s.scoringPeriodId) === currentWeek && Number(s.statSourceId) === 1 && Number(s.statSplitTypeId) === 1)?.appliedTotal);
     playerEntries.push({name:player.fullName,actual,projection,teamId:Number(side.teamId),team:name(Number(side.teamId)),bench:Number(entry.lineupSlotId) === 20});
   }
+  playerEntries = [...new Map(playerEntries.map(p => [p.teamId + "-" + p.name, p])).values()];
   const hot = playerEntries.filter(p => p.actual >= 10 && Number.isFinite(p.projection) && p.actual-p.projection >= 4).sort((a,b) => (b.actual-b.projection)-(a.actual-a.projection))[0];
   if (hot) add("HOT PLAYER","🔥 " + hot.name + " is on fire — " + money(hot.actual) + " pts, " + money(hot.actual-hot.projection) + " over projection for " + hot.team + ".",hot.actual-hot.projection+20);
   const buster = playerEntries.filter(p => p.actual >= 8 && Number.isFinite(p.projection)).sort((a,b) => (b.actual-b.projection)-(a.actual-a.projection))[0];
@@ -332,10 +333,10 @@ function buildMarqueeStories() {
   const flip=matchupStates.find(x=>Number.isFinite(x.previousDiff)&&((x.previousDiff>0&&x.currentDiff<0)||(x.previousDiff<0&&x.currentDiff>0)));
   if(flip){const leader=flip.currentDiff>0?flip.a.team:flip.b.team;const trailer=flip.currentDiff>0?flip.b.team:flip.a.team;add("MATCHUP FLIP","🚨 LEAD CHANGE: " + leader + " just jumped in front of " + trailer + ".",100);}
 
-  if(Number.isFinite(median)){
+  if(Number.isFinite(median) && Number(median) > 0){
     const above=currentScores.filter(s=>Number(s.score)>Number(median)).length;
     add("MEDIAN WATCH","🎯 Median watch: " + above + " of " + currentScores.length + " teams are above the " + money(median) + " median.",18);
-    if(Number.isFinite(previousMedian)){
+    if(Number.isFinite(previousMedian) && previousMedian > 0){
       const mf=currentScores.find(s=>{const p=previousScores.get(s.teamId);if(!p)return false;return(Number(p.score)>previousMedian)!==(Number(s.score)>Number(median))&&Number(s.score)!==Number(median);});
       if(mf){const direction=Number(mf.score)>Number(median)?"above":"below";add("MEDIAN FLIP","🚨 MEDIAN FLIP: " + mf.team + " just moved " + direction + " the league median.",95);}
     }
