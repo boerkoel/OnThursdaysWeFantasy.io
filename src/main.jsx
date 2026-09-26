@@ -50,21 +50,21 @@ function TeamCards({ teams }) {
         </div>
       </div>) : null}
 
-      {team.powerIndex?.thisWeek?.positions ? (<div className="profile-roster-fit">
+      {team.profileAnalytics?.positionFit ? (<div className="profile-roster-fit">
         <div className="profile-roster-fit-heading"><span className="section-kicker">ROSTER FIT</span><strong>Strengths & Weaknesses</strong></div>
         <div className="position-fit-grid">
-          <div><small>STRENGTHS</small><div className="position-fit-list">{Object.entries(team.powerIndex.thisWeek.positions).filter(([,p])=>Number(p?.starter)>102).sort((a,b)=>b[1].starter-a[1].starter).map(([pos,p])=><span className="position-fit strength" key={pos}><b>{pos}</b><strong>{p.starter}</strong></span>)}</div></div>
-          <div><small>NEEDS</small><div className="position-fit-list">{Object.entries(team.powerIndex.thisWeek.positions).filter(([,p])=>Number(p?.starter)<98).sort((a,b)=>a[1].starter-b[1].starter).map(([pos,p])=><span className="position-fit weakness" key={pos}><b>{pos}</b><strong>{p.starter}</strong></span>)}</div></div>
+          <div><small>STRENGTHS</small><div className="position-fit-list">
+            {team.profileAnalytics.positionFit.strengths.length
+              ? team.profileAnalytics.positionFit.strengths.map(p => <span className="position-fit strength" key={p.position}><b>{p.position}</b><strong>{money(p.projected)} proj</strong></span>)
+              : <span className="position-fit-empty">No standout strength</span>}
+          </div></div>
+          <div><small>NEEDS</small><div className="position-fit-list">
+            {team.profileAnalytics.positionFit.needs.length
+              ? team.profileAnalytics.positionFit.needs.map(p => <span className="position-fit weakness" key={p.position}><b>{p.position}</b><strong>{money(p.projected)} proj</strong></span>)
+              : <span className="position-fit-empty">No obvious need</span>}
+          </div></div>
         </div>
-        <p className="profile-fit-note">Based on this week's projected starter strength. 100 = league average.</p>
-        {team.profileAnalytics?.rosterFit?.partners?.length ? <div className="trade-section">
-          <div className="trade-section-heading"><span>🤝</span><div><small>POTENTIAL TRADE PARTNERS</small><em>Complementary roster needs</em></div></div>
-          <div className="trade-partner-list">{team.profileAnalytics.rosterFit.partners.map(p=><div className="trade-partner" key={p.teamId}><strong>{p.team}</strong><span>You need {p.needs.join(" / ")} · They need {p.offers.join(" / ")}</span></div>)}</div>
-        </div> : null}
-        {team.profileAnalytics?.rosterFit?.targets?.length ? <div className="trade-section">
-          <div className="trade-section-heading"><span>🎯</span><div><small>POTENTIAL TRADE TARGETS</small><em>Opponent bench players who project into your lineup</em></div></div>
-          <div className="trade-target-list">{team.profileAnalytics.rosterFit.targets.slice(0,4).map(p=><div className="trade-target" key={p.playerId}><div><strong>{p.player}</strong><span>{p.position} · {p.team}</span></div><b>{money(p.projection)}</b><small>PROJ</small>{p.rosRank ? <em>ROS #{p.rosRank}</em> : null}</div>)}</div>
-        </div> : null}
+        <p className="profile-fit-note">Based on this week's ESPN projections for current starters. Only meaningful differences from the league average are shown.</p>
       </div>) : null}
 
       {team.profileAnalytics ? (<div className="profile-insights">
@@ -223,7 +223,7 @@ function App() {
           <h1>On Thursdays We Fantasy</h1>
           <p className="subtitle">The Officially Unofficial League Record Book</p>
         </div>
-        <nav><a href="#scores">Scores</a><a href="#power-index">Power Index</a><a href="#history">History</a><a href="#playoffs">Playoffs</a><a href="#ultimate-loser">Ultimate Loser</a><a href="#raffle">Raffle</a><a href="#standings">Standings</a><a href="#awards">Awards</a></nav>
+        <nav><a href="#scores">Scores</a><a href="#history">History</a><a href="#playoffs">Playoffs</a><a href="#ultimate-loser">Ultimate Loser</a><a href="#raffle">Raffle</a><a href="#standings">Standings</a><a href="#awards">Awards</a></nav>
       </header>
 
 <div className="data-timestamp">LAST REFRESHED <strong>{scoreboard.lastUpdated ? new Date(scoreboard.lastUpdated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "—"}</strong></div>
@@ -264,30 +264,6 @@ function App() {
         <p className="median-note">{preGame ? "Current scores will appear once scoring begins. The projected median is based on ESPN’s projected final scores." : "The current median uses live scores. The projected median uses ESPN’s projected final scores."}</p>
       </section>
 
-      <section id="power-index" className="section">
-        <div className="section-heading"><div><span className="section-kicker">ROSTER STRENGTH</span><h2>Power Index</h2></div><span className="record-count">100 = LEAGUE AVERAGE</span></div>
-        <p className="median-note">Three views of roster strength: completed-season performance, current-week projections, and FantasyPros rest-of-season rankings. Each uses 75% starter strength and 25% depth.</p>
-        <div className="power-index-views">
-          {[["season","SEASON TO DATE","Completed weeks only"],["thisWeek","THIS WEEK","ESPN projections"],["ros","REST OF SEASON","FantasyPros ROS"]].map(([mode,label,note]) =>
-            <details className="power-index-view" key={mode} open={mode==="season"}>
-              <summary><span><b>{label}</b><small>{note}</small></span><em>Overall · Starters · Depth · Positions</em></summary>
-              <div className="power-index-table">
-                {(teamsData.teams || []).map(team => ({team,power:team.powerIndex?.[mode]})).filter(x=>x.power).sort((a,b)=>(b.power.overall||0)-(a.power.overall||0)).map((row,i) =>
-                  <article className="power-index-row" key={row.team.id}>
-                    <span className="power-rank">{i+1}</span>
-                    <span className="power-team"><TeamLogo src={teamLogos[row.team.id]} />{row.team.name}</span>
-                    <strong className="power-overall">{row.power.overall ?? "—"}</strong>
-                    <span><small>START</small><b>{row.power.starterIndex ?? "—"}</b></span>
-                    <span><small>DEPTH</small><b>{row.power.depthIndex ?? "—"}</b></span>
-                    <div className="power-positions">{["QB","RB","WR","TE","K","DST"].map(pos => <span key={pos}><small>{pos}</small><b>{row.power.positions?.[pos]?.starter ?? "—"}</b><em>{row.power.positions?.[pos]?.depth ?? "—"}</em></span>)}</div>
-                  </article>
-                )}
-              </div>
-            </details>
-          )}
-        </div>
-        <div className="power-index-legend"><span><b>Overall</b> 75% starter strength + 25% depth</span><span><b>Position</b> starter index / depth index</span><span><b>100</b> league average</span></div>
-      </section>
 
       <section id="history" className="section">
         <div className="section-heading">
