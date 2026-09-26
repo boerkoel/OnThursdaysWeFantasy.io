@@ -187,6 +187,120 @@ const projectedMedian = projectedValues.length % 2
     ? round((projectedValues[projectedValues.length / 2 - 1] + projectedValues[projectedValues.length / 2]) / 2)
     : null;
 
+function historicalTeamScores(teamId) {
+  return completed
+    .filter(m => m.homeTeamId === teamId || m.awayTeamId === teamId)
+    .map(m => m.homeTeamId === teamId ? m.homeScore : m.awayScore)
+    .filter(Number.isFinite);
+}
+
+function makeRng(seed) {
+  let state = seed >>> 0;
+  return () => {
+    state = (Math.imul(1664525, state) + 1013904223) >>> 0;
+    return state / 4294967296;
+  };
+}
+
+function normalSample(rng) {
+  const u = Math.max(rng(), 1e-12);
+  const v = Math.max(rng(), 1e-12);
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+function simulationSeed() {
+  const values = currentScores
+    .map(s => [s.teamId, s.score, s.projectionAverage])
+    .sort((a,b) => Number(a[0]) - Number(b[0]))
+    .flat()
+    .map(String)
+    .join("|");
+  let hash = 2166136261;
+  for (const char of values) {
+    hash ^= char.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+const probabilityTeams = currentScores.map(s => {
+  const historical = historicalTeamScores(s.teamId);
+  const mean = historical.length
+    ? historical.reduce((sum, value) => sum + value, 0) / historical.length
+    : Number(s.projectionAverage) || Number(s.score) || 0;
+  const variance = historical.length > 1
+    ? historical.reduce((sum, value) => sum + (value - mean) ** 2, 0) / (historical.length - 1)
+    : 0;
+  const historicalSd = Math.sqrt(Math.max(0, variance));
+  const projectedFinal = Number(s.projectionAverage);
+  const currentScore = Number(s.score) || 0;
+  const remainingProjection = Number.isFinite(projectedFinal)
+    ? Math.max(0, projectedFinal - currentScore)
+    : 0;
+  const fallbackSd = Math.max(12, remainingProjection * 0.30);
+  const remainingFraction = Number.isFinite(projectedFinal) && projectedFinal > 0
+    ? Math.max(0, Math.min(1, remainingProjection / projectedFinal))
+    : 1;
+  const sd = Math.max(8, (historicalSd || fallbackSd) * Math.sqrt(Math.max(0.2, remainingFraction)));
+  return {
+    ...s,
+    projectedFinal: Number.isFinite(projectedFinal) ? projectedFinal : currentScore,
+    currentScore,
+    remainingProjection,
+    sd
+  };
+});
+
+const SIMULATIONS = 10000;
+const rng = makeRng(simulationSeed());
+const winCounts = new Map(probabilityTeams.map(s => [s.teamId, 0]));
+const aboveMedianCounts = new Map(probabilityTeams.map(s => [s.teamId, 0]));
+const matchupLookup = new Map(currentWeekMatchups.map(m => [m.id, m]));
+
+for (let sim = 0; sim < SIMULATIONS; sim++) {
+  const finals = probabilityTeams.map(s => ({
+    teamId: s.teamId,
+    score: s.currentScore + (s.remainingProjection > 0 ? Math.max(0, s.remainingProjection + s.sd * normalSample(rng)) : s.currentScore)
+  }));
+
+  for (const matchup of currentWeekMatchups) {
+    const home = finals.find(s => s.teamId === matchup.homeTeamId);
+    const away = finals.find(s => s.teamId === matchup.awayTeamId);
+    if (!home || !away) continue;
+    if (home.score > away.score) winCounts.set(home.teamId, winCounts.get(home.teamId) + 1);
+    else if (away.score > home.score) winCounts.set(away.teamId, winCounts.get(away.teamId) + 1);
+    else {
+      winCounts.set(home.teamId, winCounts.get(home.teamId) + 0.5);
+      winCounts.set(away.teamId, winCounts.get(away.teamId) + 0.5);
+    }
+  }
+
+  const sortedFinals = [...finals].sort((a,b) => a.score - b.score);
+  const medianFinal = (sortedFinals[5].score + sortedFinals[6].score) / 2;
+  for (const final of finals) {
+    if (final.score > medianFinal) aboveMedianCounts.set(final.teamId, aboveMedianCounts.get(final.teamId) + 1);
+  }
+}
+
+const probabilityByTeam = new Map(probabilityTeams.map(s => {
+  const matchup = matchupLookup.get(s.matchupId);
+  const matchupComplete = matchup?.completed;
+  let winProbability = winCounts.get(s.teamId) / SIMULATIONS * 100;
+  if (matchupComplete) {
+    const actualWinner = matchup.winner === "HOME" ? matchup.homeTeamId : matchup.awayTeamId;
+    winProbability = s.teamId === actualWinner ? 100 : 0;
+  }
+  return [s.teamId, {
+    winProbability: round(winProbability),
+    aboveMedianProbability: round(aboveMedianCounts.get(s.teamId) / SIMULATIONS * 100)
+  }];
+}));
+
+for (const score of currentScores) {
+  const probabilities = probabilityByTeam.get(score.teamId);
+  if (probabilities) Object.assign(score, probabilities);
+}
+
 const currentScoreboard = {
   week:currentWeek,
   lastUpdated:new Date().toISOString(),
@@ -194,6 +308,8 @@ const currentScoreboard = {
   median,
   projectedMedian,
   projectionSources:["ESPN"],
+  probabilityModel:"Site-calculated Monte Carlo using ESPN live projections and historical team scoring volatility",
+  probabilitySimulations:SIMULATIONS,
   projectionHistory
 };
 
