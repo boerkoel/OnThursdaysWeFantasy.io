@@ -304,3 +304,9 @@
   .score-row.median-near{margin-left:7px;margin-right:7px}
   .median-near-label{font-size:6px;margin-left:4px}
 }
+
+
+/* Probability indicators: calculated from ESPN projections plus recent scoring volatility. */
+.matchup-probability{display:block;margin-top:3px;color:#b8c69b;font-size:8px;font-style:normal;font-weight:900;letter-spacing:.07em}
+.score-probability{display:block;margin-top:3px;color:#8fa27f;font-size:8px;font-style:normal;font-weight:900;letter-spacing:.06em;white-space:nowrap}
+@media(max-width:800px){.score-projection{display:flex;flex-direction:column;align-items:flex-end;gap:1px}.score-probability{font-size:7px;margin-top:1px}}
