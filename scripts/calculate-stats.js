@@ -1116,7 +1116,8 @@ for (const team of teams.values()) {
     .map(e => ({
       playerId:Number(e.playerId),
       player:e.playerPoolEntry?.player?.fullName || `Player #${e.playerId}`,
-      position:positionNames[Number(e.playerPoolEntry?.player?.defaultPositionId)] || null
+      position:positionNames[Number(e.playerPoolEntry?.player?.defaultPositionId)] || null,
+      rosRank:fantasyProsRosByName.get(normalizePlayerName(e.playerPoolEntry?.player?.fullName)) ?? null
     }));
   currentRosterPlayersByTeam.set(Number(team.id), players);
 }
@@ -1186,6 +1187,10 @@ for (let i = 0; i < teamIdsForTrades.length; i++) {
     const trades = [];
 
     for (const playerA of teamAPlayers) {
+      // Only evaluate reasonably close ROS values. This removes absurd
+      // suggestions and avoids expensive historical simulations.
+      if (!Number.isFinite(playerA.rosRank)) continue;
+
       const incomingForB = new Map();
       for (const week of completedWeeks) {
         const rosterA = weeklyRosterForTeam(week, teamAId);
@@ -1197,6 +1202,9 @@ for (let i = 0; i < teamIdsForTrades.length; i++) {
       for (const playerB of teamBPlayers) {
         // Same-position swaps are excluded from this signal.
         if (playerA.position && playerB.position && playerA.position === playerB.position) continue;
+
+        // Keep only trades whose FantasyPros ROS PPR ranks are within 25 spots.
+        if (!Number.isFinite(playerB.rosRank) || Math.abs(playerA.rosRank - playerB.rosRank) > 25) continue;
 
         const incomingForA = new Map();
         for (const week of completedWeeks) {
@@ -1222,9 +1230,11 @@ for (let i = 0; i < teamIdsForTrades.length; i++) {
           givePlayerId:playerA.playerId,
           givePlayer:playerA.player,
           givePosition:playerA.position,
+          giveRosRank:playerA.rosRank,
           getPlayerId:playerB.playerId,
           getPlayer:playerB.player,
           getPosition:playerB.position,
+          getRosRank:playerB.rosRank,
           yourBoost:impactA.boost,
           yourH2hWinsAdded:impactA.h2hWinsAdded,
           yourMedianWinsAdded:impactA.medianWinsAdded,
@@ -1256,6 +1266,8 @@ for (let i = 0; i < teamIdsForTrades.length; i++) {
         getPlayerId:t.givePlayerId,
         getPlayer:t.givePlayer,
         getPosition:t.givePosition,
+        getRosRank:t.giveRosRank,
+        giveRosRank:t.getRosRank,
         yourBoost:t.theirBoost,
         yourH2hWinsAdded:t.theirH2hWinsAdded,
         yourMedianWinsAdded:t.theirMedianWinsAdded,
