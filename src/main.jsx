@@ -117,7 +117,7 @@ function TeamCards({ teams }) {
         <div className="profile-insight-grid">
           <div className="profile-insight">
             <span className="profile-insight-icon">🎯</span>
-            <div><small>OPTIMAL LINEUP</small><strong>{team.profileAnalytics.optimalLineup ? `${money(team.profileAnalytics.optimalLineup.pointsLeft)} pts left` : "—"}</strong><em>{team.profileAnalytics.optimalLineup ? `${money(team.profileAnalytics.optimalLineup.efficiency)}% lineup efficiency · ${money(team.profileAnalytics.optimalLineup.optimalPoints)} optimal pts` : "No completed weeks yet."}</em></div>
+            <div><small>OPTIMAL LINEUP</small><strong>{team.profileAnalytics.optimalLineup ? `${money(team.profileAnalytics.optimalLineup.pointsLeft)} pts left on bench` : "—"}</strong><em>{team.profileAnalytics.optimalLineup ? `${money(team.profileAnalytics.optimalLineup.efficiency)}% lineup efficiency · ${money(team.profileAnalytics.optimalLineup.optimalPoints)} optimal pts` : "No completed weeks yet."}</em></div>
           </div>
           <div className="profile-insight">
             <span className="profile-insight-icon">{team.profileAnalytics.trend?.direction === "up" ? "🔥" : team.profileAnalytics.trend?.direction === "down" ? "❄️" : "➡️"}</span>
