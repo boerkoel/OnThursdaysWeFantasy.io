@@ -880,7 +880,8 @@ for (const team of teams.values()) {
       }
     }
 
-    if (boost > 0.25) {
+    // Keep only meaningful targets: a clear win added, or at least 5 points of cumulative optimal-lineup improvement.
+    if (h2hWinsAdded + medianWinsAdded > 0 || boost >= 5) {
       targets.push({
         playerId,
         player:entry.playerPoolEntry?.player?.fullName || history.name || `Player #${playerId}`,
