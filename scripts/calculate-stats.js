@@ -10,6 +10,10 @@ const historicalRosterData = new Map();
 const draftData = await readJson("data/current/mDraftDetail.json").catch(() => ({draftDetail:{picks:[]}}));
 const draftPicks = draftData?.draftDetail?.picks || [];
 const draftByPlayer = new Map(draftPicks.map(p => [Number(p.playerId), p]));
+const fantasyProsRos = await readJson("data/current/fantasypros-ros-ppr.json").catch(() => null);
+const fantasyProsRosByName = new Map(
+  (fantasyProsRos?.rankings || []).map(p => [normalizePlayerName(p.name), Number(p.rank)])
+);
 const liveScoringData = await readJson("data/current/mLiveScoring.json");
 const boxscoreData = await readJson("data/current/mBoxscore.json");
 const scoreboardData = await readJson("data/current/mScoreboard.json");
@@ -677,15 +681,22 @@ for (const team of teams.values()) {
     Number(p.draft.teamId) === Number(team.id)
   );
 
-  const draftPool = draftedByTeam.map(p => ({
-    ...p,
-    draftPick:Number(p.draft.overallPickNumber),
-    round:Number(p.draft.roundId || 0),
-    valueGap:Number(p.draft.overallPickNumber) - p.points
-  }));
+  const draftPool = draftedByTeam.map(p => {
+    const rosRank = fantasyProsRosByName.get(normalizePlayerName(p.name));
+    return {
+      ...p,
+      draftPick:Number(p.draft.overallPickNumber),
+      round:Number(p.draft.roundId || 0),
+      rosRank:Number.isFinite(rosRank) ? rosRank : null,
+      valueGap:Number.isFinite(rosRank) ? Number(p.draft.overallPickNumber) - rosRank : null
+    };
+  });
 
-  const bestValue = maxBy(draftPool, p => p.valueGap);
-  const worstValue = minBy(draftPool, p => p.valueGap);
+  // Draft value is measured against the live FantasyPros ROS PPR ranking:
+  // a positive gap means the player is now ranked higher than where he was drafted.
+  const draftValuePool = draftPool.filter(p => Number.isFinite(p.valueGap));
+  const bestValue = maxBy(draftValuePool, p => p.valueGap);
+  const worstValue = minBy(draftValuePool, p => p.valueGap);
 
   const boomCandidates = players.flatMap(p =>
     p.weekly.filter(w => w.started).map(w => ({...p,week:w.week,weekScore:w.score}))
@@ -700,7 +711,7 @@ for (const team of teams.values()) {
     .filter(p => Number.isFinite(p.variance));
   const mostConsistent = minBy(consistentCandidates, p => p.variance);
 
-  const lateRound = maxBy(draftPool.filter(p => p.round >= 8), p => p.valueGap);
+  const lateRound = maxBy(draftValuePool.filter(p => p.round >= 8), p => p.valueGap);
 
   const boomBustCandidates = players
     .map(p => {
@@ -723,11 +734,11 @@ for (const team of teams.values()) {
     } : null,
     bestDraftValue:bestValue ? {
       playerId:bestValue.playerId,player:bestValue.name,points:round(bestValue.points),
-      draftPick:bestValue.draftPick,round:bestValue.round,valueGap:round(bestValue.valueGap)
+      draftPick:bestValue.draftPick,round:bestValue.round,rosRank:bestValue.rosRank,valueGap:round(bestValue.valueGap)
     } : null,
     worstDraftValue:worstValue ? {
       playerId:worstValue.playerId,player:worstValue.name,points:round(worstValue.points),
-      draftPick:worstValue.draftPick,round:worstValue.round,valueGap:round(worstValue.valueGap)
+      draftPick:worstValue.draftPick,round:worstValue.round,rosRank:worstValue.rosRank,valueGap:round(worstValue.valueGap)
     } : null,
     boomMachine:boom ? {
       playerId:boom.playerId,player:boom.name,week:boom.week,score:round(boom.weekScore)
@@ -737,7 +748,7 @@ for (const team of teams.values()) {
     } : null,
     lateRoundWizard:lateRound ? {
       playerId:lateRound.playerId,player:lateRound.name,round:lateRound.round,
-      draftPick:lateRound.draftPick,valueGap:round(lateRound.valueGap),points:round(lateRound.points)
+      draftPick:lateRound.draftPick,rosRank:lateRound.rosRank,valueGap:round(lateRound.valueGap),points:round(lateRound.points)
     } : null,
     boomBust:boomBust ? {
       playerId:boomBust.playerId,player:boomBust.name,range:round(boomBust.weeklyRange)
@@ -747,6 +758,12 @@ for (const team of teams.values()) {
 
 await writeJson("data/current/teams.json",{season:settings.seasonId,currentWeek,teams:[...teams.values()].map(t=>({...t,standings:standings.find(s=>s.id===t.id)||null,weeklyResults:completed.filter(m=>m.homeTeamId===t.id||m.awayTeamId===t.id).map(m=>({week:m.week,opponentId:m.homeTeamId===t.id?m.awayTeamId:m.homeTeamId,opponent:name(m.homeTeamId===t.id?m.awayTeamId:m.homeTeamId),score:m.homeTeamId===t.id?m.homeScore:m.awayScore,opponentScore:m.homeTeamId===t.id?m.awayScore:m.homeScore,result:(m.homeTeamId===t.id?m.winner==="HOME":m.winner==="AWAY")?"W":"L"})),playerAwards:playerAwardsByTeam.get(t.id)||null,startSit:startSitByTeam.get(t.id)||null}))});
 
+function normalizePlayerName(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]/g, "");
+}
 function name(id){return teams.get(id)?.name||"Team "+id}
 function streak(id){const gs=completed.filter(m=>m.homeTeamId===id||m.awayTeamId===id).sort((a,b)=>a.week-b.week);if(!gs.length)return{type:"NONE",length:0};const last=gs[gs.length-1],type=(last.homeTeamId===id?last.winner==="HOME":last.winner==="AWAY")?"W":"L";let length=0;for(let i=gs.length-1;i>=0;i--){const g=gs[i],t=(g.homeTeamId===id?g.winner==="HOME":g.winner==="AWAY")?"W":"L";if(t!==type)break;length++}return{type,length}}
 function scoreAward(x){return x?{week:x.week,teamId:x.teamId,team:name(x.teamId),opponentId:x.opponentId,opponent:name(x.opponentId),score:round(x.score),result:x.result}:null}
