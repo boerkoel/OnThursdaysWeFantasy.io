@@ -51,13 +51,16 @@ for (const view of views) {
 // fantasy scores from completed weeks, rather than only the current roster view.
 const currentScoringPeriod = Number(results.mMatchup?.scoringPeriodId || 1);
 for (let week = 1; week <= currentScoringPeriod; week++) {
-  console.log(`Fetching mRoster for week ${week}...`);
-  const weeklyRoster = week === currentScoringPeriod
-    ? results.mRoster
-    : await fetchView("mRoster", week);
+  console.log(`Fetching historical roster/boxscore data for week ${week}...`);
+  const weeklyRoster = await fetchView("mRoster", week);
+  const weeklyBoxscore = await fetchView("mBoxscore", week);
   await writeFile(
     `data/current/mRoster-week-${week}.json`,
     JSON.stringify(weeklyRoster, null, 2) + "\n"
+  );
+  await writeFile(
+    `data/current/mBoxscore-week-${week}.json`,
+    JSON.stringify(weeklyBoxscore, null, 2) + "\n"
   );
 }
 
