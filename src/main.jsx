@@ -206,7 +206,7 @@ function App() {
           <h1>On Thursdays We Fantasy</h1>
           <p className="subtitle">The Officially Unofficial League Record Book</p>
         </div>
-        <nav><a href="#scores">Scores</a><a href="#history">History</a><a href="#playoffs">Playoffs</a><a href="#ultimate-loser">Ultimate Loser</a><a href="#raffle">Raffle</a><a href="#standings">Standings</a><a href="#awards">Awards</a></nav>
+        <nav><a href="#scores">Scores</a><a href="#power-index">Power Index</a><a href="#history">History</a><a href="#playoffs">Playoffs</a><a href="#ultimate-loser">Ultimate Loser</a><a href="#raffle">Raffle</a><a href="#standings">Standings</a><a href="#awards">Awards</a></nav>
       </header>
 
 <div className="data-timestamp">LAST REFRESHED <strong>{scoreboard.lastUpdated ? new Date(scoreboard.lastUpdated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "—"}</strong></div>
@@ -245,6 +245,24 @@ function App() {
           </React.Fragment>)}
         </div>
         <p className="median-note">{preGame ? "Current scores will appear once scoring begins. The projected median is based on ESPN’s projected final scores." : "The current median uses live scores. The projected median uses ESPN’s projected final scores."}</p>
+      </section>
+
+      <section id="power-index" className="section">
+        <div className="section-heading"><div><span className="section-kicker">ROSTER STRENGTH</span><h2>Power Index</h2></div><span className="record-count">100 = LEAGUE AVERAGE</span></div>
+        <p className="median-note">ESPN weekly projections measure the strength of each roster's optimal starters and next-up depth. Overall is weighted 75% starters and 25% depth.</p>
+        <div className="power-index-table">
+          {[...teams].map(([teamId, team]) => ({teamId, team, power:teamsData.find(t => Number(t.id) === Number(teamId))?.powerIndex})).filter(x => x.power).sort((a,b)=>b.power.overall-a.power.overall).map((row,i) =>
+            <article className="power-index-row" key={row.teamId}>
+              <span className="power-rank">{i+1}</span>
+              <span className="power-team"><TeamLogo src={teamLogos[row.teamId]} />{row.team.name}</span>
+              <strong className="power-overall">{row.power.overall}</strong>
+              <span><small>START</small><b>{row.power.starterIndex}</b></span>
+              <span><small>DEPTH</small><b>{row.power.depthIndex}</b></span>
+              <div className="power-positions">{["QB","RB","WR","TE","K","DST"].map(pos => <span key={pos}><small>{pos}</small><b>{row.power.positions[pos]?.starter ?? "—"}</b><em>{row.power.positions[pos]?.depth ?? "—"}</em></span>)}</div>
+            </article>
+          )}
+        </div>
+        <div className="power-index-legend"><span><b>Overall</b> 75% starter strength + 25% depth</span><span><b>Position</b> starter index / depth index</span><span><b>100</b> league average</span></div>
       </section>
 
       <section id="history" className="section">
