@@ -588,9 +588,10 @@ for (const team of teams.values()) {
     points:p.weekly.filter(w => w.started).reduce((sum,w) => sum + w.score, 0)
   }));
 
-  const mvp = maxBy(teamScoringPlayers.filter(p => p.points > 0), p => p.points);
+  const rankedTeamScorers = [...teamScoringPlayers].filter(p => p.points > 0).sort((a,b) => b.points - a.points);
+  const mvp = rankedTeamScorers[0] || null;
+  const mvpSeasonRank = mvp ? rankedTeamScorers.findIndex(p => p.playerId === mvp.playerId) + 1 : null;
 
-  // Draft-value awards are restricted to players this team actually drafted.
   const draftedByTeam = players.filter(p =>
     p.draft &&
     Number(p.draft.overallPickNumber) > 0 &&
@@ -639,7 +640,7 @@ for (const team of teams.values()) {
   playerAwardsByTeam.set(team.id, {
     mvp:mvp ? {
       playerId:mvp.playerId,player:mvp.name,position:mvp.position,points:round(mvp.points),
-      seasonRank:null
+      seasonRank:mvpSeasonRank
     } : null,
     bestDraftValue:bestValue ? {
       playerId:bestValue.playerId,player:bestValue.name,points:round(bestValue.points),
@@ -647,7 +648,7 @@ for (const team of teams.values()) {
     } : null,
     worstDraftValue:worstValue ? {
       playerId:worstValue.playerId,player:worstValue.name,points:round(worstValue.points),
-      draftPick:worstValue.draftPick,round:worstValue.valueGap
+      draftPick:worstValue.draftPick,round:worstValue.round,valueGap:round(worstValue.valueGap)
     } : null,
     boomMachine:boom ? {
       playerId:boom.playerId,player:boom.name,week:boom.week,score:round(boom.weekScore)
