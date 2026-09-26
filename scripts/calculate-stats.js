@@ -897,43 +897,96 @@ for (const team of teams.values()) {
 
 const rosterFitByTeam = new Map();
 for (const team of teams.values()) {
-  const fit = positionFitByTeam.get(Number(team.id)) || {strengths:[], needs:[]};
+  const fit = positionFitByTeam.get(Number(team.id)) || {strengths:[],needs:[]};
   const partners = [];
 
   for (const other of teams.values()) {
     if (Number(other.id) === Number(team.id)) continue;
-    const otherFit = positionFitByTeam.get(Number(other.id)) || {strengths:[], needs:[]};
-
+    const otherFit = positionFitByTeam.get(Number(other.id)) || {strengths:[],needs:[]};
     const give = fit.strengths.filter(s => otherFit.needs.some(n => n.position === s.position));
     const get = fit.needs.filter(n => otherFit.strengths.some(s => s.position === n.position));
     if (!give.length || !get.length) continue;
-
     const score = give.reduce((sum,p) => sum + Math.abs(Number(p.percent)), 0)
       + get.reduce((sum,p) => sum + Math.abs(Number(p.percent)), 0);
-
     partners.push({
-      teamId:Number(other.id),
-      team:other.name,
-      score:round(score),
+      teamId:Number(other.id), team:other.name, score:round(score),
       give:give.slice(0,2).map(p => ({position:p.position, percent:p.percent})),
       get:get.slice(0,2).map(p => ({position:p.position, percent:p.percent}))
     });
   }
 
   const sortedPartners = partners.sort((a,b) => b.score - a.score).slice(0,3);
-  const partnerIds = new Set(sortedPartners.map(p => p.teamId));
-  const targets = sortedPartners
-    .flatMap(p => (benchTargetsByTeam.get(p.teamId) || []).map(t => ({
-      ...t,
-      teamId:p.teamId,
-      team:p.team
-    })))
-    .sort((a,b) => b.boost - a.boost || a.startRate - b.startRate)
-    .slice(0,4);
+  const targets = [];
+
+  // Evaluate every current bench player in the league against this team.
+  for (const other of teams.values()) {
+    if (Number(other.id) === Number(team.id)) continue;
+
+    for (const player of benchTargetsByTeam.get(Number(other.id)) || []) {
+      let boost = 0;
+      let winsAdded = 0;
+
+      for (const week of completedWeeks) {
+        const sourceRoster = weeklyRosterForTeam(week, other.id);
+        const sourceEntry = sourceRoster?.roster?.entries?.find(e => Number(e.playerId) === Number(player.playerId));
+        if (!sourceEntry || Number(sourceEntry.lineupSlotId) !== 20) continue;
+
+        const destinationRoster = weeklyRosterForTeam(week, team.id);
+        if (!destinationRoster?.roster?.entries) continue;
+
+        const baseOptimal = lineupEfficiency(destinationRoster);
+        const hypotheticalTeam = {
+          id:Number(team.id),
+          roster:{entries:destinationRoster.roster.entries.concat([{...sourceEntry, lineupSlotId:20}])}
+        };
+        const hypotheticalOptimal = lineupEfficiency(hypotheticalTeam);
+        if (!baseOptimal || !hypotheticalOptimal) continue;
+
+        const improvement = Math.max(0, Number(hypotheticalOptimal.optimalPoints) - Number(baseOptimal.optimalPoints));
+        boost += improvement;
+        if (improvement <= 0) continue;
+
+        const game = completed.find(m =>
+          m.week === week &&
+          (m.homeTeamId === Number(team.id) || m.awayTeamId === Number(team.id))
+        );
+        if (!game) continue;
+
+        const actual = game.homeTeamId === Number(team.id) ? game.homeScore : game.awayScore;
+        const opponent = game.homeTeamId === Number(team.id) ? game.awayScore : game.homeScore;
+
+        const weekScores = completed
+          .filter(m => m.week === week)
+          .flatMap(m => [Number(m.homeScore), Number(m.awayScore)])
+          .filter(Number.isFinite)
+          .sort((a,b) => a-b);
+        const median = weekScores.length
+          ? (weekScores.length % 2
+            ? weekScores[Math.floor(weekScores.length/2)]
+            : (weekScores[weekScores.length/2-1] + weekScores[weekScores.length/2]) / 2)
+          : null;
+
+        if (hypotheticalOptimal.optimalPoints > opponent && actual <= opponent) winsAdded += 1;
+        if (Number.isFinite(median) && hypotheticalOptimal.optimalPoints > median && actual <= median) winsAdded += 1;
+      }
+
+      if (boost > 0.25) {
+        targets.push({
+          ...player,
+          teamId:Number(other.id),
+          team:other.name,
+          boost:round(boost),
+          winsAdded:round(winsAdded)
+        });
+      }
+    }
+  }
 
   rosterFitByTeam.set(Number(team.id), {
     partners:sortedPartners,
-    targets
+    targets:targets
+      .sort((a,b) => b.boost - a.boost || b.winsAdded - a.winsAdded || a.startRate - b.startRate)
+      .slice(0,3)
   });
 }
 
