@@ -48,18 +48,18 @@ async function fetchFantasyProsRosPpr() {
 
     const html = await response.text();
     const text = html
-      .replace(/<script[\\s\\S]*?<\\/script>/gi, " ")
-      .replace(/<style[\\s\\S]*?<\\/style>/gi, " ")
+      .replace(/<script[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style[\s\S]*?<\/style>/gi, " ")
       .replace(/<[^>]+>/g, " ")
       .replace(/&amp;/g, "&")
       .replace(/&#039;|&#39;/g, "'")
       .replace(/&quot;/g, '"')
       .replace(/&nbsp;/g, " ")
-      .replace(/\\s+/g, " ")
+      .replace(/\s+/g, " ")
       .trim();
 
     const rankings = [];
-    const pattern = /\\|\\s*(\\d{1,3})\\.\\s*(.+?)\\s+(QB|RB|WR|TE|K|DST)\\s*-\\s*([A-Z]{2})/g;
+    const pattern = /\|\s*(\d{1,3})\.\s*(.+?)\s+(QB|RB|WR|TE|K|DST)\s*-\s*([A-Z]{2})/g;
     for (const match of text.matchAll(pattern)) {
       const rank = Number(match[1]);
       const name = match[2].trim();
@@ -79,7 +79,7 @@ async function fetchFantasyProsRosPpr() {
         scoring: "PPR",
         fetchedAt: new Date().toISOString(),
         rankings
-      }, null, 2) + "\\n"
+      }, null, 2) + "\n"
     );
     console.log(`Fetched ${rankings.length} FantasyPros ROS PPR rankings.`);
   } catch (error) {
