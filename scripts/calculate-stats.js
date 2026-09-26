@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 
 const settings = await readJson("data/current/mSettings.json");
-const previousScoreboard = await readJson("data/current/scoreboard.json").catch(() => null);
+const previousScoreboard = await readJson(process.env.PREVIOUS_SCOREBOARD_PATH || "data/current/scoreboard.json").catch(() => null);
 const previousProjectionHistory = previousScoreboard?.projectionHistory || [];
 const teamData = await readJson("data/current/mTeam.json");
 const matchupData = await readJson("data/current/mMatchup.json");
