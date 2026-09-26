@@ -1221,8 +1221,8 @@ for (let i = 0; i < teamIdsForTrades.length; i++) {
 
         // A true win-win trade must add at least one net win to both teams.
         // Lineup-point gains alone are not enough to qualify.
-        const meaningfulA = impactA.winsAdded >= 1;
-        const meaningfulB = impactB.winsAdded >= 1;
+        const meaningfulA = impactA.winsAdded >= 1 && impactA.boost > 0;
+        const meaningfulB = impactB.winsAdded >= 1 && impactB.boost > 0;
         if (!meaningfulA || !meaningfulB) continue;
 
         trades.push({
