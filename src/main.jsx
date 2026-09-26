@@ -51,14 +51,14 @@ function TeamCards({ teams }) {
       </div>) : null}
 
       {team.profileAnalytics?.positionFit ? (<div className="profile-roster-fit">
-        <div className="profile-roster-fit-heading"><span className="section-kicker">ROSTER FIT</span><strong>Strengths & Weaknesses</strong></div>
+        <div className="profile-roster-fit-heading"><span className="section-kicker">ROSTER COMPOSITION</span><strong>Strengths & Weaknesses</strong></div>
         <div className="position-fit-grid">
           <div><small>STRENGTHS</small><div className="position-fit-list">
             {team.profileAnalytics.positionFit.strengths.length
               ? team.profileAnalytics.positionFit.strengths.map(p => <span className="position-fit strength" key={p.position}><b>{p.position}</b><strong>{Math.abs(p.percent)}% more pts than league avg.</strong></span>)
               : <span className="position-fit-empty">No standout strength</span>}
           </div></div>
-          <div><small>NEEDS</small><div className="position-fit-list">
+          <div><small>WEAKNESSES</small><div className="position-fit-list">
             {team.profileAnalytics.positionFit.needs.length
               ? team.profileAnalytics.positionFit.needs.map(p => <span className="position-fit weakness" key={p.position}><b>{p.position}</b><strong>{Math.abs(p.percent)}% fewer pts than league avg.</strong></span>)
               : <span className="position-fit-empty">No obvious need</span>}
@@ -78,13 +78,13 @@ function TeamCards({ teams }) {
             : <span className="position-fit-empty">No obvious complementary trade partner yet.</span>}
         </div>
         {team.profileAnalytics.rosterFit.targets?.length ? <>
-          <div className="trade-section-heading trade-target-heading"><span>🎯</span><div><small>PLAYERS TO TARGET</small><strong>Top bench upgrades</strong><em>League-wide: players currently riding another team's bench who would have helped your lineup</em></div></div>
+          <div className="trade-section-heading trade-target-heading"><span>🎯</span><div><small>PLAYERS TO TARGET</small><strong>Potential Trade Targets</strong><em>League-wide: players currently riding another team's bench who would have helped your lineup</em></div></div>
           <div className="trade-target-list">
             {team.profileAnalytics.rosterFit.targets.map(p => <div className="trade-target" key={p.teamId + "-" + p.playerId}>
-              <div><strong>{p.player}</strong><span>{p.team} · {p.position}</span></div>
+              <div><strong>{p.player}</strong><span>{p.team} · {p.position}</span><span>Their weaknesses: {p.otherNeeds?.length ? p.otherNeeds.map(x => x.position).join(" / ") : "No obvious positional weakness"}</span></div>
               <b>+{money(p.boost)} pts</b>
-              <small>{p.startRate}% started · {p.winsAdded} win{p.winsAdded === 1 ? "" : "s"} added</small>
-              <em>Optimal lineup improvement · {p.winsAdded} win{p.winsAdded === 1 ? "" : "s"} added</em>
+              <small>{p.startRate}% started · {(p.winsAdded ?? 0)} win{(p.winsAdded ?? 0) === 1 ? "" : "s"} added</small>
+              <em>Optimal lineup improvement · {(p.winsAdded ?? 0)} total wins added ({p.h2hWinsAdded ?? 0} H2H + {p.medianWinsAdded ?? 0} median)</em>
             </div>)}
           </div>
         </> : null}
