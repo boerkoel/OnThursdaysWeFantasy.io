@@ -1182,6 +1182,7 @@ await writeJson("data/current/teams.json",{season:settings.seasonId,currentWeek,
     weeklyResults:completed.filter(m=>m.homeTeamId===t.id||m.awayTeamId===t.id).map(m=>({week:m.week,opponentId:m.homeTeamId===t.id?m.awayTeamId:m.homeTeamId,opponent:name(m.homeTeamId===t.id?m.awayTeamId:m.homeTeamId),score:m.homeTeamId===t.id?m.homeScore:m.awayScore,opponentScore:m.homeTeamId===t.id?m.awayScore:m.homeScore,result:(m.homeTeamId===t.id?m.winner==="HOME":m.winner==="AWAY")?"W":"L"})),
     playerAwards:playerAwardsByTeam.get(t.id)||null,
     startSit,
+    powerIndex,
     profileAnalytics:{
       optimalLineup:startSit ? {actualPoints:startSit.actualPoints,optimalPoints:startSit.optimalPoints,pointsLeft:startSit.pointsLeft,efficiency:startSit.score} : null,
       rosterFit:tradeFitByTeam.get(Number(t.id))||null,
