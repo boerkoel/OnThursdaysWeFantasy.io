@@ -52,7 +52,7 @@ function TeamCards({ teams }) {
       {team.playerAwards && (<div className="profile-awards">
         <div className="profile-awards-heading"><span className="section-kicker">PLAYER AWARDS</span><strong>Season So Far</strong></div>
         <div className="profile-award-grid">
-          {team.playerAwards.mvp ? <div className="profile-award"><span>🏆</span><div><small>MVP</small><strong>{team.playerAwards.mvp.player}</strong><em>{money(team.playerAwards.mvp.points)} pts · #{team.playerAwards.mvp.seasonRank} overall</em></div></div> : null}
+          {team.playerAwards.mvp ? <div className="profile-award"><span>🏆</span><div><small>MVP</small><strong>{team.playerAwards.mvp.player}</strong><em>{money(team.playerAwards.mvp.points)} starter pts · #{team.playerAwards.mvp.seasonRank} on team</em></div></div> : null}
           {team.playerAwards.bestDraftValue ? <div className="profile-award"><span>💰</span><div><small>BEST DRAFT VALUE</small><strong>{team.playerAwards.bestDraftValue.player}</strong><em>Pick #{team.playerAwards.bestDraftValue.draftPick} · +{team.playerAwards.bestDraftValue.valueGap} value spots</em></div></div> : null}
           {team.playerAwards.worstDraftValue ? <div className="profile-award"><span>📉</span><div><small>WORST DRAFT VALUE</small><strong>{team.playerAwards.worstDraftValue.player}</strong><em>Pick #{team.playerAwards.worstDraftValue.draftPick} · {team.playerAwards.worstDraftValue.valueGap} value spots</em></div></div> : null}
           {team.playerAwards.boomMachine ? <div className="profile-award"><span>💥</span><div><small>BOOM MACHINE</small><strong>{team.playerAwards.boomMachine.player}</strong><em>{money(team.playerAwards.boomMachine.score)} pts · Week {team.playerAwards.boomMachine.week}</em></div></div> : null}
