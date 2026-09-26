@@ -36,7 +36,7 @@ async function fetchView(view, scoringPeriodId = null) {
 
 
 async function fetchFantasyProsRosPpr() {
-  const url = "https://www.fantasypros.com/nfl/notes/ros-flex.php?type=PPR";
+  const url = "https://www.fantasypros.com/nfl/rankings/?scoring=PPR&type=ros";
   try {
     const response = await fetch(url, {
       headers: {
@@ -59,7 +59,7 @@ async function fetchFantasyProsRosPpr() {
       .trim();
 
     const rankings = [];
-    const pattern = /\|\s*(\d{1,3})\.\s*(.+?)\s+(QB|RB|WR|TE|K|DST)\s*-\s*([A-Z]{2})/g;
+    const pattern = /(?:^|\|)\s*(\d{1,3})\s*\|\s*([^|]+?)\s*\((QB|RB|WR|TE|K|DST)\s*-\s*([A-Z]{2})\)/g;
     for (const match of text.matchAll(pattern)) {
       const rank = Number(match[1]);
       const name = match[2].trim();
