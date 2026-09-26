@@ -249,7 +249,7 @@ function App() {
 
       <section id="power-index" className="section">
         <div className="section-heading"><div><span className="section-kicker">ROSTER STRENGTH</span><h2>Power Index</h2></div><span className="record-count">100 = LEAGUE AVERAGE</span></div>
-        <p className="median-note">ESPN weekly projections measure the strength of each roster's optimal starters and next-up depth. Overall is weighted 75% starters and 25% depth.</p>
+        <p className="median-note">Based only on completed weeks. Each week's optimal starters and next-up depth are averaged across the season; overall is weighted 75% starters and 25% depth.</p>
         <div className="power-index-table">
           {[...teams].map(([teamId, team]) => ({teamId, team, power:teamsData.find(t => Number(t.id) === Number(teamId))?.powerIndex})).filter(x => x.power).sort((a,b)=>b.power.overall-a.power.overall).map((row,i) =>
             <article className="power-index-row" key={row.teamId}>
