@@ -272,7 +272,7 @@ function App() {
             <details className="power-index-view" key={mode} open={mode==="season"}>
               <summary><span><b>{label}</b><small>{note}</small></span><em>Overall · Starters · Depth · Positions</em></summary>
               <div className="power-index-table">
-                {teams.map(team => ({team,power:team.powerIndex?.[mode]})).filter(x=>x.power).sort((a,b)=>(b.power.overall||0)-(a.power.overall||0)).map((row,i) =>
+                {(teamsData.teams || []).map(team => ({team,power:team.powerIndex?.[mode]})).filter(x=>x.power).sort((a,b)=>(b.power.overall||0)-(a.power.overall||0)).map((row,i) =>
                   <article className="power-index-row" key={row.team.id}>
                     <span className="power-rank">{i+1}</span>
                     <span className="power-team"><TeamLogo src={teamLogos[row.team.id]} />{row.team.name}</span>
