@@ -249,17 +249,24 @@ function App() {
 
       <section id="power-index" className="section">
         <div className="section-heading"><div><span className="section-kicker">ROSTER STRENGTH</span><h2>Power Index</h2></div><span className="record-count">100 = LEAGUE AVERAGE</span></div>
-        <p className="median-note">Based only on completed weeks. Each week's optimal starters and next-up depth are averaged across the season; overall is weighted 75% starters and 25% depth.</p>
-        <div className="power-index-table">
-          {[...teams].map(([teamId, team]) => ({teamId, team, power:teamsData.find(t => Number(t.id) === Number(teamId))?.powerIndex})).filter(x => x.power).sort((a,b)=>b.power.overall-a.power.overall).map((row,i) =>
-            <article className="power-index-row" key={row.teamId}>
-              <span className="power-rank">{i+1}</span>
-              <span className="power-team"><TeamLogo src={teamLogos[row.teamId]} />{row.team.name}</span>
-              <strong className="power-overall">{row.power.overall}</strong>
-              <span><small>START</small><b>{row.power.starterIndex}</b></span>
-              <span><small>DEPTH</small><b>{row.power.depthIndex}</b></span>
-              <div className="power-positions">{["QB","RB","WR","TE","K","DST"].map(pos => <span key={pos}><small>{pos}</small><b>{row.power.positions[pos]?.starter ?? "—"}</b><em>{row.power.positions[pos]?.depth ?? "—"}</em></span>)}</div>
-            </article>
+        <p className="median-note">Three views of roster strength: completed-season performance, current-week projections, and FantasyPros rest-of-season rankings. Each uses 75% starter strength and 25% depth.</p>
+        <div className="power-index-views">
+          {[["season","SEASON TO DATE","Completed weeks only"],["thisWeek","THIS WEEK","ESPN projections"],["ros","REST OF SEASON","FantasyPros ROS"]].map(([mode,label,note]) =>
+            <details className="power-index-view" key={mode} open={mode==="season"}>
+              <summary><span><b>{label}</b><small>{note}</small></span><em>Overall · Starters · Depth · Positions</em></summary>
+              <div className="power-index-table">
+                {teams.map(team => ({team,power:team.powerIndex?.[mode]})).filter(x=>x.power).sort((a,b)=>(b.power.overall||0)-(a.power.overall||0)).map((row,i) =>
+                  <article className="power-index-row" key={row.team.id}>
+                    <span className="power-rank">{i+1}</span>
+                    <span className="power-team"><TeamLogo src={teamLogos[row.team.id]} />{row.team.name}</span>
+                    <strong className="power-overall">{row.power.overall ?? "—"}</strong>
+                    <span><small>START</small><b>{row.power.starterIndex ?? "—"}</b></span>
+                    <span><small>DEPTH</small><b>{row.power.depthIndex ?? "—"}</b></span>
+                    <div className="power-positions">{["QB","RB","WR","TE","K","DST"].map(pos => <span key={pos}><small>{pos}</small><b>{row.power.positions?.[pos]?.starter ?? "—"}</b><em>{row.power.positions?.[pos]?.depth ?? "—"}</em></span>)}</div>
+                  </article>
+                )}
+              </div>
+            </details>
           )}
         </div>
         <div className="power-index-legend"><span><b>Overall</b> 75% starter strength + 25% depth</span><span><b>Position</b> starter index / depth index</span><span><b>100</b> league average</span></div>
