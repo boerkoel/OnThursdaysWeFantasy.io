@@ -1210,12 +1210,10 @@ for (let i = 0; i < teamIdsForTrades.length; i++) {
         const impactB = swapOptimalImpact(teamBId, playerB.playerId, incomingForB);
         if (!impactA.weeksEvaluated || !impactB.weeksEvaluated) continue;
 
-        const meaningfulA = impactA.boost > 0 &&
-          impactA.winsAdded >= 0 &&
-          (impactA.winsAdded >= 1 || impactA.boost >= 5);
-        const meaningfulB = impactB.boost > 0 &&
-          impactB.winsAdded >= 0 &&
-          (impactB.winsAdded >= 1 || impactB.boost >= 5);
+        // A true win-win trade must add at least one net win to both teams.
+        // Lineup-point gains alone are not enough to qualify.
+        const meaningfulA = impactA.winsAdded >= 1;
+        const meaningfulB = impactB.winsAdded >= 1;
         if (!meaningfulA || !meaningfulB) continue;
 
         trades.push({
