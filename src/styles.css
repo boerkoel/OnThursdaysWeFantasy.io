@@ -356,3 +356,22 @@
 .power-index-view summary small{color:#777a72;font-size:9px}
 .power-index-view summary em{font-style:normal;color:#666960;font-size:8px;text-transform:uppercase;letter-spacing:.08em}
 .power-index-view .power-index-table{padding:0 8px 8px}
+
+.profile-roster-fit{margin-top:18px;padding-top:16px;border-top:1px solid #292c27}
+.profile-roster-fit-heading,.trade-section-heading{display:flex;align-items:center;gap:8px}
+.profile-roster-fit-heading{justify-content:space-between}
+.profile-roster-fit-heading strong{font-size:12px}
+.position-fit-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.position-fit-grid>div{padding:10px;border:1px solid #292c27;border-radius:10px;background:#ffffff03}
+.position-fit-grid>div>small,.trade-section-heading small{display:block;color:#666960;font-size:8px;font-weight:900;letter-spacing:.08em}
+.position-fit-list{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.position-fit{display:flex;align-items:center;gap:5px;padding:5px 7px;border-radius:7px;background:#ffffff05}
+.position-fit b{font-size:9px}.position-fit strong{font-size:10px}.position-fit.strength strong{color:#c9d99d}.position-fit.weakness strong{color:#d9a7a0}
+.profile-fit-note{margin:7px 0 0;color:#666960;font-size:8px}
+.trade-section{margin-top:12px;padding-top:11px;border-top:1px solid #242721}
+.trade-section-heading span{font-size:16px}.trade-section-heading em{display:block;margin-top:2px;color:#666960;font-size:8px;font-style:normal}
+.trade-partner-list,.trade-target-list{display:flex;flex-direction:column;gap:5px;margin-top:8px}
+.trade-partner,.trade-target{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 9px;border:1px solid #292c27;border-radius:8px;background:#ffffff03}
+.trade-partner strong{font-size:10px}.trade-partner span{color:#777a72;font-size:8px;text-align:right}
+.trade-target>div{display:flex;flex-direction:column;min-width:0}.trade-target strong{font-size:10px}.trade-target span{color:#777a72;font-size:8px;margin-top:2px}.trade-target>b{font-size:11px;margin-left:auto}.trade-target>small{color:#666960;font-size:7px}.trade-target>em{font-style:normal;color:#777a72;font-size:8px}
+@media(max-width:520px){.position-fit-grid{grid-template-columns:1fr}.trade-partner{align-items:flex-start;flex-direction:column}.trade-partner span{text-align:left}.trade-target{gap:6px}}
