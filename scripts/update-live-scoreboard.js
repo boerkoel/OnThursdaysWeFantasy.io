@@ -93,11 +93,26 @@ for (const event of [...(nflToday?.events || []), ...(nflTomorrow?.events || [])
   const competition = event.competitions?.[0];
   if (!competition) continue;
   const status = competition.status?.type;
+  const period = Number(status?.period || 0);
+  const clock = String(status?.displayClock || "");
+  const clockMatch = clock.match(/^(\\d+):(\\d+)$/);
+  const clockMinutes = clockMatch ? Number(clockMatch[1]) + Number(clockMatch[2]) / 60 : 0;
+  const elapsedMinutes = status?.state === "pre"
+    ? 0
+    : status?.state === "post"
+      ? 60
+      : Math.max(0, Math.min(60, (Math.max(1, period) - 1) * 15 + (15 - clockMinutes)));
+  const remainingFraction = status?.state === "pre"
+    ? 1
+    : status?.state === "post"
+      ? 0
+      : Math.max(0.05, Math.min(1, (60 - elapsedMinutes) / 60));
   for (const competitor of competition.competitors || []) {
     const teamId = Number(competitor.team?.id);
     if (Number.isFinite(teamId)) nflGamesByTeam.set(teamId, {
       started: Boolean(status?.state && status.state !== "pre"),
-      completed: status?.completed === true || status?.state === "post"
+      completed: status?.completed === true || status?.state === "post",
+      remainingFraction
     });
   }
 }
@@ -142,7 +157,8 @@ for (const teamId of teams.keys()) {
     if (game?.completed) {
       projectedFinal += actual;
     } else if (game?.started) {
-      projectedFinal += actual + Math.max(0, fullProjection - actual);
+      const remaining = Math.max(0, fullProjection - actual) * Number(game.remainingFraction ?? 0.5);
+      projectedFinal += actual + remaining;
     } else {
       projectedFinal += Math.max(actual, fullProjection);
     }
