@@ -67,6 +67,12 @@ try {
     madeExtraPoints: 86, missedExtraPoints: 88
   };
 
+  const playerMapByProTeam = new Map();
+  for (const player of playerMap.values()) {
+    if (!playerMapByProTeam.has(player.proTeamId)) playerMapByProTeam.set(player.proTeamId, []);
+    playerMapByProTeam.get(player.proTeamId).push(player);
+  }
+
   const nflScoreboard = await fetchJson(
     `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?week=${currentWeek}&seasontype=2&season=${season}`
   );
@@ -81,12 +87,6 @@ try {
   async function getPlays(eventId) {
     const data = await fetchJson(`https://cdn.espn.com/core/nfl/playbyplay?xhr=1&gameId=${eventId}`);
     return data?.gamepackageJSON?.plays || data?.plays || [];
-  }
-
-  const playerMapByProTeam = new Map();
-  for (const player of playerMap.values()) {
-    if (!playerMapByProTeam.has(player.proTeamId)) playerMapByProTeam.set(player.proTeamId, []);
-    playerMapByProTeam.get(player.proTeamId).push(player);
   }
 
   const relevant = [];
