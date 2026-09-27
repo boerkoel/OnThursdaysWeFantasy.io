@@ -306,6 +306,47 @@ for (const score of currentScores) {
   if (probabilities) Object.assign(score, probabilities);
 }
 
+function buildKeyPlays() {
+  const plays = await readJson("data/current/live-plays.json").catch(() => ({ plays: [] }));
+  const previousScores = new Map((previousScoreboard?.week === currentWeek ? (previousScoreboard.scores || []) : []).map(s => [s.teamId, s]));
+  const cutoff = previousScoreboard?.lastUpdated ? new Date(previousScoreboard.lastUpdated).getTime() : 0;
+  const candidates = [];
+
+  for (const matchup of currentWeekMatchups) {
+    if (matchup.completed) continue;
+    const teamsInMatchup = [matchup.homeTeamId, matchup.awayTeamId];
+    for (const teamId of teamsInMatchup) {
+      const current = currentScores.find(s => Number(s.teamId) === Number(teamId));
+      const previous = previousScores.get(teamId);
+      if (!current || !previous) continue;
+      const delta = Number(current.winProbability) - Number(previous.winProbability);
+      if (!Number.isFinite(delta) || Math.abs(delta) < 8) continue;
+
+      const matchupPlays = (plays.plays || [])
+        .filter(p => Number(p.matchupId) === Number(matchup.id) && Number(p.fantasyTeamId) === Number(teamId))
+        .filter(p => !cutoff || !p.wallclock || new Date(p.wallclock).getTime() >= cutoff)
+        .sort((a,b) => Math.abs(Number(b.points)) - Math.abs(Number(a.points)));
+
+      const play = matchupPlays[0];
+      if (!play) continue;
+
+      candidates.push({
+        matchupId: matchup.id,
+        teamId,
+        delta: round(delta),
+        points: Number(play.points),
+        player: play.player,
+        text: play.text,
+        wallclock: play.wallclock || null
+      });
+    }
+  }
+
+  return candidates
+    .sort((a,b) => Math.abs(b.delta) - Math.abs(a.delta))
+    .slice(0, 3);
+}
+
 function buildMarqueeStories() {
   const stories = [];
   const previousScores = new Map((previousScoreboard?.week === currentWeek ? (previousScoreboard.scores || []) : []).map(s => [s.teamId, s]));
