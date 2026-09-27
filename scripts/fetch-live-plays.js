@@ -150,32 +150,54 @@ try {
   console.log(`NFL public scoreboard: ${(nflScoreboard.events || []).length} games, ${relevantGames.length} relevant games`);
 
   async function getPlays(eventId) {
+    // The CDN game package is the fresher source for live PBP. ESPN's
+    // summary endpoint can lag behind during active games, sometimes returning
+    // an old single-game snapshot even though the game package has newer plays.
+    try {
+      const data = await fetchJson(`https://cdn.espn.com/core/nfl/game?xhr=1&gameId=${eventId}`);
+      const game = data?.gamepackageJSON || data || {};
+      const drivePlays = [
+        ...(game?.drives?.previous || []).flatMap(drive => drive?.plays || []),
+        ...(game?.drives?.current?.plays || [])
+      ];
+      if (drivePlays.length) return drivePlays;
+      if (Array.isArray(game?.plays) && game.plays.length) return game.plays;
+    } catch (error) {
+      console.warn(`ESPN CDN play feed failed for ${eventId}: ${error.message}`);
+    }
+
     try {
       const summary = await fetchJson(
         `https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=${eventId}`
       );
-      const summaryPlays = summary?.plays || summary?.gameInfo?.plays || [];
-      if (summaryPlays.length) return summaryPlays;
+      return summary?.plays || summary?.gameInfo?.plays || [];
     } catch (error) {
       console.warn(`ESPN summary play feed failed for ${eventId}: ${error.message}`);
+      return [];
     }
-
-    const data = await fetchJson(`https://cdn.espn.com/core/nfl/game?xhr=1&gameId=${eventId}`);
-    const game = data?.gamepackageJSON || data || {};
-    const drivePlays = [
-      ...(game?.drives?.previous || []).flatMap(drive => drive?.plays || []),
-      ...(game?.drives?.current?.plays || [])
-    ];
-    if (drivePlays.length) return drivePlays;
-    return game?.plays || [];
   }
 
   function playerNameMatches(text, player) {
     const normalized = text.toLowerCase();
     const full = player.player.toLowerCase();
     const parts = full.split(/\s+/);
+    if (normalized.includes(full)) return true;
+    if (parts.length >= 2 && normalized.includes(parts.slice(-2).join(" "))) return true;
+
+    // Most ESPN PBP descriptions use the compact "J.Allen" / "A.St. Brown"
+    // form rather than the player's full name. Match first initial + last name
+    // so non-Lions games are attributed too.
+    const firstInitial = parts[0]?.[0];
+    const lastName = parts[parts.length - 1];
+    if (!firstInitial || !lastName) return false;
+    const escapedLast = lastName.replace(/[.*+?^$\\{}()|[\]\\]/g, "\\  function playerNameMatches(text, player) {
+    const normalized = text.toLowerCase();
+    const full = player.player.toLowerCase();
+    const parts = full.split(/\s+/);
     return normalized.includes(full) ||
       (parts.length >= 2 && normalized.includes(parts.slice(-2).join(" ")));
+  }");
+    return new RegExp("\\b" + firstInitial + "\\.?\\s*" + escapedLast + "\\b", "i").test(text);
   }
 
   function isPasserInPlay(text, player) {
