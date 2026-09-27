@@ -83,44 +83,111 @@ for (const g of allLiveSchedules) {
   }
 }
 
-// ESPN can expose totalProjectedPointsLive directly. When it does not,
-// calculate the ESPN weekly projection by summing active roster players'
-// projected appliedTotal values (statSourceId 1).
+// Build a player-level remaining projection so a team does not keep
+// carrying a stale full-game projection after some of its players have
+// already finished or after games are already underway.
 const espnProjectionByTeam = new Map();
 
-const projectionSchedules = [
-  ...(scoreboardData.schedule || []),
-  ...(liveScoringData.schedule || []),
-  ...(boxscoreSchedule || [])
-].filter(g => Number(g.matchupPeriodId) === currentWeek);
+async function fetchNflSchedule(date) {
+  const dateString = date.toISOString().slice(0, 10).replace(/-/g, "");
+  const response = await fetch(
+    `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=${dateString}`,
+    { headers: { Accept: "application/json", "User-Agent": "OnThursdaysWeFantasy/1.0" } }
+  );
+  if (!response.ok) return null;
+  return response.json();
+}
 
-for (const g of projectionSchedules) {
-  for (const side of [g.home, g.away]) {
-    if (!side?.teamId) continue;
+const nflNow = new Date();
+const [nflToday, nflTomorrow] = await Promise.all([
+  fetchNflSchedule(nflNow),
+  fetchNflSchedule(new Date(nflNow.getTime() + 86400000))
+]);
 
-    const liveProjection = Number(side.totalProjectedPointsLive);
-    if (Number.isFinite(liveProjection) && liveProjection > 0) {
-      espnProjectionByTeam.set(side.teamId, round(liveProjection));
+const nflGamesByTeam = new Map();
+for (const event of [...(nflToday?.events || []), ...(nflTomorrow?.events || [])]) {
+  const competition = event.competitions?.[0];
+  if (!competition) continue;
+  const status = competition.status?.type;
+  const period = Number(status?.period || 0);
+  const clock = String(status?.displayClock || "");
+  const clockMatch = clock.match(/^(\\d+):(\\d+)$/);
+  const clockMinutes = clockMatch ? Number(clockMatch[1]) + Number(clockMatch[2]) / 60 : 0;
+  const elapsedMinutes = status?.state === "pre"
+    ? 0
+    : status?.state === "post"
+      ? 60
+      : Math.max(0, Math.min(60, (Math.max(1, period) - 1) * 15 + (15 - clockMinutes)));
+  const remainingFraction = status?.state === "pre"
+    ? 1
+    : status?.state === "post"
+      ? 0
+      : Math.max(0.05, Math.min(1, (60 - elapsedMinutes) / 60));
+
+  for (const competitor of competition.competitors || []) {
+    const teamId = Number(competitor.team?.id);
+    if (Number.isFinite(teamId)) {
+      nflGamesByTeam.set(teamId, {
+        started: Boolean(status?.state && status.state !== "pre"),
+        completed: status?.completed === true || status?.state === "post",
+        remainingFraction
+      });
+    }
+  }
+}
+
+function weeklyPlayerProjection(player) {
+  const stats = player?.stats || [];
+  const projected = stats.find(s =>
+    Number(s.scoringPeriodId) === currentWeek &&
+    Number(s.statSourceId) === 1 &&
+    Number(s.statSplitTypeId) === 1
+  );
+  return Number(projected?.appliedTotal);
+}
+
+function rosterEntriesForTeam(teamId) {
+  const team = (rosterData.teams || []).find(t => Number(t.id) === Number(teamId));
+  return team?.roster?.entries || team?.rosterForCurrentScoringPeriod?.entries || [];
+}
+
+for (const teamId of teams.keys()) {
+  const entries = rosterEntriesForTeam(teamId)
+    .filter(entry => Number(entry.lineupSlotId) !== 20);
+  let projectedFinal = 0;
+  let hasProjection = false;
+
+  for (const entry of entries) {
+    const player = entry.playerPoolEntry?.player;
+    const actual = Number(entry.playerPoolEntry?.appliedStatTotal ?? 0);
+    const fullProjection = weeklyPlayerProjection(player);
+
+    if (!Number.isFinite(fullProjection)) {
+      projectedFinal += actual;
       continue;
     }
+    hasProjection = true;
 
-    const projection = (side.rosterForCurrentScoringPeriod?.entries || [])
-      .filter(entry => Number(entry.lineupSlotId) !== 20)
-      .reduce((sum, entry) => {
-        const stats = entry.playerPoolEntry?.player?.stats || [];
-        const weeklyProjection = stats.find(s =>
-          Number(s.scoringPeriodId) === currentWeek &&
-          Number(s.statSourceId) === 1 &&
-          Number(s.statSplitTypeId) === 1
-        );
-        return sum + Number(weeklyProjection?.appliedTotal ?? 0);
-      }, 0);
-
-    // Do not let a later ESPN response overwrite a valid projection
-    // with a weaker fallback from another view.
-    if (!espnProjectionByTeam.has(side.teamId) && projection > 0) {
-      espnProjectionByTeam.set(side.teamId, round(projection));
+    const game = nflGamesByTeam.get(Number(player?.proTeamId));
+    if (game?.completed) {
+      // The player's game is over: nothing remains to project.
+      projectedFinal += actual;
+    } else if (game?.started) {
+      // The player is in a game now. Project only the portion of the ESPN
+      // projection that plausibly remains, rather than carrying the full
+      // weekly projection forward.
+      const remainingFullGameProjection = Math.max(0, fullProjection - actual);
+      const remaining = remainingFullGameProjection * Number(game.remainingFraction ?? 0.5);
+      projectedFinal += actual + remaining;
+    } else {
+      // The player's game has not started: retain the full ESPN projection.
+      projectedFinal += Math.max(actual, fullProjection);
     }
+  }
+
+  if (hasProjection) {
+    const currentScore = liveByTeam.get(teamId) ?? 0;
+    espnProjectionByTeam.set(teamId, round(Math.max(currentScore, projectedFinal)));
   }
 }
 
