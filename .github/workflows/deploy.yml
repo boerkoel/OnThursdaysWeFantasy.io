@@ -4,11 +4,11 @@ on:
   push:
     branches:
       - main
+  # Update Live Data starts this workflow itself after pushing new data.
   workflow_dispatch:
   workflow_run:
     workflows:
       - Update ESPN data
-      - Update Live Data
     types:
       - completed
 
