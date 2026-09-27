@@ -58,10 +58,11 @@ async function fetchLiveBundle() {
   // Request the detailed views separately. ESPN has recently returned a
   // schedule shell when these views are combined, which contains matchup
   // IDs but omits the home/away objects and live projections.
-  const [liveScoring, boxscore, scoreboard] = await Promise.all([
+  const [liveScoring, boxscore, scoreboard, roster] = await Promise.all([
     fetchView("mLiveScoring"),
     fetchView("mBoxscore", true),
-    fetchView("mScoreboard")
+    fetchView("mScoreboard"),
+    fetchView("mRoster")
   ]);
 
   const sources = [liveScoring, boxscore, scoreboard];
@@ -72,15 +73,17 @@ async function fetchLiveBundle() {
     liveScoring: detailed,
     boxscore: detailed,
     scoreboard: detailed,
+    roster,
     mode
   };
 }
 
-const { liveScoring, boxscore, scoreboard, mode } = await fetchLiveBundle();
+const { liveScoring, boxscore, scoreboard, roster, mode } = await fetchLiveBundle();
 
 await writeFile("data/current/mLiveScoring.json", JSON.stringify(liveScoring, null, 2) + "\n");
 await writeFile("data/current/mBoxscore.json", JSON.stringify(boxscore, null, 2) + "\n");
 await writeFile("data/current/mScoreboard.json", JSON.stringify(scoreboard, null, 2) + "\n");
+await writeFile("data/current/mRoster.json", JSON.stringify(roster, null, 2) + "\n");
 
 const schedule = liveScoring?.schedule || boxscore?.schedule || scoreboard?.schedule || [];
 const detailedMatchups = schedule.filter(g => g?.home?.teamId && g?.away?.teamId).length;
