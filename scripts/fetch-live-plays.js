@@ -97,6 +97,7 @@ try {
         playerMap.set(Number(player.id), {
           playerId: Number(player.id),
           player: player.fullName || `${player.firstName || ""} ${player.lastName || ""}`.trim(),
+          positionId: Number(player.defaultPositionId || 0),
           proTeamId: Number(player.proTeamId),
           fantasyTeamId: Number(side.teamId),
           matchupId: matchupByTeam.get(Number(side.teamId)) || matchupId
@@ -217,6 +218,19 @@ try {
     const yards = Number.isFinite(Number(play.statYardage)) ? Number(play.statYardage) : yardageFromText(text);
     let points = 0;
 
+    // Kickers are often mentioned in the same PBP sentence as the actual
+    // touchdown scorer. Never let the touchdown parser credit the kicker.
+    // Handle extra points separately because the kicker is the scorer there.
+    if (Number(fantasyPlayer.positionId) === 5) {
+      if (/extra point is good/i.test(text)) {
+        return scoringRules.get(statIds.madeExtraPoints) || 0;
+      }
+      if (/extra point is (?:blocked|no good|missed)/i.test(text)) {
+        return scoringRules.get(statIds.missedExtraPoints) || 0;
+      }
+      return 0;
+    }
+
     const isPasser = isPasserInPlay(text, fantasyPlayer);
     const isPassCompletion =
       /pass complete|complete to|pass to .* for \d+ yards|\b\d+ yd pass from/i.test(text);
@@ -279,6 +293,12 @@ try {
     const plays = await getPlays(event.id);
     console.log(`NFL game ${event.id}: received ${plays.length} plays`);
 
+    const eventTeamIds = new Set(
+      (event.competitions?.[0]?.competitors || [])
+        .map(c => Number(c.id || c.team?.id))
+        .filter(Number.isFinite)
+    );
+
     for (const play of plays) {
       const text = String(play.shortText || play.text || "").trim();
       if (!text) continue;
@@ -313,6 +333,10 @@ try {
       // calculate the fantasy impact from the same description.
       if (!matched.length) {
         for (const fantasyPlayer of playerMap.values()) {
+          // Only match players who are actually on one of the NFL teams in
+          // this game. This prevents identical initials/names from unrelated
+          // fantasy players from being credited with the same play.
+          if (!eventTeamIds.has(Number(fantasyPlayer.proTeamId))) continue;
           if (!playerNameMatches(text, fantasyPlayer)) continue;
           const fantasyPoints = fantasyPointsFromText(text, fantasyPlayer, play);
           if (fantasyPoints !== 0) matched.push({ fantasyPlayer, fantasyPoints });
