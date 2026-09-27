@@ -54,6 +54,12 @@ jobs:
           ESPN_S2: ${{ secrets.ESPN_S2 }}
           ESPN_SWID: ${{ secrets.ESPN_SWID }}
         run: node scripts/update-live-scoreboard.js
+      - name: Fetch fantasy-relevant live plays
+        if: steps.window.outputs.active == 'true' || inputs.force_update == true || github.event_name == 'workflow_run'
+        continue-on-error: true
+        env:
+          ESPN_SEASON: "2026"
+        run: node scripts/fetch-live-plays.js
       - name: Recalculate live stories
         if: steps.window.outputs.active == 'true' || inputs.force_update == true || github.event_name == 'workflow_run'
         env:
@@ -64,6 +70,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/current/mLiveScoring.json data/current/mBoxscore.json data/current/mScoreboard.json data/current/scoreboard.json data/current/marquee.json
+          git add data/current/mLiveScoring.json data/current/mBoxscore.json data/current/mScoreboard.json data/current/scoreboard.json data/current/marquee.json data/current/live-plays.json
           git diff --cached --quiet || git commit -m "Update live fantasy scores"
           git push
