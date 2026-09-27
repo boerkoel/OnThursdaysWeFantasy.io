@@ -286,7 +286,7 @@ function App() {
       <section className="hero-strip">
         <div className="hero-main"><span className="section-kicker">2026 SEASON</span><h2>Week {scoreboard.week}</h2><p>{preGame ? "The Week is set. Scores will appear here once the games begin." : "The league is live. Here’s how everyone is doing."}</p></div>
         <div className="hero-stat"><strong>{scoreboard.projectedMedian != null ? money(scoreboard.projectedMedian) : "—"}</strong><span>Projected median</span></div>
-      </section
+      </section>
 
       {marqueeStories.length ? <section className="league-marquee" aria-label="League Wire">
         <div className="marquee-label"><span>⚡</span><strong>LEAGUE WIRE</strong><small>LIVE</small></div>
