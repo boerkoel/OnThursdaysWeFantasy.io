@@ -138,36 +138,34 @@ for (const teamId of teams.keys()) {
   const entries = rosterEntriesForTeam(teamId)
     .filter(entry => Number(entry.lineupSlotId) !== 20);
 
-  let projectedFinal = 0;
+  // Store only points still expected from the lineup. The live team score
+  // is added separately, so already-scored points are never counted twice.
+  let remainingProjection = 0;
   let hasProjection = false;
 
   for (const entry of entries) {
     const player = entry.playerPoolEntry?.player;
     const actual = Number(entry.playerPoolEntry?.appliedStatTotal ?? 0);
     const fullProjection = weeklyProjection(player);
-    if (!Number.isFinite(fullProjection)) {
-      projectedFinal += actual;
-      continue;
-    }
+    if (!Number.isFinite(fullProjection)) continue;
 
     hasProjection = true;
-    const proTeamId = Number(player?.proTeamId);
-    const game = nflGamesByTeam.get(proTeamId);
+    const game = nflGamesByTeam.get(Number(player?.proTeamId));
 
     if (game?.completed) {
-      projectedFinal += actual;
+      continue;
     } else if (game?.started) {
-      const remaining = Math.max(0, fullProjection - actual) * Number(game.remainingFraction ?? 0.5);
-      projectedFinal += actual + remaining;
+      remainingProjection += Math.max(0, fullProjection - actual) *
+        Number(game.remainingFraction ?? 0.5);
     } else {
-      projectedFinal += Math.max(actual, fullProjection);
+      remainingProjection += Math.max(0, fullProjection - actual);
     }
   }
 
   if (hasProjection) {
     const currentScore = liveByTeam.get(teamId) ?? 0;
     // Never allow the live projection to fall below points already scored.
-    espnProjectionByTeam.set(teamId, round(Math.max(currentScore, projectedFinal)));
+    espnProjectionByTeam.set(teamId, round(currentScore + remainingProjection));
     projectionTeamDetails.set(teamId, { players: entries.length });
   }
 }
