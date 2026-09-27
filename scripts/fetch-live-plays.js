@@ -178,6 +178,19 @@ try {
       (parts.length >= 2 && normalized.includes(parts.slice(-2).join(" ")));
   }
 
+  function isPasserInPlay(text, player) {
+    const lastName = player.player.trim().split(/\s+/).pop();
+    if (!lastName) return false;
+    const escaped = lastName.replace(/[.*+?^$\\{}()|[\]]/g, "\\  function playerNameMatches(text, player) {
+    const normalized = text.toLowerCase();
+    const full = player.player.toLowerCase();
+    const parts = full.split(/\s+/);
+    return normalized.includes(full) ||
+      (parts.length >= 2 && normalized.includes(parts.slice(-2).join(" ")));
+  }");
+    return new RegExp("\\b[A-Z]\\.?\\s*" + escaped + "\\s+(?:pass|scramble|kneels?)\\b", "i").test(text);
+  }
+
   function yardageFromText(text) {
     const patterns = [
       /for (-?\d+) yards?/i,
@@ -196,12 +209,19 @@ try {
     const yards = Number.isFinite(Number(play.statYardage)) ? Number(play.statYardage) : yardageFromText(text);
     let points = 0;
 
+    const isPasser = isPasserInPlay(text, fantasyPlayer);
     const isPassCompletion =
       /pass complete|complete to|pass to .* for \d+ yards|\b\d+ yd pass from/i.test(text);
     const isRush =
       /rush|rushed|run for|running play|left end|right end|up the middle|scrambles/i.test(text);
     const isReception =
-      isPassCompletion && (lower.includes(fantasyPlayer.player.toLowerCase()) || /catch|complete to|pass to/i.test(text));
+      !isPasser &&
+      isPassCompletion &&
+      (lower.includes(fantasyPlayer.player.toLowerCase()) || /catch|complete to|pass to/i.test(text));
+
+    if (isPasser && isPassCompletion && Number.isFinite(yards)) {
+      points += yards * (scoringRules.get(statIds.passingYards) || 0);
+    }
 
     if (isRush && !isPassCompletion && Number.isFinite(yards)) {
       points += yards * (scoringRules.get(statIds.rushingYards) || 0);
@@ -213,7 +233,9 @@ try {
     }
 
     if (/touchdown/i.test(text)) {
-      if (isPassCompletion || /receiv|caught|catch/i.test(text)) {
+      if (isPasser) {
+        points += scoringRules.get(statIds.passingTouchdowns) || 0;
+      } else if (isPassCompletion || /receiv|caught|catch/i.test(text)) {
         points += scoringRules.get(statIds.receivingTouchdowns) || 0;
       } else if (isRush || /rushing|rush/i.test(text)) {
         points += scoringRules.get(statIds.rushingTouchdowns) || 0;
@@ -316,7 +338,12 @@ try {
     }
   }
 
-  const plays = relevant
+  const deduped = new Map();
+  for (const play of relevant) {
+    if (!deduped.has(play.id)) deduped.set(play.id, play);
+  }
+
+  const plays = [...deduped.values()]
     .sort((a, b) => new Date(b.wallclock || 0) - new Date(a.wallclock || 0))
     .slice(0, 60);
 
