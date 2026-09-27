@@ -10,13 +10,15 @@ async function fetchSchedule(date) {
   return response.json();
 }
 
+// ESPN's ?dates= filter uses US Eastern dates, while toISOString() is UTC.
+// Primetime kickoffs (after 00:00 UTC) belong to the previous Eastern date,
+// so include yesterday to keep TNF/SNF/MNF inside the window.
 const now = new Date();
-const [today, tomorrow] = await Promise.all([
-  fetchSchedule(now),
-  fetchSchedule(new Date(now.getTime() + 86400000))
-]);
+const schedules = await Promise.all(
+  [-1, 0, 1].map(offset => fetchSchedule(new Date(now.getTime() + offset * 86400000)))
+);
 
-const kickoffs = [...(today.events || []), ...(tomorrow.events || [])]
+const kickoffs = schedules.flatMap(schedule => schedule.events || [])
   .map(event => new Date(event.date))
   .filter(date => Number.isFinite(date.getTime()));
 

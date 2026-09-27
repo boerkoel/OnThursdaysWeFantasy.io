@@ -78,55 +78,38 @@ for (const g of [...liveSchedule, ...boxscoreSchedule]) {
   for (const side of [g.home, g.away]) {
     if (!side?.teamId) continue;
     const candidates = [side.totalProjectedPointsLive, side.projectedScore, side.projectedTotal, side.projection, side.totalPointsProjected];
-    const projection = candidates.map(Number).find(Number.isFinite);
-    if (Number.isFinite(projection)) espnTeamProjectionByTeam.set(Number(side.teamId), projection);
+    // Number(null) is 0, so require a positive value to count as a real projection.
+    const projection = candidates.map(Number).find(value => Number.isFinite(value) && value > 0);
+    if (projection != null) espnTeamProjectionByTeam.set(Number(side.teamId), projection);
   }
 }
 
 const espnProjectionByTeam = new Map();
 const projectionTeamDetails = new Map();
 
-async function fetchNflSchedule(date) {
-  const dateString = date.toISOString().slice(0, 10).replace(/-/g, "");
+// Fetch the whole NFL week (not today/tomorrow by date) so games that finished
+// earlier in the week, including Thursday and primetime games, are known to be
+// complete. Fantasy scoring periods line up with NFL regular-season weeks.
+async function fetchNflWeek(week) {
   const response = await fetch(
-    `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=${dateString}`,
+    `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?week=${week}&seasontype=2&season=${season}`,
     { headers: { Accept: "application/json", "User-Agent": "OnThursdaysWeFantasy/1.0" } }
   );
   if (!response.ok) return null;
   return response.json();
 }
 
-const now = new Date();
-const [nflToday, nflTomorrow] = await Promise.all([
-  fetchNflSchedule(now),
-  fetchNflSchedule(new Date(now.getTime() + 86400000))
-]);
+const nflWeek = await fetchNflWeek(currentWeek);
 
 const nflGamesByTeam = new Map();
-for (const event of [...(nflToday?.events || []), ...(nflTomorrow?.events || [])]) {
+for (const event of nflWeek?.events || []) {
   const competition = event.competitions?.[0];
   if (!competition) continue;
   const status = competition.status?.type;
-  const period = Number(status?.period || 0);
-  const clock = String(status?.displayClock || "");
-  const clockMatch = clock.match(/^(\d+):(\d+)$/);
-  const clockMinutes = clockMatch ? Number(clockMatch[1]) + Number(clockMatch[2]) / 60 : 0;
-  const elapsedMinutes = status?.state === "pre"
-    ? 0
-    : status?.state === "post"
-      ? 60
-      : Math.max(0, Math.min(60, (Math.max(1, period) - 1) * 15 + (15 - clockMinutes)));
-  const remainingFraction = status?.state === "pre"
-    ? 1
-    : status?.state === "post"
-      ? 0
-      : Math.max(0.05, Math.min(1, (60 - elapsedMinutes) / 60));
   for (const competitor of competition.competitors || []) {
     const teamId = Number(competitor.team?.id);
     if (Number.isFinite(teamId)) nflGamesByTeam.set(teamId, {
-      started: Boolean(status?.state && status.state !== "pre"),
-      completed: status?.completed === true || status?.state === "post",
-      remainingFraction
+      completed: status?.completed === true || status?.state === "post"
     });
   }
 }
@@ -272,8 +255,10 @@ for (let sim = 0; sim < SIMULATIONS; sim++) {
   const simulatedFinals = new Map();
 
   for (const team of probabilityTeams) {
-    const finalScore = team.currentScore +
-      Math.max(0, team.remainingProjection + team.sd * normalSample(rng));
+    // A team with nothing left to play is locked at its current score.
+    const finalScore = team.remainingProjection > 0
+      ? team.currentScore + Math.max(0, team.remainingProjection + team.sd * normalSample(rng))
+      : team.currentScore;
     simulatedFinals.set(team.teamId, finalScore);
 
     simulationSums.set(team.teamId, simulationSums.get(team.teamId) + finalScore);
@@ -365,6 +350,14 @@ for (const score of currentScores) {
     : null;
 }
 
+// "Near median" zone: half a standard deviation of the displayed projections.
+const displayedProjections = currentScores.map(s => Number(s.projectionAverage)).filter(Number.isFinite);
+const projectionMean = displayedProjections.reduce((sum, value) => sum + value, 0) / (displayedProjections.length || 1);
+const projectionSpread = displayedProjections.length
+  ? Math.sqrt(displayedProjections.reduce((sum, value) => sum + (value - projectionMean) ** 2, 0) / displayedProjections.length)
+  : NaN;
+const medianCloseThreshold = Number.isFinite(projectionSpread) ? round(projectionSpread * 0.5) : 6;
+
 const currentProjectionSnapshot = {
   timestamp: new Date().toISOString(),
   week: currentWeek,
@@ -381,6 +374,7 @@ await writeFile("data/current/scoreboard.json", JSON.stringify({
   scores: currentScores,
   median,
   projectedMedian,
+  medianCloseThreshold,
   projectionSources: ["ESPN live team projections, with ESPN player projections as fallback"],
   probabilityModel: "Monte Carlo simulations estimate final-score distributions, above/below projected-median odds, matchup win odds, and final-score standard deviation; ESPN projections remain the displayed projections",
   probabilitySimulations: SIMULATIONS,

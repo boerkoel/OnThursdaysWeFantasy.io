@@ -34,7 +34,18 @@ jobs:
           ESPN_S2: ${{ secrets.ESPN_S2 }}
           ESPN_SWID: ${{ secrets.ESPN_SWID }}
         run: node scripts/fetch-live.js
+      - name: Preserve previous scoreboard for live story detection
+        run: cp data/current/scoreboard.json /tmp/previous-scoreboard.json || true
+      - name: Update live scoreboard
+        env:
+          ESPN_SEASON: "2026"
+          ESPN_LEAGUE_ID: "998599827"
+          ESPN_S2: ${{ secrets.ESPN_S2 }}
+          ESPN_SWID: ${{ secrets.ESPN_SWID }}
+        run: node scripts/update-live-scoreboard.js
       - name: Calculate league stats
+        env:
+          PREVIOUS_SCOREBOARD_PATH: /tmp/previous-scoreboard.json
         run: node scripts/calculate-stats.js
       - name: Commit updated data
         run: |
@@ -44,7 +55,7 @@ jobs:
           git diff --cached --quiet || git commit -m "Update ESPN league data and stats"
           for attempt in 1 2 3; do
             git fetch origin main
-            git pull --rebase -X theirs origin main
+            git pull --rebase --autostash -X theirs origin main
             if git push origin HEAD:main; then
               exit 0
             fi

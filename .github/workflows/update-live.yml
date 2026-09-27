@@ -84,7 +84,7 @@ jobs:
           git diff --cached --quiet || git commit -m "Update live fantasy scores"
           for attempt in 1 2 3; do
             git fetch origin main
-            git pull --rebase -X theirs origin main
+            git pull --rebase --autostash -X theirs origin main
             if git push origin HEAD:main; then
               exit 0
             fi

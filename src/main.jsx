@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
-import scoreboard from "../data/current/scoreboard.json";
+import initialScoreboard from "../data/current/scoreboard.json";
+import metadata from "../data/current/metadata.json";
 import standingsData from "../data/current/standings.json";
 import awards from "../data/current/awards.json";
 import raffle from "../data/current/raffle.json";
@@ -12,6 +13,38 @@ import initialMarquee from "../data/current/marquee.json";
 import livePlays from "../data/current/live-plays.json";
 
 const money = (n) => Number(n).toFixed(2);
+
+// Live files published by vite.config.js; polled so the page stays current
+// between deploys without a full reload.
+const DATA_URL = import.meta.env.BASE_URL + "data/current/";
+
+async function fetchData(file) {
+  const response = await fetch(DATA_URL + file + "?ts=" + Date.now(), { cache: "no-store" });
+  if (!response.ok) throw new Error(`${file}: ${response.status}`);
+  return response.json();
+}
+
+function usePolledData(file, initial, intervalMs = 30000) {
+  const [data, setData] = useState(initial);
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const next = await fetchData(file);
+        if (!cancelled) setData(next);
+      } catch {
+        // Keep showing the last good snapshot.
+      }
+    };
+    load();
+    const timer = setInterval(load, intervalMs);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [file, intervalMs]);
+  return data;
+}
 
 const TeamLogo = ({ src, size = "sm" }) => src ? <img src={src} alt="" className={`inline-team-logo ${size}`} /> : null;
 
@@ -221,60 +254,22 @@ function TeamCards({ teams }) {
 }
 
 function App() {
+  const scoreboard = usePolledData("scoreboard.json", initialScoreboard);
   const scores = scoreboard.scores || [];
-  const median = scoreboard.median;
   const [scoreSort, setScoreSort] = useState("current");
-  const [marqueeData, setMarqueeData] = useState(initialMarquee);
+  const marqueeData = usePolledData("marquee.json", initialMarquee);
   const marqueeStories = marqueeData.stories || [];
   const [marqueeIndex, setMarqueeIndex] = useState(0);
+  const livePlayFeed = usePolledData("live-plays.json", livePlays);
 
+  // Standings, teams, awards, etc. are bundled and only change with the daily
+  // ESPN update, so reload the page when that update's timestamp changes.
   useEffect(() => {
-    let cancelled = false;
-
-    async function loadMarquee() {
-      try {
-        const response = await fetch("./data/current/marquee.json?ts=" + Date.now(), { cache: "no-store" });
-        if (!response.ok) return;
-        const next = await response.json();
-        if (!cancelled) {
-          setMarqueeData(next);
-          setMarqueeIndex(index => next.stories?.length ? index % next.stories.length : 0);
-        }
-      } catch {
-        // Keep showing the last good League Wire snapshot.
-      }
-    }
-
-    loadMarquee();
-    const timer = setInterval(loadMarquee, 30000);
-    return () => {
-      cancelled = true;
-      clearInterval(timer);
-    };
-  }, []);
-  const [livePlayFeed, setLivePlayFeed] = useState(livePlays);
-  useEffect(() => {
-    const loadLivePlays = async () => {
-      try {
-        const response = await fetch("./data/current/live-plays.json?ts=" + Date.now(), { cache: "no-store" });
-        if (!response.ok) return;
-        setLivePlayFeed(await response.json());
-      } catch {}
-    };
-    loadLivePlays();
-    const timer = setInterval(loadLivePlays, 30000);
-    return () => clearInterval(timer);
-  }, []);
-  useEffect(() => {
-    const loadedAt = scoreboard.lastUpdated || null;
     const checkForUpdates = async () => {
       try {
-        const response = await fetch("./data/current/metadata.json?ts=" + Date.now(), { cache: "no-store" });
-        if (!response.ok) return;
-        const latest = await response.json();
-        if (loadedAt && latest.fetchedAt && latest.fetchedAt !== loadedAt) {
-          const y = window.scrollY;
-          sessionStorage.setItem("preserveScrollY", String(y));
+        const latest = await fetchData("metadata.json");
+        if (metadata.fetchedAt && latest.fetchedAt && latest.fetchedAt !== metadata.fetchedAt) {
+          try { sessionStorage.setItem("preserveScrollY", String(window.scrollY)); } catch {}
           window.location.reload();
         }
       } catch {}
