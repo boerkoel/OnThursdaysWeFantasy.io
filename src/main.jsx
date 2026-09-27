@@ -261,9 +261,10 @@ function App() {
       .slice(0, 2)
       .map(s => s.teamId)
   );
+  const medianCloseThreshold = Number(scoreboard.medianCloseThreshold ?? 6);
   const projectedMedianEdgeTeams = new Set(
     projectedWithScores
-      .filter(s => Math.abs(Number(s.projectionAverage) - projectedMedian) <= 2.5)
+      .filter(s => Math.abs(Number(s.projectionAverage) - projectedMedian) <= medianCloseThreshold)
       .map(s => s.teamId)
   );
   closestToMedianTeams.forEach(teamId => projectedMedianEdgeTeams.add(teamId));
@@ -320,11 +321,11 @@ function App() {
           <button className={scoreSort === "projected" ? "active" : ""} onClick={() => setScoreSort("projected")}>PROJECTED SCORE</button>
         </div>
         {displayScores.map((s, i) => <React.Fragment key={s.teamId}>
-            {i === Math.floor(displayScores.length / 2) && <div className="median-line"><span>MEDIAN {preGame ? "—" : money(median)}</span><span>PROJECTED MEDIAN {scoreboard.projectedMedian != null ? money(scoreboard.projectedMedian) : "—"}</span></div>}
+            {i === Math.floor(displayScores.length / 2) && <div className="median-line"><span>PROJECTED MEDIAN {scoreboard.projectedMedian != null ? money(scoreboard.projectedMedian) : "—"}</span></div>}
             <div className={projectedMedianEdgeTeams.has(s.teamId) ? "score-row median-near" : "score-row"}><span className="rank">{i + 1}</span><span className="score-team"><TeamLogo src={teamLogos[s.teamId]} />{s.team}{projectedMedianEdgeTeams.has(s.teamId) ? <em className="median-near-label">NEAR MEDIAN</em> : null}{i === 0 && !preGame ? <em className="raffle-badge">🎟️ {currentWeekComplete ? "RAFFLE SPOT" : "CURRENT LEADER"}</em> : null}</span><span className="score-opponent">vs {s.opponent}</span><strong className={scoreSort === "projected" ? "score-primary projected-score" : "score-primary"}>{money(scoreSort === "projected" ? s.projectionAverage : s.score)}</strong><span className="score-projection">{scoreSort === "projected" ? "ACT " + money(s.score) : "PROJ "}{scoreSort === "projected" ? "" : (s.projectionTrend === "up" ? "↑ " : s.projectionTrend === "down" ? "↓ " : "")}{scoreSort === "projected" ? "" : (s.projectionAverage != null ? money(s.projectionAverage) : "—")}<em className="score-probability">ABOVE MEDIAN {s.aboveMedianProbability != null ? money(s.aboveMedianProbability) : "—"}%</em></span></div>
           </React.Fragment>)}
         </div>
-        <p className="median-note">{preGame ? "Current scores will appear once scoring begins. The projected median is based on ESPN’s projected final scores." : "The current median uses live scores. The projected median uses ESPN’s projected final scores."}</p>
+        <p className="median-note">Median is always based on ESPN’s projected final scores. Teams within {money(medianCloseThreshold)} points of the projected median are highlighted in yellow.</p>
       </section>
 
 
