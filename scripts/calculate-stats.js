@@ -180,7 +180,7 @@ const projectedValues = currentScores
   .map(s => Number(s.projectionAverage))
   .filter(Number.isFinite)
   .sort((a,b) => a-b);
-const projectedMedian = projectedValues.length % 2
+let projectedMedian = projectedValues.length % 2
   ? projectedValues[Math.floor(projectedValues.length / 2)]
   : projectedValues.length
     ? round((projectedValues[projectedValues.length / 2 - 1] + projectedValues[projectedValues.length / 2]) / 2)
@@ -197,7 +197,7 @@ const projectedMean = projectedValues.length
 const projectedStdDev = projectedValues.length
   ? Math.sqrt(projectedValues.reduce((sum, value) => sum + Math.pow(value - projectedMean, 2), 0) / projectedValues.length)
   : null;
-const medianCloseThreshold = Number.isFinite(projectedStdDev) ? round(projectedStdDev * 0.5) : 6;
+let medianCloseThreshold = Number.isFinite(projectedStdDev) ? round(projectedStdDev * 0.5) : 6;
 
 function historicalTeamScores(teamId) {
   return completed
@@ -267,6 +267,8 @@ const SIMULATIONS = 10000;
 const rng = makeRng(simulationSeed());
 const winCounts = new Map(probabilityTeams.map(s => [s.teamId, 0]));
 const aboveMedianCounts = new Map(probabilityTeams.map(s => [s.teamId, 0]));
+const projectionSums = new Map(probabilityTeams.map(s => [s.teamId, 0]));
+let simulatedMedianSum = 0;
 const matchupLookup = new Map(currentWeekMatchups.map(m => [m.id, m]));
 
 for (let sim = 0; sim < SIMULATIONS; sim++) {
@@ -287,12 +289,47 @@ for (let sim = 0; sim < SIMULATIONS; sim++) {
     }
   }
 
-  const sortedFinals = [...finals].sort((a,b) => a.score - b.score);
-  const medianFinal = (sortedFinals[5].score + sortedFinals[6].score) / 2;
   for (const final of finals) {
-    if (final.score > medianFinal) aboveMedianCounts.set(final.teamId, aboveMedianCounts.get(final.teamId) + 1);
+    projectionSums.set(final.teamId, projectionSums.get(final.teamId) + final.score);
+  }
+
+  const sortedFinals = [...finals].sort((a,b) => a.score - b.score);
+  const middle = Math.floor(sortedFinals.length / 2);
+  const medianFinal = sortedFinals.length >= 2
+    ? (sortedFinals[middle - 1].score + sortedFinals[middle].score) / 2
+    : null;
+  if (Number.isFinite(medianFinal)) {
+    simulatedMedianSum += medianFinal;
+    for (const final of finals) {
+      if (final.score > medianFinal) aboveMedianCounts.set(final.teamId, aboveMedianCounts.get(final.teamId) + 1);
+    }
   }
 }
+
+const monteCarloProjectionByTeam = new Map(
+  probabilityTeams.map(s => [s.teamId, round((projectionSums.get(s.teamId) || 0) / SIMULATIONS)])
+);
+projectedMedian = round(simulatedMedianSum / SIMULATIONS);
+
+for (const score of currentScores) {
+  const monteCarloProjection = monteCarloProjectionByTeam.get(score.teamId);
+  if (Number.isFinite(monteCarloProjection)) {
+    score.projection = { espn: monteCarloProjection };
+    score.projectionAverage = monteCarloProjection;
+    score.projectionTrend = projectionTrend(score.teamId, monteCarloProjection);
+  }
+}
+
+const mcProjectedValues = currentScores
+  .map(s => Number(s.projectionAverage))
+  .filter(Number.isFinite);
+const mcProjectedMean = mcProjectedValues.length
+  ? mcProjectedValues.reduce((sum, value) => sum + value, 0) / mcProjectedValues.length
+  : null;
+const mcProjectedStdDev = mcProjectedValues.length
+  ? Math.sqrt(mcProjectedValues.reduce((sum, value) => sum + Math.pow(value - mcProjectedMean, 2), 0) / mcProjectedValues.length)
+  : null;
+medianCloseThreshold = Number.isFinite(mcProjectedStdDev) ? round(mcProjectedStdDev * 0.5) : 6;
 
 const probabilityByTeam = new Map(probabilityTeams.map(s => {
   const matchup = matchupLookup.get(s.matchupId);
@@ -488,8 +525,8 @@ const currentScoreboard = {
   median,
   projectedMedian,
   medianCloseThreshold,
-  projectionSources:["ESPN"],
-  probabilityModel:"Site-calculated Monte Carlo using ESPN live projections and historical team scoring volatility",
+  projectionSources:["Monte Carlo simulations using ESPN player projections as inputs"],
+  probabilityModel:"10,000 Monte Carlo simulations using current scores, ESPN player projections, and historical scoring volatility",
   probabilitySimulations:SIMULATIONS,
   projectionHistory,
   marqueeStories
