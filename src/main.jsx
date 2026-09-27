@@ -282,6 +282,12 @@ function App() {
 
 <div className="data-timestamp">LAST REFRESHED <strong>{scoreboard.lastUpdated ? new Date(scoreboard.lastUpdated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "—"}</strong></div>
 
+
+      <section className="hero-strip">
+        <div className="hero-main"><span className="section-kicker">2026 SEASON</span><h2>Week {scoreboard.week}</h2><p>{preGame ? "The Week is set. Scores will appear here once the games begin." : "The league is live. Here’s how everyone is doing."}</p></div>
+        <div className="hero-stat"><strong>{scoreboard.projectedMedian != null ? money(scoreboard.projectedMedian) : "—"}</strong><span>Projected median</span></div>
+      </section
+
       {marqueeStories.length ? <section className="league-marquee" aria-label="League Wire">
         <div className="marquee-label"><span>⚡</span><strong>LEAGUE WIRE</strong><small>LIVE</small></div>
         <div className="marquee-story" key={marqueeStories[marqueeIndex % marqueeStories.length].text}>
@@ -289,13 +295,7 @@ function App() {
           <span>{marqueeStories[marqueeIndex % marqueeStories.length].text}</span>
         </div>
         <div className="marquee-dots">{marqueeStories.map((story, i) => <button key={i} type="button" className={i === marqueeIndex % marqueeStories.length ? "active" : ""} aria-label={"Show " + story.type} onClick={() => setMarqueeIndex(i)}></button>)}</div>
-      </section> : null}
-
-
-      <section className="hero-strip">
-        <div className="hero-main"><span className="section-kicker">2026 SEASON</span><h2>Week {scoreboard.week}</h2><p>{preGame ? "The Week is set. Scores will appear here once the games begin." : "The league is live. Here’s how everyone is doing."}</p></div>
-        <div className="hero-stat"><strong>{scoreboard.projectedMedian != null ? money(scoreboard.projectedMedian) : "—"}</strong><span>Projected median</span></div>
-      </section>
+      </section> : null}>
 
       <section id="scores" className="section">
         <div className="section-heading"><div><span className="section-kicker">RIGHT NOW</span><h2>Week {scoreboard.week} Scores</h2></div><span className="live-pill">{preGame ? "● NOT STARTED" : "● LIVE"}</span></div>
