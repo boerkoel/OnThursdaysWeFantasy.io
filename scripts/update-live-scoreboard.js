@@ -69,6 +69,20 @@ for (const g of [...liveSchedule, ...boxscoreSchedule]) {
   }
 }
 
+// ESPN's live matchup response can expose a team-level projected final score.
+// Prefer that value whenever ESPN supplies it; it is the clearest source for the
+// league site. Fall back to our player-level remaining-projection model only when
+// ESPN does not provide a usable team projection.
+const espnTeamProjectionByTeam = new Map();
+for (const g of [...liveSchedule, ...boxscoreSchedule]) {
+  for (const side of [g.home, g.away]) {
+    if (!side?.teamId) continue;
+    const candidates = [side.projectedScore, side.projectedTotal, side.projection, side.totalPointsProjected];
+    const projection = candidates.map(Number).find(Number.isFinite);
+    if (Number.isFinite(projection)) espnTeamProjectionByTeam.set(Number(side.teamId), projection);
+  }
+}
+
 const espnProjectionByTeam = new Map();
 const projectionTeamDetails = new Map();
 
@@ -176,7 +190,7 @@ const currentScores = currentWeekMatchups.flatMap(m => [
   { teamId: m.homeTeamId, opponentId: m.awayTeamId, score: liveByTeam.get(m.homeTeamId) ?? m.homeScore, opponentScore: liveByTeam.get(m.awayTeamId) ?? m.awayScore, matchupId: m.id },
   { teamId: m.awayTeamId, opponentId: m.homeTeamId, score: liveByTeam.get(m.awayTeamId) ?? m.awayScore, opponentScore: liveByTeam.get(m.homeTeamId) ?? m.homeScore, matchupId: m.id }
 ]).map(x => {
-  const projection = espnProjectionByTeam.get(x.teamId) ?? null;
+  const projection = espnTeamProjectionByTeam.get(x.teamId) ?? espnProjectionByTeam.get(x.teamId) ?? null;
   const matchup = currentWeekMatchups.find(m => m.id === x.matchupId);
   return {
     ...x,
