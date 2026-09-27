@@ -347,13 +347,18 @@ async function buildKeyPlays() {
     .slice(0, 3);
 }
 
-function buildMarqueeStories() {
+function buildMarqueeStories(keyPlays = []) {
   const stories = [];
   const previousScores = new Map((previousScoreboard?.week === currentWeek ? (previousScoreboard.scores || []) : []).map(s => [s.teamId, s]));
   const previousProjectedMedian = previousScoreboard?.week === currentWeek
     ? Number(previousScoreboard.projectedMedian ?? previousScoreboard.median)
     : null;
   const add = (type, text, score) => stories.push({type, text, score:Number.isFinite(score) ? round(score) : 0});
+  const momentum = (keyPlays || []).slice().sort((a,b) => Math.abs(Number(b.delta)) - Math.abs(Number(a.delta)))[0];
+  if (momentum && Number.isFinite(Number(momentum.delta))) {
+    const delta = Number(momentum.delta);
+    add("MOMENTUM SHIFT","⚡ " + name(Number(momentum.teamId)) + "'s win probability swung " + (delta > 0 ? "up " : "down ") + money(Math.abs(delta)) + "% on " + momentum.player + " — " + momentum.text,110 + Math.abs(delta));
+  }
   let playerEntries = [];
   for (const g of allLiveSchedules) for (const side of [g.home, g.away]) for (const entry of side?.rosterForCurrentScoringPeriod?.entries || []) {
     const player = entry.playerPoolEntry?.player;
@@ -449,7 +454,7 @@ function buildMarqueeStories() {
   else if(close) add("LEAGUE GOSSIP","👀 League gossip: " + close.a.team + " and " + close.b.team + " are separated by " + money(close.diff) + " pts. Somebody's Sunday just got interesting.",26-close.diff);
   return stories.filter((story,i,arr)=>arr.findIndex(x=>x.text===story.text)===i).sort((a,b)=>b.score-a.score);
 }
-const marqueeStories=buildMarqueeStories();
+const marqueeStories=buildMarqueeStories(keyPlays);
 await writeJson("data/current/marquee.json",{week:currentWeek,lastUpdated:new Date().toISOString(),stories:marqueeStories});
 
 const currentScoreboard = {
