@@ -293,7 +293,7 @@ try {
     plays
   }, null, 2) + "\n");
 
-  console.log(`Updated live plays: ${plays.length} fantasy-relevant plays across ${relevantGames.length} active NFL games.`);
+  console.log(`Live-play parser: ${relevant.length} fantasy-relevant plays retained; stored ${plays.length} across ${relevantGames.length} relevant NFL games.`);
 } catch (error) {
   console.warn(`Live play feed unavailable: ${error.message}`);
   if (!previous || Number(previous.week) !== currentWeek) {
