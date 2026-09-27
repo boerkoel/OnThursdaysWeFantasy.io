@@ -114,15 +114,17 @@ for (const event of nflWeek?.events || []) {
   }
 }
 
-function weeklyProjection(player) {
-  const stats = player?.stats || [];
-  const projected = stats.find(s =>
+// statSourceId 1 = ESPN projection, 0 = actual; statSplitTypeId 1 = single week.
+function weeklyStat(player, statSourceId) {
+  const stat = (player?.stats || []).find(s =>
     Number(s.scoringPeriodId) === currentWeek &&
-    Number(s.statSourceId) === 1 &&
+    Number(s.statSourceId) === statSourceId &&
     Number(s.statSplitTypeId) === 1
   );
-  return Number(projected?.appliedTotal);
+  return Number(stat?.appliedTotal);
 }
+
+const weeklyProjection = player => weeklyStat(player, 1);
 
 function rosterEntriesForTeam(teamId) {
   const team = (rosterData.teams || []).find(t => Number(t.id) === Number(teamId));
@@ -142,7 +144,9 @@ for (const teamId of teams.keys()) {
 
   for (const entry of entries) {
     const player = entry.playerPoolEntry?.player;
-    const actual = Number(entry.playerPoolEntry?.appliedStatTotal ?? 0);
+    // mRoster's appliedStatTotal is season-to-date, so use this week's actual.
+    const weeklyActual = weeklyStat(player, 0);
+    const actual = Number.isFinite(weeklyActual) ? weeklyActual : 0;
     const fullProjection = weeklyProjection(player);
     if (!Number.isFinite(fullProjection)) continue;
 
