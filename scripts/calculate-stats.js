@@ -417,66 +417,33 @@ for (const score of currentScores) {
 
 async function buildKeyPlays() {
   const plays = await readJson("data/current/live-plays.json").catch(() => ({ plays: [] }));
-  const previousScores = new Map((previousScoreboard?.week === currentWeek ? (previousScoreboard.scores || []) : []).map(s => [s.teamId, s]));
-  // ESPN play timestamps can lag the live scoreboard by a minute or two.
-  // Give the play feed a small grace window so a real momentum play is not
-  // discarded simply because its timestamp lands just before the prior snapshot.
-  const cutoff = previousScoreboard?.lastUpdated
-    ? new Date(previousScoreboard.lastUpdated).getTime() - 2 * 60 * 1000
-    : 0;
-  const candidates = [];
-
-  for (const matchup of currentWeekMatchups) {
-    if (matchup.completed) continue;
-    const teamsInMatchup = [matchup.homeTeamId, matchup.awayTeamId];
-    for (const teamId of teamsInMatchup) {
-      const current = currentScores.find(s => Number(s.teamId) === Number(teamId));
-      const previous = previousScores.get(teamId);
-      if (!current || !previous) continue;
-      const delta = Number(current.winProbability) - Number(previous.winProbability);
-      if (!Number.isFinite(delta) || Math.abs(delta) < 3) continue;
-
-      const matchupPlays = (plays.plays || [])
-        .filter(p => Number(p.matchupId) === Number(matchup.id) && Number(p.fantasyTeamId) === Number(teamId))
-        .filter(p => !cutoff || !p.wallclock || new Date(p.wallclock).getTime() >= cutoff)
-        .sort((a,b) => {
-          const aTime = a.wallclock ? new Date(a.wallclock).getTime() : 0;
-          const bTime = b.wallclock ? new Date(b.wallclock).getTime() : 0;
-          return bTime - aTime;
-        });
-
-      const play = matchupPlays[0];
-      if (!play) continue;
-
-      candidates.push({
-        matchupId: matchup.id,
-        teamId,
-        delta: round(delta),
-        points: Number(play.points),
-        player: play.player,
-        text: play.text,
-        wallclock: play.wallclock || null
-      });
-    }
-  }
-
-  return candidates
-    .sort((a,b) => Math.abs(b.delta) - Math.abs(a.delta))
-    .slice(0, 3);
+  return (plays.plays || [])
+    .filter(play => Math.abs(Number(play.points)) >= 4)
+    .sort((a, b) => {
+      const aTime = a.wallclock ? new Date(a.wallclock).getTime() : 0;
+      const bTime = b.wallclock ? new Date(b.wallclock).getTime() : 0;
+      return bTime - aTime;
+    })
+    .slice(0, 60)
+    .map(play => ({
+      id: play.id,
+      matchupId: play.matchupId,
+      teamId: play.fantasyTeamId,
+      playerId: play.playerId,
+      points: round(play.points),
+      player: play.player,
+      text: play.text,
+      wallclock: play.wallclock || null
+    }));
 }
 
-function buildMarqueeStories(keyPlays = []) {
+function buildMarqueeStories() {
   const stories = [];
   const previousScores = new Map((previousScoreboard?.week === currentWeek ? (previousScoreboard.scores || []) : []).map(s => [s.teamId, s]));
   const previousProjectedMedian = previousScoreboard?.week === currentWeek
     ? Number(previousScoreboard.projectedMedian ?? previousScoreboard.median)
     : null;
   const add = (type, text, score) => stories.push({type, text, score:Number.isFinite(score) ? round(score) : 0});
-  const momentum = (keyPlays || []).slice().sort((a,b) => Math.abs(Number(b.delta)) - Math.abs(Number(a.delta)))[0];
-  if (momentum && Number.isFinite(Number(momentum.delta))) {
-    const delta = Number(momentum.delta);
-    add("MOMENTUM SHIFT","⚡ " + name(Number(momentum.teamId)) + "'s win probability swung " + (delta > 0 ? "up " : "down ") + money(Math.abs(delta)) + "% on " + momentum.player + " — " + momentum.text,110 + Math.abs(delta));
-  }
   let playerEntries = [];
   for (const g of allLiveSchedules) for (const side of [g.home, g.away]) for (const entry of side?.rosterForCurrentScoringPeriod?.entries || []) {
     const player = entry.playerPoolEntry?.player;
@@ -578,7 +545,7 @@ await writeJson("data/current/key-plays.json", {
   updatedAt: new Date().toISOString(),
   plays: keyPlays
 });
-const marqueeStories=buildMarqueeStories(keyPlays);
+const marqueeStories=buildMarqueeStories();
 await writeJson("data/current/marquee.json",{week:currentWeek,lastUpdated:new Date().toISOString(),stories:marqueeStories});
 
 const currentScoreboard = {
