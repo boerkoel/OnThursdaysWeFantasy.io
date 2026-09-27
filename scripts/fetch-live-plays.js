@@ -16,21 +16,60 @@ async function fetchJson(url) {
   return response.json();
 }
 
-const matchup = await readJson("data/current/mMatchup.json");
-const boxscore = await readJson("data/current/mBoxscore.json");
+const matchupFile = await readJson("data/current/mMatchup.json");
 const settings = await readJson("data/current/mSettings.json");
-const currentWeek = Number(matchup?.scoringPeriodId || 1);
+const leagueId = process.env.ESPN_LEAGUE_ID || "998599827";
+const espnS2 = process.env.ESPN_S2;
+const swid = process.env.ESPN_SWID;
+
+async function fetchLeagueView(view, scoringPeriodId, matchupPeriod = false) {
+  if (!espnS2 || !swid) throw new Error("Missing ESPN authentication secrets for live player mapping.");
+  const url = new URL(`https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${season}/segments/0/leagues/${leagueId}`);
+  url.searchParams.set("view", view);
+  if (scoringPeriodId != null) url.searchParams.set("scoringPeriodId", String(scoringPeriodId));
+  if (matchupPeriod) url.searchParams.set("matchupPeriodId", String(scoringPeriodId));
+  const response = await fetch(url, {
+    headers: {
+      Accept: "application/json",
+      "User-Agent": "OnThursdaysWeFantasy/1.0",
+      Cookie: `espn_s2=${espnS2}; SWID=${swid}`
+    }
+  });
+  if (!response.ok) throw new Error(`ESPN ${view} request failed: ${response.status} ${response.statusText}`);
+  return response.json();
+}
+
+const currentWeek = Number(matchupFile?.scoringPeriodId || 1);
 
 const previous = await readJson("data/current/live-plays.json", { week: currentWeek, updatedAt: null, plays: [] });
 
 try {
-  const playerMap = new Map();
+  const [matchup, roster] = await Promise.all([
+    fetchLeagueView("mMatchup", currentWeek, true),
+    fetchLeagueView("mRoster", currentWeek)
+  ]);
 
-  for (const game of (boxscore?.schedule || []).filter(g => Number(g.matchupPeriodId) === currentWeek)) {
+  const playerMap = new Map();
+  const matchupByTeam = new Map(
+    (matchup?.schedule || [])
+      .filter(g => Number(g.matchupPeriodId) === currentWeek)
+      .flatMap(g => [
+        g.home?.teamId ? [Number(g.home.teamId), Number(g.id)] : null,
+        g.away?.teamId ? [Number(g.away.teamId), Number(g.id)] : null
+      ])
+      .filter(Boolean)
+  );
+
+  const rosterEntriesByTeam = new Map();
+  for (const team of (roster?.teams || [])) {
+    rosterEntriesByTeam.set(Number(team.id), team.rosterForCurrentScoringPeriod?.entries || []);
+  }
+
+  for (const game of (matchup?.schedule || []).filter(g => Number(g.matchupPeriodId) === currentWeek)) {
     const matchupId = Number(game.id);
     for (const side of [game.home, game.away]) {
       if (!side?.teamId) continue;
-      for (const entry of (side.rosterForCurrentScoringPeriod?.entries || [])) {
+      for (const entry of (rosterEntriesByTeam.get(Number(side.teamId)) || [])) {
         if (Number(entry.lineupSlotId) === 20 || Number(entry.lineupSlotId) === 21) continue;
         const player = entry.playerPoolEntry?.player;
         if (!player?.id || !player?.proTeamId) continue;
@@ -39,7 +78,7 @@ try {
           player: player.fullName || `${player.firstName || ""} ${player.lastName || ""}`.trim(),
           proTeamId: Number(player.proTeamId),
           fantasyTeamId: Number(side.teamId),
-          matchupId
+          matchupId: matchupByTeam.get(Number(side.teamId)) || matchupId
         });
       }
     }
