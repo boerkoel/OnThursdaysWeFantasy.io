@@ -393,7 +393,7 @@ function App() {
             <div className={projectedMedianEdgeTeams.has(s.teamId) ? "score-row median-near" : "score-row"}><span className="rank">{i + 1}</span><span className="score-team"><TeamLogo src={teamLogos[s.teamId]} />{s.team}{projectedMedianEdgeTeams.has(s.teamId) ? <em className="median-near-label">NEAR MEDIAN</em> : null}{i === 0 && !preGame ? <em className="raffle-badge">🎟️ {currentWeekComplete ? "RAFFLE SPOT" : "CURRENT LEADER"}</em> : null}</span><span className="score-opponent">vs {s.opponent}</span><strong className={scoreSort === "projected" ? "score-primary projected-score" : "score-primary"}>{money(scoreSort === "projected" ? s.projectionAverage : s.score)}</strong><span className="score-projection">{scoreSort === "projected" ? "ACT " + money(s.score) : "PROJ "}{scoreSort === "projected" ? "" : (s.projectionTrend === "up" ? "↑ " : s.projectionTrend === "down" ? "↓ " : "")}{scoreSort === "projected" ? "" : (s.projectionAverage != null ? money(s.projectionAverage) : "—")}<em className="score-probability">ABOVE MEDIAN {s.aboveMedianProbability != null ? money(s.aboveMedianProbability) : "—"}%</em></span></div>
           </React.Fragment>)}
         </div>
-        <p className="median-note">Median is always based on ESPN’s projected final scores. Teams within {money(medianCloseThreshold)} points of the projected median are highlighted in yellow.</p>
+        <p className="median-note">Median is always based on ESPN’s projected final scores. Teams within {money(medianCloseThreshold)} points of the projected median are highlighted in yellow (half a standard deviation of projected scores).</p>
       </section>
 
 
