@@ -232,14 +232,24 @@ try {
     }
 
     const isPasser = isPasserInPlay(text, fantasyPlayer);
+
+    // ESPN describes completed passes in several ways, including:
+    // "T.Shough pass short left to N.Fant for 3 yards, TOUCHDOWN."
+    // Do not require the literal phrase "pass to" because route/direction
+    // words can appear between "pass" and "to".
     const isPassCompletion =
-      /pass complete|complete to|pass to .* for \d+ yards|\b\d+ yd pass from/i.test(text);
+      /pass\s+(?:complete|incomplete)/i.test(text) ||
+      /complete to\b/i.test(text) ||
+      /\bpass\b.*\bto\b.*\bfor\s+-?\d+\s+yards?/i.test(text) ||
+      /\b-?\d+\s+yds?\s+pass\s+from\b/i.test(text);
+
     const isRush =
       /rush|rushed|run for|running play|left end|right end|up the middle|scrambles/i.test(text);
+
     const isReception =
       !isPasser &&
       isPassCompletion &&
-      (lower.includes(fantasyPlayer.player.toLowerCase()) || /catch|complete to|pass to/i.test(text));
+      (lower.includes(fantasyPlayer.player.toLowerCase()) || /catch|complete to|pass\b.*\bto\b/i.test(text));
 
     if (isPasser && isPassCompletion && Number.isFinite(yards)) {
       points += yards * (scoringRules.get(statIds.passingYards) || 0);
