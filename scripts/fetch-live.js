@@ -36,7 +36,7 @@ async function fetchView(view, { matchupPeriod = false } = {}) {
 // schedule fields in ways that obscure the live totals, so keep each view's
 // response intact and use the view that is designed for that purpose.
 const [liveScoring, boxscore, scoreboard] = await Promise.all([
-  fetchView("mLiveScoring"),
+  fetchView("mLiveScoring", { matchupPeriod: true }),
   fetchView("mBoxscore", { matchupPeriod: true }),
   fetchView("mScoreboard")
 ]);
