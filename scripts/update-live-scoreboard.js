@@ -251,17 +251,51 @@ const probabilityTeams = currentScores.map(s => {
 
 const SIMULATIONS = 10000;
 const rng = rngFactory(seed);
+
+// The displayed projection always comes from ESPN. Monte Carlo is used to
+// model the distribution of plausible final scores around that projection.
+// Those same simulations drive median odds, matchup win odds, and SD-based
+// "close to median" classification.
+const projectedMedian = round(medianOf(
+  probabilityTeams.map(s => Number(s.projectedFinal))
+) ?? median ?? 0);
+
 const simulationSums = new Map(probabilityTeams.map(s => [s.teamId, 0]));
 const simulationSquaredSums = new Map(probabilityTeams.map(s => [s.teamId, 0]));
+const aboveMedianCounts = new Map(probabilityTeams.map(s => [s.teamId, 0]));
+const winCounts = new Map(probabilityTeams.map(s => [s.teamId, 0]));
 
-// Monte Carlo is used only to estimate the standard deviation of each team's
-// final score. ESPN remains the sole source for the displayed projection.
 for (let sim = 0; sim < SIMULATIONS; sim++) {
+  const simulatedFinals = new Map();
+
   for (const team of probabilityTeams) {
     const finalScore = team.currentScore +
       Math.max(0, team.remainingProjection + team.sd * normalSample(rng));
+    simulatedFinals.set(team.teamId, finalScore);
+
     simulationSums.set(team.teamId, simulationSums.get(team.teamId) + finalScore);
     simulationSquaredSums.set(team.teamId, simulationSquaredSums.get(team.teamId) + finalScore ** 2);
+
+    // Compare every simulated final score to the same projected median used
+    // by the scoreboard. This is a true Monte Carlo frequency, not a normal-CDF
+    // approximation based only on the ESPN point estimate.
+    if (finalScore > projectedMedian) {
+      aboveMedianCounts.set(team.teamId, aboveMedianCounts.get(team.teamId) + 1);
+    }
+  }
+
+  for (const matchup of currentWeekMatchups) {
+    if (matchup.completed) continue;
+
+    const homeFinal = simulatedFinals.get(matchup.homeTeamId);
+    const awayFinal = simulatedFinals.get(matchup.awayTeamId);
+    if (!Number.isFinite(homeFinal) || !Number.isFinite(awayFinal)) continue;
+
+    if (homeFinal > awayFinal) {
+      winCounts.set(matchup.homeTeamId, winCounts.get(matchup.homeTeamId) + 1);
+    } else if (awayFinal > homeFinal) {
+      winCounts.set(matchup.awayTeamId, winCounts.get(matchup.awayTeamId) + 1);
+    }
   }
 }
 
@@ -274,56 +308,32 @@ for (const team of probabilityTeams) {
   simulatedSdByTeam.set(team.teamId, Math.sqrt(variance));
 }
 
-function normalCdf(z) {
-  // Abramowitz-Stegun approximation; JavaScript has no built-in erf().
-  const sign = z < 0 ? -1 : 1;
-  const x = Math.abs(z) / Math.sqrt(2);
-  const t = 1 / (1 + 0.3275911 * x);
-  const a1 = 0.254829592;
-  const a2 = -0.284496736;
-  const a3 = 1.421413741;
-  const a4 = -1.453152027;
-  const a5 = 1.061405429;
-  const erf = 1 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
-  return 0.5 * (1 + sign * erf);
-}
-
-const projectedMedian = round(medianOf(
-  probabilityTeams.map(s => Number(s.projectedFinal))
-) ?? median ?? 0);
-
 for (const score of currentScores) {
   const espnProjection = Number(score.projection?.espn);
   const sd = simulatedSdByTeam.get(score.teamId) || 0;
+  const aboveCount = aboveMedianCounts.get(score.teamId) || 0;
+
   score.projectionSd = round(sd);
-  score.aboveMedianProbability = Number.isFinite(espnProjection) && sd > 0
-    ? round(normalCdf((espnProjection - projectedMedian) / sd) * 100)
-    : (Number.isFinite(espnProjection) && espnProjection > projectedMedian ? 100 : 0);
+  score.aboveMedianProbability = round((aboveCount / SIMULATIONS) * 100);
+  score.belowMedianProbability = round(100 - score.aboveMedianProbability);
+  score.medianDistanceSd = sd > 0
+    ? round((espnProjection - projectedMedian) / sd)
+    : 0;
+  score.closeToMedian = Math.abs(score.medianDistanceSd) <= 0.5;
 }
 
-// Estimate matchup win probability from the ESPN projections and the
-// Monte-Carlo-derived standard deviations, without using Monte Carlo to set
-// the displayed projection.
 for (const matchup of currentWeekMatchups) {
   const home = currentScores.find(s => s.teamId === matchup.homeTeamId);
   const away = currentScores.find(s => s.teamId === matchup.awayTeamId);
   if (!home || !away) continue;
 
-  const homeProjection = Number(home.projection?.espn);
-  const awayProjection = Number(away.projection?.espn);
-  const homeSd = simulatedSdByTeam.get(home.teamId) || 0;
-  const awaySd = simulatedSdByTeam.get(away.teamId) || 0;
-  const combinedSd = Math.sqrt(homeSd ** 2 + awaySd ** 2);
-  const homeWinProbability = Number.isFinite(homeProjection) && Number.isFinite(awayProjection) && combinedSd > 0
-    ? normalCdf((homeProjection - awayProjection) / combinedSd) * 100
-    : homeProjection > awayProjection ? 100 : homeProjection < awayProjection ? 0 : 50;
-
-  home.winProbability = matchup.completed
-    ? (matchup.winner === "HOME" ? 100 : 0)
-    : round(homeWinProbability);
-  away.winProbability = matchup.completed
-    ? (matchup.winner === "AWAY" ? 100 : 0)
-    : round(100 - homeWinProbability);
+  if (matchup.completed) {
+    home.winProbability = matchup.winner === "HOME" ? 100 : 0;
+    away.winProbability = matchup.winner === "AWAY" ? 100 : 0;
+  } else {
+    home.winProbability = round(((winCounts.get(home.teamId) || 0) / SIMULATIONS) * 100);
+    away.winProbability = round(((winCounts.get(away.teamId) || 0) / SIMULATIONS) * 100);
+  }
 }
  
 const previousProjectionHistory = previousScoreboard?.projectionHistory || [];
@@ -369,7 +379,7 @@ await writeFile("data/current/scoreboard.json", JSON.stringify({
   median,
   projectedMedian,
   projectionSources: ["ESPN live team projections, with ESPN player projections as fallback"],
-  probabilityModel: "Monte Carlo simulations used only to estimate final-score standard deviation; ESPN projections remain the displayed projections",
+  probabilityModel: "Monte Carlo simulations estimate final-score distributions, above/below projected-median odds, matchup win odds, and final-score standard deviation; ESPN projections remain the displayed projections",
   probabilitySimulations: SIMULATIONS,
   projectionHistory
 }, null, 2) + "\n");
