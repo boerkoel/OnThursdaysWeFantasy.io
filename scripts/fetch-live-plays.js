@@ -370,8 +370,17 @@ try {
     }
   }
 
+  // Merge the new ESPN snapshot with the previous saved feed so a 5-minute
+  // refresh does not erase recent plays. ESPN can return only the latest slice
+  // of PBP, so persistence has to happen here rather than in the frontend.
+  let previousPlays = [];
+  try {
+    const previous = JSON.parse(await readFile("data/current/live-plays.json", "utf8"));
+    if (Number(previous.week) === Number(currentWeek)) previousPlays = previous.plays || [];
+  } catch {}
+
   const deduped = new Map();
-  for (const play of relevant) {
+  for (const play of [...relevant, ...previousPlays]) {
     if (!deduped.has(play.id)) deduped.set(play.id, play);
   }
 
