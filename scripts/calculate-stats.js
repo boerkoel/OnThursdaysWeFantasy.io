@@ -175,19 +175,21 @@ const currentScores = currentWeekMatchups.flatMap(m => [
   status: currentWeekMatchups.find(m => m.id === x.matchupId)?.completed ? "FINAL" : "LIVE"
 })).sort((a,b)=>b.score-a.score);
 
-const median = currentScores.length % 2
-  ? currentScores[Math.floor(currentScores.length / 2)].score
-  : currentScores.length ? round((currentScores[currentScores.length / 2 - 1].score + currentScores[currentScores.length / 2].score) / 2) : null;
-
 const projectedValues = currentScores
   .map(s => Number(s.projectionAverage))
   .filter(Number.isFinite)
-  .sort((a,b)=>a-b);
+  .sort((a,b) => a-b);
 const projectedMedian = projectedValues.length % 2
   ? projectedValues[Math.floor(projectedValues.length / 2)]
   : projectedValues.length
     ? round((projectedValues[projectedValues.length / 2 - 1] + projectedValues[projectedValues.length / 2]) / 2)
     : null;
+
+// The live league median is always based on ESPN projected final scores.
+// Teams are considered "near the median" within 6 points, tightening to
+// 2.5 points on Monday for the final NFL game of the week.
+const median = projectedMedian;
+const medianCloseThreshold = new Date().getDay() === 1 ? 2.5 : 6;
 
 function historicalTeamScores(teamId) {
   return completed
@@ -306,7 +308,9 @@ for (const score of currentScores) {
 function buildMarqueeStories() {
   const stories = [];
   const previousScores = new Map((previousScoreboard?.week === currentWeek ? (previousScoreboard.scores || []) : []).map(s => [s.teamId, s]));
-  const previousMedian = previousScoreboard?.week === currentWeek ? Number(previousScoreboard.median) : null;
+  const previousProjectedMedian = previousScoreboard?.week === currentWeek
+    ? Number(previousScoreboard.projectedMedian ?? previousScoreboard.median)
+    : null;
   const add = (type, text, score) => stories.push({type, text, score:Number.isFinite(score) ? round(score) : 0});
   let playerEntries = [];
   for (const g of allLiveSchedules) for (const side of [g.home, g.away]) for (const entry of side?.rosterForCurrentScoringPeriod?.entries || []) {
@@ -353,12 +357,40 @@ function buildMarqueeStories() {
   const flip=matchupStates.find(x=>Number.isFinite(x.previousDiff)&&((x.previousDiff>0&&x.currentDiff<0)||(x.previousDiff<0&&x.currentDiff>0)));
   if(flip){const leader=flip.currentDiff>0?flip.a.team:flip.b.team;const trailer=flip.currentDiff>0?flip.b.team:flip.a.team;add("MATCHUP FLIP","🚨 LEAD CHANGE: " + leader + " just jumped in front of " + trailer + ".",100);}
 
-  if(Number.isFinite(median) && Number(median) > 0){
-    const above=currentScores.filter(s=>Number(s.score)>Number(median)).length;
-    add("MEDIAN WATCH","🎯 Median watch: " + above + " of " + currentScores.length + " teams are above the " + money(median) + " median.",18);
-    if(Number.isFinite(previousMedian) && previousMedian > 0){
-      const mf=currentScores.find(s=>{const p=previousScores.get(s.teamId);if(!p)return false;return(Number(p.score)>previousMedian)!==(Number(s.score)>Number(median))&&Number(s.score)!==Number(median);});
-      if(mf){const direction=Number(mf.score)>Number(median)?"above":"below";add("MEDIAN FLIP","🚨 MEDIAN FLIP: " + mf.team + " just moved " + direction + " the league median.",95);}
+  if(Number.isFinite(projectedMedian) && projectedMedian > 0){
+    const nearMedian = currentScores
+      .filter(s => Number.isFinite(Number(s.projectionAverage)) && Math.abs(Number(s.projectionAverage) - projectedMedian) <= medianCloseThreshold)
+      .sort((a,b) => Math.abs(Number(a.projectionAverage) - projectedMedian) - Math.abs(Number(b.projectionAverage) - projectedMedian));
+
+    // Crossing the projected median is the most meaningful median story.
+    const medianFlip = nearMedian.find(s => {
+      const p = previousScores.get(s.teamId);
+      if (!p || !Number.isFinite(previousProjectedMedian)) return false;
+      const previousProjection = Number(p.projectionAverage ?? p.projection?.espn);
+      const currentProjection = Number(s.projectionAverage);
+      return Number.isFinite(previousProjection) &&
+        ((previousProjection > previousProjectedMedian && currentProjection < projectedMedian) ||
+         (previousProjection < previousProjectedMedian && currentProjection > projectedMedian));
+    });
+    if (medianFlip) {
+      const direction = Number(medianFlip.projectionAverage) > projectedMedian ? "above" : "below";
+      add("MEDIAN FLIP","🚨 MEDIAN FLIP: " + medianFlip.team + " just moved " + direction + " the projected league median.",96);
+    } else {
+      const newlyNear = nearMedian.find(s => {
+        const p = previousScores.get(s.teamId);
+        if (!p || !Number.isFinite(previousProjectedMedian)) return false;
+        const previousProjection = Number(p.projectionAverage ?? p.projection?.espn);
+        return Number.isFinite(previousProjection) &&
+          Math.abs(previousProjection - previousProjectedMedian) > medianCloseThreshold;
+      });
+      if (newlyNear) {
+        const direction = Number(newlyNear.projectionAverage) >= projectedMedian ? "above" : "below";
+        add("MEDIAN WATCH","🎯 " + newlyNear.team + " is now within " + money(medianCloseThreshold) + " pts of the projected median — " + direction + " and in danger of crossing.",84);
+      }
+    }
+
+    if (nearMedian.length >= 4) {
+      add("MEDIAN CLUSTER","🎯 " + nearMedian.length + " teams are within " + money(medianCloseThreshold) + " pts of the projected median.",58 + nearMedian.length);
     }
   }
   const rising=currentScores.filter(s=>s.projectionTrend==="up").sort((a,b)=>Number(b.projectionAverage)-Number(a.projectionAverage))[0];
@@ -384,6 +416,7 @@ const currentScoreboard = {
   scores:currentScores,
   median,
   projectedMedian,
+  medianCloseThreshold,
   projectionSources:["ESPN"],
   probabilityModel:"Site-calculated Monte Carlo using ESPN live projections and historical team scoring volatility",
   probabilitySimulations:SIMULATIONS,
