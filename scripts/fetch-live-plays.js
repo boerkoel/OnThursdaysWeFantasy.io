@@ -17,6 +17,7 @@ async function fetchJson(url) {
 }
 
 const matchupFile = await readJson("data/current/mMatchup.json");
+const localBoxscore = await readJson("data/current/mBoxscore.json", {});
 const settings = await readJson("data/current/mSettings.json");
 const leagueId = process.env.ESPN_LEAGUE_ID || "998599827";
 const espnS2 = process.env.ESPN_S2;
@@ -40,14 +41,17 @@ async function fetchLeagueView(view, scoringPeriodId, matchupPeriod = false) {
 }
 
 const currentWeek = Number(matchupFile?.scoringPeriodId || 1);
+console.log(`Live-play mapping: week ${currentWeek}, local matchup schedule ${(matchupFile?.schedule || []).length}, local boxscore schedule ${(localBoxscore?.schedule || []).length}`);
 
 const previous = await readJson("data/current/live-plays.json", { week: currentWeek, updatedAt: null, plays: [] });
 
 try {
-  const [matchup, roster] = await Promise.all([
+  const [directMatchup, roster] = await Promise.all([
     fetchLeagueView("mMatchup", currentWeek, true),
     fetchLeagueView("mRoster", currentWeek)
   ]);
+  const matchup = (directMatchup?.schedule || []).length ? directMatchup : matchupFile;
+  console.log(`ESPN live-play mapping: direct matchup schedule ${(directMatchup?.schedule || []).length}, roster teams ${(roster?.teams || []).length}`);
 
   const playerMap = new Map();
   const matchupByTeam = new Map(
@@ -62,7 +66,24 @@ try {
 
   const rosterEntriesByTeam = new Map();
   for (const team of (roster?.teams || [])) {
-    rosterEntriesByTeam.set(Number(team.id), team.rosterForCurrentScoringPeriod?.entries || []);
+    rosterEntriesByTeam.set(
+      Number(team.id),
+      team.roster?.entries ||
+      team.rosterForCurrentScoringPeriod?.entries ||
+      []
+    );
+  }
+  for (const game of (matchup?.schedule || []).filter(g => Number(g.matchupPeriodId) === currentWeek)) {
+    for (const side of [game.home, game.away]) {
+      if (!side?.teamId || rosterEntriesByTeam.get(Number(side.teamId))?.length) continue;
+      rosterEntriesByTeam.set(Number(side.teamId), side.rosterForCurrentScoringPeriod?.entries || []);
+    }
+  }
+  for (const game of (localBoxscore?.schedule || []).filter(g => Number(g.matchupPeriodId) === currentWeek)) {
+    for (const side of [game.home, game.away]) {
+      if (!side?.teamId || rosterEntriesByTeam.get(Number(side.teamId))?.length) continue;
+      rosterEntriesByTeam.set(Number(side.teamId), side.rosterForCurrentScoringPeriod?.entries || []);
+    }
   }
 
   for (const game of (matchup?.schedule || []).filter(g => Number(g.matchupPeriodId) === currentWeek)) {
@@ -84,7 +105,10 @@ try {
     }
   }
 
+  console.log(`ESPN live-play mapping: matchup teams ${matchupByTeam.size}, roster entry teams ${rosterEntriesByTeam.size}, active player map ${playerMap.size}`);
+
   if (!playerMap.size) {
+    console.warn("No active fantasy players could be mapped; live-play feed will remain empty.");
     await writeFile("data/current/live-plays.json", JSON.stringify({ week: currentWeek, updatedAt: new Date().toISOString(), plays: [] }, null, 2) + "\n");
     process.exit(0);
   }
@@ -122,6 +146,8 @@ try {
     if (includeCompleted && state !== "in" && state !== "post") return false;
     return (competition.competitors || []).some(c => playerMapByProTeam.has(Number(c.id || c.team?.id)));
   });
+
+  console.log(`NFL public scoreboard: ${(nflScoreboard.events || []).length} games, ${relevantGames.length} relevant games`);
 
   async function getPlays(eventId) {
     try {
@@ -215,6 +241,7 @@ try {
   const relevant = [];
   for (const event of relevantGames) {
     const plays = await getPlays(event.id);
+    console.log(`NFL game ${event.id}: received ${plays.length} plays`);
 
     for (const play of plays) {
       const text = String(play.shortText || play.text || "").trim();
