@@ -69,6 +69,7 @@ for (const g of [...liveSchedule, ...boxscoreSchedule]) {
 }
 
 const espnProjectionByTeam = new Map();
+const liveProjectionTeamIds = new Set();
 const projectionSchedules = [
   ...(scoreboardData.schedule || []),
   ...(liveScoringData.schedule || []),
@@ -82,6 +83,7 @@ for (const g of projectionSchedules) {
     const liveProjection = Number(side.totalProjectedPointsLive);
     if (Number.isFinite(liveProjection) && liveProjection > 0) {
       espnProjectionByTeam.set(teamId, round(liveProjection));
+      liveProjectionTeamIds.add(teamId);
       continue;
     }
     const projection = (side.rosterForCurrentScoringPeriod?.entries || [])
@@ -197,7 +199,11 @@ const matchupLookup = new Map(currentWeekMatchups.map(m => [m.id, m]));
 for (let sim = 0; sim < SIMULATIONS; sim++) {
   const finals = probabilityTeams.map(s => ({
     teamId: s.teamId,
-    score: s.currentScore + (s.remainingProjection > 0 ? Math.max(0, s.remainingProjection + s.sd * normalSample(rng)) : s.currentScore)
+    // Keep uncertainty even when a stale/lagging projection is below the
+    // current score. A live projection should normally stay at or above the
+    // current score, but we never want that data-quality edge case to turn
+    // the matchup into a deterministic 100% win.
+    score: s.currentScore + Math.max(0, s.remainingProjection + s.sd * normalSample(rng))
   }));
   for (const matchup of currentWeekMatchups) {
     const home = finals.find(s => s.teamId === matchup.homeTeamId);
@@ -232,4 +238,4 @@ await writeFile("data/current/scoreboard.json", JSON.stringify({
   projectionHistory
 }, null, 2) + "\n");
 
-console.log(`Updated live scoreboard for Week ${currentWeek} with ${currentScores.length} teams.`);
+console.log(`Updated live scoreboard for Week ${currentWeek} with ${currentScores.length} teams; ESPN live projections available for ${liveProjectionTeamIds.size} teams.`);
