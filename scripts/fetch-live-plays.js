@@ -116,7 +116,7 @@ try {
           const statId = statIds[name];
           if (!statId || !scoringRules.has(statId)) continue;
           const delta = value - Number(previousStats[name] || 0);
-          if (Number.isFinite(delta) && delta > 0) fantasyPoints += delta * scoringRules.get(statId);
+          if (Number.isFinite(delta) && delta !== 0) fantasyPoints += delta * scoringRules.get(statId);
         }
         lastStats.set(playerId, currentStats);
 
