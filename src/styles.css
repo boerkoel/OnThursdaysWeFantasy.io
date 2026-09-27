@@ -396,3 +396,23 @@
 
 /* Weekly recap story tiles */
 .weekly-recap{margin:18px 0 22px}.weekly-recap-heading{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}.weekly-recap-heading strong{font-size:15px}.weekly-recap-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.weekly-recap-tile{padding:14px 15px;border:1px solid #dfe2db;border-radius:13px;background:var(--panel,#f3f5ef);min-height:86px}.weekly-recap-tile small{font-size:8px;font-weight:900;letter-spacing:.1em;color:#747a6d}.weekly-recap-tile p{margin:7px 0 0;font-size:12px;line-height:1.45;color:#34382f}@media(max-width:800px){.weekly-recap-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.weekly-recap-grid{grid-template-columns:1fr}.weekly-recap-heading{display:block}.weekly-recap-heading strong{display:block;margin-top:3px}}
+
+.hero-with-wire{grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;gap:16px 28px}
+.hero-main{min-width:0}
+.hero-wire{grid-column:1 / -1;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding-top:14px;border-top:1px solid rgba(0,0,0,.12)}
+.hero-wire-label{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.hero-wire-label span{font-size:10px;font-weight:800;letter-spacing:.08em}
+.hero-wire-label small{font-size:8px;font-weight:800;letter-spacing:.08em;padding:3px 5px;border:1px solid currentColor;border-radius:999px}
+.hero-wire-story{min-width:0;display:flex;align-items:baseline;gap:8px}
+.hero-wire-story b{font-size:9px;letter-spacing:.08em;white-space:nowrap}
+.hero-wire-story span{font-size:12px;line-height:1.35;min-width:0}
+.hero-wire .marquee-dots{display:flex;gap:5px;align-items:center}
+@media(max-width:600px){
+  .hero-with-wire{grid-template-columns:minmax(0,1fr) auto;gap:12px 16px}
+  .hero-wire{grid-column:1 / -1;grid-template-columns:auto minmax(0,1fr);gap:8px 10px;padding-top:12px}
+  .hero-wire-label{align-self:start}
+  .hero-wire-story{display:block}
+  .hero-wire-story b{display:block;margin-bottom:3px}
+  .hero-wire-story span{display:block;font-size:11px;line-height:1.4;white-space:normal}
+  .hero-wire .marquee-dots{grid-column:1 / -1;justify-content:center}
+}
