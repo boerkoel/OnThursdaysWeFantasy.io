@@ -154,7 +154,9 @@ function rosterEntriesForTeam(teamId) {
 for (const teamId of teams.keys()) {
   const entries = rosterEntriesForTeam(teamId)
     .filter(entry => Number(entry.lineupSlotId) !== 20);
-  let projectedFinal = 0;
+  // Store only points still expected from the lineup here. The Monte Carlo
+  // model adds the live team score exactly once when constructing final scores.
+  let remainingProjection = 0;
   let hasProjection = false;
 
   for (const entry of entries) {
@@ -162,32 +164,23 @@ for (const teamId of teams.keys()) {
     const actual = Number(entry.playerPoolEntry?.appliedStatTotal ?? 0);
     const fullProjection = weeklyPlayerProjection(player);
 
-    if (!Number.isFinite(fullProjection)) {
-      projectedFinal += actual;
-      continue;
-    }
+    if (!Number.isFinite(fullProjection)) continue;
     hasProjection = true;
 
     const game = nflGamesByTeam.get(Number(player?.proTeamId));
     if (game?.completed) {
-      // The player's game is over: nothing remains to project.
-      projectedFinal += actual;
+      continue;
     } else if (game?.started) {
-      // The player is in a game now. Project only the portion of the ESPN
-      // projection that plausibly remains, rather than carrying the full
-      // weekly projection forward.
-      const remainingFullGameProjection = Math.max(0, fullProjection - actual);
-      const remaining = remainingFullGameProjection * Number(game.remainingFraction ?? 0.5);
-      projectedFinal += actual + remaining;
+      remainingProjection += Math.max(0, fullProjection - actual) *
+        Number(game.remainingFraction ?? 0.5);
     } else {
-      // The player's game has not started: retain the full ESPN projection.
-      projectedFinal += Math.max(actual, fullProjection);
+      remainingProjection += Math.max(0, fullProjection - actual);
     }
   }
 
   if (hasProjection) {
     const currentScore = liveByTeam.get(teamId) ?? 0;
-    espnProjectionByTeam.set(teamId, round(Math.max(currentScore, projectedFinal)));
+    espnProjectionByTeam.set(teamId, round(currentScore + remainingProjection));
   }
 }
 
