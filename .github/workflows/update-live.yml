@@ -10,9 +10,6 @@ on:
         type: boolean
   schedule:
     - cron: "*/5 * * * *"
-  workflow_run:
-    workflows: ["Update ESPN data"]
-    types: [completed]
 
 permissions:
   contents: write
@@ -23,46 +20,45 @@ concurrency:
 
 jobs:
   update-live:
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-      - name: Log live workflow trigger
-        run: |
-          echo "GitHub event: ${{ github.event_name }}"
-          echo "Scheduled cron: ${{ github.event.schedule }}"
-          echo "Run started (UTC): $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
-          echo "Run started (runner local): $(date '+%Y-%m-%d %H:%M:%S %Z')"
-          echo "Expected schedule: */5 * * * *"
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
+
       - name: Check NFL live window
         id: window
         run: node scripts/check-nfl-live-window.js
+
+      - name: Set up Node
+        if: steps.window.outputs.active == 'true' || inputs.force_update == true
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
       - name: Fetch live ESPN data
-        if: steps.window.outputs.active == 'true' || steps.window.outputs.safety == 'true' || inputs.force_update == true || github.event_name == 'workflow_run'
+        if: steps.window.outputs.active == 'true' || inputs.force_update == true
         env:
           ESPN_SEASON: "2026"
           ESPN_LEAGUE_ID: "998599827"
           ESPN_S2: ${{ secrets.ESPN_S2 }}
           ESPN_SWID: ${{ secrets.ESPN_SWID }}
         run: node scripts/fetch-live.js
+
       - name: Preserve previous scoreboard for live story detection
-        if: steps.window.outputs.active == 'true' || inputs.force_update == true || github.event_name == 'workflow_run'
+        if: steps.window.outputs.active == 'true' || inputs.force_update == true
         run: cp data/current/scoreboard.json /tmp/previous-scoreboard.json || true
+
       - name: Update live scoreboard
-        if: steps.window.outputs.active == 'true' || inputs.force_update == true || github.event_name == 'workflow_run'
+        if: steps.window.outputs.active == 'true' || inputs.force_update == true
         env:
           ESPN_SEASON: "2026"
           ESPN_LEAGUE_ID: "998599827"
           ESPN_S2: ${{ secrets.ESPN_S2 }}
           ESPN_SWID: ${{ secrets.ESPN_SWID }}
         run: node scripts/update-live-scoreboard.js
+
       - name: Fetch fantasy-relevant live plays
-        if: steps.window.outputs.active == 'true' || inputs.force_update == true || github.event_name == 'workflow_run'
+        if: steps.window.outputs.active == 'true' || inputs.force_update == true
         continue-on-error: true
         env:
           ESPN_SEASON: "2026"
@@ -71,14 +67,16 @@ jobs:
           ESPN_SWID: ${{ secrets.ESPN_SWID }}
           ESPN_INCLUDE_COMPLETED: ${{ inputs.force_update == true && 'true' || 'false' }}
         run: node scripts/fetch-live-plays.js
+
       - name: Recalculate live stories
-        if: steps.window.outputs.active == 'true' || inputs.force_update == true || github.event_name == 'workflow_run'
+        if: steps.window.outputs.active == 'true' || inputs.force_update == true
         env:
           PREVIOUS_SCOREBOARD_PATH: /tmp/previous-scoreboard.json
           LIVE_ONLY: "true"
         run: node scripts/calculate-stats.js
+
       - name: Commit live data
-        if: steps.window.outputs.active == 'true' || inputs.force_update == true || github.event_name == 'workflow_run'
+        if: steps.window.outputs.active == 'true' || inputs.force_update == true
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
