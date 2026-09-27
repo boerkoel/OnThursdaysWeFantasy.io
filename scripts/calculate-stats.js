@@ -190,20 +190,13 @@ const projectedMedian = projectedValues.length % 2
 // ±7.5 through Thursday, ±6 during the Sunday early window,
 // ±4.5 during the Sunday late window, and ±3 for Sunday night/Monday.
 const median = projectedMedian;
-const nowPacific = new Date(new Date().toLocaleString("en-US", {timeZone:"America/Los_Angeles"}));
-const leagueWeekday = nowPacific.toLocaleDateString("en-US", {weekday:"short"});
-const pacificMinutes = nowPacific.getHours() * 60 + nowPacific.getMinutes();
-const medianCloseThreshold = leagueWeekday === "Sun"
-  ? pacificMinutes >= 17 * 60
-    ? 3
-    : pacificMinutes >= 13 * 60
-      ? 4.5
-      : pacificMinutes >= 10 * 60
-        ? 6
-        : 7.5
-  : leagueWeekday === "Mon"
-    ? 3
-    : 7.5;
+const projectedMean = projectedValues.length
+  ? projectedValues.reduce((sum, value) => sum + value, 0) / projectedValues.length
+  : null;
+const projectedStdDev = projectedValues.length
+  ? Math.sqrt(projectedValues.reduce((sum, value) => sum + Math.pow(value - projectedMean, 2), 0) / projectedValues.length)
+  : null;
+const medianCloseThreshold = Number.isFinite(projectedStdDev) ? round(projectedStdDev * 0.5) : 6;
 
 function historicalTeamScores(teamId) {
   return completed
