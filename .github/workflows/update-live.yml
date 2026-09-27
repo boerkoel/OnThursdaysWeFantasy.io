@@ -1,5 +1,9 @@
 name: Update Live Data
 
+# GitHub's cron is best-effort and often skips frequent schedules for hours,
+# so each run schedules the next one itself: every ~5 minutes while an NFL
+# game window is open, otherwise it sleeps until the next window opens (at
+# most 5.5 hours per run). The cron below only restarts the chain if it breaks.
 on:
   workflow_dispatch:
     inputs:
@@ -8,20 +12,45 @@ on:
         required: false
         default: false
         type: boolean
+      delay_seconds:
+        description: "Seconds to wait before checking (set by the previous run)"
+        required: false
+        default: "0"
+        type: string
+      chained:
+        description: "Started by the previous live run"
+        required: false
+        default: false
+        type: boolean
   schedule:
     - cron: "2/5 * * * *"
 
 permissions:
   contents: write
+  actions: write
 
+# Runs queue instead of cancelling each other, so a run is never cut off
+# mid-push and only one chain survives. A manual run cancels a sleeping
+# chained run and takes over the chain.
 concurrency:
   group: "live-update"
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' && !inputs.chained }}
+
+env:
+  ESPN_SEASON: "2026"
+  ESPN_LEAGUE_ID: "998599827"
+  ESPN_S2: ${{ secrets.ESPN_S2 }}
+  ESPN_SWID: ${{ secrets.ESPN_SWID }}
 
 jobs:
   update-live:
     runs-on: ubuntu-latest
+    timeout-minutes: 350
     steps:
+      - name: Wait for scheduled start
+        if: inputs.delay_seconds != '' && inputs.delay_seconds != '0'
+        run: sleep "${{ inputs.delay_seconds }}"
+
       - name: Check out repository
         uses: actions/checkout@v4
 
@@ -29,54 +58,44 @@ jobs:
         id: window
         run: node scripts/check-nfl-live-window.js
 
+      - name: Decide whether to update
+        id: gate
+        run: echo "update=${{ steps.window.outputs.active == 'true' || inputs.force_update == true }}" >> "$GITHUB_OUTPUT"
+
       - name: Set up Node
-        if: steps.window.outputs.active == 'true' || inputs.force_update == true
+        if: steps.gate.outputs.update == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 24
 
       - name: Fetch live ESPN data
-        if: steps.window.outputs.active == 'true' || inputs.force_update == true
-        env:
-          ESPN_SEASON: "2026"
-          ESPN_LEAGUE_ID: "998599827"
-          ESPN_S2: ${{ secrets.ESPN_S2 }}
-          ESPN_SWID: ${{ secrets.ESPN_SWID }}
+        if: steps.gate.outputs.update == 'true'
         run: node scripts/fetch-live.js
 
       - name: Preserve previous scoreboard for live story detection
-        if: steps.window.outputs.active == 'true' || inputs.force_update == true
+        if: steps.gate.outputs.update == 'true'
         run: cp data/current/scoreboard.json /tmp/previous-scoreboard.json || true
 
       - name: Update live scoreboard
-        if: steps.window.outputs.active == 'true' || inputs.force_update == true
-        env:
-          ESPN_SEASON: "2026"
-          ESPN_LEAGUE_ID: "998599827"
-          ESPN_S2: ${{ secrets.ESPN_S2 }}
-          ESPN_SWID: ${{ secrets.ESPN_SWID }}
+        if: steps.gate.outputs.update == 'true'
         run: node scripts/update-live-scoreboard.js
 
       - name: Fetch fantasy-relevant live plays
-        if: steps.window.outputs.active == 'true' || inputs.force_update == true
+        if: steps.gate.outputs.update == 'true'
         continue-on-error: true
         env:
-          ESPN_SEASON: "2026"
-          ESPN_LEAGUE_ID: "998599827"
-          ESPN_S2: ${{ secrets.ESPN_S2 }}
-          ESPN_SWID: ${{ secrets.ESPN_SWID }}
           ESPN_INCLUDE_COMPLETED: ${{ inputs.force_update == true && 'true' || 'false' }}
         run: node scripts/fetch-live-plays.js
 
       - name: Recalculate live stories
-        if: steps.window.outputs.active == 'true' || inputs.force_update == true
+        if: steps.gate.outputs.update == 'true'
         env:
           PREVIOUS_SCOREBOARD_PATH: /tmp/previous-scoreboard.json
           LIVE_ONLY: "true"
         run: node scripts/calculate-stats.js
 
       - name: Commit live data
-        if: steps.window.outputs.active == 'true' || inputs.force_update == true
+        if: steps.gate.outputs.update == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -91,4 +110,34 @@ jobs:
             sleep 3
           done
           echo "Unable to push after 3 attempts."
+          exit 1
+
+      # Runs even if an update step failed, so one bad ESPN response doesn't
+      # stop the chain. Skipped when this run is cancelled by a newer one.
+      - name: Schedule next live run
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ACTIVE: ${{ steps.window.outputs.active }}
+          NEXT_WINDOW_IN: ${{ steps.window.outputs.next_window_in }}
+        run: |
+          MAX_IDLE=19800  # 5.5 hours, inside the job timeout
+          if [ "$ACTIVE" = "true" ]; then
+            DELAY=210     # plus ~1-2 minutes of work = ~5 minute cadence
+          elif [ -z "$ACTIVE" ]; then
+            DELAY=300     # window check failed; try again soon
+          elif [ -n "$NEXT_WINDOW_IN" ] && [ "$NEXT_WINDOW_IN" -lt "$MAX_IDLE" ]; then
+            DELAY="$NEXT_WINDOW_IN"
+          else
+            DELAY="$MAX_IDLE"
+          fi
+          echo "Next live run starts in $DELAY seconds."
+          for attempt in 1 2 3; do
+            if gh workflow run update-live.yml --repo "$GITHUB_REPOSITORY" --ref main \
+                -f delay_seconds="$DELAY" -f chained=true; then
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Unable to schedule the next live run; the cron schedule will restart the chain."
           exit 1

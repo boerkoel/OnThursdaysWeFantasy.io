@@ -22,13 +22,26 @@ const kickoffs = schedules.flatMap(schedule => schedule.events || [])
   .map(event => new Date(event.date))
   .filter(date => Number.isFinite(date.getTime()));
 
+const WINDOW_BEFORE_KICKOFF = 15 * 60 * 1000;
+const WINDOW_AFTER_KICKOFF = 5 * 60 * 60 * 1000;
+
 const active = kickoffs.some(kickoff => {
   const start = kickoff.getTime();
-  return Date.now() >= start - 15 * 60 * 1000 &&
-    Date.now() <= start + 5 * 60 * 60 * 1000;
+  return Date.now() >= start - WINDOW_BEFORE_KICKOFF &&
+    Date.now() <= start + WINDOW_AFTER_KICKOFF;
 });
+
+// Seconds until the next live window opens, so the self-scheduling live
+// workflow can sleep until then. Empty when no upcoming kickoff was found.
+const nextWindowStarts = kickoffs
+  .map(kickoff => kickoff.getTime() - WINDOW_BEFORE_KICKOFF)
+  .filter(start => start > Date.now());
+const nextWindowIn = nextWindowStarts.length
+  ? Math.ceil((Math.min(...nextWindowStarts) - Date.now()) / 1000)
+  : "";
 
 const output = process.env.GITHUB_OUTPUT;
 if (!output) throw new Error("GITHUB_OUTPUT is not available.");
-await appendFile(output, `active=${active ? "true" : "false"}\n`);
+await appendFile(output, `active=${active ? "true" : "false"}\nnext_window_in=${nextWindowIn}\n`);
 console.log(active ? "NFL live window is active." : "No NFL game is within the live-update window.");
+if (nextWindowIn !== "") console.log(`Next live window opens in ${Math.round(nextWindowIn / 60)} minutes.`);
