@@ -189,7 +189,8 @@ const projectedMedian = projectedValues.length % 2
 // Teams are considered "near the median" within 6 points, tightening to
 // 2.5 points on Monday for the final NFL game of the week.
 const median = projectedMedian;
-const medianCloseThreshold = new Date().getDay() === 1 ? 2.5 : 6;
+const leagueWeekday = new Intl.DateTimeFormat("en-US", {timeZone:"America/Los_Angeles", weekday:"short"}).format(new Date());
+const medianCloseThreshold = leagueWeekday === "Mon" ? 2.5 : 6;
 
 function historicalTeamScores(teamId) {
   return completed
@@ -363,7 +364,7 @@ function buildMarqueeStories() {
       .sort((a,b) => Math.abs(Number(a.projectionAverage) - projectedMedian) - Math.abs(Number(b.projectionAverage) - projectedMedian));
 
     // Crossing the projected median is the most meaningful median story.
-    const medianFlip = nearMedian.find(s => {
+    const medianFlip = currentScores.find(s => {
       const p = previousScores.get(s.teamId);
       if (!p || !Number.isFinite(previousProjectedMedian)) return false;
       const previousProjection = Number(p.projectionAverage ?? p.projection?.espn);
