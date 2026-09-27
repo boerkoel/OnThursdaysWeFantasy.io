@@ -9,6 +9,7 @@ import playoffs from "../data/current/playoffs.json";
 import teamsData from "../data/current/teams.json";
 import weekly from "../data/current/weekly.json";
 import marquee from "../data/current/marquee.json";
+import livePlays from "../data/current/live-plays.json";
 
 const money = (n) => Number(n).toFixed(2);
 
@@ -225,6 +226,19 @@ function App() {
   const [scoreSort, setScoreSort] = useState("current");
   const marqueeStories = marquee.stories || [];
   const [marqueeIndex, setMarqueeIndex] = useState(0);
+  const [livePlayFeed, setLivePlayFeed] = useState(livePlays);
+  useEffect(() => {
+    const loadLivePlays = async () => {
+      try {
+        const response = await fetch("./data/current/live-plays.json?ts=" + Date.now(), { cache: "no-store" });
+        if (!response.ok) return;
+        const latest = await response.json();
+        setLivePlayFeed(latest);
+      } catch {}
+    };
+    const timer = setInterval(loadLivePlays, 30000);
+    return () => clearInterval(timer);
+  }, []);
   useEffect(() => {
     const loadedAt = scoreboard.lastUpdated || null;
     const checkForUpdates = async () => {
@@ -332,6 +346,19 @@ function App() {
               <div className={a.score >= b.score ? "team winning" : "team"}><span className="matchup-team-name"><TeamLogo src={teamLogos[a.teamId]} />{a.team}</span><strong className={scoreSort === "projected" ? "score-value projected-score" : "score-value"}><span className={projectedMedianEdgeTeams.has(a.teamId) ? "projection-dot yellow" : (Number.isFinite(Number(a.projectionAverage)) && Number.isFinite(projectedMedian) ? (Number(a.projectionAverage) >= projectedMedian ? "projection-dot green" : "projection-dot red") : "")} aria-hidden="true"></span>{money(scoreSort === "projected" ? a.projectionAverage : a.score)}</strong>{scoreSort === "projected" ? <span className="actual-score-muted">{money(a.score)} ACT</span> : null}<small>PROJ {a.projectionTrend === "up" ? <span className="projection-trend up" aria-label="Projection trending up">↑</span> : a.projectionTrend === "down" ? <span className="projection-trend down" aria-label="Projection trending down">↓</span> : null}{a.projectionAverage != null ? money(a.projectionAverage) : "—"}{a.winProbability != null ? <em className="matchup-probability">WIN {money(a.winProbability)}%</em> : null}</small></div>
               <div className="versus">vs</div>
               <div className={b.score >= a.score ? "team winning" : "team"}><span className="matchup-team-name"><TeamLogo src={teamLogos[b.teamId]} />{b.team}</span><strong className={scoreSort === "projected" ? "score-value projected-score" : "score-value"}><span className={projectedMedianEdgeTeams.has(b.teamId) ? "projection-dot yellow" : (Number.isFinite(Number(b.projectionAverage)) && Number.isFinite(projectedMedian) ? (Number(b.projectionAverage) >= projectedMedian ? "projection-dot green" : "projection-dot red") : "")} aria-hidden="true"></span>{money(scoreSort === "projected" ? b.projectionAverage : b.score)}</strong>{scoreSort === "projected" ? <span className="actual-score-muted">{money(b.score)} ACT</span> : null}<small>PROJ {b.projectionTrend === "up" ? <span className="projection-trend up" aria-label="Projection trending up">↑</span> : b.projectionTrend === "down" ? <span className="projection-trend down" aria-label="Projection trending down">↓</span> : null}{b.projectionAverage != null ? money(b.projectionAverage) : "—"}{b.winProbability != null ? <em className="matchup-probability">WIN {money(b.winProbability)}%</em> : null}</small></div>
+              {livePlayFeed.plays?.filter(p => Number(p.matchupId) === Number(matchupId)).slice(0, 5).length ? (
+                <div className="live-plays" aria-label="Recent live plays">
+                  <div className="live-plays-heading"><span>LIVE PLAYS</span><em>LAST 5</em></div>
+                  <div className="live-play-list">
+                    {livePlayFeed.plays.filter(p => Number(p.matchupId) === Number(matchupId)).slice(0, 5).map(play => (
+                      <div className="live-play" key={play.id}>
+                        <strong className={play.points < 0 ? "negative" : ""}>{play.points > 0 ? "+" : ""}{money(play.points)}</strong>
+                        <span>{play.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </article>;
           })}
         </div>
