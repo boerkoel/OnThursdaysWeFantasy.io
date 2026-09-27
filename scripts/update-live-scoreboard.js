@@ -227,4 +227,5 @@ await writeFile("data/current/scoreboard.json", JSON.stringify({
   projectionHistory
 }, null, 2) + "\n");
 
-console.log(`Updated live scoreboard for Week ${currentWeek} with ${currentScores.length} teams; ESPN live projections available for ${liveProjectionTeamIds.size} teams.`);\nif (liveProjectionTeamIds.size === 0) console.warn("WARNING: ESPN returned no live projections; projection fields are left null rather than using stale weekly projections.");
+console.log(`Updated live scoreboard for Week ${currentWeek} with ${currentScores.length} teams; ESPN live projections available for ${liveProjectionTeamIds.size} teams.`);
+if (liveProjectionTeamIds.size === 0) console.warn("WARNING: ESPN returned no live projections; projection fields are left null rather than using stale weekly projections.");
