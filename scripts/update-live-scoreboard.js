@@ -179,8 +179,6 @@ const currentScores = currentWeekMatchups.flatMap(m => [
   { teamId: m.awayTeamId, opponentId: m.homeTeamId, score: liveByTeam.get(m.awayTeamId) ?? m.awayScore, opponentScore: liveByTeam.get(m.homeTeamId) ?? m.homeScore, matchupId: m.id }
 ]).map(x => {
   const projection = espnProjectionByTeam.get(x.teamId) ?? null;
-  const baseline = recentProjectionAverage.get(x.teamId);
-  const delta = Number.isFinite(projection) && Number.isFinite(baseline) ? projection - baseline : null;
   const matchup = currentWeekMatchups.find(m => m.id === x.matchupId);
   return {
     ...x,
@@ -189,7 +187,7 @@ const currentScores = currentWeekMatchups.flatMap(m => [
     logo: teams.get(x.teamId)?.logo || null,
     projection: { espn: projection },
     projectionAverage: projection,
-    projectionTrend: Number.isFinite(delta) && Math.abs(delta) >= 0.25 ? (delta > 0 ? "up" : "down") : null,
+    projectionTrend: null,
     status: matchup?.completed ? "FINAL" : "LIVE"
   };
 }).sort((a,b) => b.score - a.score);
