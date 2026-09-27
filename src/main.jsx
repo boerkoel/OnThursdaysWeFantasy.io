@@ -9,7 +9,6 @@ import playoffs from "../data/current/playoffs.json";
 import teamsData from "../data/current/teams.json";
 import weekly from "../data/current/weekly.json";
 import initialMarquee from "../data/current/marquee.json";
-import livePlays from "../data/current/live-plays.json";
 import keyPlays from "../data/current/key-plays.json";
 
 const money = (n) => Number(n).toFixed(2);
@@ -253,20 +252,17 @@ function App() {
       clearInterval(timer);
     };
   }, []);
-  const [livePlayFeed, setLivePlayFeed] = useState(livePlays);
   const [keyPlayFeed, setKeyPlayFeed] = useState(keyPlays);
   useEffect(() => {
-    const loadLivePlays = async () => {
+    const loadKeyPlays = async () => {
       try {
-        const response = await fetch("./data/current/live-plays.json?ts=" + Date.now(), { cache: "no-store" });
+        const response = await fetch("./data/current/key-plays.json?ts=" + Date.now(), { cache: "no-store" });
         if (!response.ok) return;
-        const latest = await response.json();
-        setLivePlayFeed(latest);
-      const keyResponse = await fetch("./data/current/key-plays.json?ts=" + Date.now(), { cache: "no-store" });
-      if (keyResponse.ok) setKeyPlayFeed(await keyResponse.json());
+        setKeyPlayFeed(await response.json());
       } catch {}
     };
-    const timer = setInterval(loadLivePlays, 30000);
+    loadKeyPlays();
+    const timer = setInterval(loadKeyPlays, 30000);
     return () => clearInterval(timer);
   }, []);
   useEffect(() => {
@@ -376,27 +372,13 @@ function App() {
               <div className={a.score >= b.score ? "team winning" : "team"}><span className="matchup-team-name"><TeamLogo src={teamLogos[a.teamId]} />{a.team}</span><strong className={scoreSort === "projected" ? "score-value projected-score" : "score-value"}><span className={projectedMedianEdgeTeams.has(a.teamId) ? "projection-dot yellow" : (Number.isFinite(Number(a.projectionAverage)) && Number.isFinite(projectedMedian) ? (Number(a.projectionAverage) >= projectedMedian ? "projection-dot green" : "projection-dot red") : "")} aria-hidden="true"></span>{money(scoreSort === "projected" ? a.projectionAverage : a.score)}</strong>{scoreSort === "projected" ? <span className="actual-score-muted">{money(a.score)} ACT</span> : null}<small>PROJ {a.projectionTrend === "up" ? <span className="projection-trend up" aria-label="Projection trending up">↑</span> : a.projectionTrend === "down" ? <span className="projection-trend down" aria-label="Projection trending down">↓</span> : null}{a.projectionAverage != null ? money(a.projectionAverage) : "—"}{a.winProbability != null ? <em className="matchup-probability">WIN {money(a.winProbability)}%</em> : null}</small></div>
               <div className="versus">vs</div>
               <div className={b.score >= a.score ? "team winning" : "team"}><span className="matchup-team-name"><TeamLogo src={teamLogos[b.teamId]} />{b.team}</span><strong className={scoreSort === "projected" ? "score-value projected-score" : "score-value"}><span className={projectedMedianEdgeTeams.has(b.teamId) ? "projection-dot yellow" : (Number.isFinite(Number(b.projectionAverage)) && Number.isFinite(projectedMedian) ? (Number(b.projectionAverage) >= projectedMedian ? "projection-dot green" : "projection-dot red") : "")} aria-hidden="true"></span>{money(scoreSort === "projected" ? b.projectionAverage : b.score)}</strong>{scoreSort === "projected" ? <span className="actual-score-muted">{money(b.score)} ACT</span> : null}<small>PROJ {b.projectionTrend === "up" ? <span className="projection-trend up" aria-label="Projection trending up">↑</span> : b.projectionTrend === "down" ? <span className="projection-trend down" aria-label="Projection trending down">↓</span> : null}{b.projectionAverage != null ? money(b.projectionAverage) : "—"}{b.winProbability != null ? <em className="matchup-probability">WIN {money(b.winProbability)}%</em> : null}</small></div>
-              {livePlayFeed.plays?.filter(p => Number(p.matchupId) === Number(matchupId)).slice(0, 5).length ? (
-                <div className="live-plays" aria-label="Recent live plays">
-                  <div className="live-plays-heading"><span>LIVE PLAYS</span><em>LAST 5</em></div>
-                  <div className="live-play-list">
-                    {livePlayFeed.plays.filter(p => Number(p.matchupId) === Number(matchupId)).slice(0, 5).map(play => (
-                      <div className="live-play" key={play.id}>
-                        <strong className={play.points < 0 ? "negative" : ""}>{play.points > 0 ? "+" : ""}{money(play.points)}</strong>
-                        <span><b>{(play.fantasyTeamId === a.teamId ? a.team : play.fantasyTeamId === b.teamId ? b.team : "Unknown team")}</b> · {play.text}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-
               {keyPlayFeed.plays?.filter(p => Number(p.matchupId) === Number(matchupId)).length ? (
                 <div className="key-plays" aria-label="Key plays">
-                  <div className="key-plays-heading"><span>KEY PLAYS</span><em>MOMENTUM SWINGS</em></div>
+                  <div className="key-plays-heading"><span>KEY PLAYS</span><em>4+ PT SWINGS</em></div>
                   <div className="key-play-list">
                     {keyPlayFeed.plays.filter(p => Number(p.matchupId) === Number(matchupId)).slice(0, 3).map((play, i) => (
-                      <div className="key-play" key={play.matchupId + "-" + play.teamId + "-" + i}>
-                        <strong className={play.delta < 0 ? "negative" : ""}>{play.delta > 0 ? "+" : ""}{money(play.delta)}%</strong>
+                      <div className="key-play" key={play.id || (play.matchupId + "-" + play.playerId + "-" + i)}>
+                        <strong className={play.points < 0 ? "negative" : ""}>{play.points > 0 ? "+" : ""}{money(play.points)}</strong>
                         <span><b>{play.player}</b> {play.text}</span>
                       </div>
                     ))}
