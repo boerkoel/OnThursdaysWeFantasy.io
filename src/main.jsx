@@ -8,7 +8,7 @@ import raffle from "../data/current/raffle.json";
 import playoffs from "../data/current/playoffs.json";
 import teamsData from "../data/current/teams.json";
 import weekly from "../data/current/weekly.json";
-import marquee from "../data/current/marquee.json";
+import initialMarquee from "../data/current/marquee.json";
 import livePlays from "../data/current/live-plays.json";
 import keyPlays from "../data/current/key-plays.json";
 
@@ -225,8 +225,34 @@ function App() {
   const scores = scoreboard.scores || [];
   const median = scoreboard.median;
   const [scoreSort, setScoreSort] = useState("current");
-  const marqueeStories = marquee.stories || [];
+  const [marqueeData, setMarqueeData] = useState(initialMarquee);
+  const marqueeStories = marqueeData.stories || [];
   const [marqueeIndex, setMarqueeIndex] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadMarquee() {
+      try {
+        const response = await fetch("./data/current/marquee.json?ts=" + Date.now(), { cache: "no-store" });
+        if (!response.ok) return;
+        const next = await response.json();
+        if (!cancelled) {
+          setMarqueeData(next);
+          setMarqueeIndex(index => next.stories?.length ? index % next.stories.length : 0);
+        }
+      } catch {
+        // Keep showing the last good League Wire snapshot.
+      }
+    }
+
+    loadMarquee();
+    const timer = setInterval(loadMarquee, 30000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, []);
   const [livePlayFeed, setLivePlayFeed] = useState(livePlays);
   const [keyPlayFeed, setKeyPlayFeed] = useState(keyPlays);
   useEffect(() => {
