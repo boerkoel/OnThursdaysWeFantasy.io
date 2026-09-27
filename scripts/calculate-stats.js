@@ -306,7 +306,7 @@ for (const score of currentScores) {
   if (probabilities) Object.assign(score, probabilities);
 }
 
-function buildKeyPlays() {
+async function buildKeyPlays() {
   const plays = await readJson("data/current/live-plays.json").catch(() => ({ plays: [] }));
   const previousScores = new Map((previousScoreboard?.week === currentWeek ? (previousScoreboard.scores || []) : []).map(s => [s.teamId, s]));
   const cutoff = previousScoreboard?.lastUpdated ? new Date(previousScoreboard.lastUpdated).getTime() : 0;
