@@ -87,6 +87,16 @@ try {
   });
 
   async function getPlays(eventId) {
+    try {
+      const summary = await fetchJson(
+        `https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=${eventId}`
+      );
+      const summaryPlays = summary?.plays || summary?.gameInfo?.plays || [];
+      if (summaryPlays.length) return summaryPlays;
+    } catch (error) {
+      console.warn(`ESPN summary play feed failed for ${eventId}: ${error.message}`);
+    }
+
     const data = await fetchJson(`https://cdn.espn.com/core/nfl/playbyplay?xhr=1&gameId=${eventId}`);
     return data?.gamepackageJSON?.plays || data?.plays || [];
   }
