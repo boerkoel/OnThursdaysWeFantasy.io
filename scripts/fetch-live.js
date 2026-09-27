@@ -38,7 +38,7 @@ async function fetchView(view, { matchupPeriod = false } = {}) {
 const [liveScoring, boxscore, scoreboard] = await Promise.all([
   fetchView("mLiveScoring", { matchupPeriod: true }),
   fetchView("mBoxscore", { matchupPeriod: true }),
-  fetchView("mScoreboard")
+  fetchView("mScoreboard", { matchupPeriod: true })
 ]);
 
 await writeFile("data/current/mLiveScoring.json", JSON.stringify(liveScoring, null, 2) + "\n");
