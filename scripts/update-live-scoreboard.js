@@ -303,13 +303,13 @@ for (const teamId of teams.keys()) {
 }
 
 for (const score of currentScores) {
-  const monteCarloProjection = monteCarloProjectionByTeam.get(score.teamId) ?? score.score;
+  const espnProjection = Number(score.projection?.espn);
   const baseline = recentProjectionAverage.get(score.teamId);
-  const delta = Number.isFinite(monteCarloProjection) && Number.isFinite(baseline)
-    ? monteCarloProjection - baseline
+  const delta = Number.isFinite(espnProjection) && Number.isFinite(baseline)
+    ? espnProjection - baseline
     : null;
-  score.projection = { espn: monteCarloProjection };
-  score.projectionAverage = monteCarloProjection;
+  score.projection = { espn: Number.isFinite(espnProjection) ? espnProjection : score.score };
+  score.projectionAverage = Number.isFinite(espnProjection) ? espnProjection : score.score;
   score.projectionTrend = Number.isFinite(delta) && Math.abs(delta) >= 0.25
     ? (delta > 0 ? "up" : "down")
     : null;
@@ -318,7 +318,7 @@ for (const score of currentScores) {
 const currentProjectionSnapshot = {
   timestamp: new Date().toISOString(),
   week: currentWeek,
-  scores: [...monteCarloProjectionByTeam.entries()].map(([teamId, projection]) => ({ teamId, projection }))
+  scores: currentScores.map(score => ({ teamId: score.teamId, projection: Number(score.projection?.espn) }))
 };
 const projectionHistory = [
   ...previousProjectionHistory.filter(snapshot => Number(snapshot.week) === currentWeek),
@@ -338,8 +338,8 @@ await writeFile("data/current/scoreboard.json", JSON.stringify({
   scores: currentScores,
   median,
   projectedMedian,
-  projectionSources: ["Monte Carlo simulations using ESPN player projections as inputs"],
-  probabilityModel: "10,000 Monte Carlo simulations using current scores, ESPN player projections, and historical scoring volatility",
+  projectionSources: ["ESPN live team projections, with ESPN player projections as fallback"],
+  probabilityModel: "Monte Carlo simulations used only to estimate final-score standard deviation; ESPN projections remain the displayed projections",
   probabilitySimulations: SIMULATIONS,
   projectionHistory
 }, null, 2) + "\n");
