@@ -1,6 +1,6 @@
 {
   "week": 3,
-  "lastUpdated": "2026-09-26T23:54:18.041Z",
+  "lastUpdated": "2026-09-27T00:11:03.734Z",
   "scores": [
     {
       "teamId": 11,
@@ -219,68 +219,15 @@
       "aboveMedianProbability": 61.91
     }
   ],
-  "median": 0.75,
+  "median": 130.52,
   "projectedMedian": 130.52,
+  "medianCloseThreshold": 6,
   "projectionSources": [
     "ESPN"
   ],
   "probabilityModel": "Site-calculated Monte Carlo using ESPN live projections and historical team scoring volatility",
   "probabilitySimulations": 10000,
   "projectionHistory": [
-    {
-      "timestamp": "2026-09-26T23:41:29.337Z",
-      "week": 3,
-      "scores": [
-        {
-          "teamId": 6,
-          "projection": 134.91
-        },
-        {
-          "teamId": 12,
-          "projection": 127.16
-        },
-        {
-          "teamId": 11,
-          "projection": 141.06
-        },
-        {
-          "teamId": 3,
-          "projection": 111.03
-        },
-        {
-          "teamId": 8,
-          "projection": 127.56
-        },
-        {
-          "teamId": 4,
-          "projection": 131.24
-        },
-        {
-          "teamId": 2,
-          "projection": 128.98
-        },
-        {
-          "teamId": 7,
-          "projection": 126.78
-        },
-        {
-          "teamId": 9,
-          "projection": 129.8
-        },
-        {
-          "teamId": 1,
-          "projection": 137.01
-        },
-        {
-          "teamId": 5,
-          "projection": 138.71
-        },
-        {
-          "teamId": 10,
-          "projection": 137.2
-        }
-      ]
-    },
     {
       "timestamp": "2026-09-26T23:43:15.034Z",
       "week": 3,
@@ -442,9 +389,68 @@
           "projection": 137.2
         }
       ]
+    },
+    {
+      "timestamp": "2026-09-27T00:11:03.610Z",
+      "week": 3,
+      "scores": [
+        {
+          "teamId": 6,
+          "projection": 134.91
+        },
+        {
+          "teamId": 12,
+          "projection": 127.16
+        },
+        {
+          "teamId": 11,
+          "projection": 141.06
+        },
+        {
+          "teamId": 3,
+          "projection": 111.03
+        },
+        {
+          "teamId": 8,
+          "projection": 127.56
+        },
+        {
+          "teamId": 4,
+          "projection": 131.24
+        },
+        {
+          "teamId": 2,
+          "projection": 128.98
+        },
+        {
+          "teamId": 7,
+          "projection": 126.78
+        },
+        {
+          "teamId": 9,
+          "projection": 129.8
+        },
+        {
+          "teamId": 1,
+          "projection": 137.01
+        },
+        {
+          "teamId": 5,
+          "projection": 138.71
+        },
+        {
+          "teamId": 10,
+          "projection": 137.2
+        }
+      ]
     }
   ],
   "marqueeStories": [
+    {
+      "type": "MEDIAN CLUSTER",
+      "text": "🎯 7 teams are within 6.00 pts of the projected median.",
+      "score": 65
+    },
     {
       "type": "HOT PLAYER",
       "text": "🔥 Bijan Robinson is on fire — 36.30 pts, 16.46 over projection for Brock You Like a Hurricane.",
@@ -459,11 +465,6 @@
       "type": "LEAGUE GOSSIP",
       "text": "👀 League gossip: Brock You Like a Hurricane has 52.30 pts to play with against Kyle Tucker.",
       "score": 28
-    },
-    {
-      "type": "MEDIAN WATCH",
-      "text": "🎯 Median watch: 6 of 12 teams are above the 0.75 median.",
-      "score": 18
     },
     {
       "type": "LINEUP GENIUS",
