@@ -22,6 +22,7 @@ const teamData = JSON.parse(await readFile("data/current/mTeam.json", "utf8"));
 const liveScoringData = JSON.parse(await readFile("data/current/mLiveScoring.json", "utf8"));
 const boxscoreData = JSON.parse(await readFile("data/current/mBoxscore.json", "utf8"));
 const scoreboardData = JSON.parse(await readFile("data/current/mScoreboard.json", "utf8"));
+const rosterData = JSON.parse(await readFile("data/current/mRoster.json", "utf8"));
 
 const currentWeek = Number(matchup.scoringPeriodId || 1);
 const teams = new Map((teamData.teams || []).map(t => [
@@ -69,28 +70,93 @@ for (const g of [...liveSchedule, ...boxscoreSchedule]) {
 }
 
 const espnProjectionByTeam = new Map();
-const liveProjectionTeamIds = new Set();
-const projectionSchedules = [
-  ...(scoreboardData.schedule || []),
-  ...(liveScoringData.schedule || []),
-  ...boxscoreSchedule
-].filter(g => Number(g.matchupPeriodId) === currentWeek);
+const projectionTeamDetails = new Map();
 
-for (const g of projectionSchedules) {
-  for (const side of [g.home, g.away]) {
-    if (!side?.teamId) continue;
-    const teamId = Number(side.teamId);
-    const liveProjection = Number(side.totalProjectedPointsLive);
-    if (Number.isFinite(liveProjection) && liveProjection > 0) {
-      espnProjectionByTeam.set(teamId, round(liveProjection));
-      liveProjectionTeamIds.add(teamId);
-      continue;
-    }
-    // Do not substitute the ordinary weekly projection here. This file is
-    // the live scoreboard, so a missing totalProjectedPointsLive must remain
-    // missing rather than masquerading as a live projection.
+async function fetchNflSchedule(date) {
+  const dateString = date.toISOString().slice(0, 10).replace(/-/g, "");
+  const response = await fetch(
+    `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=${dateString}`,
+    { headers: { Accept: "application/json", "User-Agent": "OnThursdaysWeFantasy/1.0" } }
+  );
+  if (!response.ok) return null;
+  return response.json();
+}
+
+const now = new Date();
+const [nflToday, nflTomorrow] = await Promise.all([
+  fetchNflSchedule(now),
+  fetchNflSchedule(new Date(now.getTime() + 86400000))
+]);
+
+const nflGamesByTeam = new Map();
+for (const event of [...(nflToday?.events || []), ...(nflTomorrow?.events || [])]) {
+  const competition = event.competitions?.[0];
+  if (!competition) continue;
+  const status = competition.status?.type;
+  for (const competitor of competition.competitors || []) {
+    const teamId = Number(competitor.team?.id);
+    if (Number.isFinite(teamId)) nflGamesByTeam.set(teamId, {
+      started: Boolean(status?.state && status.state !== "pre"),
+      completed: status?.completed === true || status?.state === "post"
+    });
   }
 }
+
+function weeklyProjection(player) {
+  const stats = player?.stats || [];
+  const projected = stats.find(s =>
+    Number(s.scoringPeriodId) === currentWeek &&
+    Number(s.statSourceId) === 1 &&
+    Number(s.statSplitTypeId) === 1
+  );
+  return Number(projected?.appliedTotal);
+}
+
+function rosterEntriesForTeam(teamId) {
+  const team = (rosterData.teams || []).find(t => Number(t.id) === Number(teamId));
+  return team?.roster?.entries ||
+    team?.rosterForCurrentScoringPeriod?.entries ||
+    [];
+}
+
+for (const teamId of teams.keys()) {
+  const entries = rosterEntriesForTeam(teamId)
+    .filter(entry => Number(entry.lineupSlotId) !== 20);
+
+  let projectedFinal = 0;
+  let hasProjection = false;
+
+  for (const entry of entries) {
+    const player = entry.playerPoolEntry?.player;
+    const actual = Number(entry.playerPoolEntry?.appliedStatTotal ?? 0);
+    const fullProjection = weeklyProjection(player);
+    if (!Number.isFinite(fullProjection)) {
+      projectedFinal += actual;
+      continue;
+    }
+
+    hasProjection = true;
+    const proTeamId = Number(player?.proTeamId);
+    const game = nflGamesByTeam.get(proTeamId);
+
+    if (game?.completed) {
+      projectedFinal += actual;
+    } else if (game?.started) {
+      projectedFinal += actual + Math.max(0, fullProjection - actual);
+    } else {
+      projectedFinal += Math.max(actual, fullProjection);
+    }
+  }
+
+  if (hasProjection) {
+    const currentScore = liveByTeam.get(teamId) ?? 0;
+    // Never allow the live projection to fall below points already scored.
+    espnProjectionByTeam.set(teamId, round(Math.max(currentScore, projectedFinal)));
+    projectionTeamDetails.set(teamId, { players: entries.length });
+  }
+}
+
+const liveProjectionTeamIds = new Set(espnProjectionByTeam.keys());
 
 const previousProjectionHistory = previousScoreboard?.projectionHistory || [];
 const currentProjectionSnapshot = {
@@ -221,11 +287,11 @@ await writeFile("data/current/scoreboard.json", JSON.stringify({
   scores: currentScores,
   median,
   projectedMedian,
-  projectionSources: ["ESPN"],
-  probabilityModel: "Site-calculated Monte Carlo using ESPN live projections and historical team scoring volatility",
+  projectionSources: ["ESPN player projections"],
+  probabilityModel: "Site-calculated live projections from ESPN player projections plus Monte Carlo uncertainty",
   probabilitySimulations: SIMULATIONS,
   projectionHistory
 }, null, 2) + "\n");
 
 console.log(`Updated live scoreboard for Week ${currentWeek} with ${currentScores.length} teams; ESPN live projections available for ${liveProjectionTeamIds.size} teams.`);
-if (liveProjectionTeamIds.size === 0) console.warn("WARNING: ESPN returned no live projections; projection fields are left null rather than using stale weekly projections.");
+if (liveProjectionTeamIds.size === 0) console.warn("WARNING: No player-level ESPN projections were available for live projection calculation.");
