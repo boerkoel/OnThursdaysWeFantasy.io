@@ -460,6 +460,12 @@ function buildMarqueeStories(keyPlays = []) {
   else if(close) add("LEAGUE GOSSIP","👀 League gossip: " + close.a.team + " and " + close.b.team + " are separated by " + money(close.diff) + " pts. Somebody's Sunday just got interesting.",26-close.diff);
   return stories.filter((story,i,arr)=>arr.findIndex(x=>x.text===story.text)===i).sort((a,b)=>b.score-a.score);
 }
+const keyPlays = await buildKeyPlays();
+await writeJson("data/current/key-plays.json", {
+  week: currentWeek,
+  updatedAt: new Date().toISOString(),
+  plays: keyPlays
+});
 const marqueeStories=buildMarqueeStories(keyPlays);
 await writeJson("data/current/marquee.json",{week:currentWeek,lastUpdated:new Date().toISOString(),stories:marqueeStories});
 
