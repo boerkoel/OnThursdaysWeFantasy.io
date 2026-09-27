@@ -184,19 +184,11 @@ try {
     if (normalized.includes(full)) return true;
     if (parts.length >= 2 && normalized.includes(parts.slice(-2).join(" "))) return true;
 
-    // Most ESPN PBP descriptions use the compact "J.Allen" / "A.St. Brown"
-    // form rather than the player's full name. Match first initial + last name
-    // so non-Lions games are attributed too.
+    // ESPN PBP commonly uses compact names such as "J.Allen" or "A.St. Brown".
     const firstInitial = parts[0]?.[0];
     const lastName = parts[parts.length - 1];
     if (!firstInitial || !lastName) return false;
-    const escapedLast = lastName.replace(/[.*+?^$\\{}()|[\]\\]/g, "\\  function playerNameMatches(text, player) {
-    const normalized = text.toLowerCase();
-    const full = player.player.toLowerCase();
-    const parts = full.split(/\s+/);
-    return normalized.includes(full) ||
-      (parts.length >= 2 && normalized.includes(parts.slice(-2).join(" ")));
-  }");
+    const escapedLast = lastName.replace(/[.*+?^$\\{}()|[\]\\]/g, "\\$&");
     return new RegExp("\\b" + firstInitial + "\\.?\\s*" + escapedLast + "\\b", "i").test(text);
   }
 
