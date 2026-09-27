@@ -68,6 +68,7 @@ jobs:
         if: steps.window.outputs.active == 'true' || inputs.force_update == true || github.event_name == 'workflow_run'
         env:
           PREVIOUS_SCOREBOARD_PATH: /tmp/previous-scoreboard.json
+          LIVE_ONLY: "true"
         run: node scripts/calculate-stats.js
       - name: Commit live data
         if: steps.window.outputs.active == 'true' || inputs.force_update == true || github.event_name == 'workflow_run'
