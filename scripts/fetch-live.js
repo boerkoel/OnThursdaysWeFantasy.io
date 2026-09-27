@@ -11,12 +11,13 @@ if (!espnS2 || !swid) throw new Error("Missing ESPN authentication secrets.");
 const matchup = JSON.parse(await readFile("data/current/mMatchup.json", "utf8"));
 const scoringPeriodId = Number(matchup.scoringPeriodId || 1);
 
-async function fetchJson(url) {
+async function fetchJson(url, extraHeaders = {}) {
   const response = await fetch(url, {
     headers: {
       Accept: "application/json",
       "User-Agent": "OnThursdaysWeFantasy/1.0",
-      Cookie: `espn_s2=${espnS2}; SWID=${swid}`
+      Cookie: `espn_s2=${espnS2}; SWID=${swid}`,
+      ...extraHeaders
     }
   });
 
