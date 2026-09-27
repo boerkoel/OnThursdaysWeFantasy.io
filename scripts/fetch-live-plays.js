@@ -1,6 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 
 const season = process.env.ESPN_SEASON || "2026";
+const includeCompleted = process.env.ESPN_INCLUDE_COMPLETED === "true";
 
 async function readJson(path, fallback = null) {
   try { return JSON.parse(await readFile(path, "utf8")); }
@@ -80,7 +81,8 @@ try {
   const relevantGames = (nflScoreboard.events || []).filter(event => {
     const competition = event.competitions?.[0];
     const state = competition?.status?.type?.state;
-    if (state !== "in") return false;
+    if (!includeCompleted && state !== "in") return false;
+    if (includeCompleted && state !== "in" && state !== "post") return false;
     return (competition.competitors || []).some(c => playerMapByProTeam.has(Number(c.id || c.team?.id)));
   });
 
