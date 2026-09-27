@@ -59,6 +59,7 @@ jobs:
         continue-on-error: true
         env:
           ESPN_SEASON: "2026"
+          ESPN_INCLUDE_COMPLETED: ${{ inputs.force_update == true && 'true' || 'false' }}
         run: node scripts/fetch-live-plays.js
       - name: Recalculate live stories
         if: steps.window.outputs.active == 'true' || inputs.force_update == true || github.event_name == 'workflow_run'
