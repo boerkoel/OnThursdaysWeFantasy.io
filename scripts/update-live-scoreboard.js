@@ -133,17 +133,28 @@ function rosterEntriesForTeam(teamId) {
     [];
 }
 
+// Starters whose NFL game hasn't finished. A team with none left can no longer
+// change its score, which decides whether an outcome is still possible. If the
+// NFL schedule couldn't be fetched, assume everyone is still playing.
+const startersLeftByTeam = new Map();
+
 for (const teamId of teams.keys()) {
   const entries = rosterEntriesForTeam(teamId)
-    .filter(entry => Number(entry.lineupSlotId) !== 20);
+    .filter(entry => Number(entry.lineupSlotId) !== 20 && Number(entry.lineupSlotId) !== 21);
 
   // Store only points still expected from the lineup. The live team score
   // is added separately, so already-scored points are never counted twice.
   let remainingProjection = 0;
   let hasProjection = false;
+  let startersLeft = 0;
 
   for (const entry of entries) {
     const player = entry.playerPoolEntry?.player;
+    if (player) {
+      const nflGame = nflGamesByTeam.get(Number(player.proTeamId));
+      // Teams missing from the week's schedule are on bye.
+      if (!nflWeek || (nflGame && !nflGame.completed)) startersLeft++;
+    }
     // mRoster's appliedStatTotal is season-to-date, so use this week's actual.
     const weeklyActual = weeklyStat(player, 0);
     const actual = Number.isFinite(weeklyActual) ? weeklyActual : 0;
@@ -165,6 +176,7 @@ for (const teamId of teams.keys()) {
     // simple percentage-of-clock calculation.
     remainingProjection += Math.max(0, fullProjection - actual);
   }
+  startersLeftByTeam.set(teamId, startersLeft);
 
   if (hasProjection) {
     const currentScore = liveByTeam.get(teamId) ?? 0;
@@ -300,13 +312,33 @@ for (const team of probabilityTeams) {
   simulatedSdByTeam.set(team.teamId, Math.sqrt(variance));
 }
 
+// While an outcome is still mathematically possible either way, start every
+// team with one simulated success and one failure (a Laplace prior), so the
+// odds never read exactly 0% or 100%. Once an outcome is locked (assuming
+// scores can't go down), report it exactly.
+const isLocked = teamId => startersLeftByTeam.get(teamId) === 0;
+const possibleOdds = count => round(((count + 1) / (SIMULATIONS + 2)) * 100);
+
+// A team is surely in the top half if too few others could still pass its
+// current score, and surely in the bottom half if it's done and enough
+// others are already ahead of it.
+const halfOfLeague = currentScores.length / 2;
+function lockedMedianOdds(score) {
+  const others = currentScores.filter(s => s.teamId !== score.teamId);
+  const couldFinishAhead = others.filter(s => !isLocked(s.teamId) || Number(s.score) > Number(score.score)).length;
+  if (couldFinishAhead < halfOfLeague) return 100;
+  const alreadyAhead = others.filter(s => Number(s.score) > Number(score.score)).length;
+  if (isLocked(score.teamId) && alreadyAhead >= halfOfLeague) return 0;
+  return null;
+}
+
 for (const score of currentScores) {
   const espnProjection = Number(score.projection?.espn);
   const sd = simulatedSdByTeam.get(score.teamId) || 0;
   const aboveCount = aboveMedianCounts.get(score.teamId) || 0;
 
   score.projectionSd = round(sd);
-  score.aboveMedianProbability = round((aboveCount / SIMULATIONS) * 100);
+  score.aboveMedianProbability = lockedMedianOdds(score) ?? possibleOdds(aboveCount);
   score.belowMedianProbability = round(100 - score.aboveMedianProbability);
   score.medianDistanceSd = sd > 0
     ? round((espnProjection - projectedMedian) / sd)
@@ -322,9 +354,15 @@ for (const matchup of currentWeekMatchups) {
   if (matchup.completed) {
     home.winProbability = matchup.winner === "HOME" ? 100 : 0;
     away.winProbability = matchup.winner === "AWAY" ? 100 : 0;
+  } else if ((isLocked(home.teamId) && isLocked(away.teamId)) ||
+             (isLocked(home.teamId) && home.score < away.score) ||
+             (isLocked(away.teamId) && away.score < home.score)) {
+    // The trailing team has no one left to play (or both are done).
+    home.winProbability = home.score > away.score ? 100 : home.score < away.score ? 0 : 50;
+    away.winProbability = round(100 - home.winProbability);
   } else {
-    home.winProbability = round(((winCounts.get(home.teamId) || 0) / SIMULATIONS) * 100);
-    away.winProbability = round(((winCounts.get(away.teamId) || 0) / SIMULATIONS) * 100);
+    home.winProbability = possibleOdds(winCounts.get(home.teamId) || 0);
+    away.winProbability = possibleOdds(winCounts.get(away.teamId) || 0);
   }
 }
  

@@ -1,7 +1,7 @@
 name: Update Live Data
 
 # GitHub's cron is best-effort and often skips frequent schedules for hours,
-# so each run schedules the next one itself: every ~5 minutes while an NFL
+# so each run schedules the next one itself: every ~2 minutes while an NFL
 # game window is open, otherwise it sleeps until the next window opens (at
 # most 5.5 hours per run). The cron below only restarts the chain if it breaks.
 on:
@@ -132,7 +132,7 @@ jobs:
         run: |
           MAX_IDLE=19800  # 5.5 hours, inside the job timeout
           if [ "$ACTIVE" = "true" ]; then
-            DELAY=210     # plus ~1-2 minutes of work = ~5 minute cadence
+            DELAY=75      # plus ~45 seconds of work = ~2 minute cadence
           elif [ -z "$ACTIVE" ]; then
             DELAY=300     # window check failed; try again soon
           elif [ -n "$NEXT_WINDOW_IN" ] && [ "$NEXT_WINDOW_IN" -lt "$MAX_IDLE" ]; then
