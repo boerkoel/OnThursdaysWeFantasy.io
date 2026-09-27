@@ -1404,113 +1404,119 @@ function swapOptimalImpact(teamId, outgoingPlayerId, incomingEntryByWeek) {
   };
 }
 
-const teamIdsForTrades = [...teams.keys()].map(Number);
-for (let i = 0; i < teamIdsForTrades.length; i++) {
-  const teamAId = teamIdsForTrades[i];
-  const teamAPlayers = currentRosterPlayersByTeam.get(teamAId) || [];
-
-  for (let j = i + 1; j < teamIdsForTrades.length; j++) {
-    const teamBId = teamIdsForTrades[j];
-    const teamBPlayers = currentRosterPlayersByTeam.get(teamBId) || [];
-    const trades = [];
-
-    for (const playerA of teamAPlayers) {
-      // Only evaluate reasonably close ROS values. This removes absurd
-      // suggestions and avoids expensive historical simulations.
-      if (!Number.isFinite(playerA.rosRank)) continue;
-
-      const incomingForB = new Map();
-      for (const week of completedWeeks) {
-        const rosterA = weeklyRosterForTeam(week, teamAId);
-        const entryA = rosterA?.roster?.entries?.find(e => Number(e.playerId) === playerA.playerId);
-        if (entryA) incomingForB.set(week, entryA);
-      }
-      if (!incomingForB.size) continue;
-
-      for (const playerB of teamBPlayers) {
-        // Same-position swaps are excluded from this signal.
-        if (playerA.position && playerB.position && playerA.position === playerB.position) continue;
-
-        // Keep only trades whose FantasyPros ROS PPR ranks are within 25 spots.
-        if (!Number.isFinite(playerB.rosRank) || Math.abs(playerA.rosRank - playerB.rosRank) > 18) continue;
-
-        const incomingForA = new Map();
+if (process.env.LIVE_ONLY === "true") {
+  console.log("calculate-stats: skipping win-win trade simulations for live update; daily ESPN update owns trade analysis.");
+} else {
+  const teamIdsForTrades = [...teams.keys()].map(Number);
+  for (let i = 0; i < teamIdsForTrades.length; i++) {
+    const teamAId = teamIdsForTrades[i];
+    const teamAPlayers = currentRosterPlayersByTeam.get(teamAId) || [];
+  
+    for (let j = i + 1; j < teamIdsForTrades.length; j++) {
+      const teamBId = teamIdsForTrades[j];
+      const teamBPlayers = currentRosterPlayersByTeam.get(teamBId) || [];
+      const trades = [];
+  
+      for (const playerA of teamAPlayers) {
+        // Only evaluate reasonably close ROS values. This removes absurd
+        // suggestions and avoids expensive historical simulations.
+        if (!Number.isFinite(playerA.rosRank)) continue;
+  
+        const incomingForB = new Map();
         for (const week of completedWeeks) {
-          const rosterB = weeklyRosterForTeam(week, teamBId);
-          const entryB = rosterB?.roster?.entries?.find(e => Number(e.playerId) === playerB.playerId);
-          if (entryB) incomingForA.set(week, entryB);
+          const rosterA = weeklyRosterForTeam(week, teamAId);
+          const entryA = rosterA?.roster?.entries?.find(e => Number(e.playerId) === playerA.playerId);
+          if (entryA) incomingForB.set(week, entryA);
         }
-        if (!incomingForA.size) continue;
-
-        const impactA = swapOptimalImpact(teamAId, playerA.playerId, incomingForA);
-        const impactB = swapOptimalImpact(teamBId, playerB.playerId, incomingForB);
-        if (!impactA.weeksEvaluated || !impactB.weeksEvaluated) continue;
-
-        // A true win-win trade must add at least one net win to both teams.
-        // Lineup-point gains alone are not enough to qualify.
-        const meaningfulA = impactA.winsAdded >= 1 && impactA.boost > 0;
-        const meaningfulB = impactB.winsAdded >= 1 && impactB.boost > 0;
-        if (!meaningfulA || !meaningfulB) continue;
-
-        trades.push({
-          otherTeamId:teamBId,
-          otherTeam:teams.get(teamBId)?.name || `Team ${teamBId}`,
-          givePlayerId:playerA.playerId,
-          givePlayer:playerA.player,
-          givePosition:playerA.position,
-          giveRosRank:playerA.rosRank,
-          getPlayerId:playerB.playerId,
-          getPlayer:playerB.player,
-          getPosition:playerB.position,
-          getRosRank:playerB.rosRank,
-          yourBoost:impactA.boost,
-          yourH2hWinsAdded:impactA.h2hWinsAdded,
-          yourMedianWinsAdded:impactA.medianWinsAdded,
-          yourWinsAdded:impactA.winsAdded,
-          theirBoost:impactB.boost,
-          theirH2hWinsAdded:impactB.h2hWinsAdded,
-          theirMedianWinsAdded:impactB.medianWinsAdded,
-          theirWinsAdded:impactB.winsAdded,
-          weeksEvaluated:Math.min(impactA.weeksEvaluated, impactB.weeksEvaluated)
-        });
+        if (!incomingForB.size) continue;
+  
+        for (const playerB of teamBPlayers) {
+          // Same-position swaps are excluded from this signal.
+          if (playerA.position && playerB.position && playerA.position === playerB.position) continue;
+  
+          // Keep only trades whose FantasyPros ROS PPR ranks are within 25 spots.
+          if (!Number.isFinite(playerB.rosRank) || Math.abs(playerA.rosRank - playerB.rosRank) > 18) continue;
+  
+          const incomingForA = new Map();
+          for (const week of completedWeeks) {
+            const rosterB = weeklyRosterForTeam(week, teamBId);
+            const entryB = rosterB?.roster?.entries?.find(e => Number(e.playerId) === playerB.playerId);
+            if (entryB) incomingForA.set(week, entryB);
+          }
+          if (!incomingForA.size) continue;
+  
+          const impactA = swapOptimalImpact(teamAId, playerA.playerId, incomingForA);
+          const impactB = swapOptimalImpact(teamBId, playerB.playerId, incomingForB);
+          if (!impactA.weeksEvaluated || !impactB.weeksEvaluated) continue;
+  
+          // A true win-win trade must add at least one net win to both teams.
+          // Lineup-point gains alone are not enough to qualify.
+          const meaningfulA = impactA.winsAdded >= 1 && impactA.boost > 0;
+          const meaningfulB = impactB.winsAdded >= 1 && impactB.boost > 0;
+          if (!meaningfulA || !meaningfulB) continue;
+  
+          trades.push({
+            otherTeamId:teamBId,
+            otherTeam:teams.get(teamBId)?.name || `Team ${teamBId}`,
+            givePlayerId:playerA.playerId,
+            givePlayer:playerA.player,
+            givePosition:playerA.position,
+            giveRosRank:playerA.rosRank,
+            getPlayerId:playerB.playerId,
+            getPlayer:playerB.player,
+            getPosition:playerB.position,
+            getRosRank:playerB.rosRank,
+            yourBoost:impactA.boost,
+            yourH2hWinsAdded:impactA.h2hWinsAdded,
+            yourMedianWinsAdded:impactA.medianWinsAdded,
+            yourWinsAdded:impactA.winsAdded,
+            theirBoost:impactB.boost,
+            theirH2hWinsAdded:impactB.h2hWinsAdded,
+            theirMedianWinsAdded:impactB.medianWinsAdded,
+            theirWinsAdded:impactB.winsAdded,
+            weeksEvaluated:Math.min(impactA.weeksEvaluated, impactB.weeksEvaluated)
+          });
+        }
       }
-    }
-
-    trades.sort((a,b) =>
-      Math.max(b.yourWinsAdded, b.theirWinsAdded) - Math.max(a.yourWinsAdded, a.theirWinsAdded) ||
-      (b.yourBoost + b.theirBoost) - (a.yourBoost + a.theirBoost)
-    );
-
-    if (trades.length) {
-      const topTrades = trades.slice(0,3);
-      winWinTradesByTeam.get(teamAId).push(...topTrades.map(t => ({...t, perspective:"A"})));
-      winWinTradesByTeam.get(teamBId).push(...topTrades.map(t => ({
-        ...t,
-        otherTeamId:teamAId,
-        otherTeam:teams.get(teamAId)?.name || `Team ${teamAId}`,
-        givePlayerId:t.getPlayerId,
-        givePlayer:t.getPlayer,
-        givePosition:t.getPosition,
-        getPlayerId:t.givePlayerId,
-        getPlayer:t.givePlayer,
-        getPosition:t.givePosition,
-        getRosRank:t.giveRosRank,
-        giveRosRank:t.getRosRank,
-        yourBoost:t.theirBoost,
-        yourH2hWinsAdded:t.theirH2hWinsAdded,
-        yourMedianWinsAdded:t.theirMedianWinsAdded,
-        yourWinsAdded:t.theirWinsAdded,
-        theirBoost:t.yourBoost,
-        theirH2hWinsAdded:t.yourH2hWinsAdded,
-        theirMedianWinsAdded:t.yourMedianWinsAdded,
-        theirWinsAdded:t.yourWinsAdded,
-        perspective:"B"
-      })));
+  
+      trades.sort((a,b) =>
+        Math.max(b.yourWinsAdded, b.theirWinsAdded) - Math.max(a.yourWinsAdded, a.theirWinsAdded) ||
+        (b.yourBoost + b.theirBoost) - (a.yourBoost + a.theirBoost)
+      );
+  
+      if (trades.length) {
+        const topTrades = trades.slice(0,3);
+        winWinTradesByTeam.get(teamAId).push(...topTrades.map(t => ({...t, perspective:"A"})));
+        winWinTradesByTeam.get(teamBId).push(...topTrades.map(t => ({
+          ...t,
+          otherTeamId:teamAId,
+          otherTeam:teams.get(teamAId)?.name || `Team ${teamAId}`,
+          givePlayerId:t.getPlayerId,
+          givePlayer:t.getPlayer,
+          givePosition:t.getPosition,
+          getPlayerId:t.givePlayerId,
+          getPlayer:t.givePlayer,
+          getPosition:t.givePosition,
+          getRosRank:t.giveRosRank,
+          giveRosRank:t.getRosRank,
+          yourBoost:t.theirBoost,
+          yourH2hWinsAdded:t.theirH2hWinsAdded,
+          yourMedianWinsAdded:t.theirMedianWinsAdded,
+          yourWinsAdded:t.theirWinsAdded,
+          theirBoost:t.yourBoost,
+          theirH2hWinsAdded:t.yourH2hWinsAdded,
+          theirMedianWinsAdded:t.yourMedianWinsAdded,
+          theirWinsAdded:t.yourWinsAdded,
+          perspective:"B"
+        })));
+      }
     }
   }
+  
+  
+  console.log(`calculate-stats: win-win trade simulations completed in ${Date.now() - tradesStartedAt} ms`);
 }
 
-console.log(`calculate-stats: win-win trade simulations completed in ${Date.now() - tradesStartedAt} ms`);
 
 for (const teamId of teams.keys()) {
   const unique = new Map();
