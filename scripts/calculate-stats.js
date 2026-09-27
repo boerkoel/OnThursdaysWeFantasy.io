@@ -318,7 +318,12 @@ for (const score of currentScores) {
 async function buildKeyPlays() {
   const plays = await readJson("data/current/live-plays.json").catch(() => ({ plays: [] }));
   const previousScores = new Map((previousScoreboard?.week === currentWeek ? (previousScoreboard.scores || []) : []).map(s => [s.teamId, s]));
-  const cutoff = previousScoreboard?.lastUpdated ? new Date(previousScoreboard.lastUpdated).getTime() : 0;
+  // ESPN play timestamps can lag the live scoreboard by a minute or two.
+  // Give the play feed a small grace window so a real momentum play is not
+  // discarded simply because its timestamp lands just before the prior snapshot.
+  const cutoff = previousScoreboard?.lastUpdated
+    ? new Date(previousScoreboard.lastUpdated).getTime() - 2 * 60 * 1000
+    : 0;
   const candidates = [];
 
   for (const matchup of currentWeekMatchups) {
@@ -334,7 +339,11 @@ async function buildKeyPlays() {
       const matchupPlays = (plays.plays || [])
         .filter(p => Number(p.matchupId) === Number(matchup.id) && Number(p.fantasyTeamId) === Number(teamId))
         .filter(p => !cutoff || !p.wallclock || new Date(p.wallclock).getTime() >= cutoff)
-        .sort((a,b) => Math.abs(Number(b.points)) - Math.abs(Number(a.points)));
+        .sort((a,b) => {
+          const aTime = a.wallclock ? new Date(a.wallclock).getTime() : 0;
+          const bTime = b.wallclock ? new Date(b.wallclock).getTime() : 0;
+          return bTime - aTime;
+        });
 
       const play = matchupPlays[0];
       if (!play) continue;
