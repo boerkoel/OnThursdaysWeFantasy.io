@@ -125,6 +125,50 @@ try {
         matched.push({ fantasyPlayer, fantasyPoints });
       }
 
+      // Some ESPN CDN play payloads omit participant objects or expose them
+      // differently. Fall back to the play text + play type so the feed still
+      // works when ESPN gives us a perfectly usable play description.
+      if (!matched.length) {
+        const text = String(play.shortText || play.text || "").trim();
+        const normalizedText = text.toLowerCase();
+        const yardage = Number(play.statYardage);
+        const typeId = Number(play.type?.id);
+        const nameMatches = [...playerMap.values()].filter(p => {
+          const full = p.player.toLowerCase();
+          const parts = full.split(/\s+/);
+          return normalizedText.includes(full) ||
+            (parts.length >= 2 && normalizedText.includes(parts.slice(-2).join(" ")));
+        });
+
+        for (const fantasyPlayer of nameMatches) {
+          let fantasyPoints = 0;
+          if (typeId === 5 && Number.isFinite(yardage)) {
+            fantasyPoints += yardage * (scoringRules.get(statIds.rushingYards) || 0);
+          } else if (typeId === 24 && Number.isFinite(yardage)) {
+            fantasyPoints += yardage * (scoringRules.get(statIds.receivingYards) || 0);
+            fantasyPoints += scoringRules.get(statIds.receivingReceptions) || 0;
+          } else if (typeId === 67 || typeId === 68 || typeId === 36 || /touchdown/i.test(text)) {
+            if (typeId === 67) fantasyPoints += scoringRules.get(statIds.passingTouchdowns) || 0;
+            else if (typeId === 68) fantasyPoints += scoringRules.get(statIds.rushingTouchdowns) || 0;
+            else if (typeId === 36) fantasyPoints += 6;
+            else if (/pass/i.test(text) && /touchdown/i.test(text)) fantasyPoints += scoringRules.get(statIds.receivingTouchdowns) || 0;
+            else fantasyPoints += scoringRules.get(statIds.rushingTouchdowns) || 0;
+          } else if (typeId === 59) {
+            const distance = Number(play.statYardage);
+            const points = distance >= 50 ? scoringRules.get(statIds.madeFieldGoalsFrom50Plus)
+              : distance >= 40 ? scoringRules.get(statIds.madeFieldGoalsFrom40To49)
+              : scoringRules.get(statIds.madeFieldGoalsFromUnder40);
+            fantasyPoints += points || 0;
+          } else if (typeId === 60) {
+            fantasyPoints += scoringRules.get(statIds.missedFieldGoals) || 0;
+          } else if (typeId === 61) {
+            fantasyPoints += scoringRules.get(statIds.madeExtraPoints) || 0;
+          }
+
+          if (fantasyPoints !== 0) matched.push({ fantasyPlayer, fantasyPoints });
+        }
+      }
+
       if (!matched.length) continue;
 
       const uniquePlayers = [];
