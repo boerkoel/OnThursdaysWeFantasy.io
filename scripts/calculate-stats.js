@@ -330,6 +330,7 @@ const mcProjectedStdDev = mcProjectedValues.length
   ? Math.sqrt(mcProjectedValues.reduce((sum, value) => sum + Math.pow(value - mcProjectedMean, 2), 0) / mcProjectedValues.length)
   : null;
 medianCloseThreshold = Number.isFinite(mcProjectedStdDev) ? round(mcProjectedStdDev * 0.5) : 6;
+currentProjectionSnapshot.scores = [...monteCarloProjectionByTeam.entries()].map(([teamId, projection]) => ({teamId, projection}));
 
 const probabilityByTeam = new Map(probabilityTeams.map(s => {
   const matchup = matchupLookup.get(s.matchupId);
