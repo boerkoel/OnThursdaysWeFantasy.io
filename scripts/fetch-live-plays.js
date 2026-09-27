@@ -160,8 +160,14 @@ try {
       console.warn(`ESPN summary play feed failed for ${eventId}: ${error.message}`);
     }
 
-    const data = await fetchJson(`https://cdn.espn.com/core/nfl/playbyplay?xhr=1&gameId=${eventId}`);
-    return data?.gamepackageJSON?.plays || data?.plays || [];
+    const data = await fetchJson(`https://cdn.espn.com/core/nfl/game?xhr=1&gameId=${eventId}`);
+    const game = data?.gamepackageJSON || data || {};
+    const drivePlays = [
+      ...(game?.drives?.previous || []).flatMap(drive => drive?.plays || []),
+      ...(game?.drives?.current?.plays || [])
+    ];
+    if (drivePlays.length) return drivePlays;
+    return game?.plays || [];
   }
 
   function playerNameMatches(text, player) {
