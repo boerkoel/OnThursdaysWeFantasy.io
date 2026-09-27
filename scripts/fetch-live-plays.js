@@ -25,13 +25,11 @@ const previous = await readJson("data/current/live-plays.json", { week: currentW
 
 try {
   const playerMap = new Map();
-  const matchupByTeam = new Map();
 
   for (const game of (boxscore?.schedule || []).filter(g => Number(g.matchupPeriodId) === currentWeek)) {
     const matchupId = Number(game.id);
     for (const side of [game.home, game.away]) {
       if (!side?.teamId) continue;
-      matchupByTeam.set(Number(side.teamId), matchupId);
       for (const entry of (side.rosterForCurrentScoringPeriod?.entries || [])) {
         if (Number(entry.lineupSlotId) === 20 || Number(entry.lineupSlotId) === 21) continue;
         const player = entry.playerPoolEntry?.player;
@@ -101,12 +99,88 @@ try {
     return data?.gamepackageJSON?.plays || data?.plays || [];
   }
 
+  function playerNameMatches(text, player) {
+    const normalized = text.toLowerCase();
+    const full = player.player.toLowerCase();
+    const parts = full.split(/\s+/);
+    return normalized.includes(full) ||
+      (parts.length >= 2 && normalized.includes(parts.slice(-2).join(" ")));
+  }
+
+  function yardageFromText(text) {
+    const patterns = [
+      /for (-?\d+) yards?/i,
+      /(-?\d+) yard(?:s)? (?:rush|run|reception|catch|pass)/i,
+      /\b(-?\d+) yd\b/i
+    ];
+    for (const pattern of patterns) {
+      const match = text.match(pattern);
+      if (match) return Number(match[1]);
+    }
+    return null;
+  }
+
+  function fantasyPointsFromText(text, fantasyPlayer, play) {
+    const lower = text.toLowerCase();
+    const yards = Number.isFinite(Number(play.statYardage)) ? Number(play.statYardage) : yardageFromText(text);
+    let points = 0;
+
+    const isPassCompletion =
+      /pass complete|complete to|pass to .* for \d+ yards|\b\d+ yd pass from/i.test(text);
+    const isRush =
+      /rush|rushed|run for|running play|left end|right end|up the middle|scrambles/i.test(text);
+    const isReception =
+      isPassCompletion && (lower.includes(fantasyPlayer.player.toLowerCase()) || /catch|complete to|pass to/i.test(text));
+
+    if (isRush && !isPassCompletion && Number.isFinite(yards)) {
+      points += yards * (scoringRules.get(statIds.rushingYards) || 0);
+    }
+
+    if (isReception && Number.isFinite(yards)) {
+      points += yards * (scoringRules.get(statIds.receivingYards) || 0);
+      points += scoringRules.get(statIds.receivingReceptions) || 0;
+    }
+
+    if (/touchdown/i.test(text)) {
+      if (isPassCompletion || /receiv|caught|catch/i.test(text)) {
+        points += scoringRules.get(statIds.receivingTouchdowns) || 0;
+      } else if (isRush || /rushing|rush/i.test(text)) {
+        points += scoringRules.get(statIds.rushingTouchdowns) || 0;
+      } else if (/intercepted|interception/i.test(text)) {
+        // Conservative: don't assign an interception return to a fantasy player
+        // unless ESPN identifies that returner as a participant.
+      } else {
+        points += scoringRules.get(statIds.rushingTouchdowns) || 0;
+      }
+    }
+
+    if (/2-point conversion/i.test(text)) {
+      if (isPassCompletion || /receiv|caught|catch/i.test(text)) {
+        points += scoringRules.get(statIds.receiving2PtConversions) || 0;
+      } else if (isRush) {
+        points += scoringRules.get(statIds.rushing2PtConversions) || 0;
+      }
+    }
+
+    if (/intercepted|interception/i.test(text) && /pass|thrown/i.test(text)) {
+      points += scoringRules.get(statIds.passingInterceptions) || 0;
+    }
+
+    if (/fumble/i.test(text) && /lost/i.test(text)) {
+      points += scoringRules.get(statIds.lostFumbles) || 0;
+    }
+
+    return Math.round(points * 100) / 100;
+  }
+
   const relevant = [];
   for (const event of relevantGames) {
     const plays = await getPlays(event.id);
-    const lastStats = new Map();
 
     for (const play of plays) {
+      const text = String(play.shortText || play.text || "").trim();
+      if (!text) continue;
+
       const participants = Array.isArray(play.participants) ? play.participants : [];
       const matched = [];
 
@@ -117,69 +191,31 @@ try {
         const fantasyPlayer = playerMap.get(playerId);
         if (!fantasyPlayer) continue;
 
-        const currentStats = {};
-        for (const stat of (participant.stats || [])) {
-          if (stat?.name && Number.isFinite(Number(stat.value))) currentStats[stat.name] = Number(stat.value);
-        }
-
-        const previousStats = lastStats.get(playerId) || {};
+        // ESPN's summary participant stats are not consistently shaped across
+        // feeds. Prefer them when present, otherwise derive the play from text.
         let fantasyPoints = 0;
-        for (const [name, value] of Object.entries(currentStats)) {
-          const statId = statIds[name];
-          if (!statId || !scoringRules.has(statId)) continue;
-          const delta = value - Number(previousStats[name] || 0);
-          if (Number.isFinite(delta) && delta !== 0) fantasyPoints += delta * scoringRules.get(statId);
+        for (const stat of (participant.stats || [])) {
+          const statId = statIds[stat?.name];
+          const value = Number(stat?.value);
+          if (statId && scoringRules.has(statId) && Number.isFinite(value)) {
+            fantasyPoints += value * scoringRules.get(statId);
+          }
         }
-        lastStats.set(playerId, currentStats);
 
+        if (!fantasyPoints) fantasyPoints = fantasyPointsFromText(text, fantasyPlayer, play);
         matched.push({ fantasyPlayer, fantasyPoints });
       }
 
-      // Some ESPN CDN play payloads omit participant objects or expose them
-      // differently. Fall back to the play text + play type so the feed still
-      // works when ESPN gives us a perfectly usable play description.
+      // Current ESPN summary plays often omit participant objects entirely.
+      // Match starters by the names appearing in the play description and
+      // calculate the fantasy impact from the same description.
       if (!matched.length) {
-        const text = String(play.shortText || play.text || "").trim();
-        const normalizedText = text.toLowerCase();
-        const yardage = Number(play.statYardage);
-        const typeId = Number(play.type?.id);
-        const nameMatches = [...playerMap.values()].filter(p => {
-          const full = p.player.toLowerCase();
-          const parts = full.split(/\s+/);
-          return normalizedText.includes(full) ||
-            (parts.length >= 2 && normalizedText.includes(parts.slice(-2).join(" ")));
-        });
-
-        for (const fantasyPlayer of nameMatches) {
-          let fantasyPoints = 0;
-          if (typeId === 5 && Number.isFinite(yardage)) {
-            fantasyPoints += yardage * (scoringRules.get(statIds.rushingYards) || 0);
-          } else if (typeId === 24 && Number.isFinite(yardage)) {
-            fantasyPoints += yardage * (scoringRules.get(statIds.receivingYards) || 0);
-            fantasyPoints += scoringRules.get(statIds.receivingReceptions) || 0;
-          } else if (typeId === 67 || typeId === 68 || typeId === 36 || /touchdown/i.test(text)) {
-            if (typeId === 67) fantasyPoints += scoringRules.get(statIds.passingTouchdowns) || 0;
-            else if (typeId === 68) fantasyPoints += scoringRules.get(statIds.rushingTouchdowns) || 0;
-            else if (typeId === 36) fantasyPoints += 6;
-            else if (/pass/i.test(text) && /touchdown/i.test(text)) fantasyPoints += scoringRules.get(statIds.receivingTouchdowns) || 0;
-            else fantasyPoints += scoringRules.get(statIds.rushingTouchdowns) || 0;
-          } else if (typeId === 59) {
-            const distance = Number(play.statYardage);
-            const points = distance >= 50 ? scoringRules.get(statIds.madeFieldGoalsFrom50Plus)
-              : distance >= 40 ? scoringRules.get(statIds.madeFieldGoalsFrom40To49)
-              : scoringRules.get(statIds.madeFieldGoalsFromUnder40);
-            fantasyPoints += points || 0;
-          } else if (typeId === 60) {
-            fantasyPoints += scoringRules.get(statIds.missedFieldGoals) || 0;
-          } else if (typeId === 61) {
-            fantasyPoints += scoringRules.get(statIds.madeExtraPoints) || 0;
-          }
-
+        for (const fantasyPlayer of playerMap.values()) {
+          if (!playerNameMatches(text, fantasyPlayer)) continue;
+          const fantasyPoints = fantasyPointsFromText(text, fantasyPlayer, play);
           if (fantasyPoints !== 0) matched.push({ fantasyPlayer, fantasyPoints });
         }
       }
-
-      if (!matched.length) continue;
 
       const uniquePlayers = [];
       const seen = new Set();
@@ -191,10 +227,6 @@ try {
 
       for (const { fantasyPlayer, fantasyPoints } of uniquePlayers) {
         if (fantasyPoints === 0) continue;
-        const text = String(play.shortText || play.text || "")
-          .replace(/^\([^)]*\)\s*/, "")
-          .trim();
-        if (!text) continue;
         relevant.push({
           id: `${event.id}-${play.id}-${fantasyPlayer.playerId}`,
           eventId: String(event.id),
@@ -203,7 +235,7 @@ try {
           playerId: fantasyPlayer.playerId,
           player: fantasyPlayer.player,
           points: Math.round(fantasyPoints * 100) / 100,
-          text,
+          text: text.replace(/^\([^)]*\)\s*/, "").trim(),
           clock: play.clock?.displayValue || "",
           period: Number(play.period?.number || 0),
           wallclock: play.wallclock || play.modified || null
@@ -225,8 +257,6 @@ try {
   console.log(`Updated live plays: ${plays.length} fantasy-relevant plays across ${relevantGames.length} active NFL games.`);
 } catch (error) {
   console.warn(`Live play feed unavailable: ${error.message}`);
-  // Keep the last good feed so a temporary ESPN public-API hiccup never
-  // interferes with the normal fantasy-score update.
   if (!previous || Number(previous.week) !== currentWeek) {
     await writeFile("data/current/live-plays.json", JSON.stringify({ week: currentWeek, updatedAt: null, plays: [] }, null, 2) + "\n");
   }
