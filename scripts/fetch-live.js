@@ -33,38 +33,46 @@ function hasMatchupDetails(data) {
 }
 
 async function fetchLiveBundle() {
-  const url = new URL(base);
-  url.searchParams.append("view", "mBoxscore");
-  url.searchParams.append("view", "mLiveScoring");
-  url.searchParams.append("view", "mScoreboard");
-  url.searchParams.set("scoringPeriodId", String(scoringPeriodId));
-
-  // ESPN's live views are more reliable when requested together with only
-  // scoringPeriodId. Adding matchupPeriodId can return schedule shells
-  // without the home/away matchup data we need.
-  const combined = await fetchJson(url);
-
-  if (hasMatchupDetails(combined)) {
-    return { liveScoring: combined, boxscore: combined, scoreboard: combined, mode: "combined" };
-  }
-
-  console.warn("Combined ESPN live response did not contain matchup details; trying individual live views.");
+  const fantasyFilter = JSON.stringify({
+    schedule: {
+      filterMatchupPeriodIds: {
+        value: [scoringPeriodId]
+      }
+    }
+  });
 
   async function fetchView(view, includeMatchupPeriod = false) {
     const viewUrl = new URL(base);
     viewUrl.searchParams.set("view", view);
     viewUrl.searchParams.set("scoringPeriodId", String(scoringPeriodId));
-    if (includeMatchupPeriod) viewUrl.searchParams.set("matchupPeriodId", String(scoringPeriodId));
-    return fetchJson(viewUrl);
+    if (includeMatchupPeriod) {
+      viewUrl.searchParams.set("matchupPeriodId", String(scoringPeriodId));
+    }
+
+    return fetchJson(viewUrl, {
+      "X-Fantasy-Filter": fantasyFilter
+    });
   }
 
+  // Request the detailed views separately. ESPN has recently returned a
+  // schedule shell when these views are combined, which contains matchup
+  // IDs but omits the home/away objects and live projections.
   const [liveScoring, boxscore, scoreboard] = await Promise.all([
     fetchView("mLiveScoring"),
     fetchView("mBoxscore", true),
     fetchView("mScoreboard")
   ]);
 
-  return { liveScoring, boxscore, scoreboard, mode: "individual" };
+  const sources = [liveScoring, boxscore, scoreboard];
+  const detailed = sources.find(hasMatchupDetails) || boxscore || liveScoring || scoreboard;
+  const mode = detailed === boxscore ? "boxscore" : detailed === liveScoring ? "liveScoring" : "scoreboard";
+
+  return {
+    liveScoring: detailed,
+    boxscore: detailed,
+    scoreboard: detailed,
+    mode
+  };
 }
 
 const { liveScoring, boxscore, scoreboard, mode } = await fetchLiveBundle();
