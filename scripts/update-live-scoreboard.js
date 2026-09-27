@@ -174,27 +174,6 @@ for (const teamId of teams.keys()) {
 
 const liveProjectionTeamIds = new Set(espnProjectionByTeam.keys());
 
-const previousProjectionHistory = previousScoreboard?.projectionHistory || [];
-const currentProjectionSnapshot = {
-  timestamp: new Date().toISOString(),
-  week: currentWeek,
-  scores: [...espnProjectionByTeam.entries()].map(([teamId, projection]) => ({ teamId, projection }))
-};
-const projectionHistory = [
-  ...previousProjectionHistory.filter(snapshot => Number(snapshot.week) === currentWeek),
-  currentProjectionSnapshot
-].slice(-4);
-
-const priorThreeSnapshots = projectionHistory.slice(0, -1).slice(-3);
-const recentProjectionAverage = new Map();
-for (const teamId of teams.keys()) {
-  const values = priorThreeSnapshots
-    .map(snapshot => (snapshot.scores || []).find(s => Number(s.teamId) === Number(teamId))?.projection)
-    .map(Number)
-    .filter(Number.isFinite);
-  if (values.length) recentProjectionAverage.set(teamId, values.reduce((sum, value) => sum + value, 0) / values.length);
-}
-
 const currentScores = currentWeekMatchups.flatMap(m => [
   { teamId: m.homeTeamId, opponentId: m.awayTeamId, score: liveByTeam.get(m.homeTeamId) ?? m.homeScore, opponentScore: liveByTeam.get(m.awayTeamId) ?? m.awayScore, matchupId: m.id },
   { teamId: m.awayTeamId, opponentId: m.homeTeamId, score: liveByTeam.get(m.awayTeamId) ?? m.awayScore, opponentScore: liveByTeam.get(m.homeTeamId) ?? m.homeScore, matchupId: m.id }
@@ -222,7 +201,6 @@ function medianOf(values) {
 }
 
 const median = medianOf(currentScores.map(s => Number(s.score)));
-const projectedMedian = medianOf(currentScores.map(s => Number(s.projectionAverage)));
 
 function historicalScores(teamId) {
   return completed.filter(m => m.homeTeamId === teamId || m.awayTeamId === teamId)
@@ -265,7 +243,9 @@ const SIMULATIONS = 10000;
 const rng = rngFactory(seed);
 const winCounts = new Map(probabilityTeams.map(s => [s.teamId, 0]));
 const aboveMedianCounts = new Map(probabilityTeams.map(s => [s.teamId, 0]));
+const projectionSums = new Map(probabilityTeams.map(s => [s.teamId, 0]));
 const matchupLookup = new Map(currentWeekMatchups.map(m => [m.id, m]));
+let medianSum = 0;
 
 for (let sim = 0; sim < SIMULATIONS; sim++) {
   const finals = probabilityTeams.map(s => ({
@@ -284,11 +264,56 @@ for (let sim = 0; sim < SIMULATIONS; sim++) {
     else if (away.score > home.score) winCounts.set(away.teamId, winCounts.get(away.teamId) + 1);
     else { winCounts.set(home.teamId, winCounts.get(home.teamId) + 0.5); winCounts.set(away.teamId, winCounts.get(away.teamId) + 0.5); }
   }
+  for (const final of finals) projectionSums.set(final.teamId, projectionSums.get(final.teamId) + final.score);
   const sortedFinals = [...finals].sort((a,b) => a.score - b.score);
   const middle = Math.floor(sortedFinals.length / 2);
   const medianFinal = sortedFinals.length >= 2 ? (sortedFinals[middle - 1].score + sortedFinals[middle].score) / 2 : null;
-  if (Number.isFinite(medianFinal)) for (const final of finals) if (final.score > medianFinal) aboveMedianCounts.set(final.teamId, aboveMedianCounts.get(final.teamId) + 1);
+  if (Number.isFinite(medianFinal)) {
+    medianSum += medianFinal;
+    for (const final of finals) if (final.score > medianFinal) aboveMedianCounts.set(final.teamId, aboveMedianCounts.get(final.teamId) + 1);
+  }
 }
+
+const monteCarloProjectionByTeam = new Map(
+  probabilityTeams.map(s => [s.teamId, round((projectionSums.get(s.teamId) || 0) / SIMULATIONS)])
+);
+const projectedMedian = round(medianSum / SIMULATIONS);
+
+const previousProjectionHistory = previousScoreboard?.projectionHistory || [];
+const priorThreeSnapshots = previousProjectionHistory
+  .filter(snapshot => Number(snapshot.week) === currentWeek)
+  .slice(-3);
+const recentProjectionAverage = new Map();
+for (const teamId of teams.keys()) {
+  const values = priorThreeSnapshots
+    .map(snapshot => (snapshot.scores || []).find(s => Number(s.teamId) === Number(teamId))?.projection)
+    .map(Number)
+    .filter(Number.isFinite);
+  if (values.length) recentProjectionAverage.set(teamId, values.reduce((sum, value) => sum + value, 0) / values.length);
+}
+
+for (const score of currentScores) {
+  const monteCarloProjection = monteCarloProjectionByTeam.get(score.teamId) ?? score.score;
+  const baseline = recentProjectionAverage.get(score.teamId);
+  const delta = Number.isFinite(monteCarloProjection) && Number.isFinite(baseline)
+    ? monteCarloProjection - baseline
+    : null;
+  score.projection = { espn: monteCarloProjection };
+  score.projectionAverage = monteCarloProjection;
+  score.projectionTrend = Number.isFinite(delta) && Math.abs(delta) >= 0.25
+    ? (delta > 0 ? "up" : "down")
+    : null;
+}
+
+const currentProjectionSnapshot = {
+  timestamp: new Date().toISOString(),
+  week: currentWeek,
+  scores: [...monteCarloProjectionByTeam.entries()].map(([teamId, projection]) => ({ teamId, projection }))
+};
+const projectionHistory = [
+  ...previousProjectionHistory.filter(snapshot => Number(snapshot.week) === currentWeek),
+  currentProjectionSnapshot
+].slice(-4);
 
 for (const score of currentScores) {
   const matchup = matchupLookup.get(score.matchupId);
@@ -303,8 +328,8 @@ await writeFile("data/current/scoreboard.json", JSON.stringify({
   scores: currentScores,
   median,
   projectedMedian,
-  projectionSources: ["ESPN player projections"],
-  probabilityModel: "Site-calculated live projections from ESPN player projections plus Monte Carlo uncertainty",
+  projectionSources: ["Monte Carlo simulations using ESPN player projections as inputs"],
+  probabilityModel: "10,000 Monte Carlo simulations using current scores, ESPN player projections, and historical scoring volatility",
   probabilitySimulations: SIMULATIONS,
   projectionHistory
 }, null, 2) + "\n");
