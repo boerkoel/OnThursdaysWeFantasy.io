@@ -274,7 +274,9 @@ const matchupLookup = new Map(currentWeekMatchups.map(m => [m.id, m]));
 for (let sim = 0; sim < SIMULATIONS; sim++) {
   const finals = probabilityTeams.map(s => ({
     teamId: s.teamId,
-    score: s.currentScore + (s.remainingProjection > 0 ? Math.max(0, s.remainingProjection + s.sd * normalSample(rng)) : s.currentScore)
+    score: s.remainingProjection > 0
+      ? s.currentScore + Math.max(0, s.remainingProjection + s.sd * normalSample(rng))
+      : s.currentScore
   }));
 
   for (const matchup of currentWeekMatchups) {
