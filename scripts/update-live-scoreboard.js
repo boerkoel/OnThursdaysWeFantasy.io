@@ -86,20 +86,9 @@ for (const g of projectionSchedules) {
       liveProjectionTeamIds.add(teamId);
       continue;
     }
-    const projection = (side.rosterForCurrentScoringPeriod?.entries || [])
-      .filter(entry => Number(entry.lineupSlotId) !== 20)
-      .reduce((sum, entry) => {
-        const stats = entry.playerPoolEntry?.player?.stats || [];
-        const weekly = stats.find(s =>
-          Number(s.scoringPeriodId) === currentWeek &&
-          Number(s.statSourceId) === 1 &&
-          Number(s.statSplitTypeId) === 1
-        );
-        return sum + Number(weekly?.appliedTotal ?? 0);
-      }, 0);
-    if (!espnProjectionByTeam.has(teamId) && projection > 0) {
-      espnProjectionByTeam.set(teamId, round(projection));
-    }
+    // Do not substitute the ordinary weekly projection here. This file is
+    // the live scoreboard, so a missing totalProjectedPointsLive must remain
+    // missing rather than masquerading as a live projection.
   }
 }
 
@@ -238,4 +227,4 @@ await writeFile("data/current/scoreboard.json", JSON.stringify({
   projectionHistory
 }, null, 2) + "\n");
 
-console.log(`Updated live scoreboard for Week ${currentWeek} with ${currentScores.length} teams; ESPN live projections available for ${liveProjectionTeamIds.size} teams.`);
+console.log(`Updated live scoreboard for Week ${currentWeek} with ${currentScores.length} teams; ESPN live projections available for ${liveProjectionTeamIds.size} teams.`);\nif (liveProjectionTeamIds.size === 0) console.warn("WARNING: ESPN returned no live projections; projection fields are left null rather than using stale weekly projections.");
