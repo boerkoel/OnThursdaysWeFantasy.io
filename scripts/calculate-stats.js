@@ -111,7 +111,7 @@ for (const event of [...(nflToday?.events || []), ...(nflTomorrow?.events || [])
   const status = competition.status?.type;
   const period = Number(status?.period || 0);
   const clock = String(status?.displayClock || "");
-  const clockMatch = clock.match(/^(\\d+):(\\d+)$/);
+  const clockMatch = clock.match(/^(\d+):(\d+)$/);
   const clockMinutes = clockMatch ? Number(clockMatch[1]) + Number(clockMatch[2]) / 60 : 0;
   const elapsedMinutes = status?.state === "pre"
     ? 0
