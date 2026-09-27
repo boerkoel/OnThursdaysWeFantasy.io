@@ -8,6 +8,7 @@ const previousProjectionHistory = previousScoreboard?.projectionHistory || [];
 const teamData = await readJson("data/current/mTeam.json");
 const matchupData = await readJson("data/current/mMatchup.json");
 const rosterData = await readJson("data/current/mRoster.json");
+const calcStartedAt = Date.now();
 const historicalRosterData = new Map();
 const draftData = await readJson("data/current/mDraftDetail.json").catch(() => ({draftDetail:{picks:[]}}));
 const draftPicks = draftData?.draftDetail?.picks || [];
@@ -306,6 +307,8 @@ const probabilityByTeam = new Map(probabilityTeams.map(s => {
     aboveMedianProbability: round(aboveMedianCounts.get(s.teamId) / SIMULATIONS * 100)
   }];
 }));
+
+console.log(`calculate-stats: Monte Carlo (${SIMULATIONS} sims) completed in ${Date.now() - calcStartedAt} ms`);
 
 for (const score of currentScores) {
   const probabilities = probabilityByTeam.get(score.teamId);
@@ -1331,6 +1334,7 @@ for (const team of teams.values()) {
 }
 
 const winWinTradesByTeam = new Map([...teams.keys()].map(teamId => [Number(teamId), []]));
+const tradesStartedAt = Date.now();
 
 const currentRosterPlayersByTeam = new Map();
 for (const team of teams.values()) {
@@ -1505,6 +1509,8 @@ for (let i = 0; i < teamIdsForTrades.length; i++) {
     }
   }
 }
+
+console.log(`calculate-stats: win-win trade simulations completed in ${Date.now() - tradesStartedAt} ms`);
 
 for (const teamId of teams.keys()) {
   const unique = new Map();
