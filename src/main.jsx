@@ -226,6 +226,30 @@ function App() {
   const marqueeStories = marquee.stories || [];
   const [marqueeIndex, setMarqueeIndex] = useState(0);
   useEffect(() => {
+    const loadedAt = scoreboard.lastUpdated || null;
+    const checkForUpdates = async () => {
+      try {
+        const response = await fetch("./data/current/metadata.json?ts=" + Date.now(), { cache: "no-store" });
+        if (!response.ok) return;
+        const latest = await response.json();
+        if (loadedAt && latest.fetchedAt && latest.fetchedAt !== loadedAt) {
+          const y = window.scrollY;
+          sessionStorage.setItem("preserveScrollY", String(y));
+          window.location.reload();
+        }
+      } catch {}
+    };
+    const timer = setInterval(checkForUpdates, 60000);
+    return () => clearInterval(timer);
+  }, []);
+  useEffect(() => {
+    const y = sessionStorage.getItem("preserveScrollY");
+    if (y != null) {
+      sessionStorage.removeItem("preserveScrollY");
+      requestAnimationFrame(() => window.scrollTo(0, Number(y)));
+    }
+  }, []);
+  useEffect(() => {
     if (marqueeStories.length < 2) return;
     const timer = setInterval(() => setMarqueeIndex(i => (i + 1) % marqueeStories.length), 6000);
     return () => clearInterval(timer);
