@@ -391,7 +391,7 @@
 .marquee-story{display:flex;align-items:baseline;gap:10px;min-width:0;animation:marquee-fade .35s ease}.marquee-story b{flex:0 0 auto;color:#b8c69b;font-size:9px;letter-spacing:.1em}.marquee-story span{color:#d0d3cb;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .marquee-dots{display:flex;gap:4px;align-items:center}.marquee-dots button{width:5px;height:5px;padding:0;border:0;border-radius:50%;background:#4a4e47;cursor:pointer}.marquee-dots button.active{background:#b8c69b;transform:scale(1.35)}
 @keyframes marquee-fade{from{opacity:.25;transform:translateY(2px)}to{opacity:1;transform:translateY(0)}}
-@media(max-width:600px){.league-marquee{grid-template-columns:auto minmax(0,1fr);gap:9px 10px;padding:11px 12px}.marquee-dots{grid-column:1 / -1;justify-content:center}.marquee-story{display:block}.marquee-story b{display:block;margin-bottom:3px}.marquee-story span{display:block;font-size:11px}.marquee-label strong{font-size:9px}.marquee-label small{display:none}}
+@media(max-width:600px){.league-marquee{grid-template-columns:auto minmax(0,1fr);gap:9px 10px;padding:11px 12px}.marquee-dots{grid-column:1 / -1;justify-content:center}.marquee-story{display:block;min-width:0}.marquee-story b{display:block;margin-bottom:3px}.marquee-story span{display:block;font-size:11px;white-space:normal;overflow:visible;text-overflow:clip;line-height:1.4}.marquee-label strong{font-size:9px}.marquee-label small{display:none}}
 
 
 /* Weekly recap story tiles */
