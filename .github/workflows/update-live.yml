@@ -9,7 +9,7 @@ on:
         default: false
         type: boolean
   schedule:
-    - cron: "*/2 * * * *"
+    - cron: "*/5 * * * *"
   workflow_run:
     workflows: ["Update ESPN data"]
     types: [completed]
@@ -59,6 +59,9 @@ jobs:
         continue-on-error: true
         env:
           ESPN_SEASON: "2026"
+          ESPN_LEAGUE_ID: "998599827"
+          ESPN_S2: ${{ secrets.ESPN_S2 }}
+          ESPN_SWID: ${{ secrets.ESPN_SWID }}
           ESPN_INCLUDE_COMPLETED: ${{ inputs.force_update == true && 'true' || 'false' }}
         run: node scripts/fetch-live-plays.js
       - name: Recalculate live stories
