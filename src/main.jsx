@@ -319,7 +319,7 @@ function App() {
           <span>{marqueeStories[marqueeIndex % marqueeStories.length].text}</span>
         </div>
         <div className="marquee-dots">{marqueeStories.map((story, i) => <button key={i} type="button" className={i === marqueeIndex % marqueeStories.length ? "active" : ""} aria-label={"Show " + story.type} onClick={() => setMarqueeIndex(i)}></button>)}</div>
-      </section> : null}>
+      </section> : null}
 
       <section id="scores" className="section">
         <div className="section-heading"><div><span className="section-kicker">RIGHT NOW</span><h2>Week {scoreboard.week} Scores</h2></div><span className="live-pill">{preGame ? "● NOT STARTED" : "● LIVE"}</span></div>
