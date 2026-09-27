@@ -167,13 +167,16 @@ for (const teamId of teams.keys()) {
     const game = nflGamesByTeam.get(Number(player?.proTeamId));
 
     if (game?.completed) {
+      // Completed games contribute only the actual score.
       continue;
-    } else if (game?.started) {
-      remainingProjection += Math.max(0, fullProjection - actual) *
-        Number(game.remainingFraction ?? 0.5);
-    } else {
-      remainingProjection += Math.max(0, fullProjection - actual);
     }
+
+    // For games that are not complete, ESPN's weekly projection represents
+    // the player's expected total. Since actual points are already included
+    // in currentScore, add only the unearned portion of that projection.
+    // Do not time-discount in-progress games: ESPN's live projection is not a
+    // simple percentage-of-clock calculation.
+    remainingProjection += Math.max(0, fullProjection - actual);
   }
 
   if (hasProjection) {
