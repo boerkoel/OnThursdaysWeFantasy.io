@@ -186,11 +186,24 @@ const projectedMedian = projectedValues.length % 2
     : null;
 
 // The live league median is always based on ESPN projected final scores.
-// Teams are considered "near the median" within 6 points, tightening to
-// 2.5 points on Monday for the final NFL game of the week.
+// The "near median" zone tightens as the Sunday game windows pass:
+// ±7.5 through Thursday, ±6 during the Sunday early window,
+// ±4.5 during the Sunday late window, and ±3 for Sunday night/Monday.
 const median = projectedMedian;
-const leagueWeekday = new Intl.DateTimeFormat("en-US", {timeZone:"America/Los_Angeles", weekday:"short"}).format(new Date());
-const medianCloseThreshold = leagueWeekday === "Mon" ? 2.5 : 6;
+const nowPacific = new Date(new Date().toLocaleString("en-US", {timeZone:"America/Los_Angeles"}));
+const leagueWeekday = nowPacific.toLocaleDateString("en-US", {weekday:"short"});
+const pacificMinutes = nowPacific.getHours() * 60 + nowPacific.getMinutes();
+const medianCloseThreshold = leagueWeekday === "Sun"
+  ? pacificMinutes >= 17 * 60
+    ? 3
+    : pacificMinutes >= 13 * 60
+      ? 4.5
+      : pacificMinutes >= 10 * 60
+        ? 6
+        : 7.5
+  : leagueWeekday === "Mon"
+    ? 3
+    : 7.5;
 
 function historicalTeamScores(teamId) {
   return completed
