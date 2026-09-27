@@ -329,7 +329,7 @@ async function buildKeyPlays() {
       const previous = previousScores.get(teamId);
       if (!current || !previous) continue;
       const delta = Number(current.winProbability) - Number(previous.winProbability);
-      if (!Number.isFinite(delta) || Math.abs(delta) < 8) continue;
+      if (!Number.isFinite(delta) || Math.abs(delta) < 6) continue;
 
       const matchupPlays = (plays.plays || [])
         .filter(p => Number(p.matchupId) === Number(matchup.id) && Number(p.fantasyTeamId) === Number(teamId))
