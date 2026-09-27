@@ -77,7 +77,7 @@ const espnTeamProjectionByTeam = new Map();
 for (const g of [...liveSchedule, ...boxscoreSchedule]) {
   for (const side of [g.home, g.away]) {
     if (!side?.teamId) continue;
-    const candidates = [side.projectedScore, side.projectedTotal, side.projection, side.totalPointsProjected];
+    const candidates = [side.totalProjectedPointsLive, side.projectedScore, side.projectedTotal, side.projection, side.totalPointsProjected];
     const projection = candidates.map(Number).find(Number.isFinite);
     if (Number.isFinite(projection)) espnTeamProjectionByTeam.set(Number(side.teamId), projection);
   }
