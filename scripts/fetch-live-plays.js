@@ -181,13 +181,7 @@ try {
   function isPasserInPlay(text, player) {
     const lastName = player.player.trim().split(/\s+/).pop();
     if (!lastName) return false;
-    const escaped = lastName.replace(/[.*+?^$\\{}()|[\]]/g, "\\  function playerNameMatches(text, player) {
-    const normalized = text.toLowerCase();
-    const full = player.player.toLowerCase();
-    const parts = full.split(/\s+/);
-    return normalized.includes(full) ||
-      (parts.length >= 2 && normalized.includes(parts.slice(-2).join(" ")));
-  }");
+    const escaped = lastName.replace(/[.*+?^$\\{}()|[\]\\]/g, "\\$&");
     return new RegExp("\\b[A-Z]\\.?\\s*" + escaped + "\\s+(?:pass|scramble|kneels?)\\b", "i").test(text);
   }
 
