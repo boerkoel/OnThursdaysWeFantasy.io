@@ -370,7 +370,7 @@ function App() {
                     {livePlayFeed.plays.filter(p => Number(p.matchupId) === Number(matchupId)).slice(0, 5).map(play => (
                       <div className="live-play" key={play.id}>
                         <strong className={play.points < 0 ? "negative" : ""}>{play.points > 0 ? "+" : ""}{money(play.points)}</strong>
-                        <span>{play.text}</span>
+                        <span><b>{(play.teamId === a.teamId ? a.team : play.teamId === b.teamId ? b.team : "Unknown team")}</b> · {play.text}</span>
                       </div>
                     ))}
                   </div>
