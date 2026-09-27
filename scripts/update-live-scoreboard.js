@@ -251,44 +251,71 @@ const probabilityTeams = currentScores.map(s => {
 
 const SIMULATIONS = 10000;
 const rng = rngFactory(seed);
-const winCounts = new Map(probabilityTeams.map(s => [s.teamId, 0]));
-const aboveMedianCounts = new Map(probabilityTeams.map(s => [s.teamId, 0]));
-const projectionSums = new Map(probabilityTeams.map(s => [s.teamId, 0]));
-const matchupLookup = new Map(currentWeekMatchups.map(m => [m.id, m]));
-let medianSum = 0;
+const simulationSums = new Map(probabilityTeams.map(s => [s.teamId, 0]));
+const simulationSquaredSums = new Map(probabilityTeams.map(s => [s.teamId, 0]));
 
+// Monte Carlo is used only to estimate the standard deviation of each team's
+// final score. ESPN remains the sole source for the displayed projection.
 for (let sim = 0; sim < SIMULATIONS; sim++) {
-  const finals = probabilityTeams.map(s => ({
-    teamId: s.teamId,
-    // Keep uncertainty even when a stale/lagging projection is below the
-    // current score. A live projection should normally stay at or above the
-    // current score, but we never want that data-quality edge case to turn
-    // the matchup into a deterministic 100% win.
-    score: s.currentScore + Math.max(0, s.remainingProjection + s.sd * normalSample(rng))
-  }));
-  for (const matchup of currentWeekMatchups) {
-    const home = finals.find(s => s.teamId === matchup.homeTeamId);
-    const away = finals.find(s => s.teamId === matchup.awayTeamId);
-    if (!home || !away) continue;
-    if (home.score > away.score) winCounts.set(home.teamId, winCounts.get(home.teamId) + 1);
-    else if (away.score > home.score) winCounts.set(away.teamId, winCounts.get(away.teamId) + 1);
-    else { winCounts.set(home.teamId, winCounts.get(home.teamId) + 0.5); winCounts.set(away.teamId, winCounts.get(away.teamId) + 0.5); }
-  }
-  for (const final of finals) projectionSums.set(final.teamId, projectionSums.get(final.teamId) + final.score);
-  const sortedFinals = [...finals].sort((a,b) => a.score - b.score);
-  const middle = Math.floor(sortedFinals.length / 2);
-  const medianFinal = sortedFinals.length >= 2 ? (sortedFinals[middle - 1].score + sortedFinals[middle].score) / 2 : null;
-  if (Number.isFinite(medianFinal)) {
-    medianSum += medianFinal;
-    for (const final of finals) if (final.score > medianFinal) aboveMedianCounts.set(final.teamId, aboveMedianCounts.get(final.teamId) + 1);
+  for (const team of probabilityTeams) {
+    const finalScore = team.currentScore +
+      Math.max(0, team.remainingProjection + team.sd * normalSample(rng));
+    simulationSums.set(team.teamId, simulationSums.get(team.teamId) + finalScore);
+    simulationSquaredSums.set(team.teamId, simulationSquaredSums.get(team.teamId) + finalScore ** 2);
   }
 }
 
-const monteCarloProjectionByTeam = new Map(
-  probabilityTeams.map(s => [s.teamId, round((projectionSums.get(s.teamId) || 0) / SIMULATIONS)])
-);
-const projectedMedian = round(medianSum / SIMULATIONS);
+const simulatedSdByTeam = new Map();
+for (const team of probabilityTeams) {
+  const sum = simulationSums.get(team.teamId) || 0;
+  const sumSquares = simulationSquaredSums.get(team.teamId) || 0;
+  const mean = sum / SIMULATIONS;
+  const variance = Math.max(0, sumSquares / SIMULATIONS - mean ** 2);
+  simulatedSdByTeam.set(team.teamId, Math.sqrt(variance));
+}
 
+function normalCdf(z) {
+  return 0.5 * (1 + Math.erf(z / Math.sqrt(2)));
+}
+
+const projectedMedian = round(medianOf(
+  probabilityTeams.map(s => Number(s.projectedFinal))
+) ?? median ?? 0);
+
+for (const score of currentScores) {
+  const espnProjection = Number(score.projection?.espn);
+  const sd = simulatedSdByTeam.get(score.teamId) || 0;
+  score.projectionSd = round(sd);
+  score.aboveMedianProbability = Number.isFinite(espnProjection) && sd > 0
+    ? round(normalCdf((espnProjection - projectedMedian) / sd) * 100)
+    : (Number.isFinite(espnProjection) && espnProjection > projectedMedian ? 100 : 0);
+}
+
+// Estimate matchup win probability from the ESPN projections and the
+// Monte-Carlo-derived standard deviations, without using Monte Carlo to set
+// the displayed projection.
+for (const matchup of currentWeekMatchups) {
+  const home = currentScores.find(s => s.teamId === matchup.homeTeamId);
+  const away = currentScores.find(s => s.teamId === matchup.awayTeamId);
+  if (!home || !away) continue;
+
+  const homeProjection = Number(home.projection?.espn);
+  const awayProjection = Number(away.projection?.espn);
+  const homeSd = simulatedSdByTeam.get(home.teamId) || 0;
+  const awaySd = simulatedSdByTeam.get(away.teamId) || 0;
+  const combinedSd = Math.sqrt(homeSd ** 2 + awaySd ** 2);
+  const homeWinProbability = Number.isFinite(homeProjection) && Number.isFinite(awayProjection) && combinedSd > 0
+    ? normalCdf((homeProjection - awayProjection) / combinedSd) * 100
+    : homeProjection > awayProjection ? 100 : homeProjection < awayProjection ? 0 : 50;
+
+  home.winProbability = matchup.completed
+    ? (matchup.winner === "HOME" ? 100 : 0)
+    : round(homeWinProbability);
+  away.winProbability = matchup.completed
+    ? (matchup.winner === "AWAY" ? 100 : 0)
+    : round(100 - homeWinProbability);
+}
+ 
 const previousProjectionHistory = previousScoreboard?.projectionHistory || [];
 const priorThreeSnapshots = previousProjectionHistory
   .filter(snapshot => Number(snapshot.week) === currentWeek)
@@ -324,13 +351,6 @@ const projectionHistory = [
   ...previousProjectionHistory.filter(snapshot => Number(snapshot.week) === currentWeek),
   currentProjectionSnapshot
 ].slice(-4);
-
-for (const score of currentScores) {
-  const matchup = matchupLookup.get(score.matchupId);
-  const actualWinner = matchup?.winner === "HOME" ? matchup.homeTeamId : matchup?.winner === "AWAY" ? matchup.awayTeamId : null;
-  score.winProbability = matchup?.completed ? (score.teamId === actualWinner ? 100 : 0) : round((winCounts.get(score.teamId) || 0) / SIMULATIONS * 100);
-  score.aboveMedianProbability = round((aboveMedianCounts.get(score.teamId) || 0) / SIMULATIONS * 100);
-}
 
 await writeFile("data/current/scoreboard.json", JSON.stringify({
   week: currentWeek,
