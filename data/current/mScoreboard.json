@@ -341,7 +341,7 @@
           "wins": 0
         },
         "rosterForCurrentScoringPeriod": {
-          "appliedStatTotal": 72.08,
+          "appliedStatTotal": 74.08,
           "entries": [
             {
               "lineupSlotId": 2,
@@ -1060,7 +1060,7 @@
               "lineupSlotId": 23,
               "playerId": 3128429,
               "playerPoolEntry": {
-                "appliedStatTotal": 0,
+                "appliedStatTotal": 2,
                 "id": 3128429,
                 "player": {
                   "defaultPositionId": 3,
@@ -1126,8 +1126,11 @@
                       }
                     },
                     {
-                      "appliedStats": {},
-                      "appliedTotal": 0,
+                      "appliedStats": {
+                        "42": 1,
+                        "53": 1
+                      },
+                      "appliedTotal": 2,
                       "externalId": "401872962",
                       "id": "01401872962",
                       "proTeamId": 7,
@@ -1135,7 +1138,18 @@
                       "seasonId": 2026,
                       "statSourceId": 0,
                       "statSplitTypeId": 1,
-                      "stats": {}
+                      "stats": {
+                        "41": 1,
+                        "42": 10,
+                        "47": 2,
+                        "48": 1,
+                        "53": 1,
+                        "58": 1,
+                        "59": 6,
+                        "60": 10,
+                        "61": 10,
+                        "210": 1
+                      }
                     }
                   ],
                   "universeId": 1
@@ -2191,7 +2205,7 @@
           ]
         },
         "rosterForMatchupPeriod": {
-          "appliedStatTotal": 72.08,
+          "appliedStatTotal": 74.08,
           "entries": [
             {
               "lineupSlotId": 0,
@@ -2248,6 +2262,59 @@
                         "210": 1,
                         "212": 1,
                         "213": 1
+                      }
+                    }
+                  ],
+                  "universeId": 1
+                }
+              }
+            },
+            {
+              "lineupSlotId": 0,
+              "playerId": 3128429,
+              "playerPoolEntry": {
+                "appliedStatTotal": 2,
+                "id": 3128429,
+                "player": {
+                  "defaultPositionId": 3,
+                  "eligibleSlots": [
+                    3,
+                    4,
+                    5,
+                    23,
+                    7,
+                    20,
+                    21
+                  ],
+                  "firstName": "Courtland",
+                  "fullName": "Courtland Sutton",
+                  "id": 3128429,
+                  "lastName": "Sutton",
+                  "proTeamId": 7,
+                  "stats": [
+                    {
+                      "appliedStats": {
+                        "42": 1,
+                        "53": 1
+                      },
+                      "appliedTotal": 2,
+                      "id": "01null",
+                      "proTeamId": 0,
+                      "scoringPeriodId": 0,
+                      "seasonId": 2026,
+                      "statSourceId": 0,
+                      "statSplitTypeId": 1,
+                      "stats": {
+                        "41": 1,
+                        "42": 10,
+                        "47": 2,
+                        "48": 1,
+                        "53": 1,
+                        "58": 1,
+                        "59": 6,
+                        "60": 10,
+                        "61": 10,
+                        "210": 1
                       }
                     }
                   ],
@@ -4297,9 +4364,11 @@
                         "90": 0,
                         "91": 0,
                         "92": 0,
-                        "108": 2,
-                        "109": 2,
+                        "108": 3,
+                        "109": 3,
+                        "110": 1,
                         "112": 1,
+                        "113": 1,
                         "114": 23,
                         "116": 2,
                         "120": 0,
@@ -4307,7 +4376,7 @@
                         "122": 0,
                         "123": 0,
                         "124": 0,
-                        "127": 4,
+                        "127": 14,
                         "128": 1,
                         "129": 0,
                         "130": 0,
@@ -5439,9 +5508,11 @@
                         "90": 0,
                         "91": 0,
                         "92": 0,
-                        "108": 2,
-                        "109": 2,
+                        "108": 3,
+                        "109": 3,
+                        "110": 1,
                         "112": 1,
+                        "113": 1,
                         "114": 23,
                         "116": 2,
                         "120": 0,
@@ -5449,7 +5520,7 @@
                         "122": 0,
                         "123": 0,
                         "124": 0,
-                        "127": 4,
+                        "127": 14,
                         "128": 1,
                         "129": 0,
                         "130": 0,
@@ -6985,7 +7056,7 @@
                         "110": 5,
                         "111": 3,
                         "112": 1,
-                        "113": 1,
+                        "113": 2,
                         "120": 7,
                         "121": 0,
                         "122": 0,
@@ -7867,7 +7938,7 @@
                         "110": 5,
                         "111": 3,
                         "112": 1,
-                        "113": 1,
+                        "113": 2,
                         "120": 7,
                         "121": 0,
                         "122": 0,
@@ -9167,7 +9238,10 @@
                       "seasonId": 2026,
                       "statSourceId": 0,
                       "statSplitTypeId": 1,
-                      "stats": {}
+                      "stats": {
+                        "58": 1,
+                        "210": 1
+                      }
                     }
                   ],
                   "universeId": 1
@@ -10674,6 +10748,48 @@
                     }
                   ],
                   "universeId": 2
+                }
+              }
+            },
+            {
+              "lineupSlotId": 0,
+              "playerId": 4372016,
+              "playerPoolEntry": {
+                "appliedStatTotal": 0,
+                "id": 4372016,
+                "player": {
+                  "defaultPositionId": 3,
+                  "eligibleSlots": [
+                    3,
+                    4,
+                    5,
+                    23,
+                    7,
+                    20,
+                    21
+                  ],
+                  "firstName": "Jaylen",
+                  "fullName": "Jaylen Waddle",
+                  "id": 4372016,
+                  "lastName": "Waddle",
+                  "proTeamId": 7,
+                  "stats": [
+                    {
+                      "appliedStats": {},
+                      "appliedTotal": 0,
+                      "id": "01null",
+                      "proTeamId": 0,
+                      "scoringPeriodId": 0,
+                      "seasonId": 2026,
+                      "statSourceId": 0,
+                      "statSplitTypeId": 1,
+                      "stats": {
+                        "58": 1,
+                        "210": 1
+                      }
+                    }
+                  ],
+                  "universeId": 1
                 }
               }
             },
@@ -23444,7 +23560,7 @@
               "lineupSlotId": 20,
               "playerId": 4426338,
               "playerPoolEntry": {
-                "appliedStatTotal": 0.24,
+                "appliedStatTotal": 0.64,
                 "id": 4426338,
                 "player": {
                   "defaultPositionId": 1,
@@ -23535,9 +23651,9 @@
                     },
                     {
                       "appliedStats": {
-                        "3": 0.24
+                        "3": 0.64
                       },
-                      "appliedTotal": 0.24,
+                      "appliedTotal": 0.64,
                       "externalId": "401872962",
                       "id": "01401872962",
                       "proTeamId": 7,
@@ -23546,13 +23662,14 @@
                       "statSourceId": 0,
                       "statSplitTypeId": 1,
                       "stats": {
-                        "0": 2,
-                        "1": 1,
-                        "2": 1,
-                        "3": 6,
-                        "5": 1,
+                        "0": 4,
+                        "1": 2,
+                        "2": 2,
+                        "3": 16,
+                        "5": 3,
+                        "6": 1,
                         "21": 50,
-                        "22": 6,
+                        "22": 16,
                         "210": 1
                       }
                     }
