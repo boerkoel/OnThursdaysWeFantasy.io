@@ -3,7 +3,7 @@
   "leagueName": "On Mondays Heads Will Roll",
   "draftDate": "2026-09-10T16:00:00.000Z",
   "week": 3,
-  "lastUpdated": "2026-09-28T16:54:04.553Z",
+  "lastUpdated": "2026-09-28T17:33:40.106Z",
   "simulations": 10000,
   "teams": [
     {
@@ -13,7 +13,7 @@
       "score": 116.43,
       "projected": 116.43,
       "remaining": [],
-      "chopProbability": 89.01,
+      "chopProbability": 88.82,
       "playersLeft": 0
     },
     {
@@ -30,12 +30,35 @@
           "projectedRest": 8.79
         }
       ],
-      "chopProbability": 10.99,
+      "chopProbability": 10.98,
       "playersLeft": 1,
       "survivalNeed": {
         "points": 2.35,
         "passTeam": "Plan B"
       }
+    },
+    {
+      "teamId": 6,
+      "team": "Moose Knucklers",
+      "abbrev": "MK",
+      "score": 120.6,
+      "projected": 165.77,
+      "remaining": [
+        {
+          "name": "Jalen Hurts",
+          "game": "PHI @ CHI",
+          "actual": 0,
+          "projectedRest": 26.21
+        },
+        {
+          "name": "Saquon Barkley",
+          "game": "PHI @ CHI",
+          "actual": 0,
+          "projectedRest": 18.96
+        }
+      ],
+      "chopProbability": 0.21,
+      "playersLeft": 2
     },
     {
       "teamId": 3,
@@ -110,29 +133,6 @@
       ],
       "chopProbability": 0,
       "playersLeft": 1
-    },
-    {
-      "teamId": 6,
-      "team": "Moose Knucklers",
-      "abbrev": "MK",
-      "score": 120.6,
-      "projected": 165.77,
-      "remaining": [
-        {
-          "name": "Jalen Hurts",
-          "game": "PHI @ CHI",
-          "actual": 0,
-          "projectedRest": 26.21
-        },
-        {
-          "name": "Saquon Barkley",
-          "game": "PHI @ CHI",
-          "actual": 0,
-          "projectedRest": 18.96
-        }
-      ],
-      "chopProbability": 0,
-      "playersLeft": 2
     }
   ],
   "chopped": [

@@ -1,4 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises";
+import { SIMULATIONS, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
 
 // Death Watch for the companion guillotine league (public on ESPN, so no
 // cookies are needed): each week the lowest-scoring surviving team is
@@ -10,13 +11,8 @@ const base = `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${
 
 // The league agreed to start in week 2; week 1's chop was a placeholder team.
 const FIRST_REAL_WEEK = Number(process.env.GUILLOTINE_FIRST_WEEK || 2);
-const SIMULATIONS = 10000;
-// Spread of a player's remaining points, as a fraction of what's projected.
-const PLAYER_SD_FRACTION = 0.6;
 const BENCH_SLOT = 20;
 const IR_SLOT = 21;
-
-const round = n => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
 
 async function fetchJson(url) {
   const response = await fetch(url, { headers: { Accept: "application/json", "User-Agent": "OnThursdaysWeFantasy/1.0" } });
@@ -107,8 +103,7 @@ const alive = [...scoreByTeam.values()]
       if (nflWeek && (!game || game.completed)) continue;
       const actual = Number.isFinite(weeklyStat(player, 0)) ? weeklyStat(player, 0) : 0;
       const projection = weeklyStat(player, 1);
-      const rest = Number.isFinite(projection) ? Math.max(0, projection - actual) : 0;
-      remaining.push({ name: player.fullName, game: game?.name || "", actual: round(actual), rest });
+      remaining.push({ name: player.fullName, game: game?.name || "", actual: round(actual), ...playerOutlook({ actual, projection, positionId: player.defaultPositionId }) });
     }
     const score = round(Number(t.totalPointsLive ?? t.totalPoints ?? 0));
     return {
@@ -121,34 +116,26 @@ const alive = [...scoreByTeam.values()]
     };
   });
 
-// Seeded so odds don't jitter between refreshes when nothing changed.
-let state = 2166136261;
-for (const char of JSON.stringify(alive.map(t => [t.teamId, t.score, t.projected]))) {
-  state ^= char.charCodeAt(0);
-  state = Math.imul(state, 16777619) >>> 0;
-}
-const rng = () => { state = (Math.imul(1664525, state) + 1013904223) >>> 0; return state / 4294967296; };
-const normal = () => Math.sqrt(-2 * Math.log(Math.max(rng(), 1e-12))) * Math.cos(2 * Math.PI * rng());
-
+const rng = seededRng(alive.map(t => [t.teamId, t.score, t.projected]));
 const chopCounts = new Map(alive.map(t => [t.teamId, 0]));
 for (let sim = 0; sim < SIMULATIONS; sim++) {
-  const finals = alive.map(t => ({
-    teamId: t.teamId,
-    score: t.score + t.remaining.reduce((sum, p) => sum + Math.max(0, p.rest + PLAYER_SD_FRACTION * p.rest * normal()), 0)
-  }));
+  const finals = alive.map(t => ({ teamId: t.teamId, score: simulateFinal({ score: t.score, players: t.remaining }, rng) }));
   const lowest = Math.min(...finals.map(f => f.score));
   const last = finals.filter(f => f.score === lowest);
   for (const f of last) chopCounts.set(f.teamId, chopCounts.get(f.teamId) + 1 / last.length);
 }
 
-// Exact 0%/100% only when locked (scores can't go down); otherwise start each
-// team with one simulated chop and one survival so odds never read 0 or 100.
-const isDone = t => t.remaining.length === 0;
+// Exact 0%/100% only when locked, judged from each team's lowest and highest
+// possible final score (players can lose points); otherwise possibleOdds.
+const rangeOf = t => scoreRange({ score: t.score, players: t.remaining });
 for (const t of alive) {
-  const others = alive.filter(o => o.teamId !== t.teamId);
-  const surelySafe = others.some(o => isDone(o) && o.score < t.score);
-  const surelyChopped = isDone(t) && others.every(o => o.score > t.score);
-  t.chopProbability = surelySafe ? 0 : surelyChopped ? 100 : round(((chopCounts.get(t.teamId) + 1) / (SIMULATIONS + 2)) * 100);
+  const me = rangeOf(t);
+  const others = alive.filter(o => o.teamId !== t.teamId).map(rangeOf);
+  const surelySafe = others.some(o => o.max < me.min);
+  const surelyChopped = others.every(o => o.min > me.max);
+  t.chopProbability = surelySafe ? 0 : surelyChopped ? 100 : possibleOdds(chopCounts.get(t.teamId));
+}
+for (const t of alive) {
   t.playersLeft = t.remaining.length;
   t.remaining = t.remaining.map(p => ({ name: p.name, game: p.game, actual: p.actual, projectedRest: round(p.rest) }));
 }

@@ -1,4 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises";
+import { SIMULATIONS, medianOf, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
 
 const season = process.env.ESPN_SEASON || "2026";
 const leagueId = process.env.ESPN_LEAGUE_ID || "998599827";
@@ -7,10 +8,6 @@ const espnS2 = process.env.ESPN_S2;
 const swid = process.env.ESPN_SWID;
 
 if (!espnS2 || !swid) throw new Error("Missing ESPN authentication secrets.");
-
-function round(n) {
-  return Math.round((Number(n) + Number.EPSILON) * 100) / 100;
-}
 
 function teamName(teams, id) {
   return teams.get(Number(id))?.name || `Team ${id}`;
@@ -43,7 +40,6 @@ const matchups = (matchup.schedule || [])
   }));
 
 const currentWeekMatchups = matchups.filter(m => m.week === currentWeek);
-const completed = matchups.filter(m => m.completed);
 
 const liveSchedule = (liveScoringData.schedule || []).filter(g => Number(g.matchupPeriodId) === currentWeek);
 const boxscoreSchedule = (boxscoreData.schedule || []).filter(g => Number(g.matchupPeriodId) === currentWeek);
@@ -140,10 +136,10 @@ function rosterEntriesForTeam(teamId) {
     [];
 }
 
-// Starters whose NFL game hasn't finished. A team with none left can no longer
-// change its score, which decides whether an outcome is still possible. If the
-// NFL schedule couldn't be fetched, assume everyone is still playing.
-const startersLeftByTeam = new Map();
+// Starters whose NFL game hasn't finished, as simulation inputs. A team with
+// none left can no longer change its score. If the NFL schedule couldn't be
+// fetched, assume everyone is still playing.
+const remainingPlayersByTeam = new Map();
 
 for (const teamId of teams.keys()) {
   const entries = rosterEntriesForTeam(teamId)
@@ -153,19 +149,21 @@ for (const teamId of teams.keys()) {
   // is added separately, so already-scored points are never counted twice.
   let remainingProjection = 0;
   let hasProjection = false;
-  let startersLeft = 0;
+  const remainingPlayers = [];
 
   for (const entry of entries) {
     const player = entry.playerPoolEntry?.player;
-    if (player) {
-      const nflGame = nflGamesByTeam.get(Number(player.proTeamId));
-      // Teams missing from the week's schedule are on bye.
-      if (!nflWeek || (nflGame && !nflGame.completed)) startersLeft++;
-    }
     // mRoster's appliedStatTotal is season-to-date, so use this week's actual.
     const weeklyActual = weeklyStat(player, 0);
     const actual = Number.isFinite(weeklyActual) ? weeklyActual : 0;
     const fullProjection = weeklyProjection(player);
+    if (player) {
+      const nflGame = nflGamesByTeam.get(Number(player.proTeamId));
+      // Teams missing from the week's schedule are on bye.
+      if (!nflWeek || (nflGame && !nflGame.completed)) {
+        remainingPlayers.push(playerOutlook({ actual, projection: fullProjection, positionId: player.defaultPositionId }));
+      }
+    }
     if (!Number.isFinite(fullProjection)) continue;
 
     hasProjection = true;
@@ -183,7 +181,7 @@ for (const teamId of teams.keys()) {
     // simple percentage-of-clock calculation.
     remainingProjection += Math.max(0, fullProjection - actual);
   }
-  startersLeftByTeam.set(teamId, startersLeft);
+  remainingPlayersByTeam.set(teamId, remainingPlayers);
 
   if (hasProjection) {
     const currentScore = liveByTeam.get(teamId) ?? 0;
@@ -213,62 +211,19 @@ const currentScores = currentWeekMatchups.flatMap(m => [
   };
 }).sort((a,b) => b.score - a.score);
 
-function medianOf(values) {
-  const sorted = values.filter(Number.isFinite).sort((a,b) => a-b);
-  if (!sorted.length) return null;
-  return sorted.length % 2 ? sorted[Math.floor(sorted.length / 2)] : round((sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2);
-}
+const median = round(medianOf(currentScores.map(s => Number(s.score))) ?? 0);
 
-const median = medianOf(currentScores.map(s => Number(s.score)));
+// Each team's final score = current score + a simulated amount from every
+// starter still to play (see lib/simulation.js). The displayed projection is
+// still ESPN's; the simulations drive win odds, median odds and spread.
+const probabilityTeams = currentScores.map(s => ({
+  teamId: s.teamId,
+  score: Number(s.score) || 0,
+  players: remainingPlayersByTeam.get(s.teamId) || []
+}));
+const projectedMedian = round(medianOf(currentScores.map(s => Number(s.projectionAverage ?? s.score))) ?? median);
 
-function historicalScores(teamId) {
-  return completed.filter(m => m.homeTeamId === teamId || m.awayTeamId === teamId)
-    .map(m => m.homeTeamId === teamId ? m.homeScore : m.awayScore)
-    .filter(Number.isFinite);
-}
-
-function rngFactory(seed) {
-  let state = seed >>> 0;
-  return () => { state = (Math.imul(1664525, state) + 1013904223) >>> 0; return state / 4294967296; };
-}
-
-function normalSample(rng) {
-  const u = Math.max(rng(), 1e-12);
-  const v = Math.max(rng(), 1e-12);
-  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
-}
-
-let seed = 2166136261;
-for (const value of currentScores.map(s => [s.teamId, s.score, s.projectionAverage]).sort((a,b) => a[0] - b[0]).flat()) {
-  for (const char of String(value)) { seed ^= char.charCodeAt(0); seed = Math.imul(seed, 16777619); }
-}
-seed >>>= 0;
-
-const probabilityTeams = currentScores.map(s => {
-  const historical = historicalScores(s.teamId);
-  const mean = historical.length ? historical.reduce((sum,v) => sum + v, 0) / historical.length : Number(s.projectionAverage) || Number(s.score) || 0;
-  const variance = historical.length > 1 ? historical.reduce((sum,v) => sum + (v - mean) ** 2, 0) / (historical.length - 1) : 0;
-  const historicalSd = Math.sqrt(Math.max(0, variance));
-  const projectedFinal = Number(s.projectionAverage);
-  const currentScore = Number(s.score) || 0;
-  const remainingProjection = Number.isFinite(projectedFinal) ? Math.max(0, projectedFinal - currentScore) : 0;
-  const fallbackSd = Math.max(12, remainingProjection * 0.30);
-  const remainingFraction = Number.isFinite(projectedFinal) && projectedFinal > 0 ? Math.max(0, Math.min(1, remainingProjection / projectedFinal)) : 1;
-  const sd = Math.max(8, (historicalSd || fallbackSd) * Math.sqrt(Math.max(0.2, remainingFraction)));
-  return { ...s, projectedFinal: Number.isFinite(projectedFinal) ? projectedFinal : currentScore, currentScore, remainingProjection, sd };
-});
-
-const SIMULATIONS = 10000;
-const rng = rngFactory(seed);
-
-// The displayed projection always comes from ESPN. Monte Carlo is used to
-// model the distribution of plausible final scores around that projection.
-// Those same simulations drive median odds, matchup win odds, and SD-based
-// "close to median" classification.
-const projectedMedian = round(medianOf(
-  probabilityTeams.map(s => Number(s.projectedFinal))
-) ?? median ?? 0);
-
+const rng = seededRng(currentScores.map(s => [s.teamId, s.score, s.projectionAverage]).sort((a, b) => a[0] - b[0]));
 const simulationSums = new Map(probabilityTeams.map(s => [s.teamId, 0]));
 const simulationSquaredSums = new Map(probabilityTeams.map(s => [s.teamId, 0]));
 const aboveMedianCounts = new Map(probabilityTeams.map(s => [s.teamId, 0]));
@@ -276,14 +231,9 @@ const winCounts = new Map(probabilityTeams.map(s => [s.teamId, 0]));
 
 for (let sim = 0; sim < SIMULATIONS; sim++) {
   const simulatedFinals = new Map();
-
   for (const team of probabilityTeams) {
-    // A team with nothing left to play is locked at its current score.
-    const finalScore = team.remainingProjection > 0
-      ? team.currentScore + Math.max(0, team.remainingProjection + team.sd * normalSample(rng))
-      : team.currentScore;
+    const finalScore = simulateFinal(team, rng);
     simulatedFinals.set(team.teamId, finalScore);
-
     simulationSums.set(team.teamId, simulationSums.get(team.teamId) + finalScore);
     simulationSquaredSums.set(team.teamId, simulationSquaredSums.get(team.teamId) + finalScore ** 2);
   }
@@ -292,23 +242,15 @@ for (let sim = 0; sim < SIMULATIONS; sim++) {
   // to the median of this simulated week rather than to a fixed projection.
   const simulatedMedian = medianOf([...simulatedFinals.values()]);
   for (const [teamId, finalScore] of simulatedFinals) {
-    if (finalScore > simulatedMedian) {
-      aboveMedianCounts.set(teamId, aboveMedianCounts.get(teamId) + 1);
-    }
+    if (finalScore > simulatedMedian) aboveMedianCounts.set(teamId, aboveMedianCounts.get(teamId) + 1);
   }
 
   for (const matchup of currentWeekMatchups) {
     if (matchup.completed) continue;
-
     const homeFinal = simulatedFinals.get(matchup.homeTeamId);
     const awayFinal = simulatedFinals.get(matchup.awayTeamId);
-    if (!Number.isFinite(homeFinal) || !Number.isFinite(awayFinal)) continue;
-
-    if (homeFinal > awayFinal) {
-      winCounts.set(matchup.homeTeamId, winCounts.get(matchup.homeTeamId) + 1);
-    } else if (awayFinal > homeFinal) {
-      winCounts.set(matchup.awayTeamId, winCounts.get(matchup.awayTeamId) + 1);
-    }
+    if (homeFinal > awayFinal) winCounts.set(matchup.homeTeamId, winCounts.get(matchup.homeTeamId) + 1);
+    else if (awayFinal > homeFinal) winCounts.set(matchup.awayTeamId, winCounts.get(matchup.awayTeamId) + 1);
   }
 }
 
@@ -321,23 +263,18 @@ for (const team of probabilityTeams) {
   simulatedSdByTeam.set(team.teamId, Math.sqrt(variance));
 }
 
-// While an outcome is still mathematically possible either way, start every
-// team with one simulated success and one failure (a Laplace prior), so the
-// odds never read exactly 0% or 100%. Once an outcome is locked (assuming
-// scores can't go down), report it exactly.
-const isLocked = teamId => startersLeftByTeam.get(teamId) === 0;
-const possibleOdds = count => round(((count + 1) / (SIMULATIONS + 2)) * 100);
-
-// A team is surely in the top half if too few others could still pass its
-// current score, and surely in the bottom half if it's done and enough
-// others are already ahead of it.
+// Outcomes are reported exactly (0% or 100%) only when locked, judged from each
+// team's lowest and highest possible final score; otherwise possibleOdds keeps
+// them between 0.01% and 99.99%.
+const rangeByTeam = new Map(probabilityTeams.map(t => [t.teamId, scoreRange(t)]));
 const halfOfLeague = currentScores.length / 2;
 function lockedMedianOdds(score) {
-  const others = currentScores.filter(s => s.teamId !== score.teamId);
-  const couldFinishAhead = others.filter(s => !isLocked(s.teamId) || Number(s.score) > Number(score.score)).length;
-  if (couldFinishAhead < halfOfLeague) return 100;
-  const alreadyAhead = others.filter(s => Number(s.score) > Number(score.score)).length;
-  if (isLocked(score.teamId) && alreadyAhead >= halfOfLeague) return 0;
+  const me = rangeByTeam.get(score.teamId);
+  const others = currentScores.filter(s => s.teamId !== score.teamId).map(s => rangeByTeam.get(s.teamId));
+  // Surely top half: too few others can finish above this team's worst case.
+  if (others.filter(o => o.max > me.min).length < halfOfLeague) return 100;
+  // Surely bottom half: enough others are sure to finish above its best case.
+  if (others.filter(o => o.min > me.max).length >= halfOfLeague) return 0;
   return null;
 }
 
@@ -347,13 +284,25 @@ for (const score of currentScores) {
   const aboveCount = aboveMedianCounts.get(score.teamId) || 0;
 
   score.projectionSd = round(sd);
-  score.startersLeft = startersLeftByTeam.get(score.teamId) ?? null;
+  score.startersLeft = (remainingPlayersByTeam.get(score.teamId) || []).length;
   score.aboveMedianProbability = lockedMedianOdds(score) ?? possibleOdds(aboveCount);
   score.belowMedianProbability = round(100 - score.aboveMedianProbability);
   score.medianDistanceSd = sd > 0
     ? round((espnProjection - projectedMedian) / sd)
     : 0;
   score.closeToMedian = Math.abs(score.medianDistanceSd) <= 0.5;
+}
+
+// "Near median": the teams just above and just below the projected median are
+// always near it, plus any team with a 30-70% chance of finishing above it.
+const NEAR_MEDIAN_MIN = 30;
+const NEAR_MEDIAN_MAX = 70;
+const projectionOf = s => Number(s.projectionAverage ?? s.score);
+const justBelow = currentScores.filter(s => projectionOf(s) <= projectedMedian).sort((a, b) => projectionOf(b) - projectionOf(a))[0];
+const justAbove = currentScores.filter(s => projectionOf(s) >= projectedMedian && s !== justBelow).sort((a, b) => projectionOf(a) - projectionOf(b))[0];
+for (const score of currentScores) {
+  score.nearMedian = score === justBelow || score === justAbove ||
+    (score.aboveMedianProbability >= NEAR_MEDIAN_MIN && score.aboveMedianProbability <= NEAR_MEDIAN_MAX);
 }
 
 for (const matchup of currentWeekMatchups) {
@@ -364,12 +313,17 @@ for (const matchup of currentWeekMatchups) {
   if (matchup.completed) {
     home.winProbability = matchup.winner === "HOME" ? 100 : 0;
     away.winProbability = matchup.winner === "AWAY" ? 100 : 0;
-  } else if ((isLocked(home.teamId) && isLocked(away.teamId)) ||
-             (isLocked(home.teamId) && home.score < away.score) ||
-             (isLocked(away.teamId) && away.score < home.score)) {
-    // The trailing team has no one left to play (or both are done).
-    home.winProbability = home.score > away.score ? 100 : home.score < away.score ? 0 : 50;
-    away.winProbability = round(100 - home.winProbability);
+  } else if (rangeByTeam.get(home.teamId).min > rangeByTeam.get(away.teamId).max) {
+    home.winProbability = 100;
+    away.winProbability = 0;
+  } else if (rangeByTeam.get(away.teamId).min > rangeByTeam.get(home.teamId).max) {
+    home.winProbability = 0;
+    away.winProbability = 100;
+  } else if (!probabilityTeams.find(t => t.teamId === home.teamId).players.length &&
+             !probabilityTeams.find(t => t.teamId === away.teamId).players.length) {
+    // Both done and tied.
+    home.winProbability = 50;
+    away.winProbability = 50;
   } else {
     home.winProbability = possibleOdds(winCounts.get(home.teamId) || 0);
     away.winProbability = possibleOdds(winCounts.get(away.teamId) || 0);

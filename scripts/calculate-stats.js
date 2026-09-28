@@ -57,14 +57,9 @@ const allLiveSchedules = [...liveSchedule, ...boxscoreSchedule];
 const liveScoreboard = await readJson("data/current/scoreboard.json");
 const currentScores = Number(liveScoreboard.week) === currentWeek ? (liveScoreboard.scores || []) : [];
 const projectedMedian = Number(liveScoreboard.projectedMedian);
-// Same "near median" rule as the scoreboard: roughly coin-flip odds of
-// finishing above the league median.
-const NEAR_MEDIAN_MIN = 30;
-const NEAR_MEDIAN_MAX = 70;
-const isNearMedian = s => {
-  const odds = Number(s?.aboveMedianProbability);
-  return Number.isFinite(odds) && odds >= NEAR_MEDIAN_MIN && odds <= NEAR_MEDIAN_MAX;
-};
+// "Near median" is decided by update-live-scoreboard.js (the teams on either
+// side of the projected median, plus any with 30-70% above-median odds).
+const isNearMedian = s => Boolean(s?.nearMedian);
 
 async function buildKeyPlays() {
   const plays = await readJson("data/current/live-plays.json").catch(() => ({ plays: [] }));
@@ -269,15 +264,15 @@ function buildMarqueeStories() {
     } else {
       const newlyNear = nearMedian.find(s => {
         const p = previousScores.get(s.teamId);
-        return p && Number.isFinite(Number(p.aboveMedianProbability)) && !isNearMedian(p);
+        return p && "nearMedian" in p && !isNearMedian(p);
       });
       if (newlyNear) {
-        add("MEDIAN WATCH","🎯 " + newlyNear.team + " is now a coin flip to finish above the median — " + money(newlyNear.aboveMedianProbability) + "% odds.",84);
+        add("MEDIAN WATCH","🎯 " + newlyNear.team + " has moved into the median race — " + money(newlyNear.aboveMedianProbability) + "% to finish above it.",84);
       }
     }
 
     if (nearMedian.length >= 4) {
-      add("MEDIAN CLUSTER","🎯 " + nearMedian.length + " teams have between " + NEAR_MEDIAN_MIN + "% and " + NEAR_MEDIAN_MAX + "% odds of finishing above the median.",58 + nearMedian.length);
+      add("MEDIAN CLUSTER","🎯 " + nearMedian.length + " teams are in the thick of the median race: " + listNames(nearMedian.map(s => s.team)) + ".",58 + nearMedian.length);
     }
   }
   const rising=currentScores.filter(s=>s.projectionTrend==="up").sort((a,b)=>Number(b.projectionAverage)-Number(a.projectionAverage))[0];
