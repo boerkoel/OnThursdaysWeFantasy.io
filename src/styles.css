@@ -623,3 +623,23 @@
 /* Jumping to a section leaves room for the pinned tab bar. */
 section,details,.odds-block{scroll-margin-top:72px}
 @media(max-width:700px){section,details,.odds-block{scroll-margin-top:12px}}
+/* Phones: section strip pinned to the top (covers the status bar in the app). */
+.section-nav{display:none}
+@media(max-width:700px){
+  .section-nav{position:sticky;top:0;z-index:29;display:flex;gap:6px;overflow-x:auto;margin:0 0 4px;padding:calc(8px + env(safe-area-inset-top)) 0 8px;background:rgba(16,17,15,.94);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid #242620;scrollbar-width:none}
+  .section-nav::-webkit-scrollbar{display:none}
+  .section-nav button{flex:0 0 auto;padding:7px 12px;border:1px solid #30332d;border-radius:999px;background:#151713;color:#c7c9c1;font:inherit;font-size:12px;font-weight:800;white-space:nowrap;cursor:pointer}
+  .section-nav button.active{border-color:#6b7a52;background:#1d2319;color:#f7f7f2}
+  section,details,.odds-block{scroll-margin-top:calc(64px + env(safe-area-inset-top))}
+}
+/* Phones: the third-place box shouldn't reserve extra height in the stacked footer. */
+@media(max-width:800px){.bracket-footer>div:first-child{flex:none}}
+
+/* Phones: raffle rows put "Won Week N" under the team name so names fit. */
+@media(max-width:600px){
+  .raffle-row{grid-template-columns:24px minmax(0,1fr) auto;row-gap:2px;column-gap:10px}
+  .raffle-row .rank{grid-row:1 / span 2}
+  .raffle-row .score-team{grid-column:2;grid-row:1}
+  .raffle-row .raffle-weeks{grid-column:2;grid-row:2;font-size:11px}
+  .raffle-row>strong{grid-column:3;grid-row:1 / span 2;text-align:right}
+}

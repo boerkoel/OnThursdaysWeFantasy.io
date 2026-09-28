@@ -40,7 +40,7 @@ function SurvivalOdds({ teams }) {
   const [sort, setSort] = useState("odds");
   const sorted = [...teams].sort(SURVIVAL_SORTS[sort].compare);
   return (
-    <details className="collapsible">
+    <details className="collapsible" id="survival">
       <summary>Survival odds <span>{teams.length} teams</span></summary>
       <div className="score-sort-controls" role="group" aria-label="Sort survival odds">
         {Object.entries(SURVIVAL_SORTS).map(([key, option]) =>

@@ -18,7 +18,7 @@ import RecordBook from "./components/RecordBook.jsx";
 import Notifications from "./components/Notifications.jsx";
 import { seriesLine } from "./lib/recordBook.js";
 import { useMyTeam, useTabs } from "./lib/tabs.js";
-import { BackToTop, TabBar } from "./components/Navigation.jsx";
+import { BackToTop, SectionNav, TabBar } from "./components/Navigation.jsx";
 
 // Standings and rest-of-season odds in one sortable table: current seed and
 // record (standings.json, playoffs.json) plus simulated odds (season-odds.js).
@@ -313,6 +313,7 @@ function App() {
         </div>
       </header>
       <TabBar tab={tab} onSelect={goToTab} />
+      <SectionNav tab={tab} />
       <InstallHint />
       <div className="data-timestamp">LAST REFRESHED <strong>{scoreboard.lastUpdated ? new Date(scoreboard.lastUpdated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "—"}</strong> <UpdatedAgo iso={scoreboard.lastUpdated} /></div>
 
