@@ -279,12 +279,14 @@ for (let sim = 0; sim < SIMULATIONS; sim++) {
 
     simulationSums.set(team.teamId, simulationSums.get(team.teamId) + finalScore);
     simulationSquaredSums.set(team.teamId, simulationSquaredSums.get(team.teamId) + finalScore ** 2);
+  }
 
-    // Compare every simulated final score to the same projected median used
-    // by the scoreboard. This is a true Monte Carlo frequency, not a normal-CDF
-    // approximation based only on the ESPN point estimate.
-    if (finalScore > projectedMedian) {
-      aboveMedianCounts.set(team.teamId, aboveMedianCounts.get(team.teamId) + 1);
+  // The league median moves with everyone's final score, so compare each team
+  // to the median of this simulated week rather than to a fixed projection.
+  const simulatedMedian = medianOf([...simulatedFinals.values()]);
+  for (const [teamId, finalScore] of simulatedFinals) {
+    if (finalScore > simulatedMedian) {
+      aboveMedianCounts.set(teamId, aboveMedianCounts.get(teamId) + 1);
     }
   }
 
