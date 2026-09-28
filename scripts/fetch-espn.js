@@ -4,7 +4,13 @@ const season = process.env.ESPN_SEASON || "2026";
 const leagueId = process.env.ESPN_LEAGUE_ID || "998599827";
 const base = `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${season}/segments/0/leagues/${leagueId}`;
 
-const views = ["mSettings", "mTeam", "mRoster", "mMatchup", "mScoreboard", "mLiveScoring", "mDraftDetail"];
+// Raw ESPN responses are working files for the other scripts; they're written
+// compactly and not committed (see .gitignore). Live runs set ESPN_CORE_ONLY
+// to fetch just the small league files they need.
+const coreOnly = process.env.ESPN_CORE_ONLY === "true";
+const views = coreOnly
+  ? ["mSettings", "mTeam", "mMatchup"]
+  : ["mSettings", "mTeam", "mRoster", "mMatchup", "mScoreboard", "mLiveScoring", "mDraftDetail"];
 
 const espnS2 = process.env.ESPN_S2;
 const swid = process.env.ESPN_SWID;
@@ -118,8 +124,13 @@ for (const view of views) {
   results[view] = await fetchView(view);
   await writeFile(
     `data/current/${view}.json`,
-    JSON.stringify(results[view], null, 2) + "\n"
+    JSON.stringify(results[view])
   );
+}
+
+if (coreOnly) {
+  console.log(`Fetched core ESPN views for league ${leagueId}: ${views.join(", ")}.`);
+  process.exit(0);
 }
 
 const currentScoringPeriod = Number(results.mMatchup?.scoringPeriodId || 1);
@@ -129,11 +140,11 @@ for (let week = 1; week <= currentScoringPeriod; week++) {
   const weeklyBoxscore = await fetchView("mBoxscore", week);
   await writeFile(
     `data/current/mRoster-week-${week}.json`,
-    JSON.stringify(weeklyRoster, null, 2) + "\n"
+    JSON.stringify(weeklyRoster)
   );
   await writeFile(
     `data/current/mBoxscore-week-${week}.json`,
-    JSON.stringify(weeklyBoxscore, null, 2) + "\n"
+    JSON.stringify(weeklyBoxscore)
   );
 }
 

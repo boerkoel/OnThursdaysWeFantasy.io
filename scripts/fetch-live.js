@@ -80,10 +80,12 @@ async function fetchLiveBundle() {
 
 const { liveScoring, boxscore, scoreboard, roster, mode } = await fetchLiveBundle();
 
-await writeFile("data/current/mLiveScoring.json", JSON.stringify(liveScoring, null, 2) + "\n");
-await writeFile("data/current/mBoxscore.json", JSON.stringify(boxscore, null, 2) + "\n");
-await writeFile("data/current/mScoreboard.json", JSON.stringify(scoreboard, null, 2) + "\n");
-await writeFile("data/current/mRoster.json", JSON.stringify(roster, null, 2) + "\n");
+// All three live views resolve to the same detailed response; the files are
+// kept separate because different scripts read different ones.
+await writeFile("data/current/mLiveScoring.json", JSON.stringify(liveScoring));
+await writeFile("data/current/mBoxscore.json", JSON.stringify(boxscore));
+await writeFile("data/current/mScoreboard.json", JSON.stringify(scoreboard));
+await writeFile("data/current/mRoster.json", JSON.stringify(roster));
 
 const schedule = liveScoring?.schedule || boxscore?.schedule || scoreboard?.schedule || [];
 const detailedMatchups = schedule.filter(g => g?.home?.teamId && g?.away?.teamId).length;

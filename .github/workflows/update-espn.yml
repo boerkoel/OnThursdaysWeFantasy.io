@@ -58,9 +58,11 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: node scripts/write-obituaries.js
-      - name: Calculate league stats
+      - name: Update League Wire
         env:
           PREVIOUS_SCOREBOARD_PATH: /tmp/previous-scoreboard.json
+        run: node scripts/league-wire.js
+      - name: Calculate league stats
         run: node scripts/calculate-stats.js
       # Deploy is started explicitly: pushes made with GITHUB_TOKEN don't
       # trigger workflows, and neither does finishing a run that was started

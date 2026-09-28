@@ -82,6 +82,14 @@ jobs:
         if: steps.gate.outputs.update == 'true'
         run: node scripts/restore-live-state.js
 
+      # Raw ESPN files aren't committed; fetch the small league files
+      # (settings, teams, matchups) each run, which also picks up a new week.
+      - name: Fetch league settings and matchups
+        if: steps.gate.outputs.update == 'true'
+        env:
+          ESPN_CORE_ONLY: "true"
+        run: node scripts/fetch-espn.js
+
       - name: Fetch live ESPN data
         if: steps.gate.outputs.update == 'true'
         run: node scripts/fetch-live.js
@@ -107,12 +115,11 @@ jobs:
           ESPN_INCLUDE_COMPLETED: ${{ inputs.force_update == true && 'true' || 'false' }}
         run: node scripts/fetch-live-plays.js
 
-      - name: Recalculate live stories
+      - name: Update League Wire
         if: steps.gate.outputs.update == 'true'
         env:
           PREVIOUS_SCOREBOARD_PATH: /tmp/previous-scoreboard.json
-          LIVE_ONLY: "true"
-        run: node scripts/calculate-stats.js
+        run: node scripts/league-wire.js
 
       - name: Install dependencies
         if: steps.gate.outputs.update == 'true'
