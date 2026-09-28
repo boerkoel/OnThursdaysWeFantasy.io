@@ -2,6 +2,8 @@ name: Deploy notification service
 
 # Deploys worker/ (the Cloudflare Worker behind the app's notifications).
 # Uses the CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID repository secrets.
+# CLOUDFLARE_API_TOKEN must be just the token (about 40 letters, digits, - and
+# _), not Cloudflare's sample "curl ... Bearer ..." command.
 on:
   push:
     branches:
