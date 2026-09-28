@@ -517,4 +517,22 @@
 @media(max-width:520px){.site{padding-left:max(16px, env(safe-area-inset-left));padding-right:max(16px, env(safe-area-inset-right))}}
 .install-hint{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:14px 0 0;padding:10px 14px;border:1px solid #4a533e;border-radius:12px;background:#1d2319;color:#dfe7d7;font-size:13px}
 .install-hint button{border:0;background:none;color:#b8c69b;font-size:20px;line-height:1;cursor:pointer}
+/* Notifications panel */
+#notifications{margin-top:12px}
+.notify-panel{padding:0 16px 16px}
+.notify-options{display:grid;gap:8px}
+.notify-options label{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;color:#dfe7d7;font-size:13px;font-weight:700;cursor:pointer}
+.notify-options small,.notify-subhead small{color:#777a72;font-size:11px;font-weight:600}
+.notify-subhead{margin:16px 0 8px;color:#dfe7d7;font-size:13px;font-weight:800}
+.notify-teams{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px}
+.notify-teams label{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #30332d;border-radius:10px;color:#c7c9c1;font-size:12px;font-weight:700;cursor:pointer;min-width:0}
+.notify-teams label.selected{border-color:#6b7a52;background:#1d2319;color:#f7f7f2}
+.notify-teams span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.notify-teams input{accent-color:#b8c69b}
+.notify-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+.notify-actions button{padding:9px 14px;border:1px solid #6b7a52;border-radius:999px;background:#b8c69b;color:#10110f;font-size:12px;font-weight:800;cursor:pointer}
+.notify-actions button.secondary{background:transparent;color:#b8c69b}
+.notify-actions button:disabled{opacity:.6;cursor:progress}
+.notify-status{color:#999c94;font-size:12px}
 
+.notify-options input{accent-color:#b8c69b}

@@ -15,6 +15,7 @@ import TeamCards from "./components/TeamCards.jsx";
 import { DeathWatch } from "./components/DeathWatch.jsx";
 import SwingChart from "./components/SwingChart.jsx";
 import RecordBook from "./components/RecordBook.jsx";
+import Notifications from "./components/Notifications.jsx";
 import { seriesLine } from "./lib/recordBook.js";
 
 // Standings and rest-of-season odds in one sortable table: current seed and
@@ -236,6 +237,7 @@ function App() {
       </section>
 
       <LeagueWire stories={live.marquee.stories || []} status={status} />
+      <Notifications teams={teamsData.teams || []} />
 
       <section id="scores" className="section">
         <div className="section-heading"><div><span className="section-kicker">RIGHT NOW</span><h2>Week {scoreboard.week} Scores</h2></div><span className={status === "LIVE" ? "live-pill is-live" : "live-pill"}>● {status}</span></div>

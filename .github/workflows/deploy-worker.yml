@@ -1,0 +1,62 @@
+name: Deploy notification service
+
+# Deploys worker/ (the Cloudflare Worker behind the app's notifications).
+# Uses the CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID repository secrets.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "worker/**"
+      - ".github/workflows/deploy-worker.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: "deploy-worker"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    defaults:
+      run:
+        working-directory: worker
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # The KV namespace is created once, then found by name on later runs.
+      - name: Find or create the KV namespace
+        run: |
+          TITLE="otwf-notify-subs"
+          find_id() {
+            npx --yes wrangler@4 kv namespace list 2>/dev/null | node -e '
+              let s = ""; process.stdin.on("data", d => s += d).on("end", () => {
+                const json = s.slice(s.indexOf("["), s.lastIndexOf("]") + 1);
+                const match = JSON.parse(json || "[]").find(n => n.title === process.argv[1]);
+                process.stdout.write(match ? match.id : "");
+              });' "$TITLE"
+          }
+          ID=$(find_id)
+          if [ -z "$ID" ]; then
+            npx --yes wrangler@4 kv namespace create "$TITLE"
+            ID=$(find_id)
+          fi
+          if [ -z "$ID" ]; then echo "Could not find or create the KV namespace."; exit 1; fi
+          sed -i "s/KV_NAMESPACE_ID/$ID/" wrangler.toml
+          echo "Using KV namespace $ID"
+      - name: Deploy
+        run: npx --yes wrangler@4 deploy
+      - name: Check the service responds
+        run: |
+          sleep 10
+          curl -fsS https://otwf-notify.otwf.workers.dev/health

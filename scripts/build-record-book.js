@@ -12,9 +12,15 @@ const settings = await readJson("data/current/mSettings.json");
 const teamData = await readJson("data/current/mTeam.json");
 const currentMatchups = await readJson("data/current/matchups.json");
 
+// Managers who switched ESPN accounts (data/history/manager-aliases.json).
+const aliases = (await readJson("data/history/manager-aliases.json").catch(() => ({}))).aliases || {};
+const canonical = key => aliases[key] || key;
+
 const pastSeasons = [];
 for (const file of (await readdir("data/history").catch(() => [])).filter(f => /^season-\d+\.json$/.test(f))) {
-  pastSeasons.push({ ...(await readJson(`data/history/${file}`)), complete: true });
+  const season = await readJson(`data/history/${file}`);
+  season.teams = season.teams.map(t => ({ ...t, manager: canonical(t.manager) }));
+  pastSeasons.push({ ...season, complete: true });
 }
 const scheduleSettings = settings.settings?.scheduleSettings || {};
 const currentSeason = {
@@ -24,7 +30,7 @@ const currentSeason = {
   complete: false,
   teams: (teamData.teams || []).map(t => ({
     id: Number(t.id),
-    manager: managerKey(t.primaryOwner || t.owners?.[0]),
+    manager: canonical(managerKey(t.primaryOwner || t.owners?.[0])),
     name: (t.name || `Team ${t.id}`).trim()
   })),
   games: (currentMatchups.matchups || []).filter(m => m.completed).map(m => ({

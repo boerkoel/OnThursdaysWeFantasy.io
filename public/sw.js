@@ -53,6 +53,29 @@ async function staleWhileRevalidate(request) {
   return cached || refresh;
 }
 
+// Notifications from the alert service (worker/). A newer alert with the same
+// tag (for example, the same matchup) replaces the older one.
+self.addEventListener("push", event => {
+  const data = event.data ? event.data.json() : {};
+  event.waitUntil(self.registration.showNotification(data.title || "On Thursdays We Fantasy", {
+    body: data.body || "",
+    icon: BASE + "icons/icon-192.png",
+    badge: BASE + "icons/icon-192.png",
+    tag: data.tag,
+    renotify: Boolean(data.tag),
+    data: { url: data.url || BASE }
+  }));
+});
+
+self.addEventListener("notificationclick", event => {
+  event.notification.close();
+  const target = event.notification.data?.url || BASE;
+  event.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(windows => {
+    const open = windows.find(w => w.url.startsWith(self.location.origin + BASE));
+    return open ? open.focus() : self.clients.openWindow(target);
+  }));
+});
+
 self.addEventListener("fetch", event => {
   const { request } = event;
   const url = new URL(request.url);
