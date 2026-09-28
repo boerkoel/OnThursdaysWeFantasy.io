@@ -70,6 +70,19 @@ jobs:
         run: node scripts/league-wire.js
       - name: Calculate league stats
         run: node scripts/calculate-stats.js
+      # Past seasons are saved once to data/history; the record book combines
+      # them with this season's finished games.
+      - name: Save past seasons
+        continue-on-error: true
+        env:
+          ESPN_SEASON: "2026"
+          ESPN_LEAGUE_ID: "998599827"
+          ESPN_S2: ${{ secrets.ESPN_S2 }}
+          ESPN_SWID: ${{ secrets.ESPN_SWID }}
+        run: node scripts/fetch-history.js
+      - name: Build record book
+        continue-on-error: true
+        run: node scripts/build-record-book.js
       # Deploy is started explicitly: pushes made with GITHUB_TOKEN don't
       # trigger workflows, and neither does finishing a run that was started
       # by the live workflow.
@@ -79,7 +92,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/current public/team-logos public/guillotine-logos
+          git add data/current data/history public/team-logos public/guillotine-logos
           git diff --cached --quiet || git commit -m "Update ESPN league data and stats"
           for attempt in 1 2 3; do
             git fetch origin main

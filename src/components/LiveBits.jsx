@@ -1,4 +1,16 @@
 import React, { useEffect, useRef, useState } from "react";
+import { shareCard } from "../lib/shareCard.js";
+
+// Small "Share" button; build() returns the share card spec when clicked.
+export function ShareButton({ build, filename, label = "Share" }) {
+  const [busy, setBusy] = useState(false);
+  const onClick = async event => {
+    event.stopPropagation();
+    setBusy(true);
+    try { await shareCard(build(), filename); } finally { setBusy(false); }
+  };
+  return <button type="button" className="share-button" onClick={onClick} disabled={busy} aria-label={label + " as an image"}>⤴ {busy ? "…" : label}</button>;
+}
 
 export const TeamLogo = ({ src, size = "sm" }) => src ? <img src={src} alt="" className={`inline-team-logo ${size}`} /> : null;
 

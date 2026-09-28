@@ -95,7 +95,48 @@ function addWeek(table, weekGames, scoreByTeam) {
 
 const rng = seededRng([currentWeek, [...base.values()], scoreboard?.lastUpdated || null]);
 const normal = () => Math.sqrt(-2 * Math.log(Math.max(rng(), 1e-12))) * Math.cos(2 * Math.PI * rng());
-const counts = new Map(teamIds.map(id => [id, { playoffs: 0, bye: 0, seedSum: 0, pointsSum: 0, raffle: 0 }]));
+const counts = new Map(teamIds.map(id => [id, { playoffs: 0, bye: 0, seedSum: 0, pointsSum: 0, raffle: 0, title: 0, ultimateLoser: 0 }]));
+
+// Postseason, simulated in full each run. Championship: #3v#6 and #4v#5 in
+// week 15, then #1 plays the lowest remaining seed and #2 the other, final in
+// week 17. Ultimate Loser (lower score advances): non-playoff seeds 12..7 as
+// #1-#6, the lower-ranked week-15 loser #7 and the higher-ranked #8; 1v8, 2v7,
+// 3v6, 4v5 in week 16, reseeded semifinals in week 17, final in week 18.
+// Scores already played on ESPN are used as-is. Only for the league's shape:
+// 12 teams, 6 in the playoffs.
+const bracketFits = teamIds.length === 12 && playoffTeamCount === 6;
+const actualScores = new Map();
+for (const m of matchupData.schedule || []) {
+  if (!(m.winner === "HOME" || m.winner === "AWAY")) continue;
+  for (const side of [m.home, m.away]) if (side?.teamId) actualScores.set(`${m.matchupPeriodId}-${side.teamId}`, Number(side.totalPoints || 0));
+}
+function simulatePostseason(seedOrder) {
+  const seedOf = id => seedOrder.indexOf(id) + 1;
+  const score = (id, week) => actualScores.get(`${week}-${id}`) ?? teamMean(id) + weeklySd * normal();
+  // Returns [advancing, eliminated]; ties go to the first (higher-seeded) team.
+  const play = (a, b, week, lowerAdvances) => {
+    const sa = score(a, week), sb = score(b, week);
+    return (lowerAdvances ? sa <= sb : sa >= sb) ? [a, b] : [b, a];
+  };
+  const qfWeek = regularSeasonWeeks + 1;
+  const [winner36, loser36] = play(seedOrder[2], seedOrder[5], qfWeek, false);
+  const [winner45, loser45] = play(seedOrder[3], seedOrder[4], qfWeek, false);
+  const lowestFirst = [winner36, winner45].sort((a, b) => seedOf(b) - seedOf(a));
+  const [finalist1] = play(seedOrder[0], lowestFirst[0], qfWeek + 1, false);
+  const [finalist2] = play(seedOrder[1], lowestFirst[1], qfWeek + 1, false);
+  const [champion] = play(finalist1, finalist2, qfWeek + 2, false);
+
+  const playoffLosers = [loser36, loser45].sort((a, b) => seedOf(b) - seedOf(a));
+  const ultimate = [...seedOrder.slice(6).reverse(), ...playoffLosers];
+  const ultimateSeed = id => ultimate.indexOf(id) + 1;
+  const ulWeek = qfWeek + 1;
+  const quarterfinals = [[0, 7], [1, 6], [2, 5], [3, 4]].map(([a, b]) => play(ultimate[a], ultimate[b], ulWeek, true)[0]);
+  const reseeded = quarterfinals.sort((a, b) => ultimateSeed(a) - ultimateSeed(b));
+  const [semi1] = play(reseeded[0], reseeded[3], ulWeek + 1, true);
+  const [semi2] = play(reseeded[1], reseeded[2], ulWeek + 1, true);
+  const [ultimateLoser] = play(semi1, semi2, ulWeek + 2, true);
+  return { champion, ultimateLoser };
+}
 
 for (let sim = 0; sim < SIMULATIONS; sim++) {
   const table = new Map([...base].map(([id, row]) => [id, { ...row }]));
@@ -119,6 +160,11 @@ for (let sim = 0; sim < SIMULATIONS; sim++) {
   });
   const totalTickets = [...table.values()].reduce((a, r) => a + r.tickets, 0);
   if (totalTickets) for (const [id, row] of table) counts.get(id).raffle += row.tickets / totalTickets;
+  if (bracketFits) {
+    const { champion, ultimateLoser } = simulatePostseason(order.map(([id]) => id));
+    counts.get(champion).title++;
+    counts.get(ultimateLoser).ultimateLoser++;
+  }
 }
 
 // Once the regular season is over, results are exact.
@@ -133,7 +179,10 @@ const teams = teamIds.map(id => {
     averageSeed: round(c.seedSum / SIMULATIONS),
     playoffOdds: odds(c.playoffs),
     byeOdds: odds(c.bye),
-    ultimateLoserOdds: odds(SIMULATIONS - c.playoffs),
+    // Share of simulations each team ends as champion / Ultimate Loser; each
+    // column sums to 100%.
+    titleOdds: bracketFits ? round(c.title / SIMULATIONS * 100) : null,
+    ultimateLoserOdds: bracketFits ? round(c.ultimateLoser / SIMULATIONS * 100) : null,
     raffleOdds: round(c.raffle / SIMULATIONS * 100)
   };
 }).sort((a, b) => b.playoffOdds - a.playoffOdds || a.averageSeed - b.averageSeed);

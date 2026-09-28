@@ -444,15 +444,43 @@
 .odds-block{margin-top:26px}
 .odds-block .median-note{margin:-4px 0 12px}
 .odds-table{border:1px solid #30332d;border-radius:14px;overflow:hidden}
-.odds-row{display:grid;grid-template-columns:28px minmax(0,1fr) 72px 78px 74px 64px 78px 64px;gap:10px;align-items:center;padding:10px 16px;border-bottom:1px solid #242620;font-size:13px}
+/* Standings & odds: seed, team, W-L, PF, Proj. PF, Playoffs, Bye, Title, Ult. Loser, Raffle */
+.odds-row{display:grid;grid-template-columns:58px minmax(0,1fr) 48px 66px 70px 66px 58px 58px 68px 58px;gap:8px;align-items:center;padding:10px 16px;border-bottom:1px solid #242620;font-size:13px}
 .odds-row:last-child{border-bottom:0}
+.odds-row.in-playoffs{background:#ffffff05}
 .odds-row>span{color:#999c94;text-align:right}
-.odds-row>span:first-child{text-align:left;color:#686b63}
+.odds-row>span:first-child{display:flex;align-items:center;gap:6px;text-align:left;color:#686b63}
 .odds-row>strong{display:flex;align-items:center;gap:8px;min-width:0}
 .odds-row>strong span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .odds-row>b{text-align:right;color:#dfe9c7}
+.odds-row.survival-header>button{padding:0;border:0;background:none;color:#777a72;font:inherit;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;text-align:right;cursor:pointer}
+.odds-row.survival-header>button:first-child{text-align:left}
+.odds-row.survival-header>button.active{color:#dfe7d7}
+.odds-row.survival-header>button.active::after{content:" ▾"}
 .odds-row.survival-header>span:nth-child(2){text-align:left}
-@media(max-width:700px){.odds-row{grid-template-columns:22px minmax(0,1fr) 62px 52px 62px;gap:8px}.odds-row>:nth-child(3),.odds-row>:nth-child(4),.odds-row>:nth-child(8){display:none}}
+.bye-badge{padding:1px 5px;border:1px solid #4a533e;border-radius:999px;color:#b8c69b;font-size:8px;font-style:normal;font-weight:800;letter-spacing:.06em}
+@media(max-width:760px){.odds-row{grid-template-columns:50px minmax(0,1fr) 62px 52px 62px;gap:6px;padding:10px 12px}.odds-row>:nth-child(3),.odds-row>:nth-child(4),.odds-row>:nth-child(5),.odds-row>:nth-child(7),.odds-row>:nth-child(10){display:none}}
+/* All-time record book */
+.champion-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-bottom:10px}
+.champion-card{display:flex;flex-direction:column;gap:4px;padding:16px;border:1px solid #4a533e;border-radius:14px;background:#1d2319}
+.champion-card small{color:#b8c69b;font-size:11px;font-weight:900;letter-spacing:.12em}
+.champion-card strong{font-size:16px}
+.champion-card span{color:#999c94;font-size:12px}
+.alltime-row{display:grid;grid-template-columns:28px minmax(0,1fr) 62px 62px 62px 70px 64px 58px;gap:8px;align-items:center;padding:10px 16px;border-bottom:1px solid #242620;font-size:13px}
+.alltime-row:last-child{border-bottom:0}
+.alltime-row>span{color:#999c94;text-align:right}
+.alltime-row>span:first-child{text-align:left;color:#686b63}
+.alltime-row>strong span{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.alltime-row>b{text-align:right}
+.alltime-row.survival-header>span:nth-child(2){text-align:left}
+@media(max-width:700px){.alltime-row{grid-template-columns:22px minmax(0,1fr) 52px 54px 56px;gap:6px}.alltime-row>:nth-child(3),.alltime-row>:nth-child(7),.alltime-row>:nth-child(8){display:none}}
+.record-card p{line-height:1.45}
+.record-runners-up{margin:10px 0 0;padding:8px 0 0 16px;border-top:1px solid #292c27;color:#777a72;font-size:11px;line-height:1.5}
+/* Share buttons */
+.card-actions{grid-column:1 / -1;display:flex;justify-content:flex-end;margin-top:auto;padding-top:8px}
+.share-button{padding:4px 10px;border:1px solid #3b4134;border-radius:999px;background:transparent;color:#b8c69b;font-size:10px;font-weight:800;letter-spacing:.06em;cursor:pointer}
+.share-button:hover{border-color:#6b7a52;color:#dfe7d7}
+.share-button:disabled{opacity:.6;cursor:progress}
 /* Win-odds swing chart inside a matchup card */
 .swing-chart{grid-column:1 / -1;margin-top:2px;padding-top:10px;border-top:1px solid #292c27}
 .swing-caption{display:flex;justify-content:space-between;gap:10px;margin-bottom:4px;color:#777a72;font-size:8px;font-weight:800;letter-spacing:.08em}
@@ -463,4 +491,7 @@
 .swing-line{fill:none;stroke:#b8c69b;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
 .swing-crosshair{stroke:#777a72;stroke-width:1}
 .swing-dot{position:absolute;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:#b8c69b;box-shadow:0 0 0 2px #151713;pointer-events:none}
+.bracket-game>.bracket-note{margin:8px 0 0;padding-top:6px;border-top:1px dashed #30332d;text-align:right;color:#8f978c;font-size:8px;font-weight:900;letter-spacing:.1em}
+.championship-game>.bracket-note{color:#b8c69b}
 
+.odds-row.survival-header,.alltime-row.survival-header{font-size:9px}

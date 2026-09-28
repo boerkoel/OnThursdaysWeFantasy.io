@@ -9,32 +9,62 @@ import playoffs from "../data/current/playoffs.json";
 import teamsData from "../data/current/teams.json";
 import weekly from "../data/current/weekly.json";
 import { fetchData, gameState, money, useLiveData } from "./lib/data.js";
-import { TeamLogo, UpdatedAgo, useChangedScores } from "./components/LiveBits.jsx";
+import { ShareButton, TeamLogo, UpdatedAgo, useChangedScores } from "./components/LiveBits.jsx";
 import LeagueWire from "./components/LeagueWire.jsx";
 import TeamCards from "./components/TeamCards.jsx";
 import { DeathWatch } from "./components/DeathWatch.jsx";
 import SwingChart from "./components/SwingChart.jsx";
+import RecordBook from "./components/RecordBook.jsx";
 
-// Rest-of-season odds for every team (season-odds.js).
-function PlayoffOdds({ seasonOdds, logos }) {
-  const teams = seasonOdds?.teams || [];
-  if (!teams.length) return null;
-  const pct = n => (n >= 99.995 && n < 100 ? ">99.99" : n > 0 && n < 0.005 ? "<0.01" : money(n)) + "%";
+// Standings and rest-of-season odds in one sortable table: current seed and
+// record (standings.json, playoffs.json) plus simulated odds (season-odds.js).
+const STANDINGS_COLUMNS = [
+  { key: "seed", label: "Seed", value: r => r.seed, ascending: true },
+  { key: "team", label: "Team" },
+  { key: "record", label: "W-L", value: r => r.winPct, show: r => `${r.wins}-${r.losses}${r.ties ? `-${r.ties}` : ""}` },
+  { key: "pointsFor", label: "PF", value: r => r.pointsFor, show: r => money(r.pointsFor) },
+  { key: "projected", label: "Proj. PF", value: r => r.projectedPointsFor, show: r => r.projectedPointsFor != null ? money(r.projectedPointsFor) : "—" },
+  { key: "playoffs", label: "Playoffs", value: r => r.playoffOdds, odds: true, highlight: true },
+  { key: "bye", label: "Bye", value: r => r.byeOdds, odds: true },
+  { key: "title", label: "Title", value: r => r.titleOdds, odds: true, tip: "Chance of winning the championship" },
+  { key: "ultimateLoser", label: "Ult. Loser", value: r => r.ultimateLoserOdds, odds: true, tip: "Chance of finishing as the Ultimate Loser (losing all the way through the losers' bracket)" },
+  { key: "raffle", label: "Raffle", value: r => r.raffleOdds, odds: true, tip: "Chance of winning the end-of-season raffle" }
+];
+const pct = n => n == null ? "—" : (n >= 99.995 && n < 100 ? ">99.99" : n > 0 && n < 0.005 ? "<0.01" : money(n)) + "%";
+
+function StandingsTable({ seasonOdds, logos }) {
+  const [sortKey, setSortKey] = useState("seed");
+  const oddsById = new Map((seasonOdds?.teams || []).map(t => [t.teamId, t]));
+  const seedById = new Map([...(playoffs.seeds || []), ...(playoffs.nonPlayoffTeams || [])].map(s => [s.teamId, s.seed]));
+  const rows = (standingsData.standings || []).map(t => ({
+    ...(oddsById.get(t.id) || {}),
+    teamId: t.id,
+    team: t.name,
+    seed: seedById.get(t.id) ?? 99,
+    wins: t.wins, losses: t.losses, ties: t.ties, winPct: t.winPct,
+    pointsFor: t.pointsFor
+  }));
+  const column = STANDINGS_COLUMNS.find(c => c.key === sortKey);
+  const sorted = [...rows].sort((a, b) => {
+    const diff = (column.value(a) ?? -1) - (column.value(b) ?? -1);
+    return (column.ascending ? diff : -diff) || a.seed - b.seed;
+  });
   return (
-    <div className="odds-block">
-      <h3 className="survival-heading">Playoff odds</h3>
-      <p className="median-note">From {Number(seasonOdds.simulations || 0).toLocaleString()} simulations of the {seasonOdds.remainingWeeks?.length || 0} regular-season weeks left, using each team's scoring so far (and live projections for the week in progress). The top {seasonOdds.playoffTeamCount} in total points make the playoffs; the rest go to the Ultimate Loser bracket.</p>
+    <div className="odds-block" id="standings">
+      <h3 className="survival-heading">Standings &amp; odds</h3>
+      <p className="median-note">Seeds are by total points; the top {playoffs.playoffTeamCount || 6} make the playoffs and the top 2 get byes. Odds come from {Number(seasonOdds?.simulations || 0).toLocaleString()} simulations of the rest of the season, including both postseason brackets, using each team's scoring so far and live projections for the week in progress. Title and Ultimate Loser odds each add up to 100%. Click a column to sort.</p>
       <div className="survival-table odds-table">
-        <div className="odds-row survival-header"><span>#</span><span>Team</span><span>PF</span><span>Proj. PF</span><span>Playoffs</span><span>Bye</span><span>Ult. Loser</span><span>Raffle</span></div>
-        {teams.map((t, i) => <div className="odds-row" key={t.teamId}>
-          <span>{i + 1}</span>
-          <strong><TeamLogo src={logos[t.teamId]} /><span>{t.team}</span></strong>
-          <span>{money(t.pointsFor)}</span>
-          <span>{money(t.projectedPointsFor)}</span>
-          <b>{pct(t.playoffOdds)}</b>
-          <span>{pct(t.byeOdds)}</span>
-          <span>{pct(t.ultimateLoserOdds)}</span>
-          <span>{pct(t.raffleOdds)}</span>
+        <div className="odds-row survival-header">
+          {STANDINGS_COLUMNS.map(c => c.value
+            ? <button key={c.key} type="button" title={c.tip} className={sortKey === c.key ? "active" : ""} onClick={() => setSortKey(c.key)}>{c.label}</button>
+            : <span key={c.key}>{c.label}</span>)}
+        </div>
+        {sorted.map(r => <div className={r.seed <= (playoffs.playoffTeamCount || 6) ? "odds-row in-playoffs" : "odds-row"} key={r.teamId}>
+          <span>{r.seed === 99 ? "—" : r.seed}{r.seed <= 2 ? <em className="bye-badge">BYE</em> : null}</span>
+          <strong><TeamLogo src={logos[r.teamId]} /><span>{r.team}</span></strong>
+          {STANDINGS_COLUMNS.slice(2).map(c => c.highlight
+            ? <b key={c.key}>{pct(c.value(r))}</b>
+            : <span key={c.key}>{c.odds ? pct(c.value(r)) : c.show(r)}</span>)}
         </div>)}
       </div>
     </div>
@@ -42,11 +72,12 @@ function PlayoffOdds({ seasonOdds, logos }) {
 }
 
 // One matchup box in a bracket.
-function BracketGame({ top, bottom, className = "" }) {
+function BracketGame({ top, bottom, note, className = "" }) {
   return (
     <div className={("bracket-game " + className).trim()}>
       <div><small>{top.label}</small><strong>{top.team}</strong></div>
       <div><small>{bottom.label}</small><strong>{bottom.team}</strong></div>
+      {note ? <p className="bracket-note">{note}</p> : null}
     </div>
   );
 }
@@ -155,7 +186,7 @@ function App() {
           <h1>On Thursdays We Fantasy</h1>
           <p className="subtitle">The Officially Unofficial League Record Book</p>
         </div>
-        <nav><a href="#scores">Scores</a><a href="#history">History</a><a href="#death-watch">Death Watch</a><a href="#playoffs">Playoffs</a><a href="#ultimate-loser">Ultimate Loser</a><a href="#raffle">Raffle</a><a href="#standings">Standings</a><a href="#awards">Awards</a></nav>
+        <nav><a href="#scores">Scores</a><a href="#history">History</a><a href="#death-watch">Death Watch</a><a href="#playoffs">Playoffs</a><a href="#ultimate-loser">Ultimate Loser</a><a href="#standings">Standings</a><a href="#raffle">Raffle</a><a href="#awards">Awards</a><a href="#record-book">Record Book</a></nav>
       </header>
 
       <div className="data-timestamp">LAST REFRESHED <strong>{scoreboard.lastUpdated ? new Date(scoreboard.lastUpdated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "—"}</strong> <UpdatedAgo iso={scoreboard.lastUpdated} /></div>
@@ -183,6 +214,19 @@ function App() {
               <div className="versus">vs</div>
               <MatchupTeam team={b} opponent={a} logo={teamLogos[b.teamId]} projected={scoreSort === "projected"} flashing={flashingScores.has(b.teamId)} dotClass={medianDotClass(b)} />
               <SwingChart points={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} teamId={a.teamId} teamName={a.team} opponentName={b.team} />
+              <div className="card-actions">
+                <ShareButton filename={`week-${scoreboard.week}-${a.team}-vs-${b.team}`.replace(/[^\w-]+/g, "-")} build={() => ({
+                  kicker: `Week ${scoreboard.week} · ${status === "FINAL" ? "Final" : status === "LIVE" ? "Live" : "Matchup"}`,
+                  teams: [a, b].map(t => ({
+                    name: t.team,
+                    score: money(t.score),
+                    logo: teamLogos[t.teamId],
+                    highlight: t.score >= (t === a ? b : a).score,
+                    note: `Proj ${t.projectionAverage != null ? money(t.projectionAverage) : "—"}${t.winProbability != null ? ` · ${money(t.winProbability)}% to win` : ""}`
+                  })),
+                  lines: keyPlaysFor(matchupId).slice(0, 2).map((play, i) => ({ text: `${play.points > 0 ? "+" : ""}${money(play.points)} · ${play.player} ${play.text}`, size: 26, gap: i ? 8 : 40 }))
+                })} />
+              </div>
               {keyPlaysFor(matchupId).length ? (
                 <div className="key-plays" aria-label="Key plays">
                   <div className="key-plays-heading"><span>KEY PLAYS</span><em>4+ PT SWINGS</em></div>
@@ -201,7 +245,7 @@ function App() {
         </div>
       </section>
 
-      <section id="standings" className="section">
+      <section id="scoreboard" className="section">
         <div className="section-heading"><div><span className="section-kicker">MEDIAN SCORING</span><h2>Week {scoreboard.week} Scoreboard</h2></div></div>
         <div className="score-list">
           <div className="score-sort-controls" role="group" aria-label="Sort scoreboard">
@@ -281,7 +325,7 @@ function App() {
               {playoffs.schedule.filter(g => g.round === "Quarterfinal").map(g => {
                 const home = playoffs.seeds.find(s => s.seed === g.homeSeed);
                 const away = playoffs.seeds.find(s => s.seed === g.awaySeed);
-                return <BracketGame key={g.id}
+                return <BracketGame key={g.id} note="WINNER ADVANCES ▸"
                   top={{ label: home ? "#" + home.seed : "TBD", team: home?.team || "TBD" }}
                   bottom={{ label: away ? "#" + away.seed : "TBD", team: away?.team || "TBD" }} />;
               })}
@@ -291,7 +335,7 @@ function App() {
             <div className="bracket-round-title">WEEK 16 · SEMIFINALS</div>
             <div className="bracket-games">
               <div className="bracket-pair">
-                {playoffs.schedule.filter(g => g.round === "Semifinal").map(g => <BracketGame key={g.id}
+                {playoffs.schedule.filter(g => g.round === "Semifinal").map(g => <BracketGame key={g.id} note="WINNER ADVANCES ▸"
                   top={{ label: "#" + g.homeSeed + " · BYE", team: g.homeTeam || "TBD" }}
                   bottom={g.awayTeam
                     ? { label: "#" + g.awaySeed, team: g.awayTeam }
@@ -302,14 +346,14 @@ function App() {
           <div className="bracket-round">
             <div className="bracket-round-title">WEEK 17 · CHAMPIONSHIP</div>
             <div className="bracket-games">
-              <BracketGame className="championship-game" top={{ label: "SF WINNER", team: "Semifinal winner" }} bottom={{ label: "SF WINNER", team: "Semifinal winner" }} />
+              <BracketGame className="championship-game" note="🏆 WINNER TAKES THE TITLE" top={{ label: "SF WINNER", team: "Semifinal winner" }} bottom={{ label: "SF WINNER", team: "Semifinal winner" }} />
             </div>
           </div>
         </div>
         <div className="bracket-footer">
           <div>
             <div className="bracket-round-title">WEEK 17 · THIRD PLACE</div>
-            <BracketGame top={{ label: "SF LOSER", team: "Semifinal loser" }} bottom={{ label: "SF LOSER", team: "Semifinal loser" }} />
+            <BracketGame note="WINNER TAKES 3RD" top={{ label: "SF LOSER", team: "Semifinal loser" }} bottom={{ label: "SF LOSER", team: "Semifinal loser" }} />
           </div>
           <div className="championship-payouts">
             <strong>1st: $375</strong>
@@ -317,10 +361,7 @@ function App() {
             <strong>3rd: $100</strong>
           </div>
         </div>
-        <PlayoffOdds seasonOdds={live.seasonOdds} logos={teamLogos} />
-        <div className="seed-board">
-          {playoffs.seeds.map(s => <div className="seed-row" key={s.seed}><span>{"#" + s.seed}</span><strong>{s.team}</strong><span>{s.wins}-{s.losses}</span><span>{money(s.pointsFor)} PF</span>{s.seed<=2 ? <em>BYE</em> : null}</div>)}
-        </div>
+        <StandingsTable seasonOdds={live.seasonOdds} logos={teamLogos} />
       </section>
 
       <section id="ultimate-loser" className="section">
@@ -331,26 +372,26 @@ function App() {
         <p className="playoff-intro">Three weeks. Eight-team single elimination. The lower-scoring team advances, and teams are reseeded after the quarterfinals (dashed lines). The six regular-season non-playoff teams are seeded 1–6, followed by the lower-ranked Week 15 playoff loser at #7 and the higher-ranked Week 15 playoff loser at #8.</p>
         <div className="bracket">
           <div className="bracket-round reseed-next">
-            <div className="bracket-round-title">WEEK 16 · QUARTERFINALS · LOSER ADVANCES</div>
+            <div className="bracket-round-title">WEEK 16 · QUARTERFINALS</div>
             <div className="bracket-games">
               {pairs((playoffs.ultimateLoser?.schedule || []).filter(g => g.round === "Quarterfinal")).map((pair, p) => <div className="bracket-pair" key={p}>
                 {pair.map(g => {
                   const home = playoffs.ultimateLoser.entrants.find(s => s.seed === g.homeSeed);
                   const away = playoffs.ultimateLoser.entrants.find(s => s.seed === g.awaySeed);
-                  return <BracketGame key={g.id} top={{ label: "#" + g.homeSeed, team: home?.team || "TBD" }} bottom={{ label: "#" + g.awaySeed, team: away?.team || "TBD" }} />;
+                  return <BracketGame key={g.id} note="LOSER ADVANCES ▸" top={{ label: "#" + g.homeSeed, team: home?.team || "TBD" }} bottom={{ label: "#" + g.awaySeed, team: away?.team || "TBD" }} />;
                 })}
               </div>)}
             </div>
           </div>
           <div className="bracket-round">
-            <div className="bracket-round-title">WEEK 17 · SEMIFINALS · LOSER ADVANCES</div>
+            <div className="bracket-round-title">WEEK 17 · SEMIFINALS</div>
             <div className="bracket-games">
               <div className="bracket-pair">
                 {(playoffs.ultimateLoser?.schedule || []).filter(g => g.round === "Semifinal").length
-                  ? playoffs.ultimateLoser.schedule.filter(g => g.round === "Semifinal").map(g => <BracketGame key={g.id}
+                  ? playoffs.ultimateLoser.schedule.filter(g => g.round === "Semifinal").map(g => <BracketGame key={g.id} note="LOSER ADVANCES ▸"
                       top={{ label: g.reseeded ? "RESEEDED" : "QF", team: g.homeTeam || "QF loser" }}
                       bottom={{ label: g.reseeded ? "RESEEDED" : "QF", team: g.awayTeam || "QF loser" }} />)
-                  : [1, 2].map(i => <BracketGame key={i} top={{ label: "RESEED", team: "QF loser" }} bottom={{ label: "RESEED", team: "QF loser" }} />)}
+                  : [1, 2].map(i => <BracketGame key={i} note="LOSER ADVANCES ▸" top={{ label: "RESEED", team: "QF loser" }} bottom={{ label: "RESEED", team: "QF loser" }} />)}
               </div>
             </div>
           </div>
@@ -358,8 +399,7 @@ function App() {
             <div className="bracket-round-title">WEEK 18 · ULTIMATE LOSER</div>
             <div className="bracket-games">
               <div className="bracket-final">
-                <BracketGame className="championship-game" top={{ label: "FINALIST", team: "SF loser" }} bottom={{ label: "FINALIST", team: "SF loser" }} />
-                <small className="bracket-final-label">LOWER SCORE IS THE ULTIMATE LOSER</small>
+                <BracketGame className="championship-game" note="🪦 LOWER SCORE IS THE ULTIMATE LOSER" top={{ label: "FINALIST", team: "SF loser" }} bottom={{ label: "FINALIST", team: "SF loser" }} />
               </div>
             </div>
           </div>
@@ -420,12 +460,7 @@ function App() {
         </div>
       </section>
 
-      <section className="section">
-        <div className="section-heading"><div><span className="section-kicker">RECORD BOOK</span><h2>Standings</h2></div></div>
-        <div className="standings-table">
-          {standingsData.standings.map((t, i) => <div className="standing-row" key={t.id}><span>{i+1}</span><strong><TeamLogo src={teamLogos[t.id]} />{t.name}</strong><span>{t.wins}-{t.losses}{t.ties ? `-${t.ties}` : ""}</span><span>{money(t.pointsFor)} PF</span></div>)}
-        </div>
-      </section>
+      <RecordBook />
       <footer>On Thursdays We Fantasy · 2026 · Officially unofficial.</footer>
     </main>
   );

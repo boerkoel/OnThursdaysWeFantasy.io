@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { formatDay, money } from "../lib/data.js";
-import { TeamLogo } from "./LiveBits.jsx";
+import { ShareButton, TeamLogo } from "./LiveBits.jsx";
 import obituaryData from "../../data/current/obituaries.json";
 import obituariesMarkdown from "../../content/obituaries.md?raw";
 
@@ -84,6 +84,17 @@ function Obituaries({ guillotine }) {
               {obituary
                 ? obituary.split(/\n\s*\n/).map((paragraph, p) => <p className="rip-obituary" key={p}>{paragraph.replace(/\s*\n\s*/g, " ")}</p>)
                 : <p className="rip-obituary">Obituary pending.</p>}
+              <div className="card-actions">
+                <ShareButton filename={`rip-${c.team}`.replace(/[^\w-]+/g, "-")} build={() => ({
+                  kicker: `Rest in peace · ${guillotine.leagueName}`,
+                  title: `🪦 ${c.team}`,
+                  lines: [
+                    { text: `${formatDay(guillotine.draftDate)} — ${formatDay(c.diedOn)}`, size: 30, color: "accent", weight: 800, gap: 30 },
+                    { text: `Chopped in Week ${c.week} with ${money(c.finalScore)} pts${c.survivedBy ? `, ${money(c.margin)} short of ${c.survivedBy.team}` : ""}.`, size: 30, color: "ink" },
+                    { text: obituary || "Obituary pending.", size: obituary && obituary.length > 700 ? 24 : 27, gap: 30 }
+                  ]
+                })} />
+              </div>
             </article>;
           })}
         </div>
@@ -120,6 +131,18 @@ export function DeathWatch({ guillotine }) {
           <p>{money(t.score)} pts{t.playersLeft ? ` · projected ${money(t.projected)}` : " · final"}</p>
           <p>{t.playersLeft ? "Still to play: " + t.remaining.map(p => p.name + (p.game ? ` (${p.game})` : "")).join(", ") : "No players left to play"}</p>
           {t.survivalNeed ? <p>Needs {money(t.survivalNeed.points)} more pts to pass {t.survivalNeed.passTeam}</p> : null}
+          <div className="card-actions">
+            <ShareButton filename={`death-watch-week-${guillotine.week}-${t.team}`.replace(/[^\w-]+/g, "-")} build={() => ({
+              kicker: `${guillotine.leagueName} · Week ${guillotine.week} Death Watch`,
+              title: `🪓 ${t.team}`,
+              lines: [
+                { text: `${money(t.chopProbability)}% chance of being chopped`, size: 48, color: "alert", weight: 800, gap: 40 },
+                { text: `${money(t.score)} pts${t.playersLeft ? ` · projected ${money(t.projected)}` : " · final"}`, size: 34 },
+                t.playersLeft ? { text: "Still to play: " + t.remaining.map(p => p.name).join(", "), size: 30 } : null,
+                t.survivalNeed ? { text: `Needs ${money(t.survivalNeed.points)} more pts to pass ${t.survivalNeed.passTeam}`, size: 30, color: "ink" } : null
+              ].filter(Boolean)
+            })} />
+          </div>
         </article>)}
       </div>
       {guillotine.chopped?.length ? <p className="median-note">Already chopped: {guillotine.chopped.map(c => `${c.team} (Week ${c.week})`).join(" · ")} · <a href="#rip" onClick={openObituaries}>Rest in peace</a></p> : null}
