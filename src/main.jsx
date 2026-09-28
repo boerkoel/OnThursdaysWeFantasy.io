@@ -72,6 +72,27 @@ function StandingsTable({ seasonOdds, logos }) {
   );
 }
 
+// A one-time hint for iPhone/iPad Safari users on how to add the home-screen
+// app. Hidden once added (standalone) or dismissed.
+function InstallHint() {
+  const isIos = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  const standalone = window.navigator.standalone || window.matchMedia?.("(display-mode: standalone)").matches;
+  const [dismissed, setDismissed] = useState(() => {
+    try { return localStorage.getItem("installHintDismissed") === "1"; } catch { return false; }
+  });
+  if (!isIos || standalone || dismissed) return null;
+  const dismiss = () => {
+    setDismissed(true);
+    try { localStorage.setItem("installHintDismissed", "1"); } catch {}
+  };
+  return (
+    <div className="install-hint" role="note">
+      <span>📲 Get the app: tap <b>Share</b> then <b>Add to Home Screen</b>.</span>
+      <button type="button" onClick={dismiss} aria-label="Dismiss">×</button>
+    </div>
+  );
+}
+
 // One matchup box in a bracket.
 function BracketGame({ top, bottom, note, className = "" }) {
   return (
@@ -202,6 +223,7 @@ function App() {
         <nav><a href="#scores">Scores</a><a href="#history">History</a><a href="#death-watch">Death Watch</a><a href="#playoffs">Playoffs</a><a href="#ultimate-loser">Ultimate Loser</a><a href="#standings">Standings</a><a href="#raffle">Raffle</a><a href="#awards">Awards</a><a href="#record-book">Record Book</a></nav>
       </header>
 
+      <InstallHint />
       <div className="data-timestamp">LAST REFRESHED <strong>{scoreboard.lastUpdated ? new Date(scoreboard.lastUpdated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "—"}</strong> <UpdatedAgo iso={scoreboard.lastUpdated} /></div>
 
 
@@ -483,3 +505,8 @@ function App() {
   );
 }
 createRoot(document.getElementById("root")).render(<App />);
+
+// Home-screen app: register the service worker (production builds only).
+if ("serviceWorker" in navigator && import.meta.env.PROD) {
+  window.addEventListener("load", () => navigator.serviceWorker.register(import.meta.env.BASE_URL + "sw.js").catch(() => {}));
+}

@@ -512,3 +512,9 @@
 .rivalry-lists ol{margin:6px 0 0;padding-left:18px;color:#aeb1a9;font-size:12px;line-height:1.6}
 @media(max-width:600px){.rivalry-lists{grid-template-columns:1fr}}
 .raffle-badge.chaser{border-color:#30332d;color:#999c94}
+/* Home-screen app: keep content clear of the notch and home indicator. */
+.site{padding-top:max(28px, env(safe-area-inset-top));padding-left:max(24px, env(safe-area-inset-left));padding-right:max(24px, env(safe-area-inset-right));padding-bottom:max(60px, env(safe-area-inset-bottom))}
+@media(max-width:520px){.site{padding-left:max(16px, env(safe-area-inset-left));padding-right:max(16px, env(safe-area-inset-right))}}
+.install-hint{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:14px 0 0;padding:10px 14px;border:1px solid #4a533e;border-radius:12px;background:#1d2319;color:#dfe7d7;font-size:13px}
+.install-hint button{border:0;background:none;color:#b8c69b;font-size:20px;line-height:1;cursor:pointer}
+
