@@ -331,7 +331,13 @@ function addPrimetimeStories(add, matchupStates) {
   const withGame = p => p.lastName + (p.game?.name ? " (" + p.game.name + ")" : "");
   const projectedRest = players => round(players.reduce((sum, p) => sum + Math.max(0, (p.projection ?? 0) - p.actual), 0));
 
+  // Odds below this are long shots: they get one "there's a chance" story
+  // instead of a headline. Outcomes no simulation produced aren't mentioned
+  // (the odds floor is 0.01% because every open outcome starts with one win).
+  const LONG_SHOT_ODDS = 10;
+  const NO_SIMULATED_WINS = 0.01;
   const storylines = [];
+  const longShots = [];
   for (const x of matchupStates) {
     if (x.m.completed) continue;
     const [leader, trailer] = Number(x.a.score) >= Number(x.b.score) ? [x.a, x.b] : [x.b, x.a];
@@ -340,24 +346,43 @@ function addPrimetimeStories(add, matchupStates) {
     // A trailing team with no one left can't catch up, and a matchup with lots
     // of players still to go isn't a storyline yet.
     if (!trailerLeft.length || leaderLeft.length + trailerLeft.length > 3) continue;
+    const trailerOdds = Number(trailer.winProbability);
+    if (!Number.isFinite(trailerOdds) || trailerOdds <= NO_SIMULATED_WINS) continue;
     const deficit = round(Number(leader.score) - Number(trailer.score));
     const urgency = 92 - Math.min(deficit, 30) / 10;
-    const odds = Number.isFinite(Number(trailer.winProbability)) ? " " + possessive(trailer.team) + " win chance: " + money(trailer.winProbability) + "%." : "";
-    const add = (type, text, score) => storylines.push({type, text, score});
+    const odds = " " + possessive(trailer.team) + " win chance: " + money(trailerOdds) + "%.";
+
+    if (trailerOdds < LONG_SHOT_ODDS) {
+      const chance = "🤞 So you're saying there's a chance… ";
+      let text;
+      if (!leaderLeft.length && trailerLeft.length === 1) {
+        const p = trailerLeft[0];
+        const projected = p.projection != null ? " (ESPN projects " + pts(p.projection) + ")" : "";
+        text = chance + trailer.team + " needs " + withGame(p) + " to top " + pts(round(p.actual + deficit)) + projected + " to steal it from " + leader.team + ".";
+      } else if (!leaderLeft.length) {
+        text = chance + trailer.team + " needs " + pts(deficit) + " from " + listNames(trailerLeft.map(withGame)) + " to catch " + leader.team + ".";
+      } else {
+        text = chance + trailer.team + " trails " + leader.team + " by " + pts(deficit) + ", but a big night from " + listNames(trailerLeft.map(withGame)) + " and a quiet one from " + listNames(leaderLeft.map(p => p.lastName)) + " (late scratch, anyone?) could flip it.";
+      }
+      longShots.push({type:"LONG SHOT", text:text + odds, score:66 + trailerOdds});
+      continue;
+    }
 
     if (!leaderLeft.length && trailerLeft.length === 1) {
       const p = trailerLeft[0];
       const target = round(p.actual + deficit);
       const soFar = p.actual > 0 ? " (" + money(p.actual) + " so far)" : "";
       const projected = p.projection != null ? " ESPN projects " + pts(p.projection) + "." : "";
-      add("ALL EYES ON","👀 All eyes on " + withGame(p) + ": if " + p.lastName + " tops " + pts(target) + soFar + ", " + trailer.team + " beats " + leader.team + ". Otherwise " + leader.team + " takes it." + projected + odds,urgency + 3);
+      storylines.push({type:"ALL EYES ON", text:"👀 All eyes on " + withGame(p) + ": if " + p.lastName + " tops " + pts(target) + soFar + ", " + trailer.team + " beats " + leader.team + ". Otherwise " + leader.team + " takes it." + projected + odds, score:urgency + 3});
     } else if (!leaderLeft.length) {
-      add("COMEBACK WATCH","⏳ " + trailer.team + " needs " + pts(deficit) + " more from " + listNames(trailerLeft.map(withGame)) + " to catch " + leader.team + " (ESPN projects " + pts(projectedRest(trailerLeft)) + ")." + odds,urgency);
+      storylines.push({type:"COMEBACK WATCH", text:"⏳ " + trailer.team + " needs " + pts(deficit) + " more from " + listNames(trailerLeft.map(withGame)) + " to catch " + leader.team + " (ESPN projects " + pts(projectedRest(trailerLeft)) + ")." + odds, score:urgency});
     } else {
-      add("SHOWDOWN","⚔️ SHOWDOWN: " + leader.team + " leads " + trailer.team + " by " + pts(deficit) + " — it's " + listNames(leaderLeft.map(withGame)) + " vs " + listNames(trailerLeft.map(withGame)) + " the rest of the way." + odds,urgency);
+      storylines.push({type:"SHOWDOWN", text:"⚔️ SHOWDOWN: " + leader.team + " leads " + trailer.team + " by " + pts(deficit) + " — it's " + listNames(leaderLeft.map(withGame)) + " vs " + listNames(trailerLeft.map(withGame)) + " the rest of the way." + odds, score:urgency});
     }
   }
   storylines.sort((a,b) => b.score - a.score).slice(0, 4).forEach(story => add(story.type, story.text, story.score));
+  // At most one long shot, the likeliest one.
+  longShots.sort((a,b) => b.score - a.score).slice(0, 1).forEach(story => add(story.type, story.text, story.score));
 
   // Undecided matchups where the favorite isn't a lock.
   const live = matchupStates

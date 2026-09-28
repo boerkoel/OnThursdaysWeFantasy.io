@@ -24,7 +24,7 @@ async function fetchData(file) {
   return response.json();
 }
 
-function usePolledData(file, initial, intervalMs = 30000) {
+function usePolledData(file, initial, intervalMs = 15000) {
   const [data, setData] = useState(initial);
   useEffect(() => {
     let cancelled = false;
@@ -277,6 +277,13 @@ function App() {
   const marqueeStories = marqueeData.stories || [];
   const [marqueeIndex, setMarqueeIndex] = useState(0);
   const livePlayFeed = usePolledData("live-plays.json", livePlays);
+  // A matchup shows its 5 most recent 4+ point swings from the last 5 hours.
+  const KEY_PLAY_MAX_AGE_MS = 5 * 60 * 60 * 1000;
+  const keyPlaysFor = matchupId => (livePlayFeed.plays || [])
+    .filter(p => Number(p.matchupId) === Number(matchupId) && Math.abs(Number(p.points)) >= 4)
+    .filter(p => p.wallclock && Date.now() - Date.parse(p.wallclock) <= KEY_PLAY_MAX_AGE_MS)
+    .sort((a, b) => Date.parse(b.wallclock) - Date.parse(a.wallclock))
+    .slice(0, 5);
 
   // Standings, teams, awards, etc. are bundled and only change with the daily
   // ESPN update, so reload the page when that update's timestamp changes.
@@ -384,11 +391,11 @@ function App() {
               <div className={a.score >= b.score ? "team winning" : "team"}><span className="matchup-team-name"><TeamLogo src={teamLogos[a.teamId]} />{a.team}</span><strong className={scoreSort === "projected" ? "score-value projected-score" : "score-value"}><span className={medianDotClass(a)} aria-hidden="true"></span>{money(scoreSort === "projected" ? a.projectionAverage : a.score)}</strong>{scoreSort === "projected" ? <span className="actual-score-muted">{money(a.score)} ACT</span> : null}<small>PROJ {a.projectionTrend === "up" ? <span className="projection-trend up" aria-label="Projection trending up">↑</span> : a.projectionTrend === "down" ? <span className="projection-trend down" aria-label="Projection trending down">↓</span> : null}{a.projectionAverage != null ? money(a.projectionAverage) : "—"}{a.winProbability != null ? <em className="matchup-probability">WIN {money(a.winProbability)}%</em> : null}</small></div>
               <div className="versus">vs</div>
               <div className={b.score >= a.score ? "team winning" : "team"}><span className="matchup-team-name"><TeamLogo src={teamLogos[b.teamId]} />{b.team}</span><strong className={scoreSort === "projected" ? "score-value projected-score" : "score-value"}><span className={medianDotClass(b)} aria-hidden="true"></span>{money(scoreSort === "projected" ? b.projectionAverage : b.score)}</strong>{scoreSort === "projected" ? <span className="actual-score-muted">{money(b.score)} ACT</span> : null}<small>PROJ {b.projectionTrend === "up" ? <span className="projection-trend up" aria-label="Projection trending up">↑</span> : b.projectionTrend === "down" ? <span className="projection-trend down" aria-label="Projection trending down">↓</span> : null}{b.projectionAverage != null ? money(b.projectionAverage) : "—"}{b.winProbability != null ? <em className="matchup-probability">WIN {money(b.winProbability)}%</em> : null}</small></div>
-              {livePlayFeed.plays?.filter(p => Number(p.matchupId) === Number(matchupId) && Math.abs(Number(p.points)) >= 4).length ? (
+              {keyPlaysFor(matchupId).length ? (
                 <div className="key-plays" aria-label="Key plays">
                   <div className="key-plays-heading"><span>KEY PLAYS</span><em>4+ PT SWINGS</em></div>
                   <div className="key-play-list">
-                    {livePlayFeed.plays.filter(p => Number(p.matchupId) === Number(matchupId) && Math.abs(Number(p.points)) >= 4).slice(0, 5).map(play => (
+                    {keyPlaysFor(matchupId).map(play => (
                       <div className="key-play" key={play.id}>
                         <strong className={play.points < 0 ? "negative" : ""}>{play.points > 0 ? "+" : ""}{money(play.points)}</strong>
                         <span><b>{play.player}</b> {play.text}</span>

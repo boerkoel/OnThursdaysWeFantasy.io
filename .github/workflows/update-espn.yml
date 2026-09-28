@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   update-espn:
@@ -49,7 +50,12 @@ jobs:
         env:
           PREVIOUS_SCOREBOARD_PATH: /tmp/previous-scoreboard.json
         run: node scripts/calculate-stats.js
-      - name: Commit updated data
+      # Deploy is started explicitly: pushes made with GITHUB_TOKEN don't
+      # trigger workflows, and neither does finishing a run that was started
+      # by the live workflow.
+      - name: Commit updated data and deploy
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -59,6 +65,7 @@ jobs:
             git fetch origin main
             git pull --rebase --autostash -X theirs origin main
             if git push origin HEAD:main; then
+              gh workflow run deploy.yml --repo "$GITHUB_REPOSITORY" --ref main
               exit 0
             fi
             sleep 3

@@ -141,13 +141,23 @@ jobs:
         run: |
           MAX_IDLE=19800  # 5.5 hours, inside the job timeout
           if [ "$ACTIVE" = "true" ]; then
-            DELAY=45      # plus ~75 seconds of work and deploy = ~2 minute cadence
+            DELAY=15      # plus ~75 seconds of work and deploy = ~1.5 minute cadence
           elif [ -z "$ACTIVE" ]; then
             DELAY=300     # window check failed; try again soon
           elif [ -n "$NEXT_WINDOW_IN" ] && [ "$NEXT_WINDOW_IN" -lt "$MAX_IDLE" ]; then
             DELAY="$NEXT_WINDOW_IN"
           else
             DELAY="$MAX_IDLE"
+          fi
+          # GitHub's daily cron is best-effort too. Between games, start the
+          # daily ESPN update if its data is over 20 hours old, so a new week
+          # (and its matchups) is picked up before the next kickoff.
+          if [ "$ACTIVE" = "false" ]; then
+            AGE_HOURS=$(node -e 'const m=require("./data/current/metadata.json"); console.log(Math.floor((Date.now()-Date.parse(m.fetchedAt))/3600000))' 2>/dev/null || echo 999)
+            if [ "$AGE_HOURS" -ge 20 ]; then
+              echo "ESPN data is $AGE_HOURS hours old; starting the daily update."
+              gh workflow run update-espn.yml --repo "$GITHUB_REPOSITORY" --ref main || true
+            fi
           fi
           echo "Next live run starts in $DELAY seconds."
           for attempt in 1 2 3; do
