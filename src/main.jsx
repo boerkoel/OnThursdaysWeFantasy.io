@@ -17,6 +17,8 @@ import SwingChart from "./components/SwingChart.jsx";
 import RecordBook from "./components/RecordBook.jsx";
 import Notifications from "./components/Notifications.jsx";
 import { seriesLine } from "./lib/recordBook.js";
+import { useMyTeam, useTabs } from "./lib/tabs.js";
+import { BackToTop, TabBar } from "./components/Navigation.jsx";
 
 // Standings and rest-of-season odds in one sortable table: current seed and
 // record (standings.json, playoffs.json) plus simulated odds (season-odds.js).
@@ -130,6 +132,12 @@ function App() {
   const [scoreSort, setScoreSort] = useState("current");
   const status = gameState(scoreboard);
   const flashingScores = useChangedScores(scores);
+  const [tab, goToTab] = useTabs();
+  const [myTeamId, setMyTeamId] = useMyTeam();
+  const matchupIds = [...new Set(scores.map(s => s.matchupId))];
+  const myScore = scores.find(s => Number(s.teamId) === Number(myTeamId)) || null;
+  const myMatchupId = myScore?.matchupId ?? null;
+  const seasonOddsWeeksLeft = live.seasonOdds?.remainingWeeks?.length ?? 0;
   // A matchup shows its 5 most recent 4+ point swings from the last 5 hours.
   const KEY_PLAY_MAX_AGE_MS = 5 * 60 * 60 * 1000;
   const keyPlaysFor = matchupId => (livePlayFeed.plays || [])
@@ -190,6 +198,8 @@ function App() {
   const raffleBadge = s => {
     const rank = scoreRank.get(s.teamId);
     if (preGame || rank > 2) return null;
+    // Chasers with no chance at the ticket don't get a tag.
+    if (!currentWeekComplete && rank > 0 && Number(s.topScoreProbability) === 0) return null;
     if (currentWeekComplete) return rank === 0 ? <em className="raffle-badge">🎟️ RAFFLE SPOT</em> : null;
     const odds = s.topScoreProbability != null ? ` · ${money(s.topScoreProbability)}%` : "";
     const label = ["CURRENT LEADER", "2ND", "3RD"][rank];
@@ -213,6 +223,86 @@ function App() {
     return odds > 50 ? "projection-dot green" : "projection-dot red";
   };
 
+  // One live matchup card. On phones the details (series, swing chart, share,
+  // key plays) collapse behind a toggle; the pinned "my team" card starts open.
+  const [expandedMatchups, setExpandedMatchups] = useState(() => new Set());
+  const toggleMatchup = id => setExpandedMatchups(prev => {
+    const next = new Set(prev);
+    next.has(id) ? next.delete(id) : next.add(id);
+    return next;
+  });
+  const renderMatchup = (matchupId, featured = false) => {
+    const pair = scores.filter(s => s.matchupId === matchupId);
+    const a = pair[0], b = pair[1];
+    if (!a || !b) return null;
+    const expanded = featured || expandedMatchups.has(matchupId);
+    return <article className={["matchup", featured ? "featured" : "", expanded ? "expanded" : ""].join(" ").trim()} key={matchupId}>
+      <MatchupTeam team={a} opponent={b} logo={teamLogos[a.teamId]} projected={scoreSort === "projected"} flashing={flashingScores.has(a.teamId)} dotClass={medianDotClass(a)} />
+      <div className="versus">vs</div>
+      <MatchupTeam team={b} opponent={a} logo={teamLogos[b.teamId]} projected={scoreSort === "projected"} flashing={flashingScores.has(b.teamId)} dotClass={medianDotClass(b)} />
+      <button type="button" className="matchup-toggle" aria-expanded={expanded} onClick={() => toggleMatchup(matchupId)}>{expanded ? "Hide details ▴" : "Details ▾"}</button>
+      <div className="matchup-details">
+        {seriesLine(a.teamId, b.teamId) ? <p className="rivalry-line">⚔️ {seriesLine(a.teamId, b.teamId)}</p> : null}
+        <SwingChart points={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} teamId={a.teamId} teamName={a.team} opponentName={b.team} />
+        <div className="card-actions">
+          <ShareButton filename={`week-${scoreboard.week}-${a.team}-vs-${b.team}`.replace(/[^\w-]+/g, "-")} build={() => ({
+            kicker: `Week ${scoreboard.week} · ${status === "FINAL" ? "Final" : status === "LIVE" ? "Live" : "Matchup"}`,
+            teams: [a, b].map(t => ({
+              name: t.team,
+              score: money(t.score),
+              logo: teamLogos[t.teamId],
+              highlight: t.score >= (t === a ? b : a).score,
+              note: `Proj ${t.projectionAverage != null ? money(t.projectionAverage) : "—"}${t.winProbability != null ? ` · ${money(t.winProbability)}% to win` : ""}`
+            })),
+            lines: [
+              seriesLine(a.teamId, b.teamId) ? { text: "⚔️ " + seriesLine(a.teamId, b.teamId), size: 28, color: "accent", weight: 800, gap: 36 } : null,
+              ...keyPlaysFor(matchupId).slice(0, 2).map((play, i) => ({ text: `${play.points > 0 ? "+" : ""}${money(play.points)} · ${play.player} ${play.text}`, size: 26, gap: i ? 8 : 30 }))
+            ].filter(Boolean)
+          })} />
+        </div>
+        {keyPlaysFor(matchupId).length ? (
+          <div className="key-plays" aria-label="Key plays">
+            <div className="key-plays-heading"><span>KEY PLAYS</span><em>4+ PT SWINGS</em></div>
+            <div className="key-play-list">
+              {keyPlaysFor(matchupId).map(play => (
+                <div className="key-play" key={play.id}>
+                  <strong className={play.points < 0 ? "negative" : ""}>{play.points > 0 ? "+" : ""}{money(play.points)}</strong>
+                  <span><b>{play.player}</b> {play.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </article>;
+  };
+
+  // "My team": pinned at the top of Live with the key odds and the matchup card.
+  const renderMyTeam = () => {
+    const picker = <select value={myTeamId || ""} onChange={e => setMyTeamId(Number(e.target.value) || null)} aria-label="Your team">
+      <option value="">{myScore ? "Change team…" : "Pick your team…"}</option>
+      {(teamsData.teams || []).map(t => <option key={t.id} value={t.id}>{t.name.trim()}</option>)}
+    </select>;
+    if (!myScore) {
+      return <section className="my-team empty" id="my-team"><span>📌 Pin your team to see your matchup and odds first.</span>{picker}</section>;
+    }
+    const odds = (live.seasonOdds?.teams || []).find(t => Number(t.teamId) === Number(myScore.teamId));
+    const chip = (label, value) => value == null ? null : <span className="my-chip"><small>{label}</small><b>{pct(value)}</b></span>;
+    return (
+      <section className="my-team" id="my-team">
+        <div className="my-team-head"><span className="section-kicker">📌 YOUR MATCHUP</span>{picker}</div>
+        <div className="my-chips">
+          {chip("TO WIN", myScore.winProbability)}
+          {chip("ABOVE MEDIAN", myScore.aboveMedianProbability)}
+          {chip("RAFFLE TICKET", myScore.topScoreProbability)}
+          {chip("PLAYOFFS", odds?.playoffOdds)}
+          {chip("TITLE", odds?.titleOdds)}
+        </div>
+        <div className="matchups single">{renderMatchup(myMatchupId, true)}</div>
+      </section>
+    );
+  };
+
   return (
     <main className="site">
       <header className="topbar">
@@ -221,13 +311,12 @@ function App() {
           <h1>On Thursdays We Fantasy</h1>
           <p className="subtitle">The Officially Unofficial League Record Book</p>
         </div>
-        <nav><a href="#scores">Scores</a><a href="#history">History</a><a href="#death-watch">Death Watch</a><a href="#playoffs">Playoffs</a><a href="#ultimate-loser">Ultimate Loser</a><a href="#standings">Standings</a><a href="#raffle">Raffle</a><a href="#awards">Awards</a><a href="#record-book">Record Book</a></nav>
       </header>
-
+      <TabBar tab={tab} onSelect={goToTab} />
       <InstallHint />
       <div className="data-timestamp">LAST REFRESHED <strong>{scoreboard.lastUpdated ? new Date(scoreboard.lastUpdated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "—"}</strong> <UpdatedAgo iso={scoreboard.lastUpdated} /></div>
 
-
+      {tab === "live" ? <>
       <section className="hero-strip">
         <div className="hero-main"><span className="section-kicker">2026 SEASON</span><h2>Week {scoreboard.week}</h2><p>{status === "NOT STARTED" ? "The week is set. Scores will appear here once the games begin."
           : status === "LIVE" ? "The league is live. Here’s how everyone is doing."
@@ -235,57 +324,15 @@ function App() {
           : "Between games. Here’s where everyone stands."}</p></div>
         <div className="hero-stat"><strong>{scoreboard.projectedMedian != null ? money(scoreboard.projectedMedian) : "—"}</strong><span>Projected median</span></div>
       </section>
-
       <LeagueWire stories={live.marquee.stories || []} status={status} />
+      {renderMyTeam()}
       <Notifications teams={teamsData.teams || []} />
-
       <section id="scores" className="section">
-        <div className="section-heading"><div><span className="section-kicker">RIGHT NOW</span><h2>Week {scoreboard.week} Scores</h2></div><span className={status === "LIVE" ? "live-pill is-live" : "live-pill"}>● {status}</span></div>
+        <div className="section-heading"><div><span className="section-kicker">RIGHT NOW</span><h2>Week {scoreboard.week} Scores</h2></div><button type="button" className={status === "LIVE" ? "live-pill is-live" : "live-pill"} onClick={live.refresh} title="Refresh now">● {status} ↻</button></div>
         <div className="matchups">
-          {[...new Set(scores.map(s => s.matchupId))].map(matchupId => {
-            const teams = scores.filter(s => s.matchupId === matchupId);
-            const a = teams[0], b = teams[1];
-            if (!a || !b) return null;
-            return <article className="matchup" key={matchupId}>
-              <MatchupTeam team={a} opponent={b} logo={teamLogos[a.teamId]} projected={scoreSort === "projected"} flashing={flashingScores.has(a.teamId)} dotClass={medianDotClass(a)} />
-              <div className="versus">vs</div>
-              <MatchupTeam team={b} opponent={a} logo={teamLogos[b.teamId]} projected={scoreSort === "projected"} flashing={flashingScores.has(b.teamId)} dotClass={medianDotClass(b)} />
-              {seriesLine(a.teamId, b.teamId) ? <p className="rivalry-line">⚔️ {seriesLine(a.teamId, b.teamId)}</p> : null}
-              <SwingChart points={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} teamId={a.teamId} teamName={a.team} opponentName={b.team} />
-              <div className="card-actions">
-                <ShareButton filename={`week-${scoreboard.week}-${a.team}-vs-${b.team}`.replace(/[^\w-]+/g, "-")} build={() => ({
-                  kicker: `Week ${scoreboard.week} · ${status === "FINAL" ? "Final" : status === "LIVE" ? "Live" : "Matchup"}`,
-                  teams: [a, b].map(t => ({
-                    name: t.team,
-                    score: money(t.score),
-                    logo: teamLogos[t.teamId],
-                    highlight: t.score >= (t === a ? b : a).score,
-                    note: `Proj ${t.projectionAverage != null ? money(t.projectionAverage) : "—"}${t.winProbability != null ? ` · ${money(t.winProbability)}% to win` : ""}`
-                  })),
-                  lines: [
-                    seriesLine(a.teamId, b.teamId) ? { text: "⚔️ " + seriesLine(a.teamId, b.teamId), size: 28, color: "accent", weight: 800, gap: 36 } : null,
-                    ...keyPlaysFor(matchupId).slice(0, 2).map((play, i) => ({ text: `${play.points > 0 ? "+" : ""}${money(play.points)} · ${play.player} ${play.text}`, size: 26, gap: i ? 8 : 30 }))
-                  ].filter(Boolean)
-                })} />
-              </div>
-              {keyPlaysFor(matchupId).length ? (
-                <div className="key-plays" aria-label="Key plays">
-                  <div className="key-plays-heading"><span>KEY PLAYS</span><em>4+ PT SWINGS</em></div>
-                  <div className="key-play-list">
-                    {keyPlaysFor(matchupId).map(play => (
-                      <div className="key-play" key={play.id}>
-                        <strong className={play.points < 0 ? "negative" : ""}>{play.points > 0 ? "+" : ""}{money(play.points)}</strong>
-                        <span><b>{play.player}</b> {play.text}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-            </article>;
-          })}
+          {matchupIds.filter(id => id !== myMatchupId).map(id => renderMatchup(id))}
         </div>
       </section>
-
       <section id="scoreboard" className="section">
         <div className="section-heading"><div><span className="section-kicker">MEDIAN SCORING</span><h2>Week {scoreboard.week} Scoreboard</h2></div></div>
         <div className="score-list">
@@ -301,58 +348,13 @@ function App() {
         </div>
         <p className="median-note">The projected median is based on ESPN’s projected final scores. Odds of finishing above the median come from simulating the rest of the week, where the league median moves with every team’s result. Highlighted in yellow: the teams projected just above and just below the median, plus any team with a {NEAR_MEDIAN_MIN}–{NEAR_MEDIAN_MAX}% chance.</p>
       </section>
+      </> : null}
 
-
-      <DeathWatch guillotine={guillotine} />
-
-      <section id="history" className="section">
-        <div className="section-heading">
-          <div><span className="section-kicker">THE SEASON SO FAR</span><h2>Weekly History</h2></div>
-          <span className="record-count">{completedHistoryWeeks.length} WEEKS COMPLETE</span>
-        </div>
-        <div className="history-week-tabs" role="tablist" aria-label="Select completed week">
-          {completedHistoryWeeks.map(w => <button key={w.week} className={historyWeek === w.week ? "active" : ""} type="button" onClick={() => setHistoryWeek(w.week)}>WEEK {w.week}</button>)}
-        </div>
-        {history ? <>
-          {history.recap?.length ? <div className="weekly-recap">
-            <div className="weekly-recap-heading"><span className="section-kicker">WEEKLY RECAP</span><strong>The stories that mattered</strong></div>
-            <div className="weekly-recap-grid">
-              {history.recap.map((story, i) => <article className="weekly-recap-tile" key={story.type + i}>
-                <small>{story.type}</small>
-                <p>{story.text}</p>
-              </article>)}
-            </div>
-          </div> : null}
-          <div className="history-summary">
-            <div><small>LEAGUE AVERAGE</small><strong>{money(historyAverage)}</strong></div>
-            <div><small>LEAGUE MEDIAN</small><strong>{money(historyMedian)}</strong></div>
-            <div><small>HIGH SCORE</small><strong>{history.highestScore ? money(history.highestScore.score) + " · " + history.highestScore.team : "—"}</strong></div>
-            <div><small>LARGEST BLOWOUT</small><strong>{history.largestBlowout ? money(history.largestBlowout.margin) + " pts" : "—"}</strong></div>
-          </div>
-          <div className="history-matchups">
-            {historyMatchups.map(m => {
-              const homeWon = m.winner === "HOME";
-              const awayWon = m.winner === "AWAY";
-              const homeScore = Number(m.homeScore);
-              const awayScore = Number(m.awayScore);
-              const homeMedianClass = homeScore > Number(historyMedian) ? "above-median" : homeScore < Number(historyMedian) ? "below-median" : "at-median";
-              const awayMedianClass = awayScore > Number(historyMedian) ? "above-median" : awayScore < Number(historyMedian) ? "below-median" : "at-median";
-              return <article className="history-matchup" key={m.id}>
-                <div className={homeWon ? "history-team winner" : "history-team"}>
-                  <span className="history-team-name"><TeamLogo src={teamLogos[m.homeTeamId]} />{historyTeamNames[m.homeTeamId] || "Unknown team"}</span>
-                  <div className="history-score-block"><strong className={`history-score ${homeMedianClass}`}>{money(m.homeScore)}</strong><em className="median-badge">{homeMedianClass === "above-median" ? "ABOVE MEDIAN" : homeMedianClass === "below-median" ? "BELOW MEDIAN" : "AT MEDIAN"}</em>{homeWon ? <em className="winner-badge">WINNER</em> : null}</div>
-                </div>
-                <span className="history-vs">FINAL</span>
-                <div className={awayWon ? "history-team winner" : "history-team"}>
-                  <span className="history-team-name"><TeamLogo src={teamLogos[m.awayTeamId]} />{historyTeamNames[m.awayTeamId] || "Unknown team"}</span>
-                  <div className="history-score-block"><strong className={`history-score ${awayMedianClass}`}>{money(m.awayScore)}</strong><em className="median-badge">{awayMedianClass === "above-median" ? "ABOVE MEDIAN" : awayMedianClass === "below-median" ? "BELOW MEDIAN" : "AT MEDIAN"}</em>{awayWon ? <em className="winner-badge">WINNER</em> : null}</div>
-                </div>
-              </article>;
-            })}
-          </div>
-        </> : <p className="median-note">No completed weeks yet.</p>}
+      {tab === "standings" ? <>
+      <section id="standings-odds" className="section">
+        <div className="section-heading"><div><span className="section-kicker">WEEK {scoreboard.week} · {seasonOddsWeeksLeft} WEEKS LEFT</span><h2>Standings</h2></div></div>
+        <StandingsTable seasonOdds={live.seasonOdds} logos={teamLogos} />
       </section>
-
       <section id="playoffs" className="section">
         <div className="section-heading">
           <div><span className="section-kicker">ROAD TO THE TITLE</span><h2>2026 Playoffs</h2></div>
@@ -402,9 +404,7 @@ function App() {
             <strong>3rd: $100</strong>
           </div>
         </div>
-        <StandingsTable seasonOdds={live.seasonOdds} logos={teamLogos} />
       </section>
-
       <section id="ultimate-loser" className="section">
         <div className="section-heading">
           <div><span className="section-kicker">THE OTHER ROAD</span><h2>Ultimate Loser</h2></div>
@@ -454,16 +454,75 @@ function App() {
           </div>)}
         </div>
       </section>
-
-      <section id="teams" className="section">
+      <section className="section" id="raffle">
         <div className="section-heading">
-          <div><span className="section-kicker">THE ROSTER ROOM</span><h2>Team Cards</h2></div>
-          <span className="record-count">{(teamsData.teams || []).length} TEAMS · 2026</span>
+          <div><span className="section-kicker">SEASON RAFFLE</span><h2>Raffle Tickets</h2></div>
+          <span className="record-count">{raffle.completedWeeks?.length || 0} TICKET WEEKS COMPLETE</span>
         </div>
-        <p className="team-cards-intro">Every manager gets a baseball-card-style snapshot of the season. Click a card to open the full team profile.</p>
-        <TeamCards teams={teamsData.teams || []} />
+        <p className="raffle-intro">Each week's highest-scoring team earns one entry into the end-of-season raffle for the $100 prize!</p>
+        <div className="raffle-board">
+          {raffle.tickets?.map((t, i) => <div className="raffle-row" key={t.teamId}>
+            <span className="rank">{i + 1}</span>
+            <span className="score-team">{t.team}</span>
+            <span className="raffle-weeks">{t.winningWeeks?.length ? ("Won Week" + (t.winningWeeks.length > 1 ? "s " : " ") + t.winningWeeks.join(", ")) : "No tickets yet"}</span>
+            <strong>{t.tickets} {t.tickets === 1 ? "ticket" : "tickets"}{totalRaffleTickets > 0 ? <em className="raffle-odds">{((Number(t.tickets) / totalRaffleTickets) * 100).toFixed(1)}% odds</em> : null}</strong>
+          </div>)}
+        </div>
       </section>
+      </> : null}
 
+      {tab === "death-watch" ? <>
+      <DeathWatch guillotine={guillotine} />
+      </> : null}
+
+      {tab === "league" ? <>
+      <section id="history" className="section">
+        <div className="section-heading">
+          <div><span className="section-kicker">THE SEASON SO FAR</span><h2>Weekly History</h2></div>
+          <span className="record-count">{completedHistoryWeeks.length} WEEKS COMPLETE</span>
+        </div>
+        <div className="history-week-tabs" role="tablist" aria-label="Select completed week">
+          {completedHistoryWeeks.map(w => <button key={w.week} className={historyWeek === w.week ? "active" : ""} type="button" onClick={() => setHistoryWeek(w.week)}>WEEK {w.week}</button>)}
+        </div>
+        {history ? <>
+          {history.recap?.length ? <div className="weekly-recap">
+            <div className="weekly-recap-heading"><span className="section-kicker">WEEKLY RECAP</span><strong>The stories that mattered</strong></div>
+            <div className="weekly-recap-grid">
+              {history.recap.map((story, i) => <article className="weekly-recap-tile" key={story.type + i}>
+                <small>{story.type}</small>
+                <p>{story.text}</p>
+              </article>)}
+            </div>
+          </div> : null}
+          <div className="history-summary">
+            <div><small>LEAGUE AVERAGE</small><strong>{money(historyAverage)}</strong></div>
+            <div><small>LEAGUE MEDIAN</small><strong>{money(historyMedian)}</strong></div>
+            <div><small>HIGH SCORE</small><strong>{history.highestScore ? money(history.highestScore.score) + " · " + history.highestScore.team : "—"}</strong></div>
+            <div><small>LARGEST BLOWOUT</small><strong>{history.largestBlowout ? money(history.largestBlowout.margin) + " pts" : "—"}</strong></div>
+          </div>
+          <div className="history-matchups">
+            {historyMatchups.map(m => {
+              const homeWon = m.winner === "HOME";
+              const awayWon = m.winner === "AWAY";
+              const homeScore = Number(m.homeScore);
+              const awayScore = Number(m.awayScore);
+              const homeMedianClass = homeScore > Number(historyMedian) ? "above-median" : homeScore < Number(historyMedian) ? "below-median" : "at-median";
+              const awayMedianClass = awayScore > Number(historyMedian) ? "above-median" : awayScore < Number(historyMedian) ? "below-median" : "at-median";
+              return <article className="history-matchup" key={m.id}>
+                <div className={homeWon ? "history-team winner" : "history-team"}>
+                  <span className="history-team-name"><TeamLogo src={teamLogos[m.homeTeamId]} />{historyTeamNames[m.homeTeamId] || "Unknown team"}</span>
+                  <div className="history-score-block"><strong className={`history-score ${homeMedianClass}`}>{money(m.homeScore)}</strong><em className="median-badge">{homeMedianClass === "above-median" ? "ABOVE MEDIAN" : homeMedianClass === "below-median" ? "BELOW MEDIAN" : "AT MEDIAN"}</em>{homeWon ? <em className="winner-badge">WINNER</em> : null}</div>
+                </div>
+                <span className="history-vs">FINAL</span>
+                <div className={awayWon ? "history-team winner" : "history-team"}>
+                  <span className="history-team-name"><TeamLogo src={teamLogos[m.awayTeamId]} />{historyTeamNames[m.awayTeamId] || "Unknown team"}</span>
+                  <div className="history-score-block"><strong className={`history-score ${awayMedianClass}`}>{money(m.awayScore)}</strong><em className="median-badge">{awayMedianClass === "above-median" ? "ABOVE MEDIAN" : awayMedianClass === "below-median" ? "BELOW MEDIAN" : "AT MEDIAN"}</em>{awayWon ? <em className="winner-badge">WINNER</em> : null}</div>
+                </div>
+              </article>;
+            })}
+          </div>
+        </> : <p className="median-note">No completed weeks yet.</p>}
+      </section>
       <section id="awards" className="section">
         <div className="section-heading">
           <div><span className="section-kicker">THE GOOD STUFF</span><h2>League Awards</h2></div>
@@ -484,25 +543,22 @@ function App() {
           <article className="award-card"><span>😭</span><small>UNLUCKIEST</small><strong>{awards.awards?.unluckiest?.team || "—"}</strong><p>{awards.awards?.unluckiest ? money(awards.awards.unluckiest.luck) + " wins vs expected" : "Need more completed weeks"}</p></article>
         </div>
       </section>
-
-      <section className="section" id="raffle">
-        <div className="section-heading">
-          <div><span className="section-kicker">SEASON RAFFLE</span><h2>Raffle Tickets</h2></div>
-          <span className="record-count">{raffle.completedWeeks?.length || 0} TICKET WEEKS COMPLETE</span>
-        </div>
-        <p className="raffle-intro">Each week's highest-scoring team earns one entry into the end-of-season raffle for the $100 prize!</p>
-        <div className="raffle-board">
-          {raffle.tickets?.map((t, i) => <div className="raffle-row" key={t.teamId}>
-            <span className="rank">{i + 1}</span>
-            <span className="score-team">{t.team}</span>
-            <span className="raffle-weeks">{t.winningWeeks?.length ? ("Won Week" + (t.winningWeeks.length > 1 ? "s " : " ") + t.winningWeeks.join(", ")) : "No tickets yet"}</span>
-            <strong>{t.tickets} {t.tickets === 1 ? "ticket" : "tickets"}{totalRaffleTickets > 0 ? <em className="raffle-odds">{((Number(t.tickets) / totalRaffleTickets) * 100).toFixed(1)}% odds</em> : null}</strong>
-          </div>)}
-        </div>
-      </section>
-
       <RecordBook />
+      </> : null}
+
+      {tab === "teams" ? <>
+      <section id="teams" className="section">
+        <div className="section-heading">
+          <div><span className="section-kicker">THE ROSTER ROOM</span><h2>Team Cards</h2></div>
+          <span className="record-count">{(teamsData.teams || []).length} TEAMS · 2026</span>
+        </div>
+        <p className="team-cards-intro">Every manager gets a baseball-card-style snapshot of the season. Click a card to open the full team profile.</p>
+        <TeamCards teams={teamsData.teams || []} />
+      </section>
+      </> : null}
+
       <footer>On Thursdays We Fantasy · 2026 · Officially unofficial.</footer>
+      <BackToTop />
     </main>
   );
 }

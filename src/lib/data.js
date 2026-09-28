@@ -25,6 +25,7 @@ export async function fetchData(file) {
 // soon as it's visible again.
 export function usePolledData(file, initial, intervalMs = 15000) {
   const [data, setData] = useState(initial);
+  const [reloads, setReloads] = useState(0);
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
@@ -44,8 +45,9 @@ export function usePolledData(file, initial, intervalMs = 15000) {
       clearInterval(timer);
       document.removeEventListener("visibilitychange", load);
     };
-  }, [file, intervalMs]);
-  return data;
+  }, [file, intervalMs, reloads]);
+  // Calling reload() fetches right away (and restarts the timer).
+  return [data, () => setReloads(n => n + 1)];
 }
 
 // Everything that changes during games, in one request (live.json). Pieces
@@ -58,8 +60,8 @@ const INITIAL_LIVE = {
   seasonOdds: initialSeasonOdds
 };
 export function useLiveData() {
-  const live = usePolledData("live.json", INITIAL_LIVE);
-  return { ...INITIAL_LIVE, ...live };
+  const [live, refresh] = usePolledData("live.json", INITIAL_LIVE);
+  return { ...INITIAL_LIVE, ...live, refresh };
 }
 
 // Overall state of this week's NFL games, for the LIVE badge.
