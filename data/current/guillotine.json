@@ -1,0 +1,149 @@
+{
+  "leagueId": "687798070",
+  "leagueName": "On Mondays Heads Will Roll",
+  "week": 3,
+  "lastUpdated": "2026-09-28T16:48:46.111Z",
+  "simulations": 10000,
+  "teams": [
+    {
+      "teamId": 13,
+      "team": "Plan B",
+      "abbrev": "PB",
+      "score": 116.43,
+      "projected": 116.43,
+      "remaining": [],
+      "chopProbability": 89.01,
+      "playersLeft": 0
+    },
+    {
+      "teamId": 9,
+      "team": "Mel's Magnificent Team",
+      "abbrev": "MMT",
+      "score": 114.09,
+      "projected": 122.88,
+      "remaining": [
+        {
+          "name": "Colston Loveland",
+          "game": "PHI @ CHI",
+          "actual": 0,
+          "projectedRest": 8.79
+        }
+      ],
+      "chopProbability": 10.99,
+      "playersLeft": 1,
+      "survivalNeed": {
+        "points": 2.35,
+        "passTeam": "Plan B"
+      }
+    },
+    {
+      "teamId": 3,
+      "team": "Stacey's Smart Team",
+      "abbrev": "SST",
+      "score": 119.71,
+      "projected": 119.71,
+      "remaining": [],
+      "chopProbability": 0,
+      "playersLeft": 0
+    },
+    {
+      "teamId": 4,
+      "team": "Team Name",
+      "abbrev": "TN",
+      "score": 120.84,
+      "projected": 120.84,
+      "remaining": [],
+      "chopProbability": 0,
+      "playersLeft": 0
+    },
+    {
+      "teamId": 10,
+      "team": "Joe's Scary Team",
+      "abbrev": "JST",
+      "score": 122.71,
+      "projected": 122.71,
+      "remaining": [],
+      "chopProbability": 0,
+      "playersLeft": 0
+    },
+    {
+      "teamId": 8,
+      "team": "In My Fantasy Era",
+      "abbrev": "TAY",
+      "score": 120.95,
+      "projected": 135.39,
+      "remaining": [
+        {
+          "name": "DeVonta Smith",
+          "game": "PHI @ CHI",
+          "actual": 0,
+          "projectedRest": 14.44
+        }
+      ],
+      "chopProbability": 0,
+      "playersLeft": 1
+    },
+    {
+      "teamId": 5,
+      "team": "Purdy Good",
+      "abbrev": "PUR",
+      "score": 150.38,
+      "projected": 150.38,
+      "remaining": [],
+      "chopProbability": 0,
+      "playersLeft": 0
+    },
+    {
+      "teamId": 7,
+      "team": "Uriel's Upbeat Team",
+      "abbrev": "UUT",
+      "score": 145.25,
+      "projected": 159.11,
+      "remaining": [
+        {
+          "name": "D'Andre Swift",
+          "game": "PHI @ CHI",
+          "actual": 0,
+          "projectedRest": 13.86
+        }
+      ],
+      "chopProbability": 0,
+      "playersLeft": 1
+    },
+    {
+      "teamId": 6,
+      "team": "Moose Knucklers",
+      "abbrev": "MK",
+      "score": 120.6,
+      "projected": 165.77,
+      "remaining": [
+        {
+          "name": "Jalen Hurts",
+          "game": "PHI @ CHI",
+          "actual": 0,
+          "projectedRest": 26.21
+        },
+        {
+          "name": "Saquon Barkley",
+          "game": "PHI @ CHI",
+          "actual": 0,
+          "projectedRest": 18.96
+        }
+      ],
+      "chopProbability": 0,
+      "playersLeft": 2
+    }
+  ],
+  "chopped": [
+    {
+      "teamId": 1,
+      "team": "Mama Said Knock You Out",
+      "week": 2
+    },
+    {
+      "teamId": 14,
+      "team": "You Like That?!?",
+      "week": 1
+    }
+  ]
+}

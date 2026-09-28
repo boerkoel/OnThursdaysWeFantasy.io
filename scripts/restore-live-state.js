@@ -9,7 +9,8 @@ const siteUrl = (process.env.PAGES_URL || "https://boerkoel.github.io/OnThursday
 const LIVE_FILES = [
   { file: "scoreboard.json", timestamp: data => data.lastUpdated },
   { file: "marquee.json", timestamp: data => data.lastUpdated },
-  { file: "live-plays.json", timestamp: data => data.updatedAt }
+  { file: "live-plays.json", timestamp: data => data.updatedAt },
+  { file: "guillotine.json", timestamp: data => data.lastUpdated }
 ];
 
 const time = value => {

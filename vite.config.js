@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react";
 
 // The page polls these files for fresh data between page loads, so they must
 // be published next to the bundle (the rest of data/ is only imported).
-const POLLED_DATA_FILES = ["scoreboard.json", "marquee.json", "live-plays.json", "metadata.json"];
+const POLLED_DATA_FILES = ["scoreboard.json", "marquee.json", "live-plays.json", "metadata.json", "guillotine.json"];
 
 function publishPolledData() {
   return {

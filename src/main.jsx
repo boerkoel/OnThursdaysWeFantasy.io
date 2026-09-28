@@ -11,6 +11,7 @@ import teamsData from "../data/current/teams.json";
 import weekly from "../data/current/weekly.json";
 import initialMarquee from "../data/current/marquee.json";
 import livePlays from "../data/current/live-plays.json";
+import initialGuillotine from "../data/current/guillotine.json";
 
 const money = (n) => Number(n).toFixed(2);
 
@@ -277,6 +278,7 @@ function App() {
   const marqueeStories = marqueeData.stories || [];
   const [marqueeIndex, setMarqueeIndex] = useState(0);
   const livePlayFeed = usePolledData("live-plays.json", livePlays);
+  const guillotine = usePolledData("guillotine.json", initialGuillotine);
   // A matchup shows its 5 most recent 4+ point swings from the last 5 hours.
   const KEY_PLAY_MAX_AGE_MS = 5 * 60 * 60 * 1000;
   const keyPlaysFor = matchupId => (livePlayFeed.plays || [])
@@ -360,7 +362,7 @@ function App() {
           <h1>On Thursdays We Fantasy</h1>
           <p className="subtitle">The Officially Unofficial League Record Book</p>
         </div>
-        <nav><a href="#scores">Scores</a><a href="#history">History</a><a href="#playoffs">Playoffs</a><a href="#ultimate-loser">Ultimate Loser</a><a href="#raffle">Raffle</a><a href="#standings">Standings</a><a href="#awards">Awards</a></nav>
+        <nav><a href="#scores">Scores</a><a href="#history">History</a><a href="#death-watch">Death Watch</a><a href="#playoffs">Playoffs</a><a href="#ultimate-loser">Ultimate Loser</a><a href="#raffle">Raffle</a><a href="#standings">Standings</a><a href="#awards">Awards</a></nav>
       </header>
 
 <div className="data-timestamp">LAST REFRESHED <strong>{scoreboard.lastUpdated ? new Date(scoreboard.lastUpdated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "—"}</strong></div>
@@ -424,6 +426,26 @@ function App() {
         <p className="median-note">The projected median is based on ESPN’s projected final scores. Odds of finishing above the median come from simulating the rest of the week, where the league median moves with every team’s result. Teams with a {NEAR_MEDIAN_MIN}–{NEAR_MEDIAN_MAX}% chance are highlighted in yellow.</p>
       </section>
 
+
+      {guillotine.teams?.length ? <section id="death-watch" className="section">
+        <div className="section-heading">
+          <div><span className="section-kicker">{(guillotine.leagueName || "Guillotine league").toUpperCase()}</span><h2>Week {guillotine.week} Death Watch</h2></div>
+          <span className="record-count">{guillotine.teams.length} TEAMS ALIVE</span>
+        </div>
+        <p className="raffle-intro">Our guillotine side league: the lowest score each week gets chopped. Chop odds come from {Number(guillotine.simulations || 0).toLocaleString()} simulations of the rest of the week.</p>
+        <div className="award-grid">
+          {guillotine.teams.filter(t => t.chopProbability > 0).slice(0, 3).map((t, i) => <article className="award-card" key={t.teamId}>
+            <span>{i === 0 ? "🪓" : "😰"}</span>
+            <small>{i === 0 ? "ON THE CHOPPING BLOCK" : `#${i + 1} MOST AT RISK`}</small>
+            <strong>{t.team}</strong>
+            <b className="chop-odds">{money(t.chopProbability)}% chance of being chopped</b>
+            <p>{money(t.score)} pts{t.playersLeft ? ` · projected ${money(t.projected)}` : " · final"}</p>
+            <p>{t.playersLeft ? "Still to play: " + t.remaining.map(p => p.name + (p.game ? ` (${p.game})` : "")).join(", ") : "No players left to play"}</p>
+            {t.survivalNeed ? <p>Needs {money(t.survivalNeed.points)} more pts to pass {t.survivalNeed.passTeam}</p> : null}
+          </article>)}
+        </div>
+        {guillotine.chopped?.length ? <p className="median-note">Already chopped: {guillotine.chopped.map(c => `${c.team} (Week ${c.week})`).join(" · ")}</p> : null}
+      </section> : null}
 
       <section id="history" className="section">
         <div className="section-heading">

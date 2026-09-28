@@ -94,6 +94,12 @@ jobs:
         if: steps.gate.outputs.update == 'true'
         run: node scripts/update-live-scoreboard.js
 
+      # Public guillotine side league; never let it block the main update.
+      - name: Update guillotine Death Watch
+        if: steps.gate.outputs.update == 'true'
+        continue-on-error: true
+        run: node scripts/update-guillotine.js
+
       - name: Fetch fantasy-relevant live plays
         if: steps.gate.outputs.update == 'true'
         continue-on-error: true
