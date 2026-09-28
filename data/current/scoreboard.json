@@ -1,6 +1,6 @@
 {
   "week": 3,
-  "lastUpdated": "2026-09-28T05:18:32.037Z",
+  "lastUpdated": "2026-09-28T16:30:49.081Z",
   "scores": [
     {
       "teamId": 11,
@@ -18,6 +18,7 @@
       "projectionTrend": null,
       "status": "LIVE",
       "projectionSd": 0,
+      "startersLeft": 0,
       "aboveMedianProbability": 100,
       "belowMedianProbability": 0,
       "medianDistanceSd": 598275.54,
@@ -40,6 +41,7 @@
       "projectionTrend": null,
       "status": "LIVE",
       "projectionSd": 0,
+      "startersLeft": 0,
       "aboveMedianProbability": 99.99,
       "belowMedianProbability": 0.01,
       "medianDistanceSd": 115875.32,
@@ -62,6 +64,7 @@
       "projectionTrend": null,
       "status": "LIVE",
       "projectionSd": 0,
+      "startersLeft": 0,
       "aboveMedianProbability": 99.99,
       "belowMedianProbability": 0.01,
       "medianDistanceSd": 0,
@@ -84,6 +87,7 @@
       "projectionTrend": null,
       "status": "LIVE",
       "projectionSd": 0,
+      "startersLeft": 0,
       "aboveMedianProbability": 99.82,
       "belowMedianProbability": 0.18,
       "medianDistanceSd": 0,
@@ -106,6 +110,7 @@
       "projectionTrend": null,
       "status": "LIVE",
       "projectionSd": 0,
+      "startersLeft": 0,
       "aboveMedianProbability": 81.77,
       "belowMedianProbability": 18.23,
       "medianDistanceSd": 35071.81,
@@ -128,6 +133,7 @@
       "projectionTrend": null,
       "status": "LIVE",
       "projectionSd": 0,
+      "startersLeft": 0,
       "aboveMedianProbability": 14.46,
       "belowMedianProbability": 85.54,
       "medianDistanceSd": -34411.89,
@@ -150,6 +156,7 @@
       "projectionTrend": null,
       "status": "LIVE",
       "projectionSd": 4.67,
+      "startersLeft": 0,
       "aboveMedianProbability": 0,
       "belowMedianProbability": 100,
       "medianDistanceSd": -2.42,
@@ -172,6 +179,7 @@
       "projectionTrend": null,
       "status": "LIVE",
       "projectionSd": 13.47,
+      "startersLeft": 1,
       "aboveMedianProbability": 66.15,
       "belowMedianProbability": 33.85,
       "medianDistanceSd": 0.43,
@@ -194,6 +202,7 @@
       "projectionTrend": null,
       "status": "LIVE",
       "projectionSd": 9.22,
+      "startersLeft": 1,
       "aboveMedianProbability": 24.22,
       "belowMedianProbability": 75.78,
       "medianDistanceSd": -0.73,
@@ -216,6 +225,7 @@
       "projectionTrend": null,
       "status": "LIVE",
       "projectionSd": 7.97,
+      "startersLeft": 2,
       "aboveMedianProbability": 3.59,
       "belowMedianProbability": 96.41,
       "medianDistanceSd": -1.66,
@@ -238,6 +248,7 @@
       "projectionTrend": null,
       "status": "LIVE",
       "projectionSd": 12.09,
+      "startersLeft": 1,
       "aboveMedianProbability": 2.67,
       "belowMedianProbability": 97.33,
       "medianDistanceSd": -2.04,
@@ -260,6 +271,7 @@
       "projectionTrend": null,
       "status": "LIVE",
       "projectionSd": 7.97,
+      "startersLeft": 3,
       "aboveMedianProbability": 1.3,
       "belowMedianProbability": 98.7,
       "medianDistanceSd": -2.1,
@@ -274,61 +286,201 @@
   ],
   "probabilityModel": "Monte Carlo simulations estimate final-score distributions, above/below projected-median odds, matchup win odds, and final-score standard deviation; ESPN projections remain the displayed projections",
   "probabilitySimulations": 10000,
-  "projectionHistory": [
+  "nflGames": [
     {
-      "timestamp": "2026-09-28T05:13:47.127Z",
-      "week": 3,
-      "scores": [
-        {
-          "teamId": 11,
-          "projection": 188.98
-        },
-        {
-          "teamId": 6,
-          "projection": 142.16
-        },
-        {
-          "teamId": 9,
-          "projection": 139.84
-        },
-        {
-          "teamId": 8,
-          "projection": 138.34
-        },
-        {
-          "teamId": 3,
-          "projection": 133.96
-        },
-        {
-          "teamId": 10,
-          "projection": 129.66
-        },
-        {
-          "teamId": 2,
-          "projection": 120.5
-        },
-        {
-          "teamId": 4,
-          "projection": 137.56
-        },
-        {
-          "teamId": 7,
-          "projection": 125.11
-        },
-        {
-          "teamId": 5,
-          "projection": 118.58
-        },
-        {
-          "teamId": 1,
-          "projection": 107.16
-        },
-        {
-          "teamId": 12,
-          "projection": 115.07
-        }
+      "id": "401872963",
+      "name": "PHI @ CHI",
+      "kickoff": "2026-09-29T00:15Z",
+      "state": "pre",
+      "completed": false,
+      "detail": "9/28 - 8:15 PM EDT",
+      "teamIds": [
+        3,
+        21
       ]
     },
+    {
+      "id": "401872948",
+      "name": "ATL @ GB",
+      "kickoff": "2026-09-25T00:15Z",
+      "state": "post",
+      "completed": true,
+      "detail": "Final",
+      "teamIds": [
+        9,
+        1
+      ]
+    },
+    {
+      "id": "401872953",
+      "name": "LAC @ BUF",
+      "kickoff": "2026-09-27T17:00Z",
+      "state": "post",
+      "completed": true,
+      "detail": "Final",
+      "teamIds": [
+        2,
+        24
+      ]
+    },
+    {
+      "id": "401872949",
+      "name": "CAR @ CLE",
+      "kickoff": "2026-09-27T17:00Z",
+      "state": "post",
+      "completed": true,
+      "detail": "Final",
+      "teamIds": [
+        5,
+        29
+      ]
+    },
+    {
+      "id": "401872954",
+      "name": "NYJ @ DET",
+      "kickoff": "2026-09-27T17:00Z",
+      "state": "post",
+      "completed": true,
+      "detail": "Final",
+      "teamIds": [
+        8,
+        20
+      ]
+    },
+    {
+      "id": "401872951",
+      "name": "HOU @ IND",
+      "kickoff": "2026-09-27T17:00Z",
+      "state": "post",
+      "completed": true,
+      "detail": "Final",
+      "teamIds": [
+        11,
+        34
+      ]
+    },
+    {
+      "id": "401872952",
+      "name": "KC @ MIA",
+      "kickoff": "2026-09-27T17:00Z",
+      "state": "post",
+      "completed": true,
+      "detail": "Final",
+      "teamIds": [
+        15,
+        12
+      ]
+    },
+    {
+      "id": "401872956",
+      "name": "TEN @ NYG",
+      "kickoff": "2026-09-27T17:00Z",
+      "state": "post",
+      "completed": true,
+      "detail": "Final",
+      "teamIds": [
+        19,
+        10
+      ]
+    },
+    {
+      "id": "401872950",
+      "name": "CIN @ PIT",
+      "kickoff": "2026-09-27T17:00Z",
+      "state": "post",
+      "completed": true,
+      "detail": "Final",
+      "teamIds": [
+        23,
+        4
+      ]
+    },
+    {
+      "id": "401872955",
+      "name": "SEA @ WSH",
+      "kickoff": "2026-09-27T17:00Z",
+      "state": "post",
+      "completed": true,
+      "detail": "Final",
+      "teamIds": [
+        28,
+        26
+      ]
+    },
+    {
+      "id": "401872957",
+      "name": "NE @ JAX",
+      "kickoff": "2026-09-27T17:00Z",
+      "state": "post",
+      "completed": true,
+      "detail": "Final",
+      "teamIds": [
+        30,
+        17
+      ]
+    },
+    {
+      "id": "401872958",
+      "name": "ARI @ SF",
+      "kickoff": "2026-09-27T20:05Z",
+      "state": "post",
+      "completed": true,
+      "detail": "Final",
+      "teamIds": [
+        25,
+        22
+      ]
+    },
+    {
+      "id": "401872959",
+      "name": "MIN @ TB",
+      "kickoff": "2026-09-27T20:05Z",
+      "state": "post",
+      "completed": true,
+      "detail": "Final",
+      "teamIds": [
+        27,
+        16
+      ]
+    },
+    {
+      "id": "401872960",
+      "name": "BAL VS DAL",
+      "kickoff": "2026-09-27T20:25Z",
+      "state": "post",
+      "completed": true,
+      "detail": "Final",
+      "teamIds": [
+        6,
+        33
+      ]
+    },
+    {
+      "id": "401872961",
+      "name": "LV @ NO",
+      "kickoff": "2026-09-27T20:25Z",
+      "state": "post",
+      "completed": true,
+      "detail": "Final",
+      "teamIds": [
+        18,
+        13
+      ]
+    },
+    {
+      "id": "401872962",
+      "name": "LAR @ DEN",
+      "kickoff": "2026-09-28T00:20Z",
+      "state": "post",
+      "completed": true,
+      "detail": "Final",
+      "teamIds": [
+        7,
+        14
+      ]
+    }
+  ],
+  "projectionHistory": [
     {
       "timestamp": "2026-09-28T05:15:19.864Z",
       "week": 3,
@@ -439,6 +591,60 @@
     },
     {
       "timestamp": "2026-09-28T05:18:32.036Z",
+      "week": 3,
+      "scores": [
+        {
+          "teamId": 11,
+          "projection": 188.98
+        },
+        {
+          "teamId": 6,
+          "projection": 142.16
+        },
+        {
+          "teamId": 9,
+          "projection": 139.84
+        },
+        {
+          "teamId": 8,
+          "projection": 138.34
+        },
+        {
+          "teamId": 3,
+          "projection": 133.96
+        },
+        {
+          "teamId": 10,
+          "projection": 129.66
+        },
+        {
+          "teamId": 2,
+          "projection": 120.5
+        },
+        {
+          "teamId": 4,
+          "projection": 137.56
+        },
+        {
+          "teamId": 7,
+          "projection": 125.11
+        },
+        {
+          "teamId": 5,
+          "projection": 118.58
+        },
+        {
+          "teamId": 1,
+          "projection": 107.16
+        },
+        {
+          "teamId": 12,
+          "projection": 115.07
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-09-28T16:30:49.080Z",
       "week": 3,
       "scores": [
         {
