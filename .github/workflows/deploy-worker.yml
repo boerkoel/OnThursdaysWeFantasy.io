@@ -34,6 +34,23 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
+      # Explains credential problems in the run's annotations (ids are shown
+      # only as their first and last 4 characters).
+      - name: Check Cloudflare credentials
+        run: |
+          mask() { echo "$1" | sed -E 's/^(.{4}).*(.{4})$/\1…\2/'; }
+          VERIFY=$(curl -sS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" https://api.cloudflare.com/client/v4/user/tokens/verify)
+          ACCOUNTS=$(curl -sS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts?per_page=50")
+          node -e '
+            const [verify, accounts, configured] = process.argv.slice(1);
+            const mask = s => s.length > 8 ? s.slice(0, 4) + "…" + s.slice(-4) : "(" + s.length + " chars)";
+            const v = JSON.parse(verify), a = JSON.parse(accounts);
+            const status = v.success ? v.result.status : "rejected " + JSON.stringify(v.errors);
+            const ids = a.success ? a.result.map(x => mask(x.id)).join(", ") || "none" : "unavailable " + JSON.stringify(a.errors);
+            const match = a.success && a.result.some(x => x.id === configured.trim());
+            const note = `Token: ${status}. Accounts the token can see: ${ids}. Configured account id: ${mask(configured.trim())}${configured !== configured.trim() ? " (has extra spaces)" : ""}. Match: ${match}.`;
+            console.error((match && v.success ? "::notice::" : "::error::") + note);
+          ' "$VERIFY" "$ACCOUNTS" "$CLOUDFLARE_ACCOUNT_ID"
       # The KV namespace is created once, then found by name on later runs.
       # Uses Cloudflare's REST API directly (predictable JSON, errors shown).
       - name: Find or create the KV namespace
