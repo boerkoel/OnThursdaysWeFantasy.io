@@ -13,8 +13,23 @@ import initialMarquee from "../data/current/marquee.json";
 import livePlays from "../data/current/live-plays.json";
 import initialGuillotine from "../data/current/guillotine.json";
 import obituaryData from "../data/current/obituaries.json";
+import obituariesMarkdown from "../content/obituaries.md?raw";
 
 const money = (n) => Number(n).toFixed(2);
+// Handwritten obituaries from content/obituaries.md: one "## Team name"
+// section each, keyed by lowercase team name. HTML comments are notes only.
+const handwrittenObituaries = new Map(
+  obituariesMarkdown
+    .replace(/<!--[\s\S]*?-->/g, "")
+    .split(/^## /m)
+    .slice(1)
+    .map(section => {
+      const [heading, ...body] = section.split("\n");
+      return [heading.trim().toLowerCase(), body.join("\n").trim()];
+    })
+    .filter(([, text]) => text)
+);
+
 // NFL weeks run on Eastern time, so a Monday-night game stays on Monday.
 const formatDay = iso => iso ? new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric", timeZone: "America/New_York" }) : "—";
 
@@ -683,13 +698,17 @@ function App() {
         </div>
         <div className="award-grid rip-grid">
           {guillotine.chopped.map(c => {
-            const obituary = (obituaryData.obituaries || []).find(o => o.teamId === c.teamId && o.week === c.week);
+            // Handwritten obituaries win over generated ones.
+            const obituary = handwrittenObituaries.get(c.team.trim().toLowerCase()) ||
+              (obituaryData.obituaries || []).find(o => o.teamId === c.teamId && o.week === c.week)?.text;
             return <article className="award-card" key={c.teamId}>
               <span>🪦</span>
               <small>{formatDay(guillotine.draftDate)} — {formatDay(c.diedOn)}</small>
               <strong>{c.team}</strong>
               <p className="rip-cause">Chopped in Week {c.week} with {money(c.finalScore)} pts{c.survivedBy ? `, ${money(c.margin)} short of ${c.survivedBy.team}` : ""}.</p>
-              <p className="rip-obituary">{obituary ? obituary.text : "Obituary pending."}</p>
+              {obituary
+                ? obituary.split(/\n\s*\n/).map((paragraph, i) => <p className="rip-obituary" key={i}>{paragraph.replace(/\s*\n\s*/g, " ")}</p>)
+                : <p className="rip-obituary">Obituary pending.</p>}
             </article>;
           })}
         </div>
