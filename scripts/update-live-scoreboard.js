@@ -227,6 +227,8 @@ const rng = seededRng(currentScores.map(s => [s.teamId, s.score, s.projectionAve
 const simulationSums = new Map(probabilityTeams.map(s => [s.teamId, 0]));
 const simulationSquaredSums = new Map(probabilityTeams.map(s => [s.teamId, 0]));
 const aboveMedianCounts = new Map(probabilityTeams.map(s => [s.teamId, 0]));
+// The week's highest score earns a raffle ticket.
+const topScoreCounts = new Map(probabilityTeams.map(s => [s.teamId, 0]));
 const winCounts = new Map(probabilityTeams.map(s => [s.teamId, 0]));
 
 for (let sim = 0; sim < SIMULATIONS; sim++) {
@@ -244,6 +246,9 @@ for (let sim = 0; sim < SIMULATIONS; sim++) {
   for (const [teamId, finalScore] of simulatedFinals) {
     if (finalScore > simulatedMedian) aboveMedianCounts.set(teamId, aboveMedianCounts.get(teamId) + 1);
   }
+  let topTeam = null;
+  for (const [teamId, finalScore] of simulatedFinals) if (topTeam === null || finalScore > simulatedFinals.get(topTeam)) topTeam = teamId;
+  if (topTeam !== null) topScoreCounts.set(topTeam, topScoreCounts.get(topTeam) + 1);
 
   for (const matchup of currentWeekMatchups) {
     if (matchup.completed) continue;
@@ -268,6 +273,16 @@ for (const team of probabilityTeams) {
 // them between 0.01% and 99.99%.
 const rangeByTeam = new Map(probabilityTeams.map(t => [t.teamId, scoreRange(t)]));
 const halfOfLeague = currentScores.length / 2;
+// Surely the week's top score: its worst case beats everyone's best case.
+// Surely not: someone's worst case beats its best case.
+function lockedTopScoreOdds(score) {
+  const me = rangeByTeam.get(score.teamId);
+  const others = currentScores.filter(s => s.teamId !== score.teamId).map(s => rangeByTeam.get(s.teamId));
+  if (others.every(o => me.min > o.max)) return 100;
+  if (others.some(o => o.min > me.max)) return 0;
+  return null;
+}
+
 function lockedMedianOdds(score) {
   const me = rangeByTeam.get(score.teamId);
   const others = currentScores.filter(s => s.teamId !== score.teamId).map(s => rangeByTeam.get(s.teamId));
@@ -286,6 +301,7 @@ for (const score of currentScores) {
   score.projectionSd = round(sd);
   score.startersLeft = (remainingPlayersByTeam.get(score.teamId) || []).length;
   score.aboveMedianProbability = lockedMedianOdds(score) ?? possibleOdds(aboveCount);
+  score.topScoreProbability = lockedTopScoreOdds(score) ?? possibleOdds(topScoreCounts.get(score.teamId) || 0);
   score.belowMedianProbability = round(100 - score.aboveMedianProbability);
   score.medianDistanceSd = sd > 0
     ? round((espnProjection - projectedMedian) / sd)
