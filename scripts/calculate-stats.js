@@ -86,6 +86,104 @@ async function buildKeyPlays() {
     }));
 }
 
+// ---- Live lineup model for the League Wire ----------------------------------
+// NFL game status comes from update-live-scoreboard.js via scoreboard.json.
+const nflGames = Number(liveScoreboard.week) === currentWeek ? (liveScoreboard.nflGames || []) : [];
+const nflGameByProTeam = new Map(nflGames.flatMap(g => (g.teamIds || []).map(id => [Number(id), g])));
+const BENCH_SLOT = 20;
+const IR_SLOT = 21;
+
+// One entry per fantasy team: its players this week with weekly points,
+// projection, lineup slot and NFL game status.
+const liveTeams = new Map();
+for (const g of allLiveSchedules) for (const side of [g.home, g.away]) {
+  if (!side?.teamId || liveTeams.has(Number(side.teamId))) continue;
+  const teamId = Number(side.teamId);
+  const players = (side.rosterForCurrentScoringPeriod?.entries || [])
+    .filter(entry => entry.playerPoolEntry?.player && Number(entry.lineupSlotId) !== IR_SLOT)
+    .map(entry => {
+      const player = entry.playerPoolEntry.player;
+      const game = nflGameByProTeam.get(Number(player.proTeamId)) || null;
+      const projection = Number((player.stats || []).find(s => Number(s.scoringPeriodId) === currentWeek && Number(s.statSourceId) === 1 && Number(s.statSplitTypeId) === 1)?.appliedTotal);
+      return {
+        playerId:Number(entry.playerId),
+        name:player.fullName,
+        lastName:player.lastName || player.fullName,
+        teamId,
+        slot:Number(entry.lineupSlotId),
+        bench:Number(entry.lineupSlotId) === BENCH_SLOT,
+        actual:round(Number(entry.playerPoolEntry.appliedStatTotal ?? 0)),
+        projection:Number.isFinite(projection) ? round(projection) : null,
+        eligibleSlots:(player.eligibleSlots || []).map(Number),
+        game,
+        // No game this week (bye) counts as finished with its current points.
+        finished:game ? game.completed : nflGames.length > 0,
+        playing:game?.state === "in",
+        upcoming:game?.state === "pre"
+      };
+    });
+  liveTeams.set(teamId, {teamId, team:name(teamId), players});
+}
+
+// Games worth talking about right now: those in progress, or if none are,
+// the most recent kickoff slot that has finished.
+function recentGameIds() {
+  const live = nflGames.filter(g => g.state === "in");
+  if (live.length) return new Set(live.map(g => g.id));
+  const done = nflGames.filter(g => g.completed && g.kickoff);
+  if (!done.length) return new Set();
+  const latest = Math.max(...done.map(g => Date.parse(g.kickoff)));
+  return new Set(done.filter(g => Date.parse(g.kickoff) >= latest - 60 * 60 * 1000).map(g => g.id));
+}
+
+// Best total from filling `slots` with `players` (each used at most once, only
+// in slots they're eligible for). Every slot must be filled.
+function optimalFill(slots, players) {
+  const full = (1 << slots.length) - 1;
+  const memo = new Map();
+  const best = (i, used) => {
+    if (i >= players.length) return used === full ? 0 : -Infinity;
+    const key = i + "|" + used;
+    if (memo.has(key)) return memo.get(key);
+    let value = best(i + 1, used);
+    for (let s = 0; s < slots.length; s++) {
+      if (used & (1 << s) || !players[i].eligibleSlots.includes(slots[s])) continue;
+      value = Math.max(value, players[i].actual + best(i + 1, used | (1 << s)));
+    }
+    memo.set(key, value);
+    return value;
+  };
+  return best(0, 0);
+}
+
+// Settled lineup decisions: only players whose games are over can be swapped,
+// so an unplayed starter never looks like a mistake. Returns points left on
+// the bench and the single best bench-for-starter swap.
+function settledLineupRegret(liveTeam) {
+  const finished = liveTeam.players.filter(p => p.finished);
+  const starters = finished.filter(p => !p.bench);
+  const bench = finished.filter(p => p.bench);
+  const actual = starters.reduce((sum, p) => sum + p.actual, 0);
+  const optimal = starters.length ? optimalFill(starters.map(p => p.slot), finished) : actual;
+  let bestSwap = null;
+  for (const b of bench) for (const s of starters) {
+    const gain = b.actual - s.actual;
+    if (gain > 0 && b.eligibleSlots.includes(s.slot) && (!bestSwap || gain > bestSwap.gain)) {
+      bestSwap = {benchPlayer:b, starter:s, gain:round(gain)};
+    }
+  }
+  return {
+    pointsLeft:round(Math.max(0, optimal - actual)),
+    finishedStarters:starters.length,
+    finishedBench:bench.length,
+    bestSwap
+  };
+}
+
+const pts = n => money(n) + " pts";
+const possessive = team => team + (team.endsWith("s") ? "'" : "'s");
+const listNames = names => names.length <= 1 ? names.join("") : names.slice(0, -1).join(", ") + " and " + names[names.length - 1];
+
 function buildMarqueeStories() {
   const stories = [];
   const previousScores = new Map((previousScoreboard?.week === currentWeek ? (previousScoreboard.scores || []) : []).map(s => [s.teamId, s]));
@@ -93,21 +191,31 @@ function buildMarqueeStories() {
     ? Number(previousScoreboard.projectedMedian ?? previousScoreboard.median)
     : null;
   const add = (type, text, score) => stories.push({type, text, score:Number.isFinite(score) ? round(score) : 0});
-  let playerEntries = [];
-  for (const g of allLiveSchedules) for (const side of [g.home, g.away]) for (const entry of side?.rosterForCurrentScoringPeriod?.entries || []) {
-    const player = entry.playerPoolEntry?.player;
-    if (!player?.fullName) continue;
-    const actual = Number(entry.playerPoolEntry?.appliedStatTotal ?? 0);
-    const projection = Number((player.stats || []).find(s => Number(s.scoringPeriodId) === currentWeek && Number(s.statSourceId) === 1 && Number(s.statSplitTypeId) === 1)?.appliedTotal);
-    playerEntries.push({name:player.fullName,actual,projection,teamId:Number(side.teamId),team:name(Number(side.teamId)),bench:Number(entry.lineupSlotId) === 20});
+  // Player stories only cover the games being played now (or the most
+  // recently finished slot), so Thursday's hero doesn't lead on Sunday night.
+  const recentGames = recentGameIds();
+  const recentStarters = [...liveTeams.values()]
+    .flatMap(t => t.players)
+    .filter(p => !p.bench && p.game && recentGames.has(p.game.id) && Number.isFinite(p.projection))
+    .map(p => ({...p, team:name(p.teamId), overProjection:round(p.actual - p.projection)}));
+  const hot = recentStarters.filter(p => p.actual >= 10 && p.overProjection >= 4).sort((a,b) => b.overProjection - a.overProjection)[0];
+  if (hot) add("HOT PLAYER","🔥 " + hot.name + " is on fire — " + pts(hot.actual) + ", " + pts(hot.overProjection) + " over projection for " + hot.team + ".",hot.overProjection+20);
+  const buster = recentStarters.filter(p => p.actual >= 8 && p.overProjection > 0 && p.playerId !== hot?.playerId).sort((a,b) => b.overProjection - a.overProjection)[0];
+  if (buster) add("PROJECTION BUSTER","🎯 " + buster.name + " is " + pts(buster.overProjection) + " above ESPN projection for " + buster.team + ".",buster.overProjection+10);
+  const dud = recentStarters.filter(p => p.finished && p.projection >= 10 && p.actual <= p.projection / 3).sort((a,b) => a.overProjection - b.overProjection)[0];
+  if (dud) add("DUD ALERT","🫠 " + dud.name + " laid an egg for " + dud.team + " — " + pts(dud.actual) + " against a " + pts(dud.projection) + " projection.",18 - dud.overProjection / 2);
+
+  // Lineup decisions that are already settled (both players' games are over).
+  const regrets = [...liveTeams.values()].map(t => ({...t, ...settledLineupRegret(t)}));
+  const regret = regrets.filter(r => r.pointsLeft >= 8).sort((a,b) => b.pointsLeft - a.pointsLeft)[0];
+  if (regret) {
+    const swap = regret.bestSwap ? " Starting " + regret.bestSwap.benchPlayer.name + " (" + pts(regret.bestSwap.benchPlayer.actual) + ") over " + regret.bestSwap.starter.name + " (" + pts(regret.bestSwap.starter.actual) + ") alone was worth " + pts(regret.bestSwap.gain) + "." : "";
+    add("LINEUP REGRET","🪑 " + regret.team + " has left " + pts(regret.pointsLeft) + " on the bench this week." + swap,40 + regret.pointsLeft);
   }
-  playerEntries = [...new Map(playerEntries.map(p => [p.teamId + "-" + p.name, p])).values()];
-  const hot = playerEntries.filter(p => p.actual >= 10 && Number.isFinite(p.projection) && p.actual-p.projection >= 4).sort((a,b) => (b.actual-b.projection)-(a.actual-a.projection))[0];
-  if (hot) add("HOT PLAYER","🔥 " + hot.name + " is on fire — " + money(hot.actual) + " pts, " + money(hot.actual-hot.projection) + " over projection for " + hot.team + ".",hot.actual-hot.projection+20);
-  const buster = playerEntries.filter(p => p.actual >= 8 && Number.isFinite(p.projection)).sort((a,b) => (b.actual-b.projection)-(a.actual-a.projection))[0];
-  if (buster && (!hot || buster.name !== hot.name)) add("PROJECTION BUSTER","🎯 " + buster.name + " is " + money(buster.actual-buster.projection) + " pts above ESPN projection for " + buster.team + ".",buster.actual-buster.projection+10);
-  const regret = playerEntries.filter(p => p.bench && p.actual >= 8).sort((a,b) => b.actual-a.actual)[0];
-  if (regret) add("BIGGEST REGRET","🪑 Biggest bench regret: " + regret.team + " left " + money(regret.actual) + " points on the bench with " + regret.name + ".",regret.actual);
+  // Perfect managers: every settled decision was right, with enough games in
+  // the books (including some bench players) for that to mean something.
+  const perfect = regrets.filter(r => r.pointsLeft === 0 && r.finishedStarters >= 5 && r.finishedBench >= 2).map(r => r.team);
+  if (perfect.length) add("LINEUP GENIUS","🧠 Perfect lineup calls so far: " + listNames(perfect) + (perfect.length === 1 ? " hasn't" : " haven't") + " left a single point on the bench.",30 + 5 * perfect.length);
 
   const matchupStates = currentWeekMatchups.map(m => {
     const a=currentScores.find(s=>s.teamId===m.homeTeamId), b=currentScores.find(s=>s.teamId===m.awayTeamId);
@@ -173,17 +281,108 @@ function buildMarqueeStories() {
   const rising=currentScores.filter(s=>s.projectionTrend==="up").sort((a,b)=>Number(b.projectionAverage)-Number(a.projectionAverage))[0];
   if(rising) add("STOCK RISING","📈 Stock rising: " + rising.team + " has its ESPN projection trending up.",22);
   const falling=currentScores.filter(s=>s.projectionTrend==="down").sort((a,b)=>Number(a.projectionAverage)-Number(b.projectionAverage))[0];
-  if(falling) add("STOCK FALLING","📉 Stock falling: " + falling.team + "'s ESPN projection is trending down.",20);
-  const benchPoints=playerEntries.filter(p=>p.bench).reduce((sum,p)=>sum+p.actual,0);
-  if(benchPoints>=15) add("LINEUP REGRET","🤦 Lineup regret is brewing: " + money(benchPoints) + " points are currently sitting on benches around the league.",benchPoints);
-  else if(benchPoints<8) add("LINEUP GENIUS","🧠 Bench watch: only " + money(benchPoints) + " pts are currently stranded on benches.",8);
+  if(falling) add("STOCK FALLING","📉 Stock falling: " + possessive(falling.team) + " ESPN projection is trending down.",20);
+  addLineupMistakeStories(add, matchupStates, regrets);
+  addPrimetimeStories(add, matchupStates);
 
   const biggestLead=matchupStates.filter(x=>!x.m.completed).sort((a,b)=>b.diff-a.diff)[0];
   if(biggestLead&&biggestLead.diff>=20){const leader=biggestLead.currentDiff>0?biggestLead.a.team:biggestLead.b.team;const trailer=biggestLead.currentDiff>0?biggestLead.b.team:biggestLead.a.team;add("LEAGUE GOSSIP","👀 League gossip: " + leader + " has " + money(biggestLead.diff) + " pts to play with against " + trailer + ".",28);}
-  else if(regret) add("LEAGUE GOSSIP","👀 League gossip: " + regret.team + " may be wishing they trusted " + regret.name + " — " + money(regret.actual) + " pts are sitting on the bench.",regret.actual+5);
+  else if(regret?.bestSwap) add("LEAGUE GOSSIP","👀 League gossip: " + regret.team + " may be wishing they trusted " + regret.bestSwap.benchPlayer.name + " — " + pts(regret.bestSwap.benchPlayer.actual) + " are sitting on the bench.",regret.bestSwap.benchPlayer.actual+5);
   else if(close) add("LEAGUE GOSSIP","👀 League gossip: " + close.a.team + " and " + close.b.team + " are separated by " + money(close.diff) + " pts. Somebody's Sunday just got interesting.",26-close.diff);
   return stories.filter((story,i,arr)=>arr.findIndex(x=>x.text===story.text)===i).sort((a,b)=>b.score-a.score);
 }
+// Settled start/sit mistakes that cost (or are costing) a team its matchup.
+function addLineupMistakeStories(add, matchupStates, regrets) {
+  const regretByTeam = new Map(regrets.map(r => [r.teamId, r]));
+  const candidates = [];
+  for (const x of matchupStates) {
+    for (const [team, opp] of [[x.a, x.b], [x.b, x.a]]) {
+      const swap = regretByTeam.get(team.teamId)?.bestSwap;
+      if (!swap) continue;
+      const score = Number(team.score);
+      const oppScore = Number(opp.score);
+      const swappedScore = score + swap.gain;
+      const teamDone = x.m.completed || team.startersLeft === 0;
+      const oppDone = x.m.completed || opp.startersLeft === 0;
+      const swapText = swap.benchPlayer.name + " (" + pts(swap.benchPlayer.actual) + ") over " + swap.starter.name + " (" + pts(swap.starter.actual) + ")";
+      if (score < oppScore && swappedScore > oppScore && teamDone && oppDone) {
+        candidates.push({type:"INSTANT REGRET", text:"😱 INSTANT REGRET: " + team.team + " would have beaten " + opp.team + " by starting " + swapText + ". Oops!", score:97});
+      } else if (score < oppScore && swappedScore > oppScore && oppDone) {
+        candidates.push({type:"INSTANT REGRET", text:"😱 INSTANT REGRET: starting " + swapText + " would have locked up a win over " + opp.team + " for " + team.team + ". Instead they need " + pts(oppScore - score) + " more.", score:95});
+      } else if (score < oppScore && swappedScore > oppScore) {
+        candidates.push({type:"LINEUP MISTAKE", text:"😬 " + team.team + " would be leading " + opp.team + " if they'd started " + swapText + " — instead they trail by " + pts(oppScore - score) + ".", score:88});
+      } else if (!teamDone || !oppDone) {
+        const winOdds = Number(team.winProbability);
+        if (swap.gain >= 5 && winOdds >= 30 && winOdds <= 70) {
+          candidates.push({type:"LINEUP MISTAKE", text:"😅 " + team.team + " could be sitting pretty by starting " + swapText + ", but instead they're sweating out a close one with " + opp.team + " (" + money(winOdds) + "% to win).", score:80});
+        }
+      }
+    }
+  }
+  candidates.sort((a,b) => b.score - a.score).slice(0, 2).forEach(c => add(c.type, c.text, c.score));
+}
+
+// Down-to-the-wire storylines once a matchup comes down to a few players
+// (typically Sunday and Monday night), plus which matchups and median races
+// are still live.
+function addPrimetimeStories(add, matchupStates) {
+  const startersLeft = teamId => (liveTeams.get(teamId)?.players || []).filter(p => !p.bench && !p.finished);
+  const withGame = p => p.lastName + (p.game?.name ? " (" + p.game.name + ")" : "");
+  const projectedRest = players => round(players.reduce((sum, p) => sum + Math.max(0, (p.projection ?? 0) - p.actual), 0));
+
+  const storylines = [];
+  for (const x of matchupStates) {
+    if (x.m.completed) continue;
+    const [leader, trailer] = Number(x.a.score) >= Number(x.b.score) ? [x.a, x.b] : [x.b, x.a];
+    const leaderLeft = startersLeft(leader.teamId);
+    const trailerLeft = startersLeft(trailer.teamId);
+    // A trailing team with no one left can't catch up, and a matchup with lots
+    // of players still to go isn't a storyline yet.
+    if (!trailerLeft.length || leaderLeft.length + trailerLeft.length > 3) continue;
+    const deficit = round(Number(leader.score) - Number(trailer.score));
+    const urgency = 92 - Math.min(deficit, 30) / 10;
+    const odds = Number.isFinite(Number(trailer.winProbability)) ? " " + possessive(trailer.team) + " win chance: " + money(trailer.winProbability) + "%." : "";
+    const add = (type, text, score) => storylines.push({type, text, score});
+
+    if (!leaderLeft.length && trailerLeft.length === 1) {
+      const p = trailerLeft[0];
+      const target = round(p.actual + deficit);
+      const soFar = p.actual > 0 ? " (" + money(p.actual) + " so far)" : "";
+      const projected = p.projection != null ? " ESPN projects " + pts(p.projection) + "." : "";
+      add("ALL EYES ON","👀 All eyes on " + withGame(p) + ": if " + p.lastName + " tops " + pts(target) + soFar + ", " + trailer.team + " beats " + leader.team + ". Otherwise " + leader.team + " takes it." + projected + odds,urgency + 3);
+    } else if (!leaderLeft.length) {
+      add("COMEBACK WATCH","⏳ " + trailer.team + " needs " + pts(deficit) + " more from " + listNames(trailerLeft.map(withGame)) + " to catch " + leader.team + " (ESPN projects " + pts(projectedRest(trailerLeft)) + ")." + odds,urgency);
+    } else {
+      add("SHOWDOWN","⚔️ SHOWDOWN: " + leader.team + " leads " + trailer.team + " by " + pts(deficit) + " — it's " + listNames(leaderLeft.map(withGame)) + " vs " + listNames(trailerLeft.map(withGame)) + " the rest of the way." + odds,urgency);
+    }
+  }
+  storylines.sort((a,b) => b.score - a.score).slice(0, 4).forEach(story => add(story.type, story.text, story.score));
+
+  // Undecided matchups where the favorite isn't a lock.
+  const live = matchupStates
+    .filter(x => !x.m.completed && (x.a.startersLeft !== 0 || x.b.startersLeft !== 0))
+    .map(x => {
+      const fav = Number(x.a.winProbability) >= Number(x.b.winProbability) ? x.a : x.b;
+      return {x, fav, odds:Number(fav.winProbability)};
+    })
+    .filter(m => Number.isFinite(m.odds) && m.odds <= 80)
+    .sort((a,b) => a.odds - b.odds);
+  if (live.length) {
+    add("MATCHUPS THAT MATTER","🏈 Matchups that matter: " + live.map(m => m.x.a.team + " vs " + m.x.b.team + " (" + m.fav.team + " " + money(m.odds) + "%)").join(" · ") + ".",60 + live.length);
+  }
+
+  // Median races that come down to one or two players.
+  const medianStakes = currentScores
+    .filter(s => isNearMedian(s))
+    .map(s => ({s, left:startersLeft(s.teamId)}))
+    .filter(m => m.left.length && m.left.length <= 2)
+    .sort((a,b) => Math.abs(Number(a.s.aboveMedianProbability) - 50) - Math.abs(Number(b.s.aboveMedianProbability) - 50))
+    .slice(0, 2);
+  for (const {s, left} of medianStakes) {
+    add("MEDIAN STAKES","🎯 MEDIAN STAKES: " + possessive(s.team) + " shot at a median win (" + money(s.aboveMedianProbability) + "%) rides on " + listNames(left.map(withGame)) + ".",74);
+  }
+}
+
 const keyPlays = await buildKeyPlays();
 await writeJson("data/current/key-plays.json", {
   week: currentWeek,

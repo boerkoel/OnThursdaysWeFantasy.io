@@ -102,16 +102,23 @@ async function fetchNflWeek(week) {
 const nflWeek = await fetchNflWeek(currentWeek);
 
 const nflGamesByTeam = new Map();
+// Published in scoreboard.json so the League Wire can focus on current games.
+const nflGames = [];
 for (const event of nflWeek?.events || []) {
   const competition = event.competitions?.[0];
   if (!competition) continue;
   const status = competition.status?.type;
-  for (const competitor of competition.competitors || []) {
-    const teamId = Number(competitor.team?.id);
-    if (Number.isFinite(teamId)) nflGamesByTeam.set(teamId, {
-      completed: status?.completed === true || status?.state === "post"
-    });
-  }
+  const game = {
+    id: String(event.id),
+    name: event.shortName || event.name || "",
+    kickoff: event.date || null,
+    state: status?.state || "pre",
+    completed: status?.completed === true || status?.state === "post",
+    detail: status?.shortDetail || "",
+    teamIds: (competition.competitors || []).map(c => Number(c.team?.id)).filter(Number.isFinite)
+  };
+  nflGames.push(game);
+  for (const teamId of game.teamIds) nflGamesByTeam.set(teamId, game);
 }
 
 // statSourceId 1 = ESPN projection, 0 = actual; statSplitTypeId 1 = single week.
@@ -340,6 +347,7 @@ for (const score of currentScores) {
   const aboveCount = aboveMedianCounts.get(score.teamId) || 0;
 
   score.projectionSd = round(sd);
+  score.startersLeft = startersLeftByTeam.get(score.teamId) ?? null;
   score.aboveMedianProbability = lockedMedianOdds(score) ?? possibleOdds(aboveCount);
   score.belowMedianProbability = round(100 - score.aboveMedianProbability);
   score.medianDistanceSd = sd > 0
@@ -413,6 +421,7 @@ await writeFile("data/current/scoreboard.json", JSON.stringify({
   projectionSources: ["ESPN live team projections, with ESPN player projections as fallback"],
   probabilityModel: "Monte Carlo simulations estimate final-score distributions, above/below projected-median odds, matchup win odds, and final-score standard deviation; ESPN projections remain the displayed projections",
   probabilitySimulations: SIMULATIONS,
+  nflGames,
   projectionHistory
 }, null, 2) + "\n");
 
