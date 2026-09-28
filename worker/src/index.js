@@ -19,15 +19,16 @@ const MAX_ALERTS_PER_PHONE_PER_RUN = 3;
 const WIRE_HIGHLIGHTS = new Set(["MATCHUP FLIP", "PROJECTION FLIP", "MEDIAN FLIP", "ALL EYES ON", "INSTANT REGRET", "COMEBACK",
   "HEART ATTACK GAME", "MOMENTUM SHIFT", "RAFFLE FLIP", "HOT PICKUP"]);
 
+const corsHeaders = origin => ({
+  "Access-Control-Allow-Origin": ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0],
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Max-Age": "86400",
+  Vary: "Origin"
+});
 const json = (data, status, origin) => new Response(JSON.stringify(data), {
   status,
-  headers: {
-    "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0],
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
-    Vary: "Origin"
-  }
+  headers: { "Content-Type": "application/json", ...corsHeaders(origin) }
 });
 
 async function subscriptionId(endpoint) {
@@ -66,7 +67,8 @@ export default {
   async fetch(request, env) {
     const origin = request.headers.get("Origin") || "";
     const { pathname } = new URL(request.url);
-    if (request.method === "OPTIONS") return json({}, 204, origin);
+    // CORS preflight: a 204 must not carry a body.
+    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders(origin) });
     try {
       if (request.method === "GET" && pathname === "/vapid-public-key") {
         return json({ publicKey: (await vapidKeys(env)).publicKey }, 200, origin);
