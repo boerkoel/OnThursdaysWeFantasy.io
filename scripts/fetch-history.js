@@ -11,14 +11,24 @@ const espnS2 = process.env.ESPN_S2;
 const swid = process.env.ESPN_SWID;
 if (!espnS2 || !swid) throw new Error("Missing ESPN authentication secrets.");
 
+// Recent seasons live at the usual league address; older ones are only served
+// by ESPN's leagueHistory endpoint (which wraps the season in an array).
 async function fetchSeason(season, view) {
-  const url = new URL(`https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${season}/segments/0/leagues/${leagueId}`);
-  url.searchParams.set("view", view);
-  const response = await fetch(url, {
-    headers: { Accept: "application/json", "User-Agent": "OnThursdaysWeFantasy/1.0", Cookie: `espn_s2=${espnS2}; SWID=${swid}` }
-  });
-  if (!response.ok) throw new Error(`${season} ${view}: ${response.status} ${response.statusText}`);
-  return response.json();
+  const headers = { Accept: "application/json", "User-Agent": "OnThursdaysWeFantasy/1.0", Cookie: `espn_s2=${espnS2}; SWID=${swid}` };
+  const current = new URL(`https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${season}/segments/0/leagues/${leagueId}`);
+  current.searchParams.set("view", view);
+  const response = await fetch(current, { headers });
+  if (response.ok) return response.json();
+
+  const history = new URL(`https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/leagueHistory/${leagueId}`);
+  history.searchParams.set("seasonId", String(season));
+  history.searchParams.set("view", view);
+  const fallback = await fetch(history, { headers });
+  if (!fallback.ok) throw new Error(`${season} ${view}: ${response.status} ${response.statusText}, then leagueHistory ${fallback.status} ${fallback.statusText}`);
+  const data = await fallback.json();
+  const entry = Array.isArray(data) ? data.find(d => Number(d.seasonId) === Number(season)) || data[0] : data;
+  if (!entry) throw new Error(`${season} ${view}: leagueHistory returned no season`);
+  return entry;
 }
 
 const settings = JSON.parse(await readFile("data/current/mSettings.json", "utf8"));
