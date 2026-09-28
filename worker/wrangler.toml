@@ -1,6 +1,7 @@
 # Notification service for the home-screen app (see worker/src/index.js).
 # Deployed by .github/workflows/deploy-worker.yml, which also creates the KV
-# namespace on first deploy and fills in its id below.
+# namespace on first deploy and fills in its id below (the placeholder stays
+# in the repo). Live at https://otwf-notify.otwf.workers.dev.
 name = "otwf-notify"
 main = "src/index.js"
 compatibility_date = "2026-09-01"
