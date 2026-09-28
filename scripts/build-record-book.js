@@ -50,6 +50,7 @@ const sides = seasons.flatMap(season => {
         week: g.week,
         playoff: Boolean(g.playoff),
         manager: team.get(id)?.manager || null,
+        opponentManager: team.get(oppId)?.manager || null,
         team: team.get(id)?.name || `Team ${id}`,
         opponent: team.get(oppId)?.name || `Team ${oppId}`,
         score: round(score),
@@ -110,6 +111,43 @@ const managers = [...new Set(seasons.flatMap(s => s.teams.map(t => t.manager)).f
   };
 }).sort((a, b) => b.titles - a.titles || b.winPct - a.winPct || b.pointsFor - a.pointsFor);
 
+// Head-to-head rivalries: every pair of managers who have played, from the
+// first manager's side (a is the manager whose key sorts first).
+const pairKey = (x, y) => [x, y].sort().join("|");
+const meetings = new Map();
+for (const s of sides) {
+  if (!s.manager || !s.opponentManager || s.manager > s.opponentManager) continue; // one side per game
+  const key = pairKey(s.manager, s.opponentManager);
+  if (!meetings.has(key)) meetings.set(key, []);
+  meetings.get(key).push(s);
+}
+const rivalries = [...meetings.entries()].map(([key, games]) => {
+  const [a, b] = key.split("|");
+  games.sort((x, y) => x.season - y.season || x.week - y.week);
+  const aWins = games.filter(g => g.result === "W").length;
+  const bWins = games.filter(g => g.result === "L").length;
+  const last = games[games.length - 1];
+  let streak = 0;
+  for (let i = games.length - 1; i >= 0 && games[i].result === last.result; i--) streak++;
+  const biggest = side => {
+    const pool = games.filter(g => g.result === (side === "a" ? "W" : "L"));
+    const g = pool.sort((x, y) => Math.abs(y.score - y.opponentScore) - Math.abs(x.score - x.opponentScore))[0];
+    return g ? { season: g.season, week: g.week, margin: round(Math.abs(g.score - g.opponentScore)), score: side === "a" ? g.score : g.opponentScore, opponentScore: side === "a" ? g.opponentScore : g.score } : null;
+  };
+  return {
+    a, b,
+    games: games.length,
+    aWins, bWins,
+    ties: games.length - aWins - bWins,
+    aPoints: round(games.reduce((t, g) => t + g.score, 0)),
+    bPoints: round(games.reduce((t, g) => t + g.opponentScore, 0)),
+    playoffMeetings: games.filter(g => g.playoff).length,
+    lastMeeting: { season: last.season, week: last.week, playoff: last.playoff, aScore: last.score, bScore: last.opponentScore, winner: last.result === "W" ? a : last.result === "L" ? b : null },
+    streak: last.result === "T" ? null : { manager: last.result === "W" ? a : b, length: streak },
+    biggestWin: { a: biggest("a"), b: biggest("b") }
+  };
+});
+
 await writeFile("data/current/record-book.json", JSON.stringify({
   seasons: seasons.map(s => s.season),
   throughWeek: Math.max(0, ...currentSeason.games.map(g => g.week)),
@@ -117,7 +155,12 @@ await writeFile("data/current/record-book.json", JSON.stringify({
   champions,
   managers,
   gameRecords,
-  seasonRecords
+  seasonRecords,
+  // For rivalries: managers' display labels, and this season's team id ->
+  // manager, so live matchups can show their all-time series.
+  managerLabels: Object.fromEntries([...labels]),
+  currentTeamManagers: Object.fromEntries(currentSeason.teams.map(t => [t.id, t.manager])),
+  rivalries
 }, null, 2) + "\n");
 
 console.log(`Record book: ${seasons.length} seasons (${pastSeasons.length} past), ${managers.length} managers, ${sides.length / 2} games.`);

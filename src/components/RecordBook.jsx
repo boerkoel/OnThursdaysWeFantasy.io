@@ -1,10 +1,57 @@
-import React from "react";
+import React, { useState } from "react";
 import { money } from "../lib/data.js";
+import { managerLabel, recordBook, rivalryBetween } from "../lib/recordBook.js";
 
-// All-time record book (build-record-book.js). Loaded only if the file exists,
-// so the site builds before the first daily update creates it.
-const books = import.meta.glob("../../data/current/record-book.json", { eager: true, import: "default" });
-const recordBook = Object.values(books)[0] || null;
+const possessive = name => name + (name.endsWith("s") ? "'" : "'s");
+
+// Pick any two managers to see their all-time series; plus the most
+// lopsided and closest rivalries (3+ meetings).
+function Rivalries() {
+  const rivalries = recordBook?.rivalries || [];
+  const managers = Object.keys(recordBook?.managerLabels || {}).sort((x, y) => managerLabel(x).localeCompare(managerLabel(y)));
+  const mostPlayed = [...rivalries].sort((x, y) => y.games - x.games)[0];
+  const [pick, setPick] = useState(mostPlayed ? [mostPlayed.a, mostPlayed.b] : [managers[0], managers[1]]);
+  if (!rivalries.length) return null;
+  const series = rivalryBetween(pick[0], pick[1]);
+  const regular = rivalries.filter(r => r.games >= 3);
+  const lopsided = [...regular].sort((x, y) => Math.abs(y.aWins - y.bWins) / y.games - Math.abs(x.aWins - x.bWins) / x.games || y.games - x.games).slice(0, 3);
+  const closest = [...regular].sort((x, y) => Math.abs(x.aWins - x.bWins) - Math.abs(y.aWins - y.bWins) || Math.abs(x.aPoints - x.bPoints) - Math.abs(y.aPoints - y.bPoints)).slice(0, 3);
+  const leaderLine = r => {
+    const [lead, trail, lw, tw] = r.aWins >= r.bWins ? [r.a, r.b, r.aWins, r.bWins] : [r.b, r.a, r.bWins, r.aWins];
+    return lw === tw ? `${managerLabel(r.a)} vs ${managerLabel(r.b)}: tied ${lw}–${tw}` : `${managerLabel(lead)} over ${managerLabel(trail)}, ${lw}–${tw}`;
+  };
+  const choose = (i, value) => setPick(p => (i === 0 ? [value, p[1]] : [p[0], value]));
+  return (
+    <details className="collapsible" id="rivalries">
+      <summary>Head-to-head rivalries <span>{rivalries.length} matchups</span></summary>
+      <div className="rivalry-panel">
+        <div className="rivalry-picker">
+          <select value={pick[0]} onChange={e => choose(0, e.target.value)} aria-label="First manager">
+            {managers.map(m => <option key={m} value={m}>{managerLabel(m)}</option>)}
+          </select>
+          <span>vs</span>
+          <select value={pick[1]} onChange={e => choose(1, e.target.value)} aria-label="Second manager">
+            {managers.map(m => <option key={m} value={m}>{managerLabel(m)}</option>)}
+          </select>
+        </div>
+        {series ? <div className="rivalry-summary">
+          <div className="rivalry-score">
+            <div><strong>{series.aWins}</strong><span>{managerLabel(series.a)}</span></div>
+            <em>{series.ties ? `${series.ties} tie${series.ties > 1 ? "s" : ""}` : "wins"}</em>
+            <div><strong>{series.bWins}</strong><span>{managerLabel(series.b)}</span></div>
+          </div>
+          <p>{series.games} meetings{series.playoffMeetings ? ` (${series.playoffMeetings} in the playoffs)` : ""} · average score {money(series.aPoints / series.games)}–{money(series.bPoints / series.games)}</p>
+          <p>Last met {series.lastMeeting.season} Week {series.lastMeeting.week}: {money(series.lastMeeting.aScore)}–{money(series.lastMeeting.bScore)}{series.streak?.length >= 2 ? ` · ${managerLabel(series.streak.manager)} has won ${series.streak.length} straight` : ""}</p>
+          <p>{[series.biggestWin.a && `${possessive(managerLabel(series.a))} biggest win: by ${money(series.biggestWin.a.margin)} (${series.biggestWin.a.season} W${series.biggestWin.a.week})`, series.biggestWin.b && `${possessive(managerLabel(series.b))}: by ${money(series.biggestWin.b.margin)} (${series.biggestWin.b.season} W${series.biggestWin.b.week})`].filter(Boolean).join(" · ")}</p>
+        </div> : <p className="median-note">{pick[0] === pick[1] ? "Pick two different managers." : "These two have never played each other."}</p>}
+        {regular.length ? <div className="rivalry-lists">
+          <div><small>MOST LOPSIDED</small><ol>{lopsided.map(r => <li key={r.a + r.b}>{leaderLine(r)}</li>)}</ol></div>
+          <div><small>CLOSEST RIVALRIES</small><ol>{closest.map(r => <li key={r.a + r.b}>{leaderLine(r)}</li>)}</ol></div>
+        </div> : null}
+      </div>
+    </details>
+  );
+}
 
 const gameLine = g => `${money(g.score)}–${money(g.opponentScore)} vs ${g.opponent} · ${g.season} W${g.week}${g.playoff ? " (playoffs)" : ""}`;
 
@@ -58,6 +105,8 @@ export default function RecordBook() {
           <span>{money(m.averageScore)}</span>
         </div>)}
       </div>
+
+      <Rivalries />
 
       <h3 className="survival-heading">Records</h3>
       <div className="award-grid">

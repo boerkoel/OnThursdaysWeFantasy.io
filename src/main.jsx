@@ -15,6 +15,7 @@ import TeamCards from "./components/TeamCards.jsx";
 import { DeathWatch } from "./components/DeathWatch.jsx";
 import SwingChart from "./components/SwingChart.jsx";
 import RecordBook from "./components/RecordBook.jsx";
+import { seriesLine } from "./lib/recordBook.js";
 
 // Standings and rest-of-season odds in one sortable table: current seed and
 // record (standings.json, playoffs.json) plus simulated odds (season-odds.js).
@@ -213,6 +214,7 @@ function App() {
               <MatchupTeam team={a} opponent={b} logo={teamLogos[a.teamId]} projected={scoreSort === "projected"} flashing={flashingScores.has(a.teamId)} dotClass={medianDotClass(a)} />
               <div className="versus">vs</div>
               <MatchupTeam team={b} opponent={a} logo={teamLogos[b.teamId]} projected={scoreSort === "projected"} flashing={flashingScores.has(b.teamId)} dotClass={medianDotClass(b)} />
+              {seriesLine(a.teamId, b.teamId) ? <p className="rivalry-line">⚔️ {seriesLine(a.teamId, b.teamId)}</p> : null}
               <SwingChart points={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} teamId={a.teamId} teamName={a.team} opponentName={b.team} />
               <div className="card-actions">
                 <ShareButton filename={`week-${scoreboard.week}-${a.team}-vs-${b.team}`.replace(/[^\w-]+/g, "-")} build={() => ({
@@ -224,7 +226,10 @@ function App() {
                     highlight: t.score >= (t === a ? b : a).score,
                     note: `Proj ${t.projectionAverage != null ? money(t.projectionAverage) : "—"}${t.winProbability != null ? ` · ${money(t.winProbability)}% to win` : ""}`
                   })),
-                  lines: keyPlaysFor(matchupId).slice(0, 2).map((play, i) => ({ text: `${play.points > 0 ? "+" : ""}${money(play.points)} · ${play.player} ${play.text}`, size: 26, gap: i ? 8 : 40 }))
+                  lines: [
+                    seriesLine(a.teamId, b.teamId) ? { text: "⚔️ " + seriesLine(a.teamId, b.teamId), size: 28, color: "accent", weight: 800, gap: 36 } : null,
+                    ...keyPlaysFor(matchupId).slice(0, 2).map((play, i) => ({ text: `${play.points > 0 ? "+" : ""}${money(play.points)} · ${play.player} ${play.text}`, size: 26, gap: i ? 8 : 30 }))
+                  ].filter(Boolean)
                 })} />
               </div>
               {keyPlaysFor(matchupId).length ? (
