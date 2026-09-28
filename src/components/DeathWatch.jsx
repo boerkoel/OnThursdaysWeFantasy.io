@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { formatDay, money } from "../lib/data.js";
+import { TeamLogo } from "./LiveBits.jsx";
 import obituaryData from "../../data/current/obituaries.json";
 import obituariesMarkdown from "../../content/obituaries.md?raw";
 
@@ -16,6 +17,14 @@ const handwrittenObituaries = new Map(
     })
     .filter(([, text]) => text)
 );
+
+// Team logo, or the team's initials when there's no logo yet (custom ESPN
+// uploads are cached by the daily update and can't be linked directly).
+function DwLogo({ team, size = "sm" }) {
+  if (team.logo) return <TeamLogo src={team.logo} size={size} />;
+  const initials = team.team.split(/\s+/).filter(w => /[A-Za-z0-9]/.test(w)).slice(0, 2).map(w => w.match(/[A-Za-z0-9]/)[0]).join("").toUpperCase();
+  return <span className={`inline-team-logo ${size} logo-initials`} aria-hidden="true">{initials}</span>;
+}
 
 const obituaryFor = chop => handwrittenObituaries.get(chop.team.trim().toLowerCase()) ||
   (obituaryData.obituaries || []).find(o => o.teamId === chop.teamId && o.week === chop.week)?.text;
@@ -41,7 +50,7 @@ function SurvivalOdds({ teams }) {
         <div className="survival-row survival-header"><span>#</span><span>Team</span><span>Current</span><span>Projected</span><span>Left</span><span>Survive</span></div>
         {sorted.map((t, i) => <div className="survival-row" key={t.teamId}>
           <span>{i + 1}</span>
-          <strong>{t.team}</strong>
+          <strong><DwLogo team={t} /><span>{t.team}</span></strong>
           <span>{money(t.score)}</span>
           <span>{money(t.projected)}</span>
           <span>{t.playersLeft ? t.playersLeft : "final"}</span>
@@ -70,7 +79,7 @@ function Obituaries({ guillotine }) {
             return <article className={i === active ? "obit-card active" : "obit-card"} aria-hidden={i !== active} key={c.teamId}>
               <span className="obit-icon">🪦</span>
               <small>{formatDay(guillotine.draftDate)} — {formatDay(c.diedOn)}</small>
-              <strong>{c.team}</strong>
+              <strong className="dw-team"><DwLogo team={c} size="md" />{c.team}</strong>
               <p className="rip-cause">Chopped in Week {c.week} with {money(c.finalScore)} pts{c.survivedBy ? `, ${money(c.margin)} short of ${c.survivedBy.team}` : ""}.</p>
               {obituary
                 ? obituary.split(/\n\s*\n/).map((paragraph, p) => <p className="rip-obituary" key={p}>{paragraph.replace(/\s*\n\s*/g, " ")}</p>)
@@ -106,7 +115,7 @@ export function DeathWatch({ guillotine }) {
         {guillotine.teams.filter(t => t.chopProbability > 0).slice(0, 3).map((t, i) => <article className="award-card" key={t.teamId}>
           <span>{i === 0 ? "🪓" : "😰"}</span>
           <small>{i === 0 ? "ON THE CHOPPING BLOCK" : `#${i + 1} MOST AT RISK`}</small>
-          <strong>{t.team}</strong>
+          <strong className="dw-team"><DwLogo team={t} size="md" />{t.team}</strong>
           <b className="chop-odds">{money(t.chopProbability)}% chance of being chopped</b>
           <p>{money(t.score)} pts{t.playersLeft ? ` · projected ${money(t.projected)}` : " · final"}</p>
           <p>{t.playersLeft ? "Still to play: " + t.remaining.map(p => p.name + (p.game ? ` (${p.game})` : "")).join(", ") : "No players left to play"}</p>

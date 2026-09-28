@@ -47,7 +47,11 @@ const weeklyStat = (player, statSourceId) => Number((player?.stats || []).find(s
   Number(s.scoringPeriodId) === week && Number(s.statSourceId) === statSourceId && Number(s.statSplitTypeId) === 1
 )?.appliedTotal);
 
-const teamInfo = new Map((league.teams || []).map(t => [Number(t.id), { name: (t.name || `Team ${t.id}`).trim(), abbrev: t.abbrev || "" }]));
+// Logos cached into the site by cache-team-logos.js; ESPN's stock logos can
+// also be linked directly, but custom uploads can't.
+const logoMap = await readFile("data/current/guillotine-logo-map.json", "utf8").then(JSON.parse).catch(() => ({}));
+const logoFor = t => logoMap[String(t.id)] || (String(t.logo || "").startsWith("https://g.espncdn.com/") ? t.logo : null);
+const teamInfo = new Map((league.teams || []).map(t => [Number(t.id), { name: (t.name || `Team ${t.id}`).trim(), abbrev: t.abbrev || "", logo: logoFor(t) }]));
 const weekEntry = (scores.schedule || []).find(g => Number(g.matchupPeriodId) === week);
 const scoreByTeam = new Map((weekEntry?.teams || []).map(t => [Number(t.teamId), t]));
 const rosterByTeam = new Map((rosters.teams || []).map(t => [Number(t.id), t.roster?.entries || []]));
@@ -79,6 +83,7 @@ for (const t of weekEntry?.teams || []) {
   chopped.push({
     teamId,
     team: teamInfo.get(teamId)?.name || `Team ${teamId}`,
+    logo: teamInfo.get(teamId)?.logo || null,
     week: chopWeek,
     finalScore,
     survivedBy: nextLowest ? { team: teamInfo.get(Number(nextLowest.teamId))?.name, score: round(Number(nextLowest.totalPoints)) } : null,
@@ -110,6 +115,7 @@ const alive = [...scoreByTeam.values()]
       teamId,
       team: teamInfo.get(teamId)?.name || `Team ${teamId}`,
       abbrev: teamInfo.get(teamId)?.abbrev || "",
+      logo: teamInfo.get(teamId)?.logo || null,
       score,
       projected: round(score + remaining.reduce((sum, p) => sum + p.rest, 0)),
       remaining

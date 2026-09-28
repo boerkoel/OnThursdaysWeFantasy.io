@@ -432,3 +432,11 @@
 .obit-controls{display:flex;justify-content:center;align-items:center;gap:14px;margin-top:10px}
 .obit-controls>button{width:30px;height:30px;border:1px solid #3b4134;border-radius:50%;background:transparent;color:#dfe7d7;font-size:16px;cursor:pointer}
 .median-note a{color:#b8c69b}
+/* Team logos in the Death Watch */
+.dw-team{display:flex!important;align-items:center;gap:9px}
+.inline-team-logo.md{width:30px;height:30px;flex:0 0 30px;border-radius:50%;object-fit:cover}
+.survival-row>strong{display:flex;align-items:center;gap:8px}
+.survival-row>strong .inline-team-logo{flex:0 0 22px}
+.survival-row>strong span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.logo-initials{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:#2a3024;color:#b8c69b;font-size:9px;font-weight:900;letter-spacing:.02em}
+.logo-initials.md{font-size:11px}
