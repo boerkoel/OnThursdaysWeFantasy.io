@@ -16,9 +16,9 @@ How to add one:
 
 ## Mama Said Knock You Out
 
-<!--
-Chopped in Week 2 (died Mon, Sep 21, 2026) with 77.55 pts,
-12.17 short of Joe's Scary Team (89.72). Born Sep 10, 2026 (draft day).
-Final-week lineup included Drake London, George Pickens and Zay Flowers.
-Write the obituary below this comment.
--->
+
+“Mama Said Knock You Out” — and apparently, Mama was talking about her own son. In a stunning display of Jim-competence, the commissioner became the first casualty of the guillotine league he personally created. His team managed just 77.55 points, finishing 12.17 behind the next-lowest scorer. A 1.8-point Monday night performance ensured Jim was Jaxson Darted out of the league before the season even got going. Meanwhile, 31.4 points sat on the bench watching the carnage unfold. Jim tried to Chase [Brown] points, but the points chased him straight to the chopping block. He founded the league, built the guillotine, and promptly stuck his own head in it. At least the rules worked.  Don't worry, I put some [Zay] Flowers on his grave on behalf of the league so you don't have to waste your time with a visit.
+
+
+
+
