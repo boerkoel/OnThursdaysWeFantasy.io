@@ -55,7 +55,14 @@ const allLiveSchedules = [...liveSchedule, ...boxscoreSchedule];
 const liveScoreboard = await readJson("data/current/scoreboard.json");
 const currentScores = Number(liveScoreboard.week) === currentWeek ? (liveScoreboard.scores || []) : [];
 const projectedMedian = Number(liveScoreboard.projectedMedian);
-const medianCloseThreshold = Number(liveScoreboard.medianCloseThreshold ?? 6);
+// Same "near median" rule as the scoreboard: roughly coin-flip odds of
+// finishing above the league median.
+const NEAR_MEDIAN_MIN = 35;
+const NEAR_MEDIAN_MAX = 65;
+const isNearMedian = s => {
+  const odds = Number(s?.aboveMedianProbability);
+  return Number.isFinite(odds) && odds >= NEAR_MEDIAN_MIN && odds <= NEAR_MEDIAN_MAX;
+};
 
 async function buildKeyPlays() {
   const plays = await readJson("data/current/live-plays.json").catch(() => ({ plays: [] }));
@@ -133,8 +140,8 @@ function buildMarqueeStories() {
 
   if(Number.isFinite(projectedMedian) && projectedMedian > 0){
     const nearMedian = currentScores
-      .filter(s => Number.isFinite(Number(s.projectionAverage)) && Math.abs(Number(s.projectionAverage) - projectedMedian) <= medianCloseThreshold)
-      .sort((a,b) => Math.abs(Number(a.projectionAverage) - projectedMedian) - Math.abs(Number(b.projectionAverage) - projectedMedian));
+      .filter(isNearMedian)
+      .sort((a,b) => Math.abs(Number(a.aboveMedianProbability) - 50) - Math.abs(Number(b.aboveMedianProbability) - 50));
 
     // Crossing the projected median is the most meaningful median story.
     const medianFlip = currentScores.find(s => {
@@ -152,19 +159,15 @@ function buildMarqueeStories() {
     } else {
       const newlyNear = nearMedian.find(s => {
         const p = previousScores.get(s.teamId);
-        if (!p || !Number.isFinite(previousProjectedMedian)) return false;
-        const previousProjection = Number(p.projectionAverage ?? p.projection?.espn);
-        return Number.isFinite(previousProjection) &&
-          Math.abs(previousProjection - previousProjectedMedian) > medianCloseThreshold;
+        return p && Number.isFinite(Number(p.aboveMedianProbability)) && !isNearMedian(p);
       });
       if (newlyNear) {
-        const direction = Number(newlyNear.projectionAverage) >= projectedMedian ? "above" : "below";
-        add("MEDIAN WATCH","🎯 " + newlyNear.team + " is now within " + money(medianCloseThreshold) + " pts of the projected median — " + direction + " and in danger of crossing.",84);
+        add("MEDIAN WATCH","🎯 " + newlyNear.team + " is now a coin flip to finish above the median — " + money(newlyNear.aboveMedianProbability) + "% odds.",84);
       }
     }
 
     if (nearMedian.length >= 4) {
-      add("MEDIAN CLUSTER","🎯 " + nearMedian.length + " teams are within " + money(medianCloseThreshold) + " pts of the projected median.",58 + nearMedian.length);
+      add("MEDIAN CLUSTER","🎯 " + nearMedian.length + " teams have between " + NEAR_MEDIAN_MIN + "% and " + NEAR_MEDIAN_MAX + "% odds of finishing above the median.",58 + nearMedian.length);
     }
   }
   const rising=currentScores.filter(s=>s.projectionTrend==="up").sort((a,b)=>Number(b.projectionAverage)-Number(a.projectionAverage))[0];

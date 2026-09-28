@@ -394,14 +394,6 @@ for (const score of currentScores) {
     : null;
 }
 
-// "Near median" zone: half a standard deviation of the displayed projections.
-const displayedProjections = currentScores.map(s => Number(s.projectionAverage)).filter(Number.isFinite);
-const projectionMean = displayedProjections.reduce((sum, value) => sum + value, 0) / (displayedProjections.length || 1);
-const projectionSpread = displayedProjections.length
-  ? Math.sqrt(displayedProjections.reduce((sum, value) => sum + (value - projectionMean) ** 2, 0) / displayedProjections.length)
-  : NaN;
-const medianCloseThreshold = Number.isFinite(projectionSpread) ? round(projectionSpread * 0.5) : 6;
-
 const currentProjectionSnapshot = {
   timestamp: new Date().toISOString(),
   week: currentWeek,
@@ -418,7 +410,6 @@ await writeFile("data/current/scoreboard.json", JSON.stringify({
   scores: currentScores,
   median,
   projectedMedian,
-  medianCloseThreshold,
   projectionSources: ["ESPN live team projections, with ESPN player projections as fallback"],
   probabilityModel: "Monte Carlo simulations estimate final-score distributions, above/below projected-median odds, matchup win odds, and final-score standard deviation; ESPN projections remain the displayed projections",
   probabilitySimulations: SIMULATIONS,

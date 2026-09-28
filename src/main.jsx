@@ -312,21 +312,22 @@ function App() {
   const historyAverage = historyScores.length ? historyScores.reduce((sum, score) => sum + score, 0) / historyScores.length : null;
   const historyMedian = historyScores.length ? (historyScores.length % 2 ? historyScores[Math.floor(historyScores.length / 2)] : (historyScores[historyScores.length / 2 - 1] + historyScores[historyScores.length / 2]) / 2) : null;
 
-  const projectedMedian = Number(scoreboard.projectedMedian);
-  const projectedWithScores = scores.filter(s => Number.isFinite(Number(s.projectionAverage)) && Number.isFinite(projectedMedian));
-  const closestToMedianTeams = new Set(
-    [...projectedWithScores]
-      .sort((a, b) => Math.abs(Number(a.projectionAverage) - projectedMedian) - Math.abs(Number(b.projectionAverage) - projectedMedian))
-      .slice(0, 2)
-      .map(s => s.teamId)
-  );
-  const medianCloseThreshold = Number(scoreboard.medianCloseThreshold ?? 6);
+  // A team is "near median" when its simulated odds of finishing above the
+  // league median are close to a coin flip.
+  const NEAR_MEDIAN_MIN = 35;
+  const NEAR_MEDIAN_MAX = 65;
+  const aboveMedianOdds = s => s.aboveMedianProbability == null ? null : Number(s.aboveMedianProbability);
   const projectedMedianEdgeTeams = new Set(
-    projectedWithScores
-      .filter(s => Math.abs(Number(s.projectionAverage) - projectedMedian) <= medianCloseThreshold)
+    scores
+      .filter(s => aboveMedianOdds(s) != null && aboveMedianOdds(s) >= NEAR_MEDIAN_MIN && aboveMedianOdds(s) <= NEAR_MEDIAN_MAX)
       .map(s => s.teamId)
   );
-  closestToMedianTeams.forEach(teamId => projectedMedianEdgeTeams.add(teamId));
+  const medianDotClass = s => {
+    const odds = aboveMedianOdds(s);
+    if (odds == null) return "";
+    if (projectedMedianEdgeTeams.has(s.teamId)) return "projection-dot yellow";
+    return odds > NEAR_MEDIAN_MAX ? "projection-dot green" : "projection-dot red";
+  };
 
   return (
     <main className="site">
@@ -364,9 +365,9 @@ function App() {
             const a = teams[0], b = teams[1];
             if (!a || !b) return null;
             return <article className="matchup" key={matchupId}>
-              <div className={a.score >= b.score ? "team winning" : "team"}><span className="matchup-team-name"><TeamLogo src={teamLogos[a.teamId]} />{a.team}</span><strong className={scoreSort === "projected" ? "score-value projected-score" : "score-value"}><span className={projectedMedianEdgeTeams.has(a.teamId) ? "projection-dot yellow" : (Number.isFinite(Number(a.projectionAverage)) && Number.isFinite(projectedMedian) ? (Number(a.projectionAverage) >= projectedMedian ? "projection-dot green" : "projection-dot red") : "")} aria-hidden="true"></span>{money(scoreSort === "projected" ? a.projectionAverage : a.score)}</strong>{scoreSort === "projected" ? <span className="actual-score-muted">{money(a.score)} ACT</span> : null}<small>PROJ {a.projectionTrend === "up" ? <span className="projection-trend up" aria-label="Projection trending up">↑</span> : a.projectionTrend === "down" ? <span className="projection-trend down" aria-label="Projection trending down">↓</span> : null}{a.projectionAverage != null ? money(a.projectionAverage) : "—"}{a.winProbability != null ? <em className="matchup-probability">WIN {money(a.winProbability)}%</em> : null}</small></div>
+              <div className={a.score >= b.score ? "team winning" : "team"}><span className="matchup-team-name"><TeamLogo src={teamLogos[a.teamId]} />{a.team}</span><strong className={scoreSort === "projected" ? "score-value projected-score" : "score-value"}><span className={medianDotClass(a)} aria-hidden="true"></span>{money(scoreSort === "projected" ? a.projectionAverage : a.score)}</strong>{scoreSort === "projected" ? <span className="actual-score-muted">{money(a.score)} ACT</span> : null}<small>PROJ {a.projectionTrend === "up" ? <span className="projection-trend up" aria-label="Projection trending up">↑</span> : a.projectionTrend === "down" ? <span className="projection-trend down" aria-label="Projection trending down">↓</span> : null}{a.projectionAverage != null ? money(a.projectionAverage) : "—"}{a.winProbability != null ? <em className="matchup-probability">WIN {money(a.winProbability)}%</em> : null}</small></div>
               <div className="versus">vs</div>
-              <div className={b.score >= a.score ? "team winning" : "team"}><span className="matchup-team-name"><TeamLogo src={teamLogos[b.teamId]} />{b.team}</span><strong className={scoreSort === "projected" ? "score-value projected-score" : "score-value"}><span className={projectedMedianEdgeTeams.has(b.teamId) ? "projection-dot yellow" : (Number.isFinite(Number(b.projectionAverage)) && Number.isFinite(projectedMedian) ? (Number(b.projectionAverage) >= projectedMedian ? "projection-dot green" : "projection-dot red") : "")} aria-hidden="true"></span>{money(scoreSort === "projected" ? b.projectionAverage : b.score)}</strong>{scoreSort === "projected" ? <span className="actual-score-muted">{money(b.score)} ACT</span> : null}<small>PROJ {b.projectionTrend === "up" ? <span className="projection-trend up" aria-label="Projection trending up">↑</span> : b.projectionTrend === "down" ? <span className="projection-trend down" aria-label="Projection trending down">↓</span> : null}{b.projectionAverage != null ? money(b.projectionAverage) : "—"}{b.winProbability != null ? <em className="matchup-probability">WIN {money(b.winProbability)}%</em> : null}</small></div>
+              <div className={b.score >= a.score ? "team winning" : "team"}><span className="matchup-team-name"><TeamLogo src={teamLogos[b.teamId]} />{b.team}</span><strong className={scoreSort === "projected" ? "score-value projected-score" : "score-value"}><span className={medianDotClass(b)} aria-hidden="true"></span>{money(scoreSort === "projected" ? b.projectionAverage : b.score)}</strong>{scoreSort === "projected" ? <span className="actual-score-muted">{money(b.score)} ACT</span> : null}<small>PROJ {b.projectionTrend === "up" ? <span className="projection-trend up" aria-label="Projection trending up">↑</span> : b.projectionTrend === "down" ? <span className="projection-trend down" aria-label="Projection trending down">↓</span> : null}{b.projectionAverage != null ? money(b.projectionAverage) : "—"}{b.winProbability != null ? <em className="matchup-probability">WIN {money(b.winProbability)}%</em> : null}</small></div>
               {livePlayFeed.plays?.filter(p => Number(p.matchupId) === Number(matchupId) && Math.abs(Number(p.points)) >= 4).length ? (
                 <div className="key-plays" aria-label="Key plays">
                   <div className="key-plays-heading"><span>KEY PLAYS</span><em>4+ PT SWINGS</em></div>
@@ -397,7 +398,7 @@ function App() {
             <div className={projectedMedianEdgeTeams.has(s.teamId) ? "score-row median-near" : "score-row"}><span className="rank">{i + 1}</span><span className="score-team"><TeamLogo src={teamLogos[s.teamId]} />{s.team}{projectedMedianEdgeTeams.has(s.teamId) ? <em className="median-near-label">NEAR MEDIAN</em> : null}{i === 0 && !preGame ? <em className="raffle-badge">🎟️ {currentWeekComplete ? "RAFFLE SPOT" : "CURRENT LEADER"}</em> : null}</span><span className="score-opponent">vs {s.opponent}</span><strong className={scoreSort === "projected" ? "score-primary projected-score" : "score-primary"}>{money(scoreSort === "projected" ? s.projectionAverage : s.score)}</strong><span className="score-projection">{scoreSort === "projected" ? "ACT " + money(s.score) : "PROJ "}{scoreSort === "projected" ? "" : (s.projectionTrend === "up" ? "↑ " : s.projectionTrend === "down" ? "↓ " : "")}{scoreSort === "projected" ? "" : (s.projectionAverage != null ? money(s.projectionAverage) : "—")}<em className="score-probability">ABOVE MEDIAN {s.aboveMedianProbability != null ? money(s.aboveMedianProbability) : "—"}%</em></span></div>
           </React.Fragment>)}
         </div>
-        <p className="median-note">Median is always based on ESPN’s projected final scores. Teams within {money(medianCloseThreshold)} points of the projected median are highlighted in yellow (half a standard deviation of projected scores).</p>
+        <p className="median-note">The projected median is based on ESPN’s projected final scores. Odds of finishing above the median come from simulating the rest of the week, where the league median moves with every team’s result. Teams with a {NEAR_MEDIAN_MIN}–{NEAR_MEDIAN_MAX}% chance are highlighted in yellow.</p>
       </section>
 
 
