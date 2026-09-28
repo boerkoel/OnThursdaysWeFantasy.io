@@ -54,6 +54,12 @@ jobs:
         run: |
           VERIFY=$(curl -sS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" https://api.cloudflare.com/client/v4/user/tokens/verify)
           ACCOUNTS=$(curl -sS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts?per_page=50")
+          ACCOUNT_VERIFY=$(curl -sS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/tokens/verify")
+          node -e '
+            const t = process.argv[2], v = JSON.parse(process.argv[1]);
+            console.error("::notice::Account-owned token check: " + (v.success ? v.result.status : JSON.stringify(v.errors)) +
+              "; newer prefixed token format (cfxx_): " + /^cf[a-z]{2}_/.test(t));
+          ' "$ACCOUNT_VERIFY" "$CLOUDFLARE_API_TOKEN"
           node -e '
             const [verify, accounts, configured] = process.argv.slice(1);
             const mask = s => s.length > 8 ? s.slice(0, 4) + "…" + s.slice(-4) : "(" + s.length + " chars)";
