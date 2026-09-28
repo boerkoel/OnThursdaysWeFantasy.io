@@ -35,23 +35,29 @@ jobs:
         with:
           node-version: 24
       # The KV namespace is created once, then found by name on later runs.
+      # Uses Cloudflare's REST API directly (predictable JSON, errors shown).
       - name: Find or create the KV namespace
         run: |
           TITLE="otwf-notify-subs"
-          find_id() {
-            npx --yes wrangler@4 kv namespace list 2>/dev/null | node -e '
-              let s = ""; process.stdin.on("data", d => s += d).on("end", () => {
-                const json = s.slice(s.indexOf("["), s.lastIndexOf("]") + 1);
-                const match = JSON.parse(json || "[]").find(n => n.title === process.argv[1]);
-                process.stdout.write(match ? match.id : "");
-              });' "$TITLE"
-          }
-          ID=$(find_id)
+          API="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/storage/kv/namespaces"
+          AUTH="Authorization: Bearer $CLOUDFLARE_API_TOKEN"
+          LIST=$(curl -sS -H "$AUTH" "$API?per_page=100")
+          ID=$(echo "$LIST" | node -e '
+            let s = ""; process.stdin.on("data", d => s += d).on("end", () => {
+              const body = JSON.parse(s);
+              if (!body.success) { console.error("Listing KV namespaces failed:", JSON.stringify(body.errors)); process.exit(1); }
+              const match = body.result.find(n => n.title === process.argv[1]);
+              process.stdout.write(match ? match.id : "");
+            });' "$TITLE")
           if [ -z "$ID" ]; then
-            npx --yes wrangler@4 kv namespace create "$TITLE"
-            ID=$(find_id)
+            CREATED=$(curl -sS -X POST -H "$AUTH" -H "Content-Type: application/json" --data "{\"title\":\"$TITLE\"}" "$API")
+            ID=$(echo "$CREATED" | node -e '
+              let s = ""; process.stdin.on("data", d => s += d).on("end", () => {
+                const body = JSON.parse(s);
+                if (!body.success) { console.error("Creating the KV namespace failed:", JSON.stringify(body.errors)); process.exit(1); }
+                process.stdout.write(body.result.id);
+              });')
           fi
-          if [ -z "$ID" ]; then echo "Could not find or create the KV namespace."; exit 1; fi
           sed -i "s/KV_NAMESPACE_ID/$ID/" wrangler.toml
           echo "Using KV namespace $ID"
       - name: Deploy
