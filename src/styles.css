@@ -107,8 +107,6 @@
 .team-card-grid,.team-card-item,.team-card,.team-profile,.matchups,.matchup,.team,.matchup-team-name,.history-matchups,.history-matchup,.history-team{min-width:0}
 .team-card-item{width:100%}
 .team-card{max-width:100%}
-.mobile-profile{display:none}
-.desktop-profile{width:100%}
 .profile-identity{min-width:0}
 .profile-identity>div:last-child{min-width:0}
 .profile-identity h3{overflow-wrap:anywhere}
@@ -123,18 +121,12 @@
   .team{gap:7px}
   .team span{font-size:13px}
   .team strong{font-size:20px}
-  .mobile-profile{display:block;width:100%;min-width:0}
-  .desktop-profile{display:none}
-  .mobile-profile .team-profile{margin-top:10px}
   .profile-header{gap:10px;padding:16px}
   .profile-identity{gap:10px}
   .profile-identity h3{font-size:20px}
   .profile-metrics div{padding:13px 14px}
   .profile-history{padding:16px}
   .history-matchup{min-width:0}
-}
-@media(min-width:521px){
-  .mobile-profile{display:none}
 }
 
 
@@ -155,24 +147,10 @@
 }
 
 
-/* Keep the selected team profile directly beneath the row containing its card. */
-.team-card-layout-3,.team-card-layout-2,.team-card-layout-mobile{display:none}
-.team-card-layout-4{display:block}
+/* The selected team profile sits directly beneath the row containing its card
+   (rows are built in TeamCards.jsx to match the grid's column breakpoints). */
 .team-card-row{width:100%}
 .team-card-row>.team-profile{margin-top:14px;margin-bottom:12px}
-@media(max-width:1000px) and (min-width:801px){
-  .team-card-layout-4{display:none}
-  .team-card-layout-3{display:block}
-}
-@media(max-width:800px) and (min-width:521px){
-  .team-card-layout-4,.team-card-layout-3{display:none}
-  .team-card-layout-2{display:block}
-}
-@media(max-width:520px){
-  .team-card-layout-4,.team-card-layout-3,.team-card-layout-2{display:none}
-  .team-card-layout-mobile{display:block}
-  .team-card-row>.team-profile{display:none}
-}
 
 /* Weekly history: keep team names readable while separating winner and median status. */
 .history-team{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;padding:8px 9px;border:1px solid transparent;border-radius:10px}
@@ -456,3 +434,13 @@
 .rip-cause{color:#c7c9c1}
 .rip-obituary{white-space:pre-line;font-style:italic}
 @media(max-width:800px){.rip-grid{grid-template-columns:1fr}}
+/* League Wire: stories share one grid cell, so the box keeps the height of the longest one. */
+.marquee-stack{display:grid;min-width:0}
+.marquee-stack .marquee-story{grid-area:1/1;visibility:hidden;animation:none}
+.marquee-stack .marquee-story.active{visibility:visible;animation:marquee-fade .35s ease}
+/* Live touches */
+.live-pill.is-live,.marquee-label small.is-live{color:#e8f5d8;animation:live-pulse 1.6s ease-in-out infinite}
+@keyframes live-pulse{50%{opacity:.45}}
+.updated-ago{margin-left:6px;color:#777a72;font-weight:600;letter-spacing:.04em}
+.score-flash{animation:score-flash 2.5s ease-out}
+@keyframes score-flash{0%{color:#10110f;background:#e6c85c;border-radius:6px}100%{background:transparent}}

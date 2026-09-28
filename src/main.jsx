@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
-import initialScoreboard from "../data/current/scoreboard.json";
 import metadata from "../data/current/metadata.json";
 import standingsData from "../data/current/standings.json";
 import awards from "../data/current/awards.json";
@@ -9,294 +8,36 @@ import raffle from "../data/current/raffle.json";
 import playoffs from "../data/current/playoffs.json";
 import teamsData from "../data/current/teams.json";
 import weekly from "../data/current/weekly.json";
-import initialMarquee from "../data/current/marquee.json";
-import livePlays from "../data/current/live-plays.json";
-import initialGuillotine from "../data/current/guillotine.json";
-import obituaryData from "../data/current/obituaries.json";
-import obituariesMarkdown from "../content/obituaries.md?raw";
+import { fetchData, gameState, money, useLiveData } from "./lib/data.js";
+import { TeamLogo, UpdatedAgo, useChangedScores } from "./components/LiveBits.jsx";
+import LeagueWire from "./components/LeagueWire.jsx";
+import TeamCards from "./components/TeamCards.jsx";
+import { DeathWatch, RestInPeace } from "./components/DeathWatch.jsx";
 
-const money = (n) => Number(n).toFixed(2);
-// Handwritten obituaries from content/obituaries.md: one "## Team name"
-// section each, keyed by lowercase team name. HTML comments are notes only.
-const handwrittenObituaries = new Map(
-  obituariesMarkdown
-    .replace(/<!--[\s\S]*?-->/g, "")
-    .split(/^## /m)
-    .slice(1)
-    .map(section => {
-      const [heading, ...body] = section.split("\n");
-      return [heading.trim().toLowerCase(), body.join("\n").trim()];
-    })
-    .filter(([, text]) => text)
-);
-
-// NFL weeks run on Eastern time, so a Monday-night game stays on Monday.
-const formatDay = iso => iso ? new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric", timeZone: "America/New_York" }) : "—";
-
-// Live files published by vite.config.js; polled so the page stays current
-// between deploys without a full reload.
-const DATA_URL = import.meta.env.BASE_URL + "data/current/";
-
-async function fetchData(file) {
-  const response = await fetch(DATA_URL + file + "?ts=" + Date.now(), { cache: "no-store" });
-  if (!response.ok) throw new Error(`${file}: ${response.status}`);
-  return response.json();
-}
-
-function usePolledData(file, initial, intervalMs = 15000) {
-  const [data, setData] = useState(initial);
-  useEffect(() => {
-    let cancelled = false;
-    const load = async () => {
-      try {
-        const next = await fetchData(file);
-        if (!cancelled) setData(next);
-      } catch {
-        // Keep showing the last good snapshot.
-      }
-    };
-    load();
-    const timer = setInterval(load, intervalMs);
-    return () => {
-      cancelled = true;
-      clearInterval(timer);
-    };
-  }, [file, intervalMs]);
-  return data;
-}
-
-const TeamLogo = ({ src, size = "sm" }) => src ? <img src={src} alt="" className={`inline-team-logo ${size}`} /> : null;
-
-function TeamCards({ teams }) {
-  const [selectedId, setSelectedId] = useState(null);
-  const selected = teams.find(t => t.id === selectedId);
-
-  const Profile = ({ team }) => (
-    <article className="team-profile">
-      <div className="profile-header">
-        <div className="profile-identity">
-          <div className="profile-logo-wrap"><img src={team.logo} alt="" className="profile-logo" /></div>
-          <div>
-            <span className="section-kicker">2026 TEAM PROFILE</span>
-            <h3>{team.name.trim()}</h3>
-            <p>{team.abbrev} · {team.standings.wins}-{team.standings.losses}{team.standings.ties ? `-${team.standings.ties}` : ""} · {team.standings.streak?.length ? (team.standings.streak.type === "W" ? "Win" : "Loss") + " streak: " + team.standings.streak.length : "No streak"}</p>
-          </div>
-        </div>
-        <button className="profile-close" type="button" onClick={() => setSelectedId(null)}>×</button>
-      </div>
-
-      <div className="profile-metrics">
-        <div><small>POINTS FOR</small><strong>{money(team.standings.pointsFor)}</strong></div>
-        <div><small>POINTS AGAINST</small><strong>{money(team.standings.pointsAgainst)}</strong></div>
-        <div><small>AVERAGE</small><strong>{money(team.standings.games ? team.standings.pointsFor / team.standings.games : 0)}</strong></div>
-        <div><small>WIN %</small><strong>{money((team.standings.winPct || 0) * 100)}%</strong></div>
-      </div>
-
-      {team.startSit?.score != null ? (<div className="profile-startsit">
-        <div className="profile-startsit-heading">
-          <div><span className="section-kicker">LINEUP EFFICIENCY</span><strong>{money(team.startSit.score)}%</strong></div>
-          <span>{money(team.startSit.pointsLeft)} pts left on bench</span>
-        </div>
-        <div className="profile-startsit-bar"><span style={{width: Math.max(0, Math.min(100, Number(team.startSit.score))) + "%"}}></span></div>
-        <div className="profile-startsit-summary"><span>Actual <strong>{money(team.startSit.actualPoints)}</strong></span><span>Optimal <strong>{money(team.startSit.optimalPoints)}</strong></span><span>Wins lost to mistakes <strong>{team.startSit.winsLost ?? 0}</strong></span></div>
-        <div className="profile-startsit-weeks">
-          {team.startSit.weeks.map(w => <span key={w.week}>W{w.week} <strong>{money(w.efficiency)}%</strong></span>)}
-        </div>
-      </div>) : null}
-
-      {team.profileAnalytics?.positionFit ? (<div className="profile-roster-fit">
-        <div className="profile-roster-fit-heading"><span className="section-kicker">ROSTER COMPOSITION</span><strong>Strengths & Weaknesses</strong></div>
-        <div className="position-fit-grid">
-          <div><small>STRENGTHS</small><div className="position-fit-list">
-            {team.profileAnalytics.positionFit.strengths.length
-              ? team.profileAnalytics.positionFit.strengths.map(p => <span className="position-fit strength" key={p.position}><b>{p.position}</b><strong>{Math.abs(p.percent)}% more pts than league avg.</strong></span>)
-              : <span className="position-fit-empty">No standout strength</span>}
-          </div></div>
-          <div><small>WEAKNESSES</small><div className="position-fit-list">
-            {team.profileAnalytics.positionFit.needs.length
-              ? team.profileAnalytics.positionFit.needs.map(p => <span className="position-fit weakness" key={p.position}><b>{p.position}</b><strong>{Math.abs(p.percent)}% fewer pts than league avg.</strong></span>)
-              : <span className="position-fit-empty">No obvious need</span>}
-          </div></div>
-        </div>
-        <p className="profile-fit-note">Based on average scoring through completed weeks. League average is calculated across all teams.</p>
-      </div>) : null}
-
-      {team.profileAnalytics?.rosterFit ? (<div className="trade-section">
-        <div className="trade-section-heading"><span>🤝</span><div><small>TRADE DESK</small><strong>Potential Trade Partners</strong><em>Teams with complementary strengths and weaknesses</em></div></div>
-        <div className="trade-partner-list">
-          {team.profileAnalytics.rosterFit.partners?.length
-            ? team.profileAnalytics.rosterFit.partners.map(p => <div className="trade-partner" key={p.teamId}>
-                <strong>{p.team}</strong>
-                <span>They need {p.give?.map(x => x.position).join(" / ")} · You need {p.get?.map(x => x.position).join(" / ")}</span>
-              </div>)
-            : <span className="position-fit-empty">No obvious complementary trade partner yet.</span>}
-        </div>
-        {team.profileAnalytics.rosterFit.targets?.length ? <>
-          <div className="trade-section-heading trade-target-heading"><span>🎯</span><div><small>PLAYERS TO TARGET</small><strong>Potential Trade Targets</strong><em>League-wide: players currently riding another team's bench who would have helped your lineup</em></div></div>
-          <div className="trade-target-list">
-            {team.profileAnalytics.rosterFit.targets.map(p => <div className="trade-target" key={p.teamId + "-" + p.playerId}>
-              <div className="trade-target-info">
-                <strong>{p.player}{p.position ? `, ${p.position}` : ""}</strong>
-                <span>{p.team} has only started {p.startRate}% of the time</span>
-                <span>Needs: {p.otherNeeds?.length ? p.otherNeeds.map(x => x.position).join(" / ") : "None"}</span>
-              </div>
-              <div className="trade-target-impact">
-                <b>+{money(p.boost)} pts</b>
-                <em>Optimal lineup improvement</em>
-                <em>{(p.winsAdded ?? 0)} total wins added ({p.h2hWinsAdded ?? 0} H2H + {p.medianWinsAdded ?? 0} median)</em>{p.mutualTrade ? <em className="trade-mutual">↔ {p.mutualTrade.player} has been on your bench {p.mutualTrade.startRate != null ? (100 - p.mutualTrade.startRate) : 0}% of the time and would improve their optimal lineup by {money(p.mutualTrade.boost)} pts and {p.mutualTrade.winsAdded ?? 0} wins</em> : null}
-              </div>
-            </div>)}
-          </div>
-        </> : null}
-        {team.profileAnalytics.winWinTrades?.length ? <>
-          <div className="trade-section-heading trade-target-heading"><span>🤝</span><div><small>1-FOR-1 WIN-WIN TRADES</small><strong>Trades That Help Both Teams</strong><em>Historical simulation through completed weeks · each side gains a win, or 5+ optimal-lineup pts per week without losing one</em></div></div>
-          <div className="trade-target-list">
-            {team.profileAnalytics.winWinTrades.map((t, i) => <div className="trade-target win-win-trade" key={t.otherTeamId + "-" + t.givePlayerId + "-" + t.getPlayerId + "-" + i}>
-              <div className="trade-target-info">
-                <strong>Give {t.givePlayer}{t.givePosition ? `, ${t.givePosition}` : ""} <small>ROS #{t.giveRosRank}</small></strong>
-                <span>Get {t.getPlayer}{t.getPosition ? `, ${t.getPosition}` : ""} <small>ROS #{t.getRosRank}</small> from {t.otherTeam}</span>
-              </div>
-              <div className="trade-target-impact">
-                <b>Your historical optimal lineup: +{money(t.yourBoost)} pts</b>
-                <em>With {t.getPlayer} in your lineup all season, you would have gained {t.yourWinsAdded} wins ({t.yourH2hWinsAdded} H2H + {t.yourMedianWinsAdded} median)</em>
-                <em>{t.otherTeam}: +{money(t.theirBoost)} historical optimal-lineup pts · {t.theirWinsAdded} wins ({t.theirH2hWinsAdded} H2H + {t.theirMedianWinsAdded} median)</em>
-              </div>
-            </div>)}
-          </div>
-        </> : null}
-      </div>) : null}
-
-      {team.profileAnalytics?.waiverTargets ? (<div className="trade-section">
-        <div className="trade-section-heading"><span>📋</span><div><small>WAIVER WIRE</small><strong>Waiver Targets</strong><em>Available players who would have added wins · best possible lineup with vs. without them, weeks they were unrostered</em></div></div>
-        {team.profileAnalytics.waiverTargets.length ? <div className="trade-target-list">
-          {team.profileAnalytics.waiverTargets.map(p => <div className="trade-target" key={p.playerId}>
-            <div className="trade-target-info">
-              <strong>{p.player}{p.position ? `, ${p.position}` : ""}</strong>
-              <span>{p.weeks.map(w => `W${w.week}: ${money(w.points)} pts`).join(" · ")}</span>
-            </div>
-            <div className="trade-target-impact">
-              <b>+{money(p.boost)} pts</b>
-              <em>{p.winsAdded} {p.winsAdded === 1 ? "win" : "wins"} added ({p.h2hWinsAdded} H2H + {p.medianWinsAdded} median)</em>
-            </div>
-          </div>)}
-        </div> : <span className="position-fit-empty">No available player would have added a win so far.</span>}
-      </div>) : null}
-
-      {team.profileAnalytics ? (<div className="profile-insights">
-        <div className="profile-insights-heading"><span className="section-kicker">TEAM PULSE</span><strong>Season So Far</strong></div>
-        <div className="profile-insight-grid">
-          <div className="profile-insight">
-            <span className="profile-insight-icon">🎯</span>
-            <div><small>OPTIMAL LINEUP</small><strong>{team.profileAnalytics.optimalLineup ? `${money(team.profileAnalytics.optimalLineup.pointsLeft)} pts left on bench` : "—"}</strong><em>{team.profileAnalytics.optimalLineup ? `${money(team.profileAnalytics.optimalLineup.efficiency)}% lineup efficiency · ${money(team.profileAnalytics.optimalLineup.optimalPoints)} optimal pts` : "No completed weeks yet."}</em></div>
-          </div>
-          <div className="profile-insight">
-            <span className="profile-insight-icon">{team.profileAnalytics.trend?.direction === "up" ? "🔥" : team.profileAnalytics.trend?.direction === "down" ? "❄️" : "➡️"}</span>
-            <div><small>{team.profileAnalytics.trend?.direction === "up" ? "HEATING UP" : team.profileAnalytics.trend?.direction === "down" ? "COOLING OFF" : "TRENDING STEADY"}</small><strong>{team.profileAnalytics.trend ? `${team.profileAnalytics.trend.slope > 0 ? "+" : ""}${money(team.profileAnalytics.trend.slope)} pts/week` : "—"}</strong><em>{team.profileAnalytics.trend ? `Last ${team.profileAnalytics.trend.weeks.length} weeks · ${team.profileAnalytics.trend.scores.map(s => money(s)).join(" → ")}` : "No completed weeks yet."}</em></div>
-          </div>
-          <div className="profile-insight">
-            <span className="profile-insight-icon">{(team.profileAnalytics.luck?.difference || 0) > 0.2 ? "🍀" : (team.profileAnalytics.luck?.difference || 0) < -0.2 ? "💀" : "⚖️"}</span>
-            <div><small>LUCK METER</small><strong>{team.profileAnalytics.luck ? `${team.profileAnalytics.luck.difference >= 0 ? "+" : ""}${money(team.profileAnalytics.luck.difference)} wins` : "—"}</strong><em>{team.profileAnalytics.luck ? `${money(team.profileAnalytics.luck.actualWins)} actual · ${money(team.profileAnalytics.luck.expectedWins)} expected` : "No completed weeks yet."}</em></div>
-          </div>
-        </div>
-      </div>) : null}
-
-      {team.playerAwards && (<div className="profile-awards">
-        <div className="profile-awards-heading"><span className="section-kicker">PLAYER AWARDS</span><strong>Season So Far</strong></div>
-        <div className="profile-award-grid">
-          {team.playerAwards.mvp ? <div className="profile-award"><span>🏆</span><div><small>MVP</small><strong>{team.playerAwards.mvp.player}</strong><em>{money(team.playerAwards.mvp.points)} starter pts · #{team.playerAwards.mvp.seasonRank} on team</em></div></div> : null}
-          {team.playerAwards.bestDraftValue ? <div className="profile-award"><span>💰</span><div><small>BEST DRAFT VALUE</small><strong>{team.playerAwards.bestDraftValue.player}</strong><em>Drafted #{team.playerAwards.bestDraftValue.draftPick} → ROS #{team.playerAwards.bestDraftValue.rosRank} · +{team.playerAwards.bestDraftValue.valueGap} spots</em></div></div> : null}
-          {team.playerAwards.worstDraftValue ? <div className="profile-award"><span>📉</span><div><small>WORST DRAFT VALUE</small><strong>{team.playerAwards.worstDraftValue.player}</strong><em>Drafted #{team.playerAwards.worstDraftValue.draftPick} → ROS #{team.playerAwards.worstDraftValue.rosRank} · {team.playerAwards.worstDraftValue.valueGap} spots</em></div></div> : null}
-          {team.playerAwards.boomMachine ? <div className="profile-award"><span>💥</span><div><small>BOOM MACHINE</small><strong>{team.playerAwards.boomMachine.player}</strong><em>{money(team.playerAwards.boomMachine.score)} pts · Week {team.playerAwards.boomMachine.week}</em></div></div> : null}
-          {team.playerAwards.mostConsistent ? <div className="profile-award"><span>🎯</span><div><small>MOST CONSISTENT</small><strong>{team.playerAwards.mostConsistent.player}</strong><em>{money(team.playerAwards.mostConsistent.variance)} pt weekly SD</em></div></div> : null}
-          {team.playerAwards.lateRoundWizard ? <div className="profile-award"><span>🧙</span><div><small>LATE-ROUND WIZARD</small><strong>{team.playerAwards.lateRoundWizard.player}</strong><em>Round {team.playerAwards.lateRoundWizard.round} · Drafted #{team.playerAwards.lateRoundWizard.draftPick} → ROS #{team.playerAwards.lateRoundWizard.rosRank} · +{team.playerAwards.lateRoundWizard.valueGap}</em></div></div> : null}
-          {team.playerAwards.boomBust ? <div className="profile-award"><span>🎰</span><div><small>BOOM / BUST</small><strong>{team.playerAwards.boomBust.player}</strong><em>{money(team.playerAwards.boomBust.range)} pt range</em></div></div> : null}
-        </div>
-      </div>)}
-
-      <div className="profile-history">
-        <div className="profile-history-heading"><span className="section-kicker">GAME LOG</span><strong>Weekly Matchups</strong></div>
-        {team.weeklyResults?.length ? team.weeklyResults.map(w => (
-          <div className={w.result === "W" ? "profile-week win" : "profile-week loss"} key={w.week}>
-            <span className="week-number">W{w.week}</span>
-            <div><strong>{w.result}</strong><span>vs {w.opponent}</span></div>
-            <strong>{money(w.score)}–{money(w.opponentScore)}</strong>
-          </div>
-        )) : <p className="profile-empty">No completed games yet.</p>}
-      </div>
-    </article>
-  );
-
-  const renderCard = (team, i) => {
-    const s = team.standings || {};
-    const avg = s.games ? s.pointsFor / s.games : 0;
-    return (
-      <div className="team-card-item" key={team.id}>
-        <button className={selectedId === team.id ? "team-card selected" : "team-card"} type="button" aria-expanded={selectedId === team.id} onClick={() => setSelectedId(selectedId === team.id ? null : team.id)}>
-          <div className="card-top"><span className="card-rank">#{i + 1}</span><span className="card-season">2026</span></div>
-          <div className="card-logo-wrap"><img src={team.logo} alt="" className="team-logo" /></div>
-          <h3>{team.name.trim()}</h3>
-          <div className="card-record">{s.wins}-{s.losses}{s.ties ? `-${s.ties}` : ""} <span>·</span> {money(avg)} PPG</div>
-          <div className="card-stats">
-            <span><small>PF</small><strong>{money(s.pointsFor)}</strong></span>
-            <span><small>PA</small><strong>{money(s.pointsAgainst)}</strong></span>
-            <span><small>STREAK</small><strong>{s.streak?.length ? s.streak.type + s.streak.length : "—"}</strong></span>
-          </div>
-          <div className="card-signals" aria-label="Team pulse">
-            {team.profileAnalytics?.trend?.direction === "up" ? <span title="Heating up">🔥</span> : team.profileAnalytics?.trend?.direction === "down" ? <span title="Cooling off">❄️</span> : null}
-            {team.profileAnalytics?.luck?.difference > 0.2 ? <span title="Lucky">🍀</span> : team.profileAnalytics?.luck?.difference < -0.2 ? <span title="Unlucky">💀</span> : null}
-          </div>
-          <div className="card-footer"><span>{selectedId === team.id ? "CLOSE PROFILE" : "VIEW PROFILE"}</span><span>↗</span></div>
-        </button>
-        {selectedId === team.id ? <div className="mobile-profile"><Profile team={team} /></div> : null}
-      </div>
-    );
-  };
-
-  const renderDesktopRows = (columns, className) => {
-    const rows = [];
-    for (let i = 0; i < teams.length; i += columns) {
-      const rowTeams = teams.slice(i, i + columns);
-      rows.push(
-        <div className="team-card-row" key={i}>
-          <div className={className}>
-            {rowTeams.map((team, offset) => renderCard(team, i + offset))}
-          </div>
-          {selected && rowTeams.some(team => team.id === selectedId) ? <Profile team={selected} /> : null}
-        </div>
-      );
-    }
-    return rows;
-  };
-
+// One side of a live matchup card.
+function MatchupTeam({ team, opponent, logo, projected, flashing, dotClass }) {
+  const trend = team.projectionTrend === "up" ? <span className="projection-trend up" aria-label="Projection trending up">↑</span>
+    : team.projectionTrend === "down" ? <span className="projection-trend down" aria-label="Projection trending down">↓</span> : null;
   return (
-    <>
-      <div className="team-card-layout team-card-layout-4">
-        {renderDesktopRows(4, "team-card-grid")}
-      </div>
-      <div className="team-card-layout team-card-layout-3">
-        {renderDesktopRows(3, "team-card-grid")}
-      </div>
-      <div className="team-card-layout team-card-layout-2">
-        {renderDesktopRows(2, "team-card-grid")}
-      </div>
-      <div className="team-card-layout team-card-layout-mobile">
-        <div className="team-card-grid">
-          {teams.map((team, i) => renderCard(team, i))}
-        </div>
-      </div>
-    </>
+    <div className={team.score >= opponent.score ? "team winning" : "team"}>
+      <span className="matchup-team-name"><TeamLogo src={logo} />{team.team}</span>
+      <strong className={["score-value", projected ? "projected-score" : "", flashing ? "score-flash" : ""].join(" ").trim()}>
+        <span className={dotClass} aria-hidden="true"></span>{money(projected ? team.projectionAverage : team.score)}
+      </strong>
+      {projected ? <span className="actual-score-muted">{money(team.score)} ACT</span> : null}
+      <small>PROJ {trend}{team.projectionAverage != null ? money(team.projectionAverage) : "—"}{team.winProbability != null ? <em className="matchup-probability">WIN {money(team.winProbability)}%</em> : null}</small>
+    </div>
   );
 }
 
 function App() {
-  const scoreboard = usePolledData("scoreboard.json", initialScoreboard);
+  const live = useLiveData();
+  const { scoreboard, guillotine } = live;
+  const livePlayFeed = live.livePlays;
   const scores = scoreboard.scores || [];
   const [scoreSort, setScoreSort] = useState("current");
-  const marqueeData = usePolledData("marquee.json", initialMarquee);
-  const marqueeStories = marqueeData.stories || [];
-  const [marqueeIndex, setMarqueeIndex] = useState(0);
-  const livePlayFeed = usePolledData("live-plays.json", livePlays);
-  const guillotine = usePolledData("guillotine.json", initialGuillotine);
+  const status = gameState(scoreboard);
+  const flashingScores = useChangedScores(scores);
   // A matchup shows its 5 most recent 4+ point swings from the last 5 hours.
   const KEY_PLAY_MAX_AGE_MS = 5 * 60 * 60 * 1000;
   const keyPlaysFor = matchupId => (livePlayFeed.plays || [])
@@ -327,11 +68,6 @@ function App() {
       requestAnimationFrame(() => window.scrollTo(0, Number(y)));
     }
   }, []);
-  useEffect(() => {
-    if (marqueeStories.length < 2) return;
-    const timer = setInterval(() => setMarqueeIndex(i => (i + 1) % marqueeStories.length), 6000);
-    return () => clearInterval(timer);
-  }, [marqueeStories.length]);
   const sortedScores = [...scores].sort((a, b) => Number(b.score) - Number(a.score));
   const projectedSortScores = [...scores].sort((a, b) => {
     const aProjection = Number(a.projectionAverage);
@@ -360,7 +96,11 @@ function App() {
   const NEAR_MEDIAN_MIN = 30;
   const NEAR_MEDIAN_MAX = 70;
   const aboveMedianOdds = s => s.aboveMedianProbability == null ? null : Number(s.aboveMedianProbability);
-  const projectedMedianEdgeTeams = new Set(scores.filter(s => s.nearMedian).map(s => s.teamId));
+  // Older snapshots predate the nearMedian flag; fall back to the odds band.
+  const hasNearMedianFlag = scores.some(s => "nearMedian" in s);
+  const projectedMedianEdgeTeams = new Set(scores
+    .filter(s => hasNearMedianFlag ? s.nearMedian : aboveMedianOdds(s) >= NEAR_MEDIAN_MIN && aboveMedianOdds(s) <= NEAR_MEDIAN_MAX)
+    .map(s => s.teamId));
   const medianDotClass = s => {
     const odds = aboveMedianOdds(s);
     if (odds == null) return "";
@@ -379,34 +119,30 @@ function App() {
         <nav><a href="#scores">Scores</a><a href="#history">History</a><a href="#death-watch">Death Watch</a><a href="#playoffs">Playoffs</a><a href="#ultimate-loser">Ultimate Loser</a><a href="#raffle">Raffle</a><a href="#standings">Standings</a><a href="#awards">Awards</a></nav>
       </header>
 
-<div className="data-timestamp">LAST REFRESHED <strong>{scoreboard.lastUpdated ? new Date(scoreboard.lastUpdated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "—"}</strong></div>
+      <div className="data-timestamp">LAST REFRESHED <strong>{scoreboard.lastUpdated ? new Date(scoreboard.lastUpdated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "—"}</strong> <UpdatedAgo iso={scoreboard.lastUpdated} /></div>
 
 
       <section className="hero-strip">
-        <div className="hero-main"><span className="section-kicker">2026 SEASON</span><h2>Week {scoreboard.week}</h2><p>{preGame ? "The Week is set. Scores will appear here once the games begin." : "The league is live. Here’s how everyone is doing."}</p></div>
+        <div className="hero-main"><span className="section-kicker">2026 SEASON</span><h2>Week {scoreboard.week}</h2><p>{status === "NOT STARTED" ? "The week is set. Scores will appear here once the games begin."
+          : status === "LIVE" ? "The league is live. Here’s how everyone is doing."
+          : status === "FINAL" ? "Every game is final. Here’s how the week shook out."
+          : "Between games. Here’s where everyone stands."}</p></div>
         <div className="hero-stat"><strong>{scoreboard.projectedMedian != null ? money(scoreboard.projectedMedian) : "—"}</strong><span>Projected median</span></div>
       </section>
 
-      {marqueeStories.length ? <section className="league-marquee" aria-label="League Wire">
-        <div className="marquee-label"><span>⚡</span><strong>LEAGUE WIRE</strong><small>LIVE</small></div>
-        <div className="marquee-story" key={marqueeStories[marqueeIndex % marqueeStories.length].text}>
-          <b>{marqueeStories[marqueeIndex % marqueeStories.length].type}</b>
-          <span>{marqueeStories[marqueeIndex % marqueeStories.length].text}</span>
-        </div>
-        <div className="marquee-dots">{marqueeStories.map((story, i) => <button key={i} type="button" className={i === marqueeIndex % marqueeStories.length ? "active" : ""} aria-label={"Show " + story.type} onClick={() => setMarqueeIndex(i)}></button>)}</div>
-      </section> : null}
+      <LeagueWire stories={live.marquee.stories || []} status={status} />
 
       <section id="scores" className="section">
-        <div className="section-heading"><div><span className="section-kicker">RIGHT NOW</span><h2>Week {scoreboard.week} Scores</h2></div><span className="live-pill">{preGame ? "● NOT STARTED" : "● LIVE"}</span></div>
+        <div className="section-heading"><div><span className="section-kicker">RIGHT NOW</span><h2>Week {scoreboard.week} Scores</h2></div><span className={status === "LIVE" ? "live-pill is-live" : "live-pill"}>● {status}</span></div>
         <div className="matchups">
           {[...new Set(scores.map(s => s.matchupId))].map(matchupId => {
             const teams = scores.filter(s => s.matchupId === matchupId);
             const a = teams[0], b = teams[1];
             if (!a || !b) return null;
             return <article className="matchup" key={matchupId}>
-              <div className={a.score >= b.score ? "team winning" : "team"}><span className="matchup-team-name"><TeamLogo src={teamLogos[a.teamId]} />{a.team}</span><strong className={scoreSort === "projected" ? "score-value projected-score" : "score-value"}><span className={medianDotClass(a)} aria-hidden="true"></span>{money(scoreSort === "projected" ? a.projectionAverage : a.score)}</strong>{scoreSort === "projected" ? <span className="actual-score-muted">{money(a.score)} ACT</span> : null}<small>PROJ {a.projectionTrend === "up" ? <span className="projection-trend up" aria-label="Projection trending up">↑</span> : a.projectionTrend === "down" ? <span className="projection-trend down" aria-label="Projection trending down">↓</span> : null}{a.projectionAverage != null ? money(a.projectionAverage) : "—"}{a.winProbability != null ? <em className="matchup-probability">WIN {money(a.winProbability)}%</em> : null}</small></div>
+              <MatchupTeam team={a} opponent={b} logo={teamLogos[a.teamId]} projected={scoreSort === "projected"} flashing={flashingScores.has(a.teamId)} dotClass={medianDotClass(a)} />
               <div className="versus">vs</div>
-              <div className={b.score >= a.score ? "team winning" : "team"}><span className="matchup-team-name"><TeamLogo src={teamLogos[b.teamId]} />{b.team}</span><strong className={scoreSort === "projected" ? "score-value projected-score" : "score-value"}><span className={medianDotClass(b)} aria-hidden="true"></span>{money(scoreSort === "projected" ? b.projectionAverage : b.score)}</strong>{scoreSort === "projected" ? <span className="actual-score-muted">{money(b.score)} ACT</span> : null}<small>PROJ {b.projectionTrend === "up" ? <span className="projection-trend up" aria-label="Projection trending up">↑</span> : b.projectionTrend === "down" ? <span className="projection-trend down" aria-label="Projection trending down">↓</span> : null}{b.projectionAverage != null ? money(b.projectionAverage) : "—"}{b.winProbability != null ? <em className="matchup-probability">WIN {money(b.winProbability)}%</em> : null}</small></div>
+              <MatchupTeam team={b} opponent={a} logo={teamLogos[b.teamId]} projected={scoreSort === "projected"} flashing={flashingScores.has(b.teamId)} dotClass={medianDotClass(b)} />
               {keyPlaysFor(matchupId).length ? (
                 <div className="key-plays" aria-label="Key plays">
                   <div className="key-plays-heading"><span>KEY PLAYS</span><em>4+ PT SWINGS</em></div>
@@ -434,41 +170,14 @@ function App() {
         </div>
         {displayScores.map((s, i) => <React.Fragment key={s.teamId}>
             {i === Math.floor(displayScores.length / 2) && <div className="median-line"><span>PROJECTED MEDIAN {scoreboard.projectedMedian != null ? money(scoreboard.projectedMedian) : "—"}</span></div>}
-            <div className={projectedMedianEdgeTeams.has(s.teamId) ? "score-row median-near" : "score-row"}><span className="rank">{i + 1}</span><span className="score-team"><TeamLogo src={teamLogos[s.teamId]} />{s.team}{projectedMedianEdgeTeams.has(s.teamId) ? <em className="median-near-label">NEAR MEDIAN</em> : null}{i === 0 && !preGame ? <em className="raffle-badge">🎟️ {currentWeekComplete ? "RAFFLE SPOT" : "CURRENT LEADER"}</em> : null}</span><span className="score-opponent">vs {s.opponent}</span><strong className={scoreSort === "projected" ? "score-primary projected-score" : "score-primary"}>{money(scoreSort === "projected" ? s.projectionAverage : s.score)}</strong><span className="score-projection">{scoreSort === "projected" ? "ACT " + money(s.score) : "PROJ "}{scoreSort === "projected" ? "" : (s.projectionTrend === "up" ? "↑ " : s.projectionTrend === "down" ? "↓ " : "")}{scoreSort === "projected" ? "" : (s.projectionAverage != null ? money(s.projectionAverage) : "—")}<em className="score-probability">ABOVE MEDIAN {s.aboveMedianProbability != null ? money(s.aboveMedianProbability) : "—"}%</em></span></div>
+            <div className={projectedMedianEdgeTeams.has(s.teamId) ? "score-row median-near" : "score-row"}><span className="rank">{i + 1}</span><span className="score-team"><TeamLogo src={teamLogos[s.teamId]} />{s.team}{projectedMedianEdgeTeams.has(s.teamId) ? <em className="median-near-label">NEAR MEDIAN</em> : null}{i === 0 && !preGame ? <em className="raffle-badge">🎟️ {currentWeekComplete ? "RAFFLE SPOT" : "CURRENT LEADER"}</em> : null}</span><span className="score-opponent">vs {s.opponent}</span><strong className={["score-primary", scoreSort === "projected" ? "projected-score" : "", flashingScores.has(s.teamId) ? "score-flash" : ""].join(" ").trim()}>{money(scoreSort === "projected" ? s.projectionAverage : s.score)}</strong><span className="score-projection">{scoreSort === "projected" ? "ACT " + money(s.score) : "PROJ "}{scoreSort === "projected" ? "" : (s.projectionTrend === "up" ? "↑ " : s.projectionTrend === "down" ? "↓ " : "")}{scoreSort === "projected" ? "" : (s.projectionAverage != null ? money(s.projectionAverage) : "—")}<em className="score-probability">ABOVE MEDIAN {s.aboveMedianProbability != null ? money(s.aboveMedianProbability) : "—"}%</em></span></div>
           </React.Fragment>)}
         </div>
         <p className="median-note">The projected median is based on ESPN’s projected final scores. Odds of finishing above the median come from simulating the rest of the week, where the league median moves with every team’s result. Highlighted in yellow: the teams projected just above and just below the median, plus any team with a {NEAR_MEDIAN_MIN}–{NEAR_MEDIAN_MAX}% chance.</p>
       </section>
 
 
-      {guillotine.teams?.length ? <section id="death-watch" className="section">
-        <div className="section-heading">
-          <div><span className="section-kicker">{(guillotine.leagueName || "Guillotine league").toUpperCase()}</span><h2>Week {guillotine.week} Death Watch</h2></div>
-          <span className="record-count">{guillotine.teams.length} TEAMS ALIVE</span>
-        </div>
-        <p className="raffle-intro">Our guillotine side league: the lowest score each week gets chopped. Chop odds come from {Number(guillotine.simulations || 0).toLocaleString()} simulations of the rest of the week.</p>
-        <div className="award-grid">
-          {guillotine.teams.filter(t => t.chopProbability > 0).slice(0, 3).map((t, i) => <article className="award-card" key={t.teamId}>
-            <span>{i === 0 ? "🪓" : "😰"}</span>
-            <small>{i === 0 ? "ON THE CHOPPING BLOCK" : `#${i + 1} MOST AT RISK`}</small>
-            <strong>{t.team}</strong>
-            <b className="chop-odds">{money(t.chopProbability)}% chance of being chopped</b>
-            <p>{money(t.score)} pts{t.playersLeft ? ` · projected ${money(t.projected)}` : " · final"}</p>
-            <p>{t.playersLeft ? "Still to play: " + t.remaining.map(p => p.name + (p.game ? ` (${p.game})` : "")).join(", ") : "No players left to play"}</p>
-            {t.survivalNeed ? <p>Needs {money(t.survivalNeed.points)} more pts to pass {t.survivalNeed.passTeam}</p> : null}
-          </article>)}
-        </div>
-        <h3 className="survival-heading">Survival odds</h3>
-        <div className="standings-table">
-          {guillotine.teams.map((t, i) => <div className="standing-row" key={t.teamId}>
-            <span>{i + 1}</span>
-            <strong>{t.team}</strong>
-            <span>{t.playersLeft ? `${money(t.score)} · ${t.playersLeft} left` : `${money(t.score)} · final`}</span>
-            <span>{money(100 - t.chopProbability)}% survive</span>
-          </div>)}
-        </div>
-        {guillotine.chopped?.length ? <p className="median-note">Already chopped: {guillotine.chopped.map(c => `${c.team} (Week ${c.week})`).join(" · ")} · <a href="#rip">Rest in peace</a></p> : null}
-      </section> : null}
+      <DeathWatch guillotine={guillotine} />
 
       <section id="history" className="section">
         <div className="section-heading">
@@ -638,7 +347,7 @@ function App() {
       <section id="teams" className="section">
         <div className="section-heading">
           <div><span className="section-kicker">THE ROSTER ROOM</span><h2>Team Cards</h2></div>
-          <span className="record-count">12 TEAMS · 2026</span>
+          <span className="record-count">{(teamsData.teams || []).length} TEAMS · 2026</span>
         </div>
         <p className="team-cards-intro">Every manager gets a baseball-card-style snapshot of the season. Click a card to open the full team profile.</p>
         <TeamCards teams={teamsData.teams || []} />
@@ -687,28 +396,7 @@ function App() {
           {standingsData.standings.map((t, i) => <div className="standing-row" key={t.id}><span>{i+1}</span><strong><TeamLogo src={teamLogos[t.id]} />{t.name}</strong><span>{t.wins}-{t.losses}{t.ties ? `-${t.ties}` : ""}</span><span>{money(t.pointsFor)} PF</span></div>)}
         </div>
       </section>
-      {guillotine.chopped?.length ? <section id="rip" className="section">
-        <div className="section-heading">
-          <div><span className="section-kicker">{(guillotine.leagueName || "Guillotine league").toUpperCase()}</span><h2>Rest in Peace</h2></div>
-          <span className="record-count">{guillotine.chopped.length} CHOPPED</span>
-        </div>
-        <div className="award-grid rip-grid">
-          {guillotine.chopped.map(c => {
-            // Handwritten obituaries win over generated ones.
-            const obituary = handwrittenObituaries.get(c.team.trim().toLowerCase()) ||
-              (obituaryData.obituaries || []).find(o => o.teamId === c.teamId && o.week === c.week)?.text;
-            return <article className="award-card" key={c.teamId}>
-              <span>🪦</span>
-              <small>{formatDay(guillotine.draftDate)} — {formatDay(c.diedOn)}</small>
-              <strong>{c.team}</strong>
-              <p className="rip-cause">Chopped in Week {c.week} with {money(c.finalScore)} pts{c.survivedBy ? `, ${money(c.margin)} short of ${c.survivedBy.team}` : ""}.</p>
-              {obituary
-                ? obituary.split(/\n\s*\n/).map((paragraph, i) => <p className="rip-obituary" key={i}>{paragraph.replace(/\s*\n\s*/g, " ")}</p>)
-                : <p className="rip-obituary">Obituary pending.</p>}
-            </article>;
-          })}
-        </div>
-      </section> : null}
+      <RestInPeace guillotine={guillotine} />
       <footer>On Thursdays We Fantasy · 2026 · Officially unofficial.</footer>
     </main>
   );
