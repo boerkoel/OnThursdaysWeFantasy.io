@@ -16,6 +16,7 @@ const fantasyProsRosByName = new Map(
   (fantasyProsRos?.rankings || []).map(p => [normalizePlayerName(p.name), Number(p.rank)])
 );
 const freeAgentData = await readJson("data/current/free-agents.json").catch(() => null);
+const guillotineData = await readJson("data/current/guillotine.json").catch(() => null);
 const liveScoringData = await readJson("data/current/mLiveScoring.json");
 const boxscoreData = await readJson("data/current/mBoxscore.json");
 const logoMap = await readJson("data/current/logo-map.json").catch(() => ({}));
@@ -284,6 +285,7 @@ function buildMarqueeStories() {
   const falling=currentScores.filter(s=>s.projectionTrend==="down").sort((a,b)=>Number(a.projectionAverage)-Number(b.projectionAverage))[0];
   if(falling) add("STOCK FALLING","📉 Stock falling: " + possessive(falling.team) + " ESPN projection is trending down.",20);
   addLineupMistakeStories(add, matchupStates, regrets);
+  addDeathWatchStory(add);
   addPrimetimeStories(add, matchupStates);
 
   const biggestLead=matchupStates.filter(x=>!x.m.completed).sort((a,b)=>b.diff-a.diff)[0];
@@ -292,6 +294,24 @@ function buildMarqueeStories() {
   else if(close) add("LEAGUE GOSSIP","👀 League gossip: " + close.a.team + " and " + close.b.team + " are separated by " + money(close.diff) + " pts. Somebody's Sunday just got interesting.",26-close.diff);
   return stories.filter((story,i,arr)=>arr.findIndex(x=>x.text===story.text)===i).sort((a,b)=>b.score-a.score);
 }
+// The guillotine side league's most endangered team this week.
+function addDeathWatchStory(add) {
+  if (Number(guillotineData?.week) !== currentWeek) return;
+  const atRisk = (guillotineData.teams || []).filter(t => t.chopProbability > 0);
+  const [first, second] = atRisk;
+  if (!first) return;
+  const left = t => (t.remaining || []).map(p => p.name.split(" ").slice(-1)[0] + (p.game ? " (" + p.game + ")" : ""));
+  if (first.chopProbability >= 100) {
+    add("DEATH WATCH","🪓 DEATH WATCH: the blade has fallen — " + first.team + " is getting chopped from " + guillotineData.leagueName + " with " + pts(first.score) + ".",90);
+  } else if (first.survivalNeed && first.playersLeft) {
+    add("DEATH WATCH","🪓 DEATH WATCH: " + first.team + " (" + money(first.chopProbability) + "% chop odds) needs " + pts(first.survivalNeed.points) + " more from " + listNames(left(first)) + " to pass " + first.survivalNeed.passTeam + " and survive.",86);
+  } else if (second?.survivalNeed && second.playersLeft) {
+    add("DEATH WATCH","🪓 DEATH WATCH: " + first.team + " is on the chopping block (" + money(first.chopProbability) + "%) — unless " + listNames(left(second)) + " can't find " + pts(second.survivalNeed.points) + ", which would send " + second.team + " to the guillotine instead.",86);
+  } else {
+    add("DEATH WATCH","🪓 DEATH WATCH: " + first.team + " leads the chopping-block odds at " + money(first.chopProbability) + "%" + (second ? ", with " + second.team + " next at " + money(second.chopProbability) + "%" : "") + ".",70);
+  }
+}
+
 // Settled start/sit mistakes that cost (or are costing) a team its matchup.
 function addLineupMistakeStories(add, matchupStates, regrets) {
   const regretByTeam = new Map(regrets.map(r => [r.teamId, r]));

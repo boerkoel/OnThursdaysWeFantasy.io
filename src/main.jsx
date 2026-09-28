@@ -12,8 +12,11 @@ import weekly from "../data/current/weekly.json";
 import initialMarquee from "../data/current/marquee.json";
 import livePlays from "../data/current/live-plays.json";
 import initialGuillotine from "../data/current/guillotine.json";
+import obituaryData from "../data/current/obituaries.json";
 
 const money = (n) => Number(n).toFixed(2);
+// NFL weeks run on Eastern time, so a Monday-night game stays on Monday.
+const formatDay = iso => iso ? new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric", timeZone: "America/New_York" }) : "—";
 
 // Live files published by vite.config.js; polled so the page stays current
 // between deploys without a full reload.
@@ -444,7 +447,16 @@ function App() {
             {t.survivalNeed ? <p>Needs {money(t.survivalNeed.points)} more pts to pass {t.survivalNeed.passTeam}</p> : null}
           </article>)}
         </div>
-        {guillotine.chopped?.length ? <p className="median-note">Already chopped: {guillotine.chopped.map(c => `${c.team} (Week ${c.week})`).join(" · ")}</p> : null}
+        <h3 className="survival-heading">Survival odds</h3>
+        <div className="standings-table">
+          {guillotine.teams.map((t, i) => <div className="standing-row" key={t.teamId}>
+            <span>{i + 1}</span>
+            <strong>{t.team}</strong>
+            <span>{t.playersLeft ? `${money(t.score)} · ${t.playersLeft} left` : `${money(t.score)} · final`}</span>
+            <span>{money(100 - t.chopProbability)}% survive</span>
+          </div>)}
+        </div>
+        {guillotine.chopped?.length ? <p className="median-note">Already chopped: {guillotine.chopped.map(c => `${c.team} (Week ${c.week})`).join(" · ")} · <a href="#rip">Rest in peace</a></p> : null}
       </section> : null}
 
       <section id="history" className="section">
@@ -664,6 +676,24 @@ function App() {
           {standingsData.standings.map((t, i) => <div className="standing-row" key={t.id}><span>{i+1}</span><strong><TeamLogo src={teamLogos[t.id]} />{t.name}</strong><span>{t.wins}-{t.losses}{t.ties ? `-${t.ties}` : ""}</span><span>{money(t.pointsFor)} PF</span></div>)}
         </div>
       </section>
+      {guillotine.chopped?.length ? <section id="rip" className="section">
+        <div className="section-heading">
+          <div><span className="section-kicker">{(guillotine.leagueName || "Guillotine league").toUpperCase()}</span><h2>Rest in Peace</h2></div>
+          <span className="record-count">{guillotine.chopped.length} CHOPPED</span>
+        </div>
+        <div className="award-grid rip-grid">
+          {guillotine.chopped.map(c => {
+            const obituary = (obituaryData.obituaries || []).find(o => o.teamId === c.teamId && o.week === c.week);
+            return <article className="award-card" key={c.teamId}>
+              <span>🪦</span>
+              <small>{formatDay(guillotine.draftDate)} — {formatDay(c.diedOn)}</small>
+              <strong>{c.team}</strong>
+              <p className="rip-cause">Chopped in Week {c.week} with {money(c.finalScore)} pts{c.survivedBy ? `, ${money(c.margin)} short of ${c.survivedBy.team}` : ""}.</p>
+              <p className="rip-obituary">{obituary ? obituary.text : "Obituary pending."}</p>
+            </article>;
+          })}
+        </div>
+      </section> : null}
       <footer>On Thursdays We Fantasy · 2026 · Officially unofficial.</footer>
     </main>
   );

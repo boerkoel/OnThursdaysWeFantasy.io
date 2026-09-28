@@ -1,8 +1,9 @@
 {
   "leagueId": "687798070",
   "leagueName": "On Mondays Heads Will Roll",
+  "draftDate": "2026-09-10T16:00:00.000Z",
   "week": 3,
-  "lastUpdated": "2026-09-28T16:48:46.111Z",
+  "lastUpdated": "2026-09-28T16:54:04.553Z",
   "simulations": 10000,
   "teams": [
     {
@@ -138,12 +139,14 @@
     {
       "teamId": 1,
       "team": "Mama Said Knock You Out",
-      "week": 2
-    },
-    {
-      "teamId": 14,
-      "team": "You Like That?!?",
-      "week": 1
+      "week": 2,
+      "finalScore": 77.55,
+      "survivedBy": {
+        "team": "Joe's Scary Team",
+        "score": 89.72
+      },
+      "margin": 12.17,
+      "diedOn": "2026-09-22T00:15:00.000Z"
     }
   ]
 }

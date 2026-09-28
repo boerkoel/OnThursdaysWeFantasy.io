@@ -1,4 +1,4 @@
-import { writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 
 // Death Watch for the companion guillotine league (public on ESPN, so no
 // cookies are needed): each week the lowest-scoring surviving team is
@@ -8,6 +8,8 @@ const season = process.env.ESPN_SEASON || "2026";
 const leagueId = process.env.GUILLOTINE_LEAGUE_ID || "687798070";
 const base = `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${season}/segments/0/leagues/${leagueId}`;
 
+// The league agreed to start in week 2; week 1's chop was a placeholder team.
+const FIRST_REAL_WEEK = Number(process.env.GUILLOTINE_FIRST_WEEK || 2);
 const SIMULATIONS = 10000;
 // Spread of a player's remaining points, as a fraction of what's projected.
 const PLAYER_SD_FRACTION = 0.6;
@@ -54,11 +56,42 @@ const weekEntry = (scores.schedule || []).find(g => Number(g.matchupPeriodId) ==
 const scoreByTeam = new Map((weekEntry?.teams || []).map(t => [Number(t.teamId), t]));
 const rosterByTeam = new Map((rosters.teams || []).map(t => [Number(t.id), t.roster?.entries || []]));
 
-// eliminationMatchupPeriod is 0 while a team is alive, else the week it was chopped.
-const chopped = (weekEntry?.teams || [])
-  .filter(t => Number(t.eliminationMatchupPeriod) > 0)
-  .map(t => ({ teamId: Number(t.teamId), team: teamInfo.get(Number(t.teamId))?.name, week: Number(t.eliminationMatchupPeriod) }))
-  .sort((a, b) => b.week - a.week);
+// eliminationMatchupPeriod is 0 while a team is alive, else the week it was
+// chopped. For the RIP section, record each chopped team's final score, the
+// team it fell short of, and its date of death (that week's last NFL game).
+// Death dates are fetched once and then reused from the previous file.
+const previous = await readFile("data/current/guillotine.json", "utf8").then(JSON.parse).catch(() => null);
+const previousChopped = new Map((previous?.chopped || []).map(c => [Number(c.teamId), c]));
+async function lastGameDate(chopWeek) {
+  const nfl = await fetchJson(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?week=${chopWeek}&seasontype=2&season=${season}`).catch(() => null);
+  const dates = (nfl?.events || []).map(e => Date.parse(e.date)).filter(Number.isFinite);
+  return dates.length ? new Date(Math.max(...dates)).toISOString() : null;
+}
+const chopped = [];
+for (const t of weekEntry?.teams || []) {
+  const chopWeek = Number(t.eliminationMatchupPeriod);
+  if (!(chopWeek >= FIRST_REAL_WEEK)) continue;
+  const teamId = Number(t.teamId);
+  const thatWeek = (scores.schedule || []).find(g => Number(g.matchupPeriodId) === chopWeek)?.teams || [];
+  const finalScore = round(Number(thatWeek.find(x => Number(x.teamId) === teamId)?.totalPoints ?? 0));
+  // Teams still alive that week, other than this one, sorted low to high.
+  const survivors = thatWeek
+    .filter(x => Number(x.teamId) !== teamId && !(Number(x.eliminationMatchupPeriod) > 0 && Number(x.eliminationMatchupPeriod) < chopWeek))
+    .sort((a, b) => Number(a.totalPoints) - Number(b.totalPoints));
+  const nextLowest = survivors[0];
+  const prior = previousChopped.get(teamId);
+  chopped.push({
+    teamId,
+    team: teamInfo.get(teamId)?.name || `Team ${teamId}`,
+    week: chopWeek,
+    finalScore,
+    survivedBy: nextLowest ? { team: teamInfo.get(Number(nextLowest.teamId))?.name, score: round(Number(nextLowest.totalPoints)) } : null,
+    margin: nextLowest ? round(Number(nextLowest.totalPoints) - finalScore) : null,
+    diedOn: prior?.week === chopWeek && prior.diedOn ? prior.diedOn : await lastGameDate(chopWeek)
+  });
+}
+chopped.sort((a, b) => b.week - a.week);
+const draftDate = league.settings?.draftSettings?.date ? new Date(league.settings.draftSettings.date).toISOString() : null;
 
 const alive = [...scoreByTeam.values()]
   .filter(t => Number(t.eliminationMatchupPeriod) === 0)
@@ -133,6 +166,7 @@ alive.sort((a, b) => b.chopProbability - a.chopProbability || a.projected - b.pr
 await writeFile("data/current/guillotine.json", JSON.stringify({
   leagueId,
   leagueName: league.settings?.name || "Guillotine League",
+  draftDate,
   week,
   lastUpdated: new Date().toISOString(),
   simulations: SIMULATIONS,

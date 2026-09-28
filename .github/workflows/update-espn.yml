@@ -19,6 +19,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
       - name: Fetch ESPN data
         env:
           ESPN_SEASON: "2026"
@@ -49,6 +52,12 @@ jobs:
       - name: Update guillotine Death Watch
         continue-on-error: true
         run: node scripts/update-guillotine.js
+      # Needs the ANTHROPIC_API_KEY repository secret; skips cleanly without it.
+      - name: Write obituaries for newly chopped teams
+        continue-on-error: true
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node scripts/write-obituaries.js
       - name: Calculate league stats
         env:
           PREVIOUS_SCOREBOARD_PATH: /tmp/previous-scoreboard.json

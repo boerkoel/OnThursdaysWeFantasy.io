@@ -451,3 +451,8 @@
   .key-play strong{font-size:10px}
 }
 .chop-odds{display:block;margin-top:6px;color:#d96b67;font-size:14px;font-weight:800}
+.survival-heading{margin:22px 0 10px;font-size:14px;letter-spacing:.04em;color:#dfe7d7}
+.rip-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.rip-cause{color:#c7c9c1}
+.rip-obituary{white-space:pre-line;font-style:italic}
+@media(max-width:800px){.rip-grid{grid-template-columns:1fr}}
