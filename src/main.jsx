@@ -314,8 +314,8 @@ function App() {
 
   // A team is "near median" when its simulated odds of finishing above the
   // league median are close to a coin flip.
-  const NEAR_MEDIAN_MIN = 35;
-  const NEAR_MEDIAN_MAX = 65;
+  const NEAR_MEDIAN_MIN = 30;
+  const NEAR_MEDIAN_MAX = 70;
   const aboveMedianOdds = s => s.aboveMedianProbability == null ? null : Number(s.aboveMedianProbability);
   const projectedMedianEdgeTeams = new Set(
     scores

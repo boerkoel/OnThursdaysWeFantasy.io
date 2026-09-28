@@ -57,8 +57,8 @@ const currentScores = Number(liveScoreboard.week) === currentWeek ? (liveScorebo
 const projectedMedian = Number(liveScoreboard.projectedMedian);
 // Same "near median" rule as the scoreboard: roughly coin-flip odds of
 // finishing above the league median.
-const NEAR_MEDIAN_MIN = 35;
-const NEAR_MEDIAN_MAX = 65;
+const NEAR_MEDIAN_MIN = 30;
+const NEAR_MEDIAN_MAX = 70;
 const isNearMedian = s => {
   const odds = Number(s?.aboveMedianProbability);
   return Number.isFinite(odds) && odds >= NEAR_MEDIAN_MIN && odds <= NEAR_MEDIAN_MAX;
