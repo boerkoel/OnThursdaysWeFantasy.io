@@ -13,6 +13,33 @@ import { TeamLogo, UpdatedAgo, useChangedScores } from "./components/LiveBits.js
 import LeagueWire from "./components/LeagueWire.jsx";
 import TeamCards from "./components/TeamCards.jsx";
 import { DeathWatch } from "./components/DeathWatch.jsx";
+import SwingChart from "./components/SwingChart.jsx";
+
+// Rest-of-season odds for every team (season-odds.js).
+function PlayoffOdds({ seasonOdds, logos }) {
+  const teams = seasonOdds?.teams || [];
+  if (!teams.length) return null;
+  const pct = n => (n >= 99.995 && n < 100 ? ">99.99" : n > 0 && n < 0.005 ? "<0.01" : money(n)) + "%";
+  return (
+    <div className="odds-block">
+      <h3 className="survival-heading">Playoff odds</h3>
+      <p className="median-note">From {Number(seasonOdds.simulations || 0).toLocaleString()} simulations of the {seasonOdds.remainingWeeks?.length || 0} regular-season weeks left, using each team's scoring so far (and live projections for the week in progress). The top {seasonOdds.playoffTeamCount} in total points make the playoffs; the rest go to the Ultimate Loser bracket.</p>
+      <div className="survival-table odds-table">
+        <div className="odds-row survival-header"><span>#</span><span>Team</span><span>PF</span><span>Proj. PF</span><span>Playoffs</span><span>Bye</span><span>Ult. Loser</span><span>Raffle</span></div>
+        {teams.map((t, i) => <div className="odds-row" key={t.teamId}>
+          <span>{i + 1}</span>
+          <strong><TeamLogo src={logos[t.teamId]} /><span>{t.team}</span></strong>
+          <span>{money(t.pointsFor)}</span>
+          <span>{money(t.projectedPointsFor)}</span>
+          <b>{pct(t.playoffOdds)}</b>
+          <span>{pct(t.byeOdds)}</span>
+          <span>{pct(t.ultimateLoserOdds)}</span>
+          <span>{pct(t.raffleOdds)}</span>
+        </div>)}
+      </div>
+    </div>
+  );
+}
 
 // One matchup box in a bracket.
 function BracketGame({ top, bottom, className = "" }) {
@@ -155,6 +182,7 @@ function App() {
               <MatchupTeam team={a} opponent={b} logo={teamLogos[a.teamId]} projected={scoreSort === "projected"} flashing={flashingScores.has(a.teamId)} dotClass={medianDotClass(a)} />
               <div className="versus">vs</div>
               <MatchupTeam team={b} opponent={a} logo={teamLogos[b.teamId]} projected={scoreSort === "projected"} flashing={flashingScores.has(b.teamId)} dotClass={medianDotClass(b)} />
+              <SwingChart points={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} teamId={a.teamId} teamName={a.team} opponentName={b.team} />
               {keyPlaysFor(matchupId).length ? (
                 <div className="key-plays" aria-label="Key plays">
                   <div className="key-plays-heading"><span>KEY PLAYS</span><em>4+ PT SWINGS</em></div>
@@ -289,6 +317,7 @@ function App() {
             <strong>3rd: $100</strong>
           </div>
         </div>
+        <PlayoffOdds seasonOdds={live.seasonOdds} logos={teamLogos} />
         <div className="seed-board">
           {playoffs.seeds.map(s => <div className="seed-row" key={s.seed}><span>{"#" + s.seed}</span><strong>{s.team}</strong><span>{s.wins}-{s.losses}</span><span>{money(s.pointsFor)} PF</span>{s.seed<=2 ? <em>BYE</em> : null}</div>)}
         </div>
@@ -365,7 +394,7 @@ function App() {
           <article className="award-card"><span>🪑</span><small>BENCH WARMER CHAMPION</small><strong>{awards.awards?.benchWarmerChampion?.team || "—"}</strong><p>{awards.awards?.benchWarmerChampion ? `${money(awards.awards.benchWarmerChampion.points)} points on the bench · Season total` : "—"}</p></article>
           <article className="award-card"><span>🔥</span><small>HIGHEST SCORE</small><strong>{awards.awards?.highestScore?.team || "—"}</strong><p>{awards.awards?.highestScore ? `${money(awards.awards.highestScore.score)} points · Week ${awards.awards.highestScore.week}` : "—"}</p></article>
           <article className="award-card"><span>🫠</span><small>LOWEST SCORE</small><strong>{awards.awards?.lowestScore?.team || "—"}</strong><p>{awards.awards?.lowestScore ? `${money(awards.awards.lowestScore.score)} points · Week ${awards.awards.lowestScore.week}` : "—"}</p></article>
-          <article className="award-card"><span>🥴</span><small>BAD BEAT</small><strong>{awards.awards?.highestScoringLoser?.team || "—"}</strong><p>{awards.awards?.highestScoringLoser ? `${money(awards.awards.highestScoringLoser.score)} points in a loss · Week ${awards.awards.highestScoringLoser.week}` : "—"}</p></article>
+          <article className="award-card"><span>🥴</span><small>BAD BEAT</small><strong>{awards.awards?.narrowestLoss?.loser || "—"}</strong><p>{awards.awards?.narrowestLoss ? `Lost to ${awards.awards.narrowestLoss.winner} by ${money(awards.awards.narrowestLoss.margin)} · Week ${awards.awards.narrowestLoss.week}` : "—"}</p></article>
           <article className="award-card"><span>🤝</span><small>THE NEGOTIATOR</small><strong>{awards.awards?.negotiator?.team || "—"}</strong><p>{awards.awards?.negotiator?.trades ? awards.awards.negotiator.trades + " trades" : "No completed trades yet"}</p></article>
           <article className="award-card"><span>🛒</span><small>GET A LIFE</small><strong>{awards.awards?.getALife?.team || "—"}</strong><p>{awards.awards?.getALife?.moves ? awards.awards.getALife.moves + " roster moves" : "No roster activity yet"}</p></article>
           <article className="award-card"><span>🔥</span><small>HEATING UP</small><strong>{awards.awards?.heatingUp?.team || "—"}</strong><p>{awards.awards?.heatingUp ? "Trend +" + money(awards.awards.heatingUp.slope) + " pts/week" : "Need more completed weeks"}</p></article>

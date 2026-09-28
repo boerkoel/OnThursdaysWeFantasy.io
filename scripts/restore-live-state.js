@@ -10,7 +10,8 @@ const LIVE_FILES = [
   { file: "scoreboard.json", timestamp: data => data.lastUpdated },
   { file: "marquee.json", timestamp: data => data.lastUpdated },
   { file: "live-plays.json", timestamp: data => data.updatedAt },
-  { file: "guillotine.json", timestamp: data => data.lastUpdated }
+  { file: "guillotine.json", timestamp: data => data.lastUpdated },
+  { file: "season-odds.json", timestamp: data => data.lastUpdated }
 ];
 
 const time = value => {

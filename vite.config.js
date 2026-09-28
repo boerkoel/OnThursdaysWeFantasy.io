@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react";
 
 // The page polls these files for fresh data between page loads, so they must
 // be published next to the bundle (the rest of data/ is only imported).
-const POLLED_DATA_FILES = ["scoreboard.json", "marquee.json", "live-plays.json", "metadata.json", "guillotine.json"];
+const POLLED_DATA_FILES = ["scoreboard.json", "marquee.json", "live-plays.json", "metadata.json", "guillotine.json", "season-odds.json"];
 
 // The page polls live.json (everything that changes during games, in one
 // request); the individual files are what restore-live-state.js reads back.
@@ -21,7 +21,8 @@ function publishPolledData() {
         scoreboard: JSON.parse(contents["scoreboard.json"]),
         marquee: JSON.parse(contents["marquee.json"]),
         livePlays: JSON.parse(contents["live-plays.json"]),
-        guillotine: JSON.parse(contents["guillotine.json"])
+        guillotine: JSON.parse(contents["guillotine.json"]),
+        seasonOdds: JSON.parse(contents["season-odds.json"])
       };
       this.emitFile({ type: "asset", fileName: "data/current/live.json", source: JSON.stringify(live) });
     }

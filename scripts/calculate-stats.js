@@ -153,6 +153,8 @@ const prizePool = {raffleWinner:100,firstPlace:375,secondPlace:225,thirdPlace:10
 const baseAwards={highestScore:scoreAward(highestScore),lowestScore:scoreAward(lowestScore),
   highestScoringLoser:scoreAward(highestScoringLoser),lowestScoringWinner:scoreAward(lowestScoringWinner),
   blowoutKing:matchupAward(blowout),
+  // Bad Beat: the narrowest loss of the season.
+  narrowestLoss:matchupAward(minBy(completed.filter(m => m.margin > 0), x => x.margin)),
   benchWarmerChampion:bench[0] && bench[0].points > 0 ? {
     teamId:bench[0].teamId,
     team:bench[0].team,

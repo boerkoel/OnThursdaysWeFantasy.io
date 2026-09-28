@@ -440,3 +440,27 @@
 .survival-row>strong span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .logo-initials{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:#2a3024;color:#b8c69b;font-size:9px;font-weight:900;letter-spacing:.02em}
 .logo-initials.md{font-size:11px}
+/* Playoff odds table */
+.odds-block{margin-top:26px}
+.odds-block .median-note{margin:-4px 0 12px}
+.odds-table{border:1px solid #30332d;border-radius:14px;overflow:hidden}
+.odds-row{display:grid;grid-template-columns:28px minmax(0,1fr) 72px 78px 74px 64px 78px 64px;gap:10px;align-items:center;padding:10px 16px;border-bottom:1px solid #242620;font-size:13px}
+.odds-row:last-child{border-bottom:0}
+.odds-row>span{color:#999c94;text-align:right}
+.odds-row>span:first-child{text-align:left;color:#686b63}
+.odds-row>strong{display:flex;align-items:center;gap:8px;min-width:0}
+.odds-row>strong span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.odds-row>b{text-align:right;color:#dfe9c7}
+.odds-row.survival-header>span:nth-child(2){text-align:left}
+@media(max-width:700px){.odds-row{grid-template-columns:22px minmax(0,1fr) 62px 52px 62px;gap:8px}.odds-row>:nth-child(3),.odds-row>:nth-child(4),.odds-row>:nth-child(8){display:none}}
+/* Win-odds swing chart inside a matchup card */
+.swing-chart{grid-column:1 / -1;margin-top:2px;padding-top:10px;border-top:1px solid #292c27}
+.swing-caption{display:flex;justify-content:space-between;gap:10px;margin-bottom:4px;color:#777a72;font-size:8px;font-weight:800;letter-spacing:.08em}
+.swing-caption b{color:#dfe7d7;font-size:10px}
+.swing-plot{position:relative;height:56px}
+.swing-plot svg{display:block;width:100%;height:100%;cursor:crosshair;touch-action:pan-y}
+.swing-midline{stroke:#3b4134;stroke-width:1;stroke-dasharray:3 3;vector-effect:non-scaling-stroke}
+.swing-line{fill:none;stroke:#b8c69b;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.swing-crosshair{stroke:#777a72;stroke-width:1}
+.swing-dot{position:absolute;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:#b8c69b;box-shadow:0 0 0 2px #151713;pointer-events:none}
+

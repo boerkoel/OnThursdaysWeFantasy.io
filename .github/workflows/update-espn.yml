@@ -52,6 +52,9 @@ jobs:
           ESPN_S2: ${{ secrets.ESPN_S2 }}
           ESPN_SWID: ${{ secrets.ESPN_SWID }}
         run: node scripts/update-live-scoreboard.js
+      - name: Update playoff odds
+        continue-on-error: true
+        run: node scripts/season-odds.js
       - name: Update guillotine Death Watch
         continue-on-error: true
         run: node scripts/update-guillotine.js

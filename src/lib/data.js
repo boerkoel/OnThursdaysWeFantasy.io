@@ -3,6 +3,7 @@ import initialScoreboard from "../../data/current/scoreboard.json";
 import initialMarquee from "../../data/current/marquee.json";
 import initialLivePlays from "../../data/current/live-plays.json";
 import initialGuillotine from "../../data/current/guillotine.json";
+import initialSeasonOdds from "../../data/current/season-odds.json";
 
 export const money = n => Number(n).toFixed(2);
 
@@ -47,14 +48,18 @@ export function usePolledData(file, initial, intervalMs = 15000) {
   return data;
 }
 
-// Everything that changes during games, in one request (live.json).
+// Everything that changes during games, in one request (live.json). Pieces
+// missing from an older published file fall back to the bundled copy.
+const INITIAL_LIVE = {
+  scoreboard: initialScoreboard,
+  marquee: initialMarquee,
+  livePlays: initialLivePlays,
+  guillotine: initialGuillotine,
+  seasonOdds: initialSeasonOdds
+};
 export function useLiveData() {
-  return usePolledData("live.json", {
-    scoreboard: initialScoreboard,
-    marquee: initialMarquee,
-    livePlays: initialLivePlays,
-    guillotine: initialGuillotine
-  });
+  const live = usePolledData("live.json", INITIAL_LIVE);
+  return { ...INITIAL_LIVE, ...live };
 }
 
 // Overall state of this week's NFL games, for the LIVE badge.

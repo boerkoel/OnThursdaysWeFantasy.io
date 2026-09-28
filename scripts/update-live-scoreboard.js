@@ -366,6 +366,19 @@ const projectionHistory = [
   currentProjectionSnapshot
 ].slice(-4);
 
+// Win-odds history for this week's swing charts and comeback stories: one
+// snapshot per update while odds are moving, thinned out if it gets long.
+const MAX_WIN_HISTORY = 400;
+const winSnapshot = { t: new Date().toISOString(), p: Object.fromEntries(currentScores.map(s => [s.teamId, s.winProbability])) };
+let winHistory = Number(previousScoreboard?.winHistory?.week) === currentWeek ? [...(previousScoreboard.winHistory.points || [])] : [];
+const lastSnapshot = winHistory[winHistory.length - 1];
+const oddsMoved = !lastSnapshot || Object.entries(winSnapshot.p).some(([id, p]) => lastSnapshot.p?.[id] !== p);
+if (oddsMoved) winHistory.push(winSnapshot);
+if (winHistory.length > MAX_WIN_HISTORY) {
+  // Keep every other older point and all of the most recent 100.
+  winHistory = winHistory.filter((_, i) => i % 2 === 0 || i >= winHistory.length - 100);
+}
+
 await writeFile("data/current/scoreboard.json", JSON.stringify({
   week: currentWeek,
   lastUpdated: new Date().toISOString(),
@@ -376,6 +389,7 @@ await writeFile("data/current/scoreboard.json", JSON.stringify({
   probabilityModel: "Monte Carlo simulations estimate final-score distributions, above/below projected-median odds, matchup win odds, and final-score standard deviation; ESPN projections remain the displayed projections",
   probabilitySimulations: SIMULATIONS,
   nflGames,
+  winHistory: { week: currentWeek, points: winHistory },
   projectionHistory
 }, null, 2) + "\n");
 

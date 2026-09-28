@@ -14,6 +14,7 @@ const matchupData = await readJson("data/current/mMatchup.json");
 const guillotineData = await readJson("data/current/guillotine.json").catch(() => null);
 const liveScoringData = await readJson("data/current/mLiveScoring.json");
 const boxscoreData = await readJson("data/current/mBoxscore.json");
+const rosterData = await readJson("data/current/mRoster.json").catch(() => ({ teams: [] }));
 
 const teamNames = new Map((teamData.teams || []).map(t => [t.id, (t.name || "").trim()]));
 const name = id => teamNames.get(id) || "Team " + id;
@@ -258,6 +259,8 @@ function buildMarqueeStories() {
   if(falling) add("STOCK FALLING","📉 Stock falling: " + possessive(falling.team) + " ESPN projection is trending down.",20);
   addLineupMistakeStories(add, matchupStates, regrets);
   addDeathWatchStory(add);
+  addPickupStories(add);
+  addSwingStories(add, matchupStates);
   addPrimetimeStories(add, matchupStates);
 
   const biggestLead=matchupStates.filter(x=>!x.m.completed).sort((a,b)=>b.diff-a.diff)[0];
@@ -266,6 +269,78 @@ function buildMarqueeStories() {
   else if(close) add("LEAGUE GOSSIP","👀 League gossip: " + close.a.team + " and " + close.b.team + " are separated by " + money(close.diff) + " pts. Somebody's Sunday just got interesting.",26-close.diff);
   return stories.filter((story,i,arr)=>arr.findIndex(x=>x.text===story.text)===i).sort((a,b)=>b.score-a.score);
 }
+// Waiver-wire news: players added in the last week. Hot pickups when they're
+// already producing; otherwise the freshest adds and their projections, which
+// keeps the League Wire lively between games.
+const PICKUP_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+const POSITIONS = { 1: "QB", 2: "RB", 3: "WR", 4: "TE", 5: "K", 16: "D/ST" };
+function addPickupStories(add) {
+  const pickups = (rosterData.teams || []).flatMap(t => (t.roster?.entries || [])
+    .filter(e => e.acquisitionType === "ADD" && Date.now() - Number(e.acquisitionDate) <= PICKUP_WINDOW_MS && e.playerPoolEntry?.player)
+    .map(e => {
+      const player = e.playerPoolEntry.player;
+      const stat = source => Number((player.stats || []).find(s => Number(s.scoringPeriodId) === currentWeek && Number(s.statSourceId) === source && Number(s.statSplitTypeId) === 1)?.appliedTotal);
+      const game = nflGameByProTeam.get(Number(player.proTeamId));
+      return {
+        name: player.fullName,
+        position: POSITIONS[Number(player.defaultPositionId)] || "",
+        team: name(Number(t.id)),
+        addedOn: Number(e.acquisitionDate),
+        bench: Number(e.lineupSlotId) === BENCH_SLOT,
+        points: Number.isFinite(stat(0)) ? round(stat(0)) : 0,
+        projection: Number.isFinite(stat(1)) ? round(stat(1)) : null,
+        played: Boolean(game && game.state !== "pre")
+      };
+    }));
+  const day = ms => new Date(ms).toLocaleDateString("en-US", { weekday: "long", timeZone: "America/New_York" });
+
+  const hot = pickups.filter(p => p.points >= 10).sort((a, b) => b.points - a.points)[0];
+  if (hot) {
+    add("HOT PICKUP","🛒 HOT PICKUP: " + hot.team + " grabbed " + hot.name + " (" + hot.position + ") off the wire on " + day(hot.addedOn) + ", and it's paying off — " + pts(hot.points) + " this week" + (hot.bench ? " (from the bench!)" : "") + ".",30 + hot.points);
+  }
+  const fresh = pickups.filter(p => !p.played && p !== hot).sort((a, b) => b.addedOn - a.addedOn).slice(0, 3);
+  if (fresh.length) {
+    const describe = p => p.team + " added " + p.name + " (" + p.position + (p.projection != null ? ", projected " + pts(p.projection) : "") + ")";
+    add("FRESH OFF THE WIRE","🗞️ Fresh off the wire: " + listNames(fresh.map(describe)) + ".",24 + fresh.length);
+  }
+}
+
+// Stories from this week's win-odds history (the swing charts): the biggest
+// comeback, and games whose odds keep flipping.
+function addSwingStories(add, matchupStates) {
+  const history = Number(liveScoreboard.winHistory?.week) === currentWeek ? liveScoreboard.winHistory.points || [] : [];
+  if (history.length < 3) return;
+  const oddsOf = id => history.map(pt => Number(pt.p?.[id])).filter(Number.isFinite);
+  const comebacks = [];
+  const swingers = [];
+  for (const x of matchupStates) {
+    for (const [team, opp] of [[x.a, x.b], [x.b, x.a]]) {
+      const series = oddsOf(team.teamId);
+      const now = series[series.length - 1];
+      const low = Math.min(...series);
+      if (low <= 25 && now >= 60) comebacks.push({ team, opp, low, now });
+    }
+    // A flip counts only when the favorite clearly changes (past 55%), so
+    // small wobbles around a coin flip don't register.
+    let favorite = null;
+    let flips = 0;
+    for (const p of oddsOf(x.a.teamId)) {
+      const side = p > 55 ? "a" : p < 45 ? "b" : favorite;
+      if (favorite && side !== favorite) flips++;
+      favorite = side;
+    }
+    if (flips >= 3) swingers.push({ x, flips });
+  }
+  const wildest = swingers.sort((a, b) => b.flips - a.flips)[0];
+  if (wildest) {
+    add("HEART ATTACK GAME","💓 HEART ATTACK GAME: the favorite in " + wildest.x.a.team + " vs " + wildest.x.b.team + " has flipped " + wildest.flips + " times this week.",70 + wildest.flips);
+  }
+  const best = comebacks.sort((a, b) => a.low - b.low)[0];
+  if (best) {
+    add("COMEBACK","📈 COMEBACK: " + best.team.team + " was down to " + money(best.low) + "% against " + best.opp.team + (best.now >= 100 ? " — and won." : " — now " + money(best.now) + "% to win."),best.now >= 100 ? 94 : 86);
+  }
+}
+
 // The guillotine side league's most endangered team this week.
 function addDeathWatchStory(add) {
   if (Number(guillotineData?.week) !== currentWeek) return;

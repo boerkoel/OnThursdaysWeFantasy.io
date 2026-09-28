@@ -102,6 +102,11 @@ jobs:
         if: steps.gate.outputs.update == 'true'
         run: node scripts/update-live-scoreboard.js
 
+      - name: Update playoff odds
+        if: steps.gate.outputs.update == 'true'
+        continue-on-error: true
+        run: node scripts/season-odds.js
+
       # Public guillotine side league; never let it block the main update.
       - name: Update guillotine Death Watch
         if: steps.gate.outputs.update == 'true'
