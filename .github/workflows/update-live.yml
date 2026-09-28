@@ -4,6 +4,10 @@ name: Update Live Data
 # so each run schedules the next one itself: every ~2 minutes while an NFL
 # game window is open, otherwise it sleeps until the next window opens (at
 # most 5.5 hours per run). The cron below only restarts the chain if it breaks.
+#
+# Live data is built and deployed straight to GitHub Pages instead of being
+# committed; restore-live-state.js reads the previous run's state back from
+# the published site. The daily ESPN update commits a snapshot once a day.
 on:
   workflow_dispatch:
     inputs:
@@ -26,11 +30,13 @@ on:
     - cron: "2/5 * * * *"
 
 permissions:
-  contents: write
+  contents: read
   actions: write
+  pages: write
+  id-token: write
 
 # Runs queue instead of cancelling each other, so a run is never cut off
-# mid-push and only one chain survives. A manual run cancels a sleeping
+# mid-deploy and only one chain survives. A manual run cancels a sleeping
 # chained run and takes over the chain.
 concurrency:
   group: "live-update"
@@ -46,6 +52,9 @@ jobs:
   update-live:
     runs-on: ubuntu-latest
     timeout-minutes: 350
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Wait for scheduled start
         if: inputs.delay_seconds != '' && inputs.delay_seconds != '0'
@@ -67,6 +76,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
+          cache: npm
+
+      - name: Restore live state from the published site
+        if: steps.gate.outputs.update == 'true'
+        run: node scripts/restore-live-state.js
 
       - name: Fetch live ESPN data
         if: steps.gate.outputs.update == 'true'
@@ -94,32 +108,27 @@ jobs:
           LIVE_ONLY: "true"
         run: node scripts/calculate-stats.js
 
-      # Deploy is started explicitly: GitHub doesn't fire workflow_run for runs
-      # started by GITHUB_TOKEN, which is how every chained run is started.
-      - name: Commit live data and deploy
+      - name: Install dependencies
         if: steps.gate.outputs.update == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/current/mLiveScoring.json data/current/mBoxscore.json data/current/mScoreboard.json data/current/mRoster.json data/current/scoreboard.json data/current/marquee.json data/current/live-plays.json data/current/key-plays.json
-          if git diff --cached --quiet; then
-            echo "No live data changes."
-            exit 0
-          fi
-          git commit -m "Update live fantasy scores"
-          for attempt in 1 2 3; do
-            git fetch origin main
-            git pull --rebase --autostash -X theirs origin main
-            if git push origin HEAD:main; then
-              gh workflow run deploy.yml --repo "$GITHUB_REPOSITORY" --ref main
-              exit 0
-            fi
-            sleep 3
-          done
-          echo "Unable to push after 3 attempts."
-          exit 1
+        run: npm ci
+
+      - name: Build site
+        if: steps.gate.outputs.update == 'true'
+        run: npm run build
+
+      - name: Upload Pages artifact
+        if: steps.gate.outputs.update == 'true'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ./dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        if: steps.gate.outputs.update == 'true'
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
 
       # Runs even if an update step failed, so one bad ESPN response doesn't
       # stop the chain. Skipped when this run is cancelled by a newer one.
@@ -132,7 +141,7 @@ jobs:
         run: |
           MAX_IDLE=19800  # 5.5 hours, inside the job timeout
           if [ "$ACTIVE" = "true" ]; then
-            DELAY=75      # plus ~45 seconds of work = ~2 minute cadence
+            DELAY=45      # plus ~75 seconds of work and deploy = ~2 minute cadence
           elif [ -z "$ACTIVE" ]; then
             DELAY=300     # window check failed; try again soon
           elif [ -n "$NEXT_WINDOW_IN" ] && [ "$NEXT_WINDOW_IN" -lt "$MAX_IDLE" ]; then

@@ -34,6 +34,8 @@ jobs:
           ESPN_S2: ${{ secrets.ESPN_S2 }}
           ESPN_SWID: ${{ secrets.ESPN_SWID }}
         run: node scripts/fetch-live.js
+      - name: Restore live state from the published site
+        run: node scripts/restore-live-state.js
       - name: Preserve previous scoreboard for live story detection
         run: cp data/current/scoreboard.json /tmp/previous-scoreboard.json || true
       - name: Update live scoreboard
