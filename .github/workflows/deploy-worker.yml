@@ -36,9 +36,20 @@ jobs:
           node-version: 24
       # Explains credential problems in the run's annotations (ids are shown
       # only as their first and last 4 characters).
+      # Strip stray whitespace/newlines from the pasted secrets for later steps.
+      - name: Tidy Cloudflare secrets
+        run: |
+          echo "::add-mask::$(printf %s "$CLOUDFLARE_API_TOKEN" | tr -d '[:space:]')"
+          echo "CLOUDFLARE_API_TOKEN=$(printf %s "$CLOUDFLARE_API_TOKEN" | tr -d '[:space:]')" >> "$GITHUB_ENV"
+          echo "CLOUDFLARE_ACCOUNT_ID=$(printf %s "$CLOUDFLARE_ACCOUNT_ID" | tr -d '[:space:]')" >> "$GITHUB_ENV"
+          node -e '
+            const t = process.argv[1];
+            console.error("::notice::Token secret shape: " + t.length + " characters; whitespace: " + /\s/.test(t) +
+              "; contains quotes: " + /[\x22\x27]/.test(t) + "; contains \"Bearer\": " + /bearer/i.test(t) + "; contains \"curl\": " + /curl/i.test(t) +
+              "; only letters/digits/_-: " + /^[A-Za-z0-9_-]+$/.test(t.trim()));
+          ' "$CLOUDFLARE_API_TOKEN"
       - name: Check Cloudflare credentials
         run: |
-          mask() { echo "$1" | sed -E 's/^(.{4}).*(.{4})$/\1…\2/'; }
           VERIFY=$(curl -sS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" https://api.cloudflare.com/client/v4/user/tokens/verify)
           ACCOUNTS=$(curl -sS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts?per_page=50")
           node -e '
