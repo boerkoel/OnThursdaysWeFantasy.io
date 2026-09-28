@@ -15,6 +15,7 @@ const fantasyProsRos = await readJson("data/current/fantasypros-ros-ppr.json").c
 const fantasyProsRosByName = new Map(
   (fantasyProsRos?.rankings || []).map(p => [normalizePlayerName(p.name), Number(p.rank)])
 );
+const freeAgentData = await readJson("data/current/free-agents.json").catch(() => null);
 const liveScoringData = await readJson("data/current/mLiveScoring.json");
 const boxscoreData = await readJson("data/current/mBoxscore.json");
 const logoMap = await readJson("data/current/logo-map.json").catch(() => ({}));
@@ -1246,6 +1247,7 @@ for (const team of teams.values()) {
   });
 }
 
+const WIN_WIN_MIN_POINTS_PER_WEEK = 5;
 const winWinTradesByTeam = new Map([...teams.keys()].map(teamId => [Number(teamId), []]));
 const tradesStartedAt = Date.now();
 
@@ -1345,7 +1347,7 @@ function swapOptimalImpact(teamId, outgoingPlayerId, incomingEntryByWeek) {
           // Same-position swaps are excluded from this signal.
           if (playerA.position && playerB.position && playerA.position === playerB.position) continue;
   
-          // Keep only trades whose FantasyPros ROS PPR ranks are within 25 spots.
+          // Keep only trades whose FantasyPros ROS PPR ranks are within 18 spots.
           if (!Number.isFinite(playerB.rosRank) || Math.abs(playerA.rosRank - playerB.rosRank) > 18) continue;
   
           const incomingForA = new Map();
@@ -1360,10 +1362,13 @@ function swapOptimalImpact(teamId, outgoingPlayerId, incomingEntryByWeek) {
           const impactB = swapOptimalImpact(teamBId, playerB.playerId, incomingForB);
           if (!impactA.weeksEvaluated || !impactB.weeksEvaluated) continue;
   
-          // A true win-win trade must add at least one net win to both teams.
-          // Lineup-point gains alone are not enough to qualify.
-          const meaningfulA = impactA.winsAdded >= 1 && impactA.boost > 0;
-          const meaningfulB = impactB.winsAdded >= 1 && impactB.boost > 0;
+          // A trade helps a team if it adds at least one net win, or adds at
+          // least 5 optimal-lineup points per week without costing a win.
+          const helps = impact =>
+            (impact.winsAdded >= 1 && impact.boost > 0) ||
+            (impact.winsAdded >= 0 && impact.boost >= WIN_WIN_MIN_POINTS_PER_WEEK * impact.weeksEvaluated);
+          const meaningfulA = helps(impactA);
+          const meaningfulB = helps(impactB);
           if (!meaningfulA || !meaningfulB) continue;
   
           trades.push({
@@ -1441,6 +1446,62 @@ for (const teamId of teams.keys()) {
       (b.yourBoost+b.theirBoost) - (a.yourBoost+a.theirBoost)
     )
     .slice(0,3));
+}
+
+// Waiver targets: current free agents who would have added wins. Compares the
+// best possible lineup with and without the player each completed week, so it
+// measures the player's value rather than past start/sit decisions. Weeks when
+// the player was on any roster are skipped.
+const WAIVER_CANDIDATES_PER_WEEK = 60;
+const waiverTargetsByTeam = new Map([...teams.keys()].map(teamId => [Number(teamId), []]));
+for (const week of completedWeeks) {
+  const rosteredThatWeek = new Set(weeklyTeamEntries(week).map(e => e.playerId));
+  const candidates = (freeAgentData?.weeks?.[week] || [])
+    .filter(p => !rosteredThatWeek.has(Number(p.playerId)))
+    .sort((a,b) => b.points - a.points)
+    .slice(0, WAIVER_CANDIDATES_PER_WEEK);
+  if (!candidates.length) continue;
+
+  for (const team of teams.values()) {
+    const teamId = Number(team.id);
+    const roster = weeklyRosterForTeam(week, teamId);
+    const game = completed.find(m => m.week === week && (m.homeTeamId === teamId || m.awayTeamId === teamId));
+    if (!roster?.roster?.entries || !game) continue;
+    const base = lineupEfficiency(roster);
+    if (!base) continue;
+    const opponent = game.homeTeamId === teamId ? game.awayScore : game.homeScore;
+    const median = weeklyMedianByWeek.get(week);
+
+    for (const p of candidates) {
+      const entry = {
+        playerId:p.playerId,
+        lineupSlotId:20,
+        playerPoolEntry:{appliedStatTotal:p.points, player:{id:p.playerId, fullName:p.name, eligibleSlots:p.eligibleSlots, defaultPositionId:p.defaultPositionId}}
+      };
+      const withPlayer = lineupEfficiency({id:teamId, roster:{entries:roster.roster.entries.concat([entry])}});
+      const gain = withPlayer ? withPlayer.optimalPoints - base.optimalPoints : 0;
+      if (gain <= 0) continue;
+      const h2h = withPlayer.optimalPoints > opponent && base.optimalPoints <= opponent ? 1 : 0;
+      const med = Number.isFinite(median) && withPlayer.optimalPoints > median && base.optimalPoints <= median ? 1 : 0;
+      const targets = waiverTargetsByTeam.get(teamId);
+      let target = targets.find(t => t.playerId === p.playerId);
+      if (!target) {
+        target = {playerId:p.playerId, player:p.name, position:positionNames[p.defaultPositionId] || null, boost:0, h2hWinsAdded:0, medianWinsAdded:0, weeks:[]};
+        targets.push(target);
+      }
+      target.boost = round(target.boost + gain);
+      target.h2hWinsAdded += h2h;
+      target.medianWinsAdded += med;
+      target.weeks.push({week, points:round(p.points), gain:round(gain)});
+    }
+  }
+}
+for (const [teamId, targets] of waiverTargetsByTeam) {
+  waiverTargetsByTeam.set(teamId, targets
+    .map(t => ({...t, winsAdded:t.h2hWinsAdded + t.medianWinsAdded}))
+    .filter(t => t.winsAdded >= 1)
+    .sort((a,b) => b.winsAdded - a.winsAdded || b.boost - a.boost)
+    .slice(0, 3));
 }
 
 const startSitByTeam = new Map();
@@ -1629,6 +1690,7 @@ await writeJson("data/current/teams.json",{season:settings.seasonId,currentWeek,
       positionFit:positionFitByTeam.get(Number(t.id))||null,
       rosterFit:rosterFitByTeam.get(Number(t.id))||null,
       winWinTrades:winWinTradesByTeam.get(Number(t.id))||[],
+      waiverTargets:freeAgentData ? waiverTargetsByTeam.get(Number(t.id))||[] : null,
       trend:trend ? {...trend,direction:trend.slope >= 2 ? "up" : trend.slope <= -2 ? "down" : "steady"} : null,
       luck:luck ? {actualWins:round(luck.actual),expectedWins:round(luck.expected),difference:round(luck.luck)} : null
     }

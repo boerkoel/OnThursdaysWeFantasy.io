@@ -130,7 +130,7 @@ function TeamCards({ teams }) {
           </div>
         </> : null}
         {team.profileAnalytics.winWinTrades?.length ? <>
-          <div className="trade-section-heading trade-target-heading"><span>🤝</span><div><small>1-FOR-1 WIN-WIN TRADES</small><strong>Trades That Help Both Teams</strong><em>Historical simulation through completed weeks · assumes the traded player was in your lineup all season</em></div></div>
+          <div className="trade-section-heading trade-target-heading"><span>🤝</span><div><small>1-FOR-1 WIN-WIN TRADES</small><strong>Trades That Help Both Teams</strong><em>Historical simulation through completed weeks · each side gains a win, or 5+ optimal-lineup pts per week without losing one</em></div></div>
           <div className="trade-target-list">
             {team.profileAnalytics.winWinTrades.map((t, i) => <div className="trade-target win-win-trade" key={t.otherTeamId + "-" + t.givePlayerId + "-" + t.getPlayerId + "-" + i}>
               <div className="trade-target-info">
@@ -145,6 +145,22 @@ function TeamCards({ teams }) {
             </div>)}
           </div>
         </> : null}
+      </div>) : null}
+
+      {team.profileAnalytics?.waiverTargets ? (<div className="trade-section">
+        <div className="trade-section-heading"><span>📋</span><div><small>WAIVER WIRE</small><strong>Waiver Targets</strong><em>Available players who would have added wins · best possible lineup with vs. without them, weeks they were unrostered</em></div></div>
+        {team.profileAnalytics.waiverTargets.length ? <div className="trade-target-list">
+          {team.profileAnalytics.waiverTargets.map(p => <div className="trade-target" key={p.playerId}>
+            <div className="trade-target-info">
+              <strong>{p.player}{p.position ? `, ${p.position}` : ""}</strong>
+              <span>{p.weeks.map(w => `W${w.week}: ${money(w.points)} pts`).join(" · ")}</span>
+            </div>
+            <div className="trade-target-impact">
+              <b>+{money(p.boost)} pts</b>
+              <em>{p.winsAdded} {p.winsAdded === 1 ? "win" : "wins"} added ({p.h2hWinsAdded} H2H + {p.medianWinsAdded} median)</em>
+            </div>
+          </div>)}
+        </div> : <span className="position-fit-empty">No available player would have added a win so far.</span>}
       </div>) : null}
 
       {team.profileAnalytics ? (<div className="profile-insights">

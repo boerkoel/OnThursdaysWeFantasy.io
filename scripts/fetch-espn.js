@@ -13,7 +13,7 @@ if (!espnS2 || !swid) {
   throw new Error("Missing ESPN_S2 or ESPN_SWID GitHub Actions secrets.");
 }
 
-async function fetchView(view, scoringPeriodId = null) {
+async function fetchView(view, scoringPeriodId = null, fantasyFilter = null) {
   const url = new URL(base);
   url.searchParams.set("view", view);
   if (scoringPeriodId != null) url.searchParams.set("scoringPeriodId", String(scoringPeriodId));
@@ -22,7 +22,8 @@ async function fetchView(view, scoringPeriodId = null) {
     headers: {
       Accept: "application/json",
       "User-Agent": "OnThursdaysWeFantasy/1.0",
-      Cookie: `espn_s2=${espnS2}; SWID=${swid}`
+      Cookie: `espn_s2=${espnS2}; SWID=${swid}`,
+      ...(fantasyFilter ? { "X-Fantasy-Filter": JSON.stringify(fantasyFilter) } : {})
     }
   });
 
@@ -135,6 +136,50 @@ for (let week = 1; week <= currentScoringPeriod; week++) {
     JSON.stringify(weeklyBoxscore, null, 2) + "\n"
   );
 }
+
+// Free agents and waiver players with each week's points, for the team
+// profiles' waiver targets. The pool is today's free agents; weeks they were
+// rostered are excluded later. Only the fields we use are kept.
+async function fetchFreeAgentWeeks(lastWeek) {
+  const FREE_AGENT_POOL = 400;
+  const weeks = {};
+  try {
+    for (let week = 1; week <= lastWeek; week++) {
+      const data = await fetchView("kona_player_info", week, {
+        players: {
+          filterStatus: { value: ["FREEAGENT", "WAIVERS"] },
+          limit: FREE_AGENT_POOL,
+          sortPercOwned: { sortPriority: 1, sortAsc: false }
+        }
+      });
+      weeks[week] = (data.players || [])
+        .map(entry => {
+          const player = entry.player || {};
+          const stat = (player.stats || []).find(s =>
+            Number(s.scoringPeriodId) === week && Number(s.statSourceId) === 0 && Number(s.statSplitTypeId) === 1
+          );
+          return {
+            playerId: Number(player.id ?? entry.id),
+            name: player.fullName || `Player #${entry.id}`,
+            defaultPositionId: Number(player.defaultPositionId || 0),
+            eligibleSlots: (player.eligibleSlots || []).map(Number),
+            points: Number(stat?.appliedTotal)
+          };
+        })
+        .filter(p => Number.isFinite(p.points) && p.points > 0);
+      console.log(`Week ${week}: ${weeks[week].length} free agents with points.`);
+    }
+    await writeFile(
+      "data/current/free-agents.json",
+      JSON.stringify({ fetchedAt: new Date().toISOString(), weeks }) + "\n"
+    );
+  } catch (error) {
+    // Waiver targets are optional; keep the previous file if this fails.
+    console.warn(`Free agent fetch skipped: ${error.message}`);
+  }
+}
+
+await fetchFreeAgentWeeks(currentScoringPeriod);
 
 await writeFile(
   "data/current/metadata.json",
