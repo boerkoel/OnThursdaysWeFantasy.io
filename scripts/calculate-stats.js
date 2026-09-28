@@ -57,8 +57,11 @@ for (const week of completedWeeks) {
   weeklyMedianByWeek.set(week, round(median));
 }
 
+// Standings (and therefore playoff seeding) count regular-season games only,
+// so playoff results can't reshuffle the seeds.
+const regularSeasonWeeks = Number(settings.settings?.scheduleSettings?.matchupPeriodCount || 14);
 const standings = [...teams.values()].map(team => {
-  const games=completed.filter(m=>m.homeTeamId===team.id||m.awayTeamId===team.id);
+  const games=completed.filter(m=>m.week<=regularSeasonWeeks&&(m.homeTeamId===team.id||m.awayTeamId===team.id));
   let wins=0,losses=0,ties=0,h2hWins=0,h2hLosses=0,medianWins=0,medianLosses=0,pointsFor=0,pointsAgainst=0;
   for(const g of games){
     const home=g.homeTeamId===team.id;
@@ -229,11 +232,19 @@ const playoffSeeds = allByPoints.slice(0, playoffTeamCount).map((team,index)=>({
 const nonPlayoffTeams = allByPoints.slice(playoffTeamCount).map((team,index)=>({...team,seed:playoffTeamCount+index+1}));
 
 const playoffSeedMap = new Map(playoffSeeds.map(t=>[t.seed,t]));
+const week15Completed = matchups.filter(m=>m.week===15 && m.completed);
+// Semifinals are reseeded: once the quarterfinals are final, the #1 seed plays
+// the lowest remaining seed (the higher seed number) and #2 plays the other.
+const quarterfinalWinnerSeeds = week15Completed
+  .map(m => playoffSeeds.find(s => s.id === (m.winner === "HOME" ? m.homeTeamId : m.awayTeamId))?.seed)
+  .filter(seed => seed >= 3)
+  .sort((a,b) => b - a);
+const semifinalOpponentSeed = { 1: quarterfinalWinnerSeeds[0], 2: quarterfinalWinnerSeeds[1] };
 const playoffSchedule = [
   {id:"qf1",week:15,round:"Quarterfinal",homeSeed:3,awaySeed:6},
   {id:"qf2",week:15,round:"Quarterfinal",homeSeed:4,awaySeed:5},
-  {id:"sf1",week:16,round:"Semifinal",homeSeed:1,homeBye:true},
-  {id:"sf2",week:16,round:"Semifinal",homeSeed:2,homeBye:true},
+  {id:"sf1",week:16,round:"Semifinal",homeSeed:1,homeBye:true,awaySeed:quarterfinalWinnerSeeds.length === 2 ? semifinalOpponentSeed[1] : undefined},
+  {id:"sf2",week:16,round:"Semifinal",homeSeed:2,homeBye:true,awaySeed:quarterfinalWinnerSeeds.length === 2 ? semifinalOpponentSeed[2] : undefined},
   {id:"final",week:17,round:"Championship"},
   {id:"third",week:17,round:"Third Place"}
 ].map(g=>({
@@ -242,7 +253,6 @@ const playoffSchedule = [
   awayTeam:g.awaySeed?playoffSeedMap.get(g.awaySeed)?.name:null
 }));
 
-const week15Completed = matchups.filter(m=>m.week===15 && m.completed);
 const playoffLosers = week15Completed.map(m => {
   const loserId = m.winner === "HOME" ? m.awayTeamId : m.homeTeamId;
   const winnerId = m.winner === "HOME" ? m.homeTeamId : m.awayTeamId;
@@ -251,11 +261,14 @@ const playoffLosers = week15Completed.map(m => {
 }).filter(x=>x.teamId);
 
 const sortedNonPlayoffTeams = [...nonPlayoffTeams].sort((a,b)=>a.seed-b.seed);
-const sortedPlayoffLosers = [...playoffLosers].sort((a,b)=>(a.playoffSeed??99)-(b.playoffSeed??99));
+// Lower-ranked loser (higher seed number) first: it becomes Ultimate Loser #7,
+// the higher-ranked loser #8.
+const sortedPlayoffLosers = [...playoffLosers].sort((a,b)=>(b.playoffSeed??0)-(a.playoffSeed??0));
 
 // The Ultimate Loser field is an 8-team bracket: the six regular-season
 // non-playoff teams are seeded first, followed by the two Week 15 playoff
-// losers. Until Week 15 is complete, those final two spots remain labeled.
+// losers: the lower-ranked one at #7 and the higher-ranked one at #8. Until
+// Week 15 is complete, those final two spots remain labeled.
 const ultimateEntrants = [
   ...sortedNonPlayoffTeams
     .slice(0,6)
@@ -269,15 +282,34 @@ const ultimateEntrants = [
     : {seed:8,teamId:null,team:"TBD",source:"WEEK_15_PLAYOFF_LOSER",playoffSeed:null,opponent:null}
 ];
 
+// The site runs the Ultimate Loser bracket itself (ESPN doesn't schedule
+// these games), so each team's score for the week comes from whatever ESPN
+// matchup it played, or else from its starting lineup that week.
+const ultimateLoserRosters = new Map();
+async function loadUltimateLoserWeek(week) {
+  if (!ultimateLoserRosters.has(week)) {
+    ultimateLoserRosters.set(week, await readJson(`data/current/mRoster-week-${week}.json`).catch(() => null));
+  }
+}
+function weekIsOver(week) {
+  return completedWeeks.includes(week) || week < currentWeek || (week === currentWeek && currentWeekFinal);
+}
+function teamWeekScore(teamId, week) {
+  const game = matchups.find(m => m.week === week && (m.homeTeamId === teamId || m.awayTeamId === teamId));
+  if (game) return game.homeTeamId === teamId ? game.homeScore : game.awayScore;
+  const team = (ultimateLoserRosters.get(week)?.teams || []).find(t => Number(t.id) === Number(teamId));
+  if (!team) return null;
+  return round((team.roster?.entries || [])
+    .filter(e => ![20, 21].includes(Number(e.lineupSlotId)))
+    .reduce((sum, e) => sum + Number((e.playerPoolEntry?.player?.stats || []).find(st =>
+      Number(st.scoringPeriodId) === week && Number(st.statSourceId) === 0 && Number(st.statSplitTypeId) === 1
+    )?.appliedTotal || 0), 0));
+}
 function completedUltimateLoserGame(teamAId, teamBId, week) {
-  const game = matchups.find(m =>
-    m.week === week &&
-    ((m.homeTeamId === teamAId && m.awayTeamId === teamBId) ||
-     (m.homeTeamId === teamBId && m.awayTeamId === teamAId))
-  );
-  if (!game || !game.completed) return null;
-  const aScore = game.homeTeamId === teamAId ? game.homeScore : game.awayScore;
-  const bScore = game.homeTeamId === teamBId ? game.homeScore : game.awayScore;
+  if (!weekIsOver(week)) return null;
+  const aScore = teamWeekScore(teamAId, week);
+  const bScore = teamWeekScore(teamBId, week);
+  if (aScore == null || bScore == null) return null;
   // Ultimate Loser advances the lower-scoring team.
   return {
     teamAId,
@@ -305,6 +337,12 @@ const ulRound16Pairs = [
   {home:ultimateEntrants.find(t=>t.seed===3),away:ultimateEntrants.find(t=>t.seed===6)},
   {home:ultimateEntrants.find(t=>t.seed===4),away:ultimateEntrants.find(t=>t.seed===5)}
 ].filter(p=>p.home && p.away);
+
+// The current week counts as over once every NFL game in it is final.
+const latestScoreboard = await readJson("data/current/scoreboard.json").catch(() => null);
+const currentWeekFinal = Number(latestScoreboard?.week) === currentWeek &&
+  (latestScoreboard?.nflGames || []).length > 0 && latestScoreboard.nflGames.every(g => g.completed);
+for (const week of [16, 17, 18]) await loadUltimateLoserWeek(week);
 
 const ulRound16Results = ulRound16Pairs
   .map(p=>completedUltimateLoserGame(p.home.teamId,p.away.teamId,16))
@@ -416,11 +454,11 @@ function buildWeeklyRecap(week) {
     add("BLOWOUT","💥 " + name(winnerId) + " beat " + name(loserId) + " " + money(winnerScore) + "-" + money(loserScore) + " (" + money(topGame.margin) + " points).",75);
   }
 
-  const loser = games.flatMap(m => [
-    {teamId:m.homeTeamId,score:Number(m.homeScore),result:m.winner==="HOME"},
-    {teamId:m.awayTeamId,score:Number(m.awayScore),result:m.winner==="AWAY"}
-  ]).filter(x=>!x.result).sort((a,b)=>b.score-a.score)[0];
-  if (loser && loser.score >= 100) add("LEAGUE GOSSIP","👀 " + name(loser.teamId) + " scored " + money(loser.score) + " and still took the L. That's a rough one.",70);
+  const luckyWinner = games.flatMap(m => [
+    {teamId:m.homeTeamId,score:Number(m.homeScore),won:m.winner==="HOME"},
+    {teamId:m.awayTeamId,score:Number(m.awayScore),won:m.winner==="AWAY"}
+  ]).filter(x=>x.won && Number.isFinite(median) && x.score < median).sort((a,b)=>a.score-b.score)[0];
+  if (luckyWinner) add("LUCKY WIN","🍀 " + name(luckyWinner.teamId) + " won with just " + money(luckyWinner.score) + " points — below the league median.",70);
 
   return stories.sort((a,b)=>b.priority-a.priority).slice(0,6).map(({type,text})=>({type,text}));
 }

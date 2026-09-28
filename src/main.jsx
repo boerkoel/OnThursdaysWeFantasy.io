@@ -12,7 +12,18 @@ import { fetchData, gameState, money, useLiveData } from "./lib/data.js";
 import { TeamLogo, UpdatedAgo, useChangedScores } from "./components/LiveBits.jsx";
 import LeagueWire from "./components/LeagueWire.jsx";
 import TeamCards from "./components/TeamCards.jsx";
-import { DeathWatch, RestInPeace } from "./components/DeathWatch.jsx";
+import { DeathWatch } from "./components/DeathWatch.jsx";
+
+// One matchup box in a bracket.
+function BracketGame({ top, bottom, className = "" }) {
+  return (
+    <div className={("bracket-game " + className).trim()}>
+      <div><small>{top.label}</small><strong>{top.team}</strong></div>
+      <div><small>{bottom.label}</small><strong>{bottom.team}</strong></div>
+    </div>
+  );
+}
+const pairs = list => list.reduce((out, item, i) => (i % 2 ? out[out.length - 1].push(item) : out.push([item]), out), []);
 
 // One side of a live matchup card.
 function MatchupTeam({ team, opponent, logo, projected, flashing, dotClass }) {
@@ -77,7 +88,8 @@ function App() {
     if (Number.isFinite(bProjection)) return 1;
     return Number(b.score) - Number(a.score);
   });
-  const displayScores = scoreSort === "projected" ? projectedSortScores : sortedScores;
+  const oddsSortScores = [...scores].sort((a, b) => Number(b.aboveMedianProbability ?? -1) - Number(a.aboveMedianProbability ?? -1) || Number(b.score) - Number(a.score));
+  const displayScores = scoreSort === "projected" ? projectedSortScores : scoreSort === "odds" ? oddsSortScores : sortedScores;
   const preGame = scores.length > 0 && scores.every(s => Number(s.score) === 0 && Number(s.opponentScore) === 0);
   const currentWeekComplete = raffle.completedWeeks?.includes(scoreboard.week);
   const teamLogos = Object.fromEntries((teamsData.teams || []).map(t => [t.id, t.logo]));
@@ -167,6 +179,7 @@ function App() {
           <div className="score-sort-controls" role="group" aria-label="Sort scoreboard">
           <button className={scoreSort === "current" ? "active" : ""} onClick={() => setScoreSort("current")}>CURRENT SCORE</button>
           <button className={scoreSort === "projected" ? "active" : ""} onClick={() => setScoreSort("projected")}>PROJECTED SCORE</button>
+          <button className={scoreSort === "odds" ? "active" : ""} onClick={() => setScoreSort("odds")}>ODDS</button>
         </div>
         {displayScores.map((s, i) => <React.Fragment key={s.teamId}>
             {i === Math.floor(displayScores.length / 2) && <div className="median-line"><span>PROJECTED MEDIAN {scoreboard.projectedMedian != null ? money(scoreboard.projectedMedian) : "—"}</span></div>}
@@ -232,47 +245,48 @@ function App() {
           <div><span className="section-kicker">ROAD TO THE TITLE</span><h2>2026 Playoffs</h2></div>
           <span className="record-count">{playoffs.status === "ACTIVE" ? "PLAYOFFS ACTIVE" : "PROJECTED FROM CURRENT STANDINGS"}</span>
         </div>
-        <p className="playoff-intro">Six teams qualify. Seeding is based on total points scored, with the top two seeds receiving first-round byes. ESPN's playoff reseeding is reflected in the semifinal placeholders.</p>
+        <p className="playoff-intro">Six teams qualify. Seeding is based on total points scored, with the top two seeds receiving first-round byes. Teams are reseeded after the quarterfinals: the #1 seed plays the lowest remaining seed (dashed lines).</p>
         <div className="bracket">
-          <div className="bracket-round">
+          <div className="bracket-round reseed-next">
             <div className="bracket-round-title">WEEK 15 · QUARTERFINALS</div>
-            {playoffs.schedule.filter(g=>g.round==="Quarterfinal").map(g => {
-              const home = playoffs.seeds.find(s=>s.seed===g.homeSeed);
-              const away = playoffs.seeds.find(s=>s.seed===g.awaySeed);
-              return <div className="bracket-game" key={g.id}>
-                <div><small>{home ? (home.seed >= 7 ? "TBD" : "#" + home.seed) : "TBD"}</small><strong>{home?.team || "TBD"}</strong></div>
-                <span className="bracket-vs">vs</span>
-                <div><small>{away ? (away.seed >= 7 ? "TBD" : "#" + away.seed) : "TBD"}</small><strong>{away?.team || "TBD"}</strong></div>
-              </div>;
-            })}
+            <div className="bracket-games">
+              {playoffs.schedule.filter(g => g.round === "Quarterfinal").map(g => {
+                const home = playoffs.seeds.find(s => s.seed === g.homeSeed);
+                const away = playoffs.seeds.find(s => s.seed === g.awaySeed);
+                return <BracketGame key={g.id}
+                  top={{ label: home ? "#" + home.seed : "TBD", team: home?.team || "TBD" }}
+                  bottom={{ label: away ? "#" + away.seed : "TBD", team: away?.team || "TBD" }} />;
+              })}
+            </div>
           </div>
           <div className="bracket-round">
             <div className="bracket-round-title">WEEK 16 · SEMIFINALS</div>
-            {playoffs.schedule.filter(g=>g.round==="Semifinal").map(g => <div className="bracket-game" key={g.id}>
-              <div><small>#{g.homeSeed}</small><strong>{g.homeTeam || "TBD"}</strong></div>
-              <span>vs</span>
-              <div><small>RESEED</small><strong>Highest remaining seed</strong></div>
-            </div>)}
+            <div className="bracket-games">
+              <div className="bracket-pair">
+                {playoffs.schedule.filter(g => g.round === "Semifinal").map(g => <BracketGame key={g.id}
+                  top={{ label: "#" + g.homeSeed + " · BYE", team: g.homeTeam || "TBD" }}
+                  bottom={g.awayTeam
+                    ? { label: "#" + g.awaySeed, team: g.awayTeam }
+                    : { label: "RESEED", team: g.homeSeed === 1 ? "Lowest remaining seed" : "Highest remaining seed" }} />)}
+              </div>
+            </div>
           </div>
-          <div className="bracket-round championship-round">
-            <div className="bracket-round-title championship-week-title">CHAMPIONSHIP WEEK</div>
-            <div className="championship-payouts">
-              <strong>1st: $375</strong>
-              <strong>2nd: $225</strong>
-              <strong>3rd: $100</strong>
+          <div className="bracket-round">
+            <div className="bracket-round-title">WEEK 17 · CHAMPIONSHIP</div>
+            <div className="bracket-games">
+              <BracketGame className="championship-game" top={{ label: "SF WINNER", team: "Semifinal winner" }} bottom={{ label: "SF WINNER", team: "Semifinal winner" }} />
             </div>
-            <div className="bracket-round-title championship-match-title">WEEK 17 · CHAMPIONSHIP MATCH</div>
-            <div className="bracket-game championship-game">
-              <div><small>FINAL</small><strong>Semifinal Winner</strong></div>
-              <span>vs</span>
-              <div><small>FINAL</small><strong>Semifinal Winner</strong></div>
-            </div>
-            <div className="bracket-round-title third-place-title">WEEK 17 · THIRD PLACE</div>
-            <div className="bracket-game third-place-game">
-              <div><small>3RD PLACE</small><strong>SF Loser</strong></div>
-              <span>vs</span>
-              <div><small>3RD PLACE</small><strong>SF Loser</strong></div>
-            </div>
+          </div>
+        </div>
+        <div className="bracket-footer">
+          <div>
+            <div className="bracket-round-title">WEEK 17 · THIRD PLACE</div>
+            <BracketGame top={{ label: "SF LOSER", team: "Semifinal loser" }} bottom={{ label: "SF LOSER", team: "Semifinal loser" }} />
+          </div>
+          <div className="championship-payouts">
+            <strong>1st: $375</strong>
+            <strong>2nd: $225</strong>
+            <strong>3rd: $100</strong>
           </div>
         </div>
         <div className="seed-board">
@@ -285,52 +299,39 @@ function App() {
           <div><span className="section-kicker">THE OTHER ROAD</span><h2>Ultimate Loser</h2></div>
           <span className="record-count">WEEKS 16–18 · 8 TEAMS</span>
         </div>
-        <p className="playoff-intro">Three weeks. Eight-team single elimination. The lower-scoring team advances. The six regular-season non-playoff teams are seeded 1–6, followed by the lower-ranked Week 15 playoff loser at #7 and the higher-ranked Week 15 playoff loser at #8.</p>
+        <p className="playoff-intro">Three weeks. Eight-team single elimination. The lower-scoring team advances, and teams are reseeded after the quarterfinals (dashed lines). The six regular-season non-playoff teams are seeded 1–6, followed by the lower-ranked Week 15 playoff loser at #7 and the higher-ranked Week 15 playoff loser at #8.</p>
         <div className="bracket">
-          <div className="bracket-round">
-            <div className="bracket-round-title">WEEK 16 · QUARTERFINALS</div>
-            {playoffs.ultimateLoser?.schedule.filter(g=>g.round==="Quarterfinal").map(g => {
-              const home = playoffs.ultimateLoser.entrants.find(s=>s.seed===g.homeSeed);
-              const away = playoffs.ultimateLoser.entrants.find(s=>s.seed===g.awaySeed);
-              return <div className="bracket-game-wrap" key={g.id}>
-                <div className="bracket-game">
-                  <div><small>{"#" + g.homeSeed}</small><strong>{home?.team || "TBD"}</strong></div>
-                  <span className="bracket-vs">VS.</span>
-                  <div><small>{"#" + g.awaySeed}</small><strong>{away?.team || "TBD"}</strong></div>
-                </div>
-                <small className="bracket-advance">LOSER ADVANCES</small>
-              </div>;
-            })}
+          <div className="bracket-round reseed-next">
+            <div className="bracket-round-title">WEEK 16 · QUARTERFINALS · LOSER ADVANCES</div>
+            <div className="bracket-games">
+              {pairs((playoffs.ultimateLoser?.schedule || []).filter(g => g.round === "Quarterfinal")).map((pair, p) => <div className="bracket-pair" key={p}>
+                {pair.map(g => {
+                  const home = playoffs.ultimateLoser.entrants.find(s => s.seed === g.homeSeed);
+                  const away = playoffs.ultimateLoser.entrants.find(s => s.seed === g.awaySeed);
+                  return <BracketGame key={g.id} top={{ label: "#" + g.homeSeed, team: home?.team || "TBD" }} bottom={{ label: "#" + g.awaySeed, team: away?.team || "TBD" }} />;
+                })}
+              </div>)}
+            </div>
           </div>
           <div className="bracket-round">
-            <div className="bracket-round-title">WEEK 17 · SEMIFINALS</div>
-            {playoffs.ultimateLoser?.schedule.filter(g=>g.round==="Semifinal").length
-              ? playoffs.ultimateLoser.schedule.filter(g=>g.round==="Semifinal").map(g => <div className="bracket-game-wrap" key={g.id}>
-                  <div className="bracket-game">
-                    <div><small>{g.reseeded ? "RESEEDED" : "QF"}</small><strong>{g.homeTeam || "QF Loser"}</strong></div>
-                    <span className="bracket-vs">VS.</span>
-                    <div><small>{g.reseeded ? "RESEEDED" : "QF"}</small><strong>{g.awayTeam || "QF Loser"}</strong></div>
-                  </div>
-                  <small className="bracket-advance">LOSER ADVANCES</small>
-                </div>)
-              : [1,2].map(i => <div className="bracket-game-wrap" key={`ul-sf-placeholder-${i}`}>
-                  <div className="bracket-game">
-                    <div><small>RESEED</small><strong>QF Loser</strong></div>
-                    <span className="bracket-vs">VS.</span>
-                    <div><small>RESEED</small><strong>QF Loser</strong></div>
-                  </div>
-                  <small className="bracket-advance">LOSER ADVANCES</small>
-                </div>)}
-          </div>
-          <div className="bracket-round">
-            <div className="bracket-round-title">WEEK 18 · ULTIMATE LOSER CHAMPIONSHIP</div>
-            <div className="bracket-game-wrap championship-wrap">
-              <div className="bracket-game championship-game">
-                <div><small>FINALISTS</small><strong>SF Loser</strong></div>
-                <span className="bracket-vs">VS.</span>
-                <div><small>FINALISTS</small><strong>SF Loser</strong></div>
+            <div className="bracket-round-title">WEEK 17 · SEMIFINALS · LOSER ADVANCES</div>
+            <div className="bracket-games">
+              <div className="bracket-pair">
+                {(playoffs.ultimateLoser?.schedule || []).filter(g => g.round === "Semifinal").length
+                  ? playoffs.ultimateLoser.schedule.filter(g => g.round === "Semifinal").map(g => <BracketGame key={g.id}
+                      top={{ label: g.reseeded ? "RESEEDED" : "QF", team: g.homeTeam || "QF loser" }}
+                      bottom={{ label: g.reseeded ? "RESEEDED" : "QF", team: g.awayTeam || "QF loser" }} />)
+                  : [1, 2].map(i => <BracketGame key={i} top={{ label: "RESEED", team: "QF loser" }} bottom={{ label: "RESEED", team: "QF loser" }} />)}
               </div>
-              <small className="bracket-final-label">ULTIMATE LOSER</small>
+            </div>
+          </div>
+          <div className="bracket-round">
+            <div className="bracket-round-title">WEEK 18 · ULTIMATE LOSER</div>
+            <div className="bracket-games">
+              <div className="bracket-final">
+                <BracketGame className="championship-game" top={{ label: "FINALIST", team: "SF loser" }} bottom={{ label: "FINALIST", team: "SF loser" }} />
+                <small className="bracket-final-label">LOWER SCORE IS THE ULTIMATE LOSER</small>
+              </div>
             </div>
           </div>
         </div>
@@ -338,7 +339,7 @@ function App() {
           {(playoffs.ultimateLoser?.entrants || []).map(s => <div className="seed-row" key={s.seed}>
             <span>{"#" + s.seed}</span>
             <strong>{s.team}</strong>
-            <span>{s.source==="REGULAR_SEASON" ? "REG SEED #" + s.regularSeasonSeed : "W15 LOSER"}</span>
+            <span>{s.source==="REGULAR_SEASON" ? "REG SEED #" + s.regularSeasonSeed : s.seed === 7 ? "W15 (LOWER RANKED) LOSER" : "W15 (HIGHER RANKED) LOSER"}</span>
             <span>{s.pointsFor != null ? money(s.pointsFor) + " PF" : "TBD"}</span>
           </div>)}
         </div>
@@ -396,7 +397,6 @@ function App() {
           {standingsData.standings.map((t, i) => <div className="standing-row" key={t.id}><span>{i+1}</span><strong><TeamLogo src={teamLogos[t.id]} />{t.name}</strong><span>{t.wins}-{t.losses}{t.ties ? `-${t.ties}` : ""}</span><span>{money(t.pointsFor)} PF</span></div>)}
         </div>
       </section>
-      <RestInPeace guillotine={guillotine} />
       <footer>On Thursdays We Fantasy · 2026 · Officially unofficial.</footer>
     </main>
   );

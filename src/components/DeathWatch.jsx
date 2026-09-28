@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { formatDay, money } from "../lib/data.js";
 import obituaryData from "../../data/current/obituaries.json";
 import obituariesMarkdown from "../../content/obituaries.md?raw";
@@ -16,6 +16,82 @@ const handwrittenObituaries = new Map(
     })
     .filter(([, text]) => text)
 );
+
+const obituaryFor = chop => handwrittenObituaries.get(chop.team.trim().toLowerCase()) ||
+  (obituaryData.obituaries || []).find(o => o.teamId === chop.teamId && o.week === chop.week)?.text;
+
+const SURVIVAL_SORTS = {
+  odds: { label: "ODDS", compare: (a, b) => a.chopProbability - b.chopProbability || b.projected - a.projected },
+  current: { label: "CURRENT", compare: (a, b) => b.score - a.score },
+  projected: { label: "PROJECTED", compare: (a, b) => b.projected - a.projected }
+};
+
+// Every surviving team, sortable; collapsed by default.
+function SurvivalOdds({ teams }) {
+  const [sort, setSort] = useState("odds");
+  const sorted = [...teams].sort(SURVIVAL_SORTS[sort].compare);
+  return (
+    <details className="collapsible">
+      <summary>Survival odds <span>{teams.length} teams</span></summary>
+      <div className="score-sort-controls" role="group" aria-label="Sort survival odds">
+        {Object.entries(SURVIVAL_SORTS).map(([key, option]) =>
+          <button key={key} type="button" className={sort === key ? "active" : ""} onClick={() => setSort(key)}>{option.label}</button>)}
+      </div>
+      <div className="survival-table">
+        <div className="survival-row survival-header"><span>#</span><span>Team</span><span>Current</span><span>Projected</span><span>Left</span><span>Survive</span></div>
+        {sorted.map((t, i) => <div className="survival-row" key={t.teamId}>
+          <span>{i + 1}</span>
+          <strong>{t.team}</strong>
+          <span>{money(t.score)}</span>
+          <span>{money(t.projected)}</span>
+          <span>{t.playersLeft ? t.playersLeft : "final"}</span>
+          <b>{money(100 - t.chopProbability)}%</b>
+        </div>)}
+      </div>
+    </details>
+  );
+}
+
+// Obituaries for chopped teams, one at a time; collapsed by default. All
+// cards share one grid cell so the box keeps the height of the longest one.
+function Obituaries({ guillotine }) {
+  const chopped = guillotine.chopped || [];
+  const [index, setIndex] = useState(0);
+  if (!chopped.length) return null;
+  const active = index % chopped.length;
+  const step = delta => setIndex((active + delta + chopped.length) % chopped.length);
+  return (
+    <details className="collapsible" id="rip">
+      <summary>Rest in peace <span>{chopped.length} chopped</span></summary>
+      <div className="obit-carousel">
+        <div className="obit-stack">
+          {chopped.map((c, i) => {
+            const obituary = obituaryFor(c);
+            return <article className={i === active ? "obit-card active" : "obit-card"} aria-hidden={i !== active} key={c.teamId}>
+              <span className="obit-icon">🪦</span>
+              <small>{formatDay(guillotine.draftDate)} — {formatDay(c.diedOn)}</small>
+              <strong>{c.team}</strong>
+              <p className="rip-cause">Chopped in Week {c.week} with {money(c.finalScore)} pts{c.survivedBy ? `, ${money(c.margin)} short of ${c.survivedBy.team}` : ""}.</p>
+              {obituary
+                ? obituary.split(/\n\s*\n/).map((paragraph, p) => <p className="rip-obituary" key={p}>{paragraph.replace(/\s*\n\s*/g, " ")}</p>)
+                : <p className="rip-obituary">Obituary pending.</p>}
+            </article>;
+          })}
+        </div>
+        {chopped.length > 1 ? <div className="obit-controls">
+          <button type="button" onClick={() => step(-1)} aria-label="Previous obituary">‹</button>
+          <div className="marquee-dots">{chopped.map((c, i) => <button key={c.teamId} type="button" className={i === active ? "active" : ""} aria-label={"Show " + c.team} onClick={() => setIndex(i)}></button>)}</div>
+          <button type="button" onClick={() => step(1)} aria-label="Next obituary">›</button>
+        </div> : null}
+      </div>
+    </details>
+  );
+}
+
+const openObituaries = () => {
+  const details = document.getElementById("rip");
+  if (details) details.open = true;
+};
 
 export function DeathWatch({ guillotine }) {
   if (!(guillotine.teams?.length)) return null;
@@ -37,44 +113,9 @@ export function DeathWatch({ guillotine }) {
           {t.survivalNeed ? <p>Needs {money(t.survivalNeed.points)} more pts to pass {t.survivalNeed.passTeam}</p> : null}
         </article>)}
       </div>
-      <h3 className="survival-heading">Survival odds</h3>
-      <div className="standings-table">
-        {guillotine.teams.map((t, i) => <div className="standing-row" key={t.teamId}>
-          <span>{i + 1}</span>
-          <strong>{t.team}</strong>
-          <span>{t.playersLeft ? `${money(t.score)} · ${t.playersLeft} left` : `${money(t.score)} · final`}</span>
-          <span>{money(100 - t.chopProbability)}% survive</span>
-        </div>)}
-      </div>
-      {guillotine.chopped?.length ? <p className="median-note">Already chopped: {guillotine.chopped.map(c => `${c.team} (Week ${c.week})`).join(" · ")} · <a href="#rip">Rest in peace</a></p> : null}
-    </section>
-  );
-}
-
-export function RestInPeace({ guillotine }) {
-  if (!(guillotine.chopped?.length)) return null;
-  return (
-    <section id="rip" className="section">
-      <div className="section-heading">
-        <div><span className="section-kicker">{(guillotine.leagueName || "Guillotine league").toUpperCase()}</span><h2>Rest in Peace</h2></div>
-        <span className="record-count">{guillotine.chopped.length} CHOPPED</span>
-      </div>
-      <div className="award-grid rip-grid">
-        {guillotine.chopped.map(c => {
-          // Handwritten obituaries win over generated ones.
-          const obituary = handwrittenObituaries.get(c.team.trim().toLowerCase()) ||
-            (obituaryData.obituaries || []).find(o => o.teamId === c.teamId && o.week === c.week)?.text;
-          return <article className="award-card" key={c.teamId}>
-            <span>🪦</span>
-            <small>{formatDay(guillotine.draftDate)} — {formatDay(c.diedOn)}</small>
-            <strong>{c.team}</strong>
-            <p className="rip-cause">Chopped in Week {c.week} with {money(c.finalScore)} pts{c.survivedBy ? `, ${money(c.margin)} short of ${c.survivedBy.team}` : ""}.</p>
-            {obituary
-              ? obituary.split(/\n\s*\n/).map((paragraph, i) => <p className="rip-obituary" key={i}>{paragraph.replace(/\s*\n\s*/g, " ")}</p>)
-              : <p className="rip-obituary">Obituary pending.</p>}
-          </article>;
-        })}
-      </div>
+      {guillotine.chopped?.length ? <p className="median-note">Already chopped: {guillotine.chopped.map(c => `${c.team} (Week ${c.week})`).join(" · ")} · <a href="#rip" onClick={openObituaries}>Rest in peace</a></p> : null}
+      <SurvivalOdds teams={guillotine.teams} />
+      <Obituaries guillotine={guillotine} />
     </section>
   );
 }
