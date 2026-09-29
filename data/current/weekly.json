@@ -11,7 +11,11 @@
         },
         {
           "type": "CLOSEST MATCHUP",
-          "text": "⚔️ The Mahomies edged Claremont In Yo Stace! by just 3.80 points."
+          "text": "⚔️ Claremont In Yo Stace! edged The Mahomies by just 3.80 points."
+        },
+        {
+          "type": "INSTANT REGRET",
+          "text": "🤦 Ruffing the Passer would have won and finished above the median by starting Jordan Love (21.48) over Justin Herbert (13.26)."
         },
         {
           "type": "BIGGEST REGRET",
@@ -24,10 +28,35 @@
         {
           "type": "BLOWOUT",
           "text": "💥 Mr. Action Jackson beat Beautiful Dark Twisted Fantasy 168.66-83.06 (85.60 points)."
+        }
+      ],
+      "regrets": [
+        {
+          "teamId": 9,
+          "team": "The Mahomies",
+          "matchupId": 3,
+          "benchPlayer": "Matthew Golden",
+          "benchPoints": 15.5,
+          "starter": "Ja'Marr Chase",
+          "starterPoints": 3.2,
+          "gain": 12.3,
+          "flips": [
+            "win"
+          ]
         },
         {
-          "type": "LUCKY WIN",
-          "text": "🍀 Claremont In Yo Stace! won with just 107.66 points — below the league median."
+          "teamId": 7,
+          "team": "Ruffing the Passer",
+          "matchupId": 6,
+          "benchPlayer": "Jordan Love",
+          "benchPoints": 21.48,
+          "starter": "Justin Herbert",
+          "starterPoints": 13.26,
+          "gain": 8.22,
+          "flips": [
+            "win",
+            "median"
+          ]
         }
       ],
       "matchups": [
@@ -127,7 +156,11 @@
         },
         {
           "type": "CLOSEST MATCHUP",
-          "text": "⚔️ Kirbo Crushers edged The Mahomies by just 25.92 points."
+          "text": "⚔️ The Mahomies edged Kirbo Crushers by just 25.92 points."
+        },
+        {
+          "type": "INSTANT REGRET",
+          "text": "🤦 Ramosverse would have finished above the median by starting DeVonta Smith (29.70) over Caleb Douglas (3.90)."
         },
         {
           "type": "BIGGEST REGRET",
@@ -140,6 +173,21 @@
         {
           "type": "BLOWOUT",
           "text": "💥 Claremont In Yo Stace! beat Mr. Action Jackson 168.52-89.60 (78.92 points)."
+        }
+      ],
+      "regrets": [
+        {
+          "teamId": 1,
+          "team": "Ramosverse",
+          "matchupId": 12,
+          "benchPlayer": "DeVonta Smith",
+          "benchPoints": 29.7,
+          "starter": "Caleb Douglas",
+          "starterPoints": 3.9,
+          "gain": 25.8,
+          "flips": [
+            "median"
+          ]
         }
       ],
       "matchups": [
@@ -239,7 +287,11 @@
         },
         {
           "type": "CLOSEST MATCHUP",
-          "text": "⚔️ TDsMaGee edged Ruffing the Passer by just 1.98 points."
+          "text": "⚔️ Ruffing the Passer edged TDsMaGee by just 1.98 points."
+        },
+        {
+          "type": "INSTANT REGRET",
+          "text": "🤦 TDsMaGee would have won and finished above the median by starting Wan'Dale Robinson (18.70) over Jadarian Price (1.20)."
         },
         {
           "type": "BIGGEST REGRET",
@@ -252,10 +304,61 @@
         {
           "type": "BLOWOUT",
           "text": "💥 Brock You Like a Hurricane beat Kyle Tucker 188.98-133.96 (55.02 points)."
+        }
+      ],
+      "regrets": [
+        {
+          "teamId": 4,
+          "team": "Kirbo Crushers",
+          "matchupId": 15,
+          "benchPlayer": "Jakobi Meyers",
+          "benchPoints": 20.4,
+          "starter": "Xavier Worthy",
+          "starterPoints": 5,
+          "gain": 15.4,
+          "flips": [
+            "win"
+          ]
         },
         {
-          "type": "LUCKY WIN",
-          "text": "🍀 Ruffing the Passer won with just 122.48 points — below the league median."
+          "teamId": 2,
+          "team": "TDsMaGee",
+          "matchupId": 16,
+          "benchPlayer": "Wan'Dale Robinson",
+          "benchPoints": 18.7,
+          "starter": "Jadarian Price",
+          "starterPoints": 1.2,
+          "gain": 17.5,
+          "flips": [
+            "win",
+            "median"
+          ]
+        },
+        {
+          "teamId": 7,
+          "team": "Ruffing the Passer",
+          "matchupId": 16,
+          "benchPlayer": "Keenan Allen",
+          "benchPoints": 18.3,
+          "starter": "Rome Odunze",
+          "starterPoints": 7.4,
+          "gain": 10.9,
+          "flips": [
+            "median"
+          ]
+        },
+        {
+          "teamId": 10,
+          "team": "Gibb it to Me Baby",
+          "matchupId": 18,
+          "benchPlayer": "Brock Purdy",
+          "benchPoints": 31.28,
+          "starter": "Jared Goff",
+          "starterPoints": 19.36,
+          "gain": 11.92,
+          "flips": [
+            "median"
+          ]
         }
       ],
       "matchups": [
