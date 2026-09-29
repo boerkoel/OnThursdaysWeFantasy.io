@@ -263,11 +263,12 @@ function buildMarqueeStories() {
   addSwingStories(add, matchupStates);
   addRaffleStories(add, previousScores);
   addPrimetimeStories(add, matchupStates);
+  addWeekAheadStories(add);
 
   const biggestLead=matchupStates.filter(x=>!x.m.completed).sort((a,b)=>b.diff-a.diff)[0];
   if(biggestLead&&biggestLead.diff>=20){const leader=biggestLead.currentDiff>0?biggestLead.a.team:biggestLead.b.team;const trailer=biggestLead.currentDiff>0?biggestLead.b.team:biggestLead.a.team;add("LEAGUE GOSSIP","👀 League gossip: " + leader + " has " + money(biggestLead.diff) + " pts to play with against " + trailer + ".",28);}
   else if(regret?.bestSwap) add("LEAGUE GOSSIP","👀 League gossip: " + regret.team + " may be wishing they trusted " + regret.bestSwap.benchPlayer.name + " — " + pts(regret.bestSwap.benchPlayer.actual) + " are sitting on the bench.",regret.bestSwap.benchPlayer.actual+5);
-  else if(close) add("LEAGUE GOSSIP","👀 League gossip: " + close.a.team + " and " + close.b.team + " are separated by " + money(close.diff) + " pts. Somebody's Sunday just got interesting.",26-close.diff);
+  else if(close && Number(close.a.score) + Number(close.b.score) > 0) add("LEAGUE GOSSIP","👀 League gossip: " + close.a.team + " and " + close.b.team + " are separated by " + money(close.diff) + " pts. Somebody's Sunday just got interesting.",26-close.diff);
   return stories.filter((story,i,arr)=>arr.findIndex(x=>x.text===story.text)===i).sort((a,b)=>b.score-a.score);
 }
 // Waiver-wire news: players added in the last week. Hot pickups when they're
@@ -527,5 +528,149 @@ await writeJson("data/current/key-plays.json", {
   updatedAt: new Date().toISOString(),
   plays: keyPlays
 });
-const marqueeStories=buildMarqueeStories();
-await writeJson("data/current/marquee.json",{week:currentWeek,lastUpdated:new Date().toISOString(),stories:marqueeStories});
+
+// ---- Week in review -------------------------------------------------------
+// For 48 hours after the last game of a week (usually MNF), the wire mixes
+// that week's biggest storylines in with stories about the week ahead.
+const REVIEW_HOURS_AFTER_LAST_GAME = 48;
+const GAME_LENGTH_MS = 4 * 60 * 60 * 1000;
+const season = Number(process.env.ESPN_SEASON || matchupData.seasonId || new Date().getFullYear());
+
+// Swing headlines, in the past tense, for matchups already decided. Saved in
+// marquee.json so they outlive the scoreboard's win history once the week
+// rolls over. Returns null when there's nothing decided to report.
+function weekHeadlines() {
+  const history = Number(liveScoreboard.winHistory?.week) === currentWeek ? liveScoreboard.winHistory.points || [] : [];
+  if (history.length < 3) return null;
+  const oddsOf = id => history.map(pt => Number(pt.p?.[id])).filter(Number.isFinite);
+  const byTeam = new Map(currentScores.map(s => [s.teamId, s]));
+  const stories = [];
+  const comebacks = [];
+  const wild = [];
+  for (const m of currentWeekMatchups) {
+    const a = byTeam.get(m.homeTeamId), b = byTeam.get(m.awayTeamId);
+    if (!a || !b) continue;
+    const winner = Number(a.winProbability) >= 100 ? a : Number(b.winProbability) >= 100 ? b : null;
+    if (!winner) continue;
+    const loser = winner === a ? b : a;
+    const low = Math.min(...oddsOf(winner.teamId));
+    if (low <= 25) comebacks.push({winner, loser, low});
+    let favorite = null, flips = 0;
+    for (const p of oddsOf(a.teamId)) {
+      const side = p > 55 ? "a" : p < 45 ? "b" : favorite;
+      if (favorite && side !== favorite) flips++;
+      favorite = side;
+    }
+    if (flips >= 3) wild.push({winner, loser, flips});
+  }
+  const escape = comebacks.sort((x, y) => x.low - y.low)[0];
+  if (escape) stories.push({type:"GREAT ESCAPE", text:"📈 " + escape.winner.team + " was down to " + money(escape.low) + "% against " + escape.loser.team + " — and won.", score:78});
+  const wildest = wild.sort((x, y) => y.flips - x.flips)[0];
+  if (wildest) stories.push({type:"HEART ATTACK GAME", text:"💓 " + wildest.winner.team + " outlasted " + wildest.loser.team + " after the favorite flipped " + wildest.flips + " times.", score:74});
+  return stories.length ? {week:currentWeek, stories} : null;
+}
+
+// When the week's last NFL game kicked off (cached in marquee.json).
+async function lastKickoff(week, previous) {
+  if (previous?.review?.week === week && previous.review.lastKickoff) return previous.review.lastKickoff;
+  try {
+    const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?week=${week}&seasontype=2&season=${season}`);
+    if (!response.ok) return null;
+    const dates = ((await response.json()).events || []).map(e => Date.parse(e.date)).filter(Number.isFinite);
+    return dates.length ? new Date(Math.max(...dates)).toISOString() : null;
+  } catch {
+    return null;
+  }
+}
+
+async function weekInReview(previous, archive) {
+  const week = currentWeek - 1;
+  if (week < 1) return {stories:[], meta:null};
+  const kickoff = await lastKickoff(week, previous);
+  const meta = {week, lastKickoff:kickoff};
+  const reviewUntil = kickoff ? Date.parse(kickoff) + GAME_LENGTH_MS + REVIEW_HOURS_AFTER_LAST_GAME * 60 * 60 * 1000 : 0;
+  if (Date.now() > reviewUntil) return {stories:[], meta};
+
+  const label = type => "WEEK " + week + " · " + type;
+  const stories = [];
+  const weekly = await readJson("data/current/weekly.json").catch(() => null);
+  const recap = (weekly?.weeks || []).find(w => Number(w.week) === week)?.recap || [];
+  const RECAP_SCORES = {"HIGH SCORE":80, "CLOSEST MATCHUP":79, "INSTANT REGRET":77, "TOUGH LUCK":72, "BLOWOUT":70, "LUCKY WIN":69, "BIGGEST REGRET":62};
+  for (const story of recap) stories.push({type:label(story.type), text:story.text, score:RECAP_SCORES[story.type] ?? 60});
+  if (archive?.week === week) for (const story of archive.stories) stories.push({...story, type:label(story.type)});
+  const chop = (guillotineData?.chopped || []).find(c => Number(c.week) === week);
+  if (chop) stories.push({type:label("CHOPPED"), text:"🪦 " + chop.team + " got the axe in " + (guillotineData.leagueName || "the guillotine league") + " with " + pts(chop.finalScore) + (chop.survivedBy ? ", " + pts(chop.margin) + " short of " + chop.survivedBy.team : "") + ".", score:76});
+  return {stories:stories.sort((a, b) => b.score - a.score), meta};
+}
+
+// Alternate review and current stories so neither crowds the other out.
+function interleave(first, second) {
+  const out = [];
+  for (let i = 0; i < Math.max(first.length, second.length); i++) {
+    if (i < second.length) out.push(second[i]);
+    if (i < first.length) out.push(first[i]);
+  }
+  return out;
+}
+
+// ---- Week ahead -----------------------------------------------------------
+// Before anyone in the league has scored this week: rivalry history, streaks,
+// big matchups at the top (or bottom) of the standings, and title odds.
+async function readOptional(path) { return readJson(path).catch(() => null); }
+const recordBook = await readOptional("data/current/record-book.json");
+const standingsData = await readOptional("data/current/standings.json");
+const seasonOddsData = await readOptional("data/current/season-odds.json");
+
+function addWeekAheadStories(add) {
+  if (currentScores.some(s => Number(s.score) !== 0)) return;
+  const record = t => t ? t.h2hWins + "–" + t.h2hLosses : "";
+  const standings = (standingsData?.standings || []);
+  const rankOf = new Map(standings.map((t, i) => [Number(t.id), {...t, rank:i + 1}]));
+
+  // Rivalries: the most-played series among this week's matchups.
+  const managerOf = recordBook?.currentTeamManagers || {};
+  const series = currentWeekMatchups.map(m => {
+    const ma = managerOf[m.homeTeamId], mb = managerOf[m.awayTeamId];
+    const r = (recordBook?.rivalries || []).find(x => (x.a === ma && x.b === mb) || (x.a === mb && x.b === ma));
+    if (!r || r.games < 3) return null;
+    const teamFor = manager => manager === ma ? m.homeTeamId : m.awayTeamId;
+    return {r, teamFor};
+  }).filter(Boolean).sort((x, y) => y.r.games - x.r.games);
+  for (const {r, teamFor} of series.slice(0, 2)) {
+    const [lead, trail, lw, tw] = r.aWins >= r.bWins ? [r.a, r.b, r.aWins, r.bWins] : [r.b, r.a, r.bWins, r.aWins];
+    const recordText = lw === tw ? name(teamFor(lead)) + " and " + name(teamFor(trail)) + " are all square at " + lw + "–" + tw + (r.ties ? "–" + r.ties : "") + " all-time"
+      : name(teamFor(lead)) + " leads " + name(teamFor(trail)) + " " + lw + "–" + tw + (r.ties ? "–" + r.ties : "") + " all-time";
+    const streak = r.streak?.length >= 2 ? ", and " + name(teamFor(r.streak.manager)) + " has won the last " + r.streak.length : "";
+    add("RIVALRY WEEK","🤝 Rivalry week: " + recordText + streak + ".",64 + Math.min(r.games, 10) / 2);
+  }
+
+  // Streaks worth mentioning, with who's next.
+  const opponentOf = id => { const m = currentWeekMatchups.find(x => x.homeTeamId === id || x.awayTeamId === id); return m ? name(m.homeTeamId === id ? m.awayTeamId : m.homeTeamId) : null; };
+  const hot = standings.filter(t => t.streak?.type === "W" && t.streak.length >= 3).sort((a, b) => b.streak.length - a.streak.length)[0];
+  if (hot && opponentOf(hot.id)) add("ON A ROLL","🔥 " + hot.name + " has won " + hot.streak.length + " straight. " + opponentOf(hot.id) + " gets the next crack at them.",58 + hot.streak.length);
+  const cold = standings.filter(t => t.streak?.type === "L" && t.streak.length >= 3).sort((a, b) => b.streak.length - a.streak.length)[0];
+  if (cold && opponentOf(cold.id)) add("SKID WATCH","🥶 " + cold.name + " has dropped " + cold.streak.length + " straight. Can they snap it against " + opponentOf(cold.id) + "?",56 + cold.streak.length);
+
+  // Top-of-the-table clash, or a battle of the winless.
+  const clash = currentWeekMatchups.map(m => ({m, a:rankOf.get(m.homeTeamId), b:rankOf.get(m.awayTeamId)}))
+    .filter(x => x.a && x.b).sort((x, y) => (x.a.rank + x.b.rank) - (y.a.rank + y.b.rank))[0];
+  if (clash && clash.a.rank <= 4 && clash.b.rank <= 4) {
+    const [hi, lo] = clash.a.rank < clash.b.rank ? [clash.a, clash.b] : [clash.b, clash.a];
+    add("HEAVYWEIGHT BOUT","🥊 Heavyweight bout: #" + hi.rank + " " + hi.name + " (" + record(hi) + ") meets #" + lo.rank + " " + lo.name + " (" + record(lo) + ").",68);
+  }
+  const winless = currentWeekMatchups.map(m => [rankOf.get(m.homeTeamId), rankOf.get(m.awayTeamId)])
+    .find(([a, b]) => a && b && a.games > 0 && a.h2hWins === 0 && b.h2hWins === 0);
+  if (winless) add("TOILET BOWL PREVIEW","🚽 Something's gotta give: winless " + winless[0].name + " and " + winless[1].name + " meet, and one of them gets off the schneid.",62);
+
+  // Title favorite from the season simulation.
+  const odds = (seasonOddsData?.teams || []).slice().sort((a, b) => b.titleOdds - a.titleOdds);
+  if (odds.length >= 2 && Number(seasonOddsData.week) === currentWeek) {
+    add("TITLE ODDS","🏆 Title odds entering Week " + currentWeek + ": " + odds[0].team + " " + money(odds[0].titleOdds) + "%, " + odds[1].team + " " + money(odds[1].titleOdds) + "%" + (odds[2] ? ", " + odds[2].team + " " + money(odds[2].titleOdds) + "%" : "") + ".",57);
+  }
+}
+
+const previousMarquee = await readJson("data/current/marquee.json").catch(() => null);
+const headlines = weekHeadlines() || previousMarquee?.headlines || null;
+const review = await weekInReview(previousMarquee, headlines);
+const marqueeStories = interleave(review.stories, buildMarqueeStories());
+await writeJson("data/current/marquee.json",{week:currentWeek,lastUpdated:new Date().toISOString(),stories:marqueeStories,headlines,review:review.meta});

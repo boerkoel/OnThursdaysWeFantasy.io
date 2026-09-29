@@ -519,6 +519,9 @@ function App() {
                   <span className="history-team-name"><TeamLogo src={teamLogos[m.awayTeamId]} />{historyTeamNames[m.awayTeamId] || "Unknown team"}</span>
                   <div className="history-score-block"><strong className={`history-score ${awayMedianClass}`}>{money(m.awayScore)}</strong><em className="median-badge">{awayMedianClass === "above-median" ? "ABOVE MEDIAN" : awayMedianClass === "below-median" ? "BELOW MEDIAN" : "AT MEDIAN"}</em>{awayWon ? <em className="winner-badge">WINNER</em> : null}</div>
                 </div>
+                {(history.regrets || []).filter(r => r.matchupId === m.id).map(r => <p className="instant-regret" key={r.teamId}>
+                  <b>🤦 INSTANT REGRET</b> {r.team} would have {r.flips.includes("win") && r.flips.includes("median") ? "won and cleared the median" : r.flips.includes("win") ? "won" : "cleared the median"} starting {r.benchPlayer} ({money(r.benchPoints)}) over {r.starter} ({money(r.starterPoints)}).
+                </p>)}
               </article>;
             })}
           </div>

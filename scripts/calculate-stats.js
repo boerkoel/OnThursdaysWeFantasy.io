@@ -413,6 +413,51 @@ await writeJson("data/current/raffle.json",{season:settings.seasonId,currentWeek
 await writeJson("data/current/matchups.json",{season:settings.seasonId,currentWeek,matchups});
 await writeJson("data/current/awards.json",{season:settings.seasonId,currentWeek,awards});
 await writeJson("data/current/leaders.json",{season:settings.seasonId,currentWeek,leaders:{highestScore:scoreAward(highestScore),lowestScore:scoreAward(lowestScore),highestScoringLoser:scoreAward(highestScoringLoser),lowestScoringWinner:scoreAward(lowestScoringWinner),largestBlowout:matchupAward(blowout)}});
+// Instant regrets: a single bench-for-starter swap (bench player eligible for
+// the starter's slot) that would have flipped a loss to a win, or a
+// below-median week to above it. The median is recomputed with the swap, since
+// the team's own score is part of it. One per team: the swap that flips the
+// most, then the biggest gain.
+const REGRET_BENCH_SLOT = 20, REGRET_IR_SLOT = 21;
+const medianOf = values => {
+  const sorted = values.slice().sort((a,b) => a-b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid-1] + sorted[mid]) / 2;
+};
+function weeklyRegrets(week) {
+  const games = completed.filter(m => Number(m.week) === Number(week));
+  const sides = games.flatMap(m => [
+    {teamId:m.homeTeamId, score:Number(m.homeScore), opponentScore:Number(m.awayScore), won:m.winner === "HOME", matchupId:m.id},
+    {teamId:m.awayTeamId, score:Number(m.awayScore), opponentScore:Number(m.homeScore), won:m.winner === "AWAY", matchupId:m.id}
+  ]).filter(x => Number.isFinite(x.score));
+  if (!sides.length) return [];
+  const median = medianOf(sides.map(x => x.score));
+  const entries = weeklyTeamEntries(week).filter(e => Number.isFinite(e.score));
+  const regrets = [];
+  for (const side of sides) {
+    const mine = entries.filter(e => e.teamId === Number(side.teamId));
+    const starters = mine.filter(e => e.lineupSlotId !== REGRET_BENCH_SLOT && e.lineupSlotId !== REGRET_IR_SLOT);
+    const bench = mine.filter(e => e.lineupSlotId === REGRET_BENCH_SLOT);
+    let best = null;
+    for (const b of bench) for (const s of starters) {
+      const gain = round(b.score - s.score);
+      if (gain <= 0 || !(b.eligibleSlots || []).includes(s.lineupSlotId)) continue;
+      const newScore = side.score + gain;
+      const flips = [];
+      if (!side.won && newScore > side.opponentScore) flips.push("win");
+      if (side.score < median && newScore > medianOf(sides.map(x => x === side ? newScore : x.score))) flips.push("median");
+      if (!flips.length) continue;
+      if (!best || flips.length > best.flips.length || (flips.length === best.flips.length && gain > best.gain)) {
+        best = {teamId:Number(side.teamId), team:name(side.teamId), matchupId:side.matchupId, benchPlayer:b.name, benchPoints:round(b.score), starter:s.name, starterPoints:round(s.score), gain, flips};
+      }
+    }
+    if (best) regrets.push(best);
+  }
+  return regrets;
+}
+const regretOutcome = r => r.flips.includes("win") && r.flips.includes("median") ? "won and finished above the median"
+  : r.flips.includes("win") ? "won" : "finished above the median";
+
 function buildWeeklyRecap(week) {
   const games = completed.filter(m => Number(m.week) === Number(week));
   const scores = games.flatMap(m => [Number(m.homeScore), Number(m.awayScore)]).filter(Number.isFinite).sort((a,b) => a-b);
@@ -428,7 +473,10 @@ function buildWeeklyRecap(week) {
   ]).sort((a,b)=>b.score-a.score)[0];
 
   if (highScore) add("HIGH SCORE","🔥 " + name(highScore.teamId) + " dropped " + money(highScore.score) + " points — the week's highest score.",100);
-  if (closeGame) add("CLOSEST MATCHUP","⚔️ " + name(closeGame.homeTeamId) + " edged " + name(closeGame.awayTeamId) + " by just " + money(closeGame.margin) + " points.",90);
+  if (closeGame) {
+    const [winnerId, loserId] = closeGame.winner === "AWAY" ? [closeGame.awayTeamId, closeGame.homeTeamId] : [closeGame.homeTeamId, closeGame.awayTeamId];
+    add("CLOSEST MATCHUP","⚔️ " + name(winnerId) + " edged " + name(loserId) + " by just " + money(closeGame.margin) + " points.",90);
+  }
 
   const weeklyEntries = weeklyTeamEntries(week).filter(e => Number.isFinite(e.score));
   const biggestBench = weeklyEntries.filter(e => Number(e.lineupSlotId) === 20).sort((a,b)=>b.score-a.score)[0];
@@ -454,6 +502,8 @@ function buildWeeklyRecap(week) {
     {teamId:m.homeTeamId,score:Number(m.homeScore),won:m.winner==="HOME"},
     {teamId:m.awayTeamId,score:Number(m.awayScore),won:m.winner==="AWAY"}
   ]).filter(x=>x.won && Number.isFinite(median) && x.score < median).sort((a,b)=>a.score-b.score)[0];
+  const regret = weeklyRegrets(week).sort((a,b) => b.flips.length - a.flips.length || b.gain - a.gain)[0];
+  if (regret) add("INSTANT REGRET","🤦 " + regret.team + " would have " + regretOutcome(regret) + " by starting " + regret.benchPlayer + " (" + money(regret.benchPoints) + ") over " + regret.starter + " (" + money(regret.starterPoints) + ").",88);
   if (luckyWinner) add("LUCKY WIN","🍀 " + name(luckyWinner.teamId) + " won with just " + money(luckyWinner.score) + " points — below the league median.",70);
 
   return stories.sort((a,b)=>b.priority-a.priority).slice(0,6).map(({type,text})=>({type,text}));
@@ -462,6 +512,7 @@ function buildWeeklyRecap(week) {
 const weeklyRecaps = completedWeeks.map(week => ({
   week,
   recap:buildWeeklyRecap(week),
+  regrets:weeklyRegrets(week),
   matchups:completed.filter(m=>m.week===week),
   highestScore:scoreAward(maxBy(rows.filter(x=>x.week===week),x=>x.score)),
   largestBlowout:matchupAward(maxBy(completed.filter(m=>m.week===week),x=>x.margin))
@@ -520,7 +571,8 @@ function weeklyTeamEntries(week) {
           lineupSlotId:Number(entry.lineupSlotId),
           score:Number(entry.playerPoolEntry?.appliedStatTotal),
           name:entry.playerPoolEntry?.player?.fullName || `Player #${entry.playerId}`,
-          position:entry.playerPoolEntry?.player?.defaultPositionId || null
+          position:entry.playerPoolEntry?.player?.defaultPositionId || null,
+          eligibleSlots:(entry.playerPoolEntry?.player?.eligibleSlots || []).map(Number)
         });
       }
     }
@@ -534,9 +586,14 @@ function weeklyTeamEntries(week) {
         teamId:Number(team.id),
         playerId:Number(entry.playerId),
         lineupSlotId:Number(entry.lineupSlotId),
-        score:Number(entry.playerPoolEntry?.appliedStatTotal),
+        // The roster's appliedStatTotal is season-to-date; use that week's
+        // actual points (none on record, e.g. a bye, counts as 0).
+        score:Number((entry.playerPoolEntry?.player?.stats || []).find(st =>
+          Number(st.scoringPeriodId) === Number(week) && Number(st.statSourceId) === 0 && Number(st.statSplitTypeId) === 1
+        )?.appliedTotal || 0),
         name:entry.playerPoolEntry?.player?.fullName || `Player #${entry.playerId}`,
-        position:entry.playerPoolEntry?.player?.defaultPositionId || null
+        position:entry.playerPoolEntry?.player?.defaultPositionId || null,
+        eligibleSlots:(entry.playerPoolEntry?.player?.eligibleSlots || []).map(Number)
       });
     }
   }
