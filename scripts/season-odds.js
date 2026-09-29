@@ -59,6 +59,25 @@ const weeklySd = residuals.length > teamIds.length
   ? Math.max(15, Math.sqrt(residuals.reduce((a, r) => a + r * r, 0) / (residuals.length - teamIds.length)))
   : 25;
 
+// Future weeks aren't just more of the same:
+// - Rosters change. Each team's edge over (or gap below) the league average
+//   shrinks the further ahead the week is, and fastest for teams with the best
+//   waiver priority (usually the teams at the bottom, who can use the wire).
+// - Byes and injuries add week-to-week variance beyond what's been observed.
+// - In NFL weeks 17-18 many starters rest, so those weeks are much noisier.
+const RETENTION_BEST_PRIORITY = 0.88;  // per week ahead, for waiver priority #1
+const RETENTION_WORST_PRIORITY = 0.96; // per week ahead, for the last priority
+const BYES_AND_INJURIES_SD = 1.15;
+const RESTING_STARTERS_SD = 1.4;
+const waiverRank = new Map((teamData.teams || []).map(t => [Number(t.id), Number(t.waiverRank) || teamIds.length]));
+const retention = id => {
+  const share = teamIds.length > 1 ? (waiverRank.get(id) - 1) / (teamIds.length - 1) : 1; // 0 = first priority
+  return RETENTION_BEST_PRIORITY + (RETENTION_WORST_PRIORITY - RETENTION_BEST_PRIORITY) * Math.min(1, Math.max(0, share));
+};
+const weekMean = (id, week) => leagueMean + (teamMean(id) - leagueMean) * retention(id) ** Math.max(0, week - currentWeek);
+const weekSd = week => weeklySd * BYES_AND_INJURIES_SD * (week >= 17 ? RESTING_STARTERS_SD : 1);
+const simulateScore = (id, week) => weekMean(id, week) + weekSd(week) * normal();
+
 // The week in progress uses the live scoreboard: each team's projected final
 // and the spread from its own simulation.
 const liveWeek = scoreboard && Number(scoreboard.week) === currentWeek && remainingWeeks.includes(currentWeek)
@@ -112,7 +131,7 @@ for (const m of matchupData.schedule || []) {
 }
 function simulatePostseason(seedOrder) {
   const seedOf = id => seedOrder.indexOf(id) + 1;
-  const score = (id, week) => actualScores.get(`${week}-${id}`) ?? teamMean(id) + weeklySd * normal();
+  const score = (id, week) => actualScores.get(`${week}-${id}`) ?? simulateScore(id, week);
   // Returns [advancing, eliminated]; ties go to the first (higher-seeded) team.
   const play = (a, b, week, lowerAdvances) => {
     const sa = score(a, week), sb = score(b, week);
@@ -145,7 +164,7 @@ for (let sim = 0; sim < SIMULATIONS; sim++) {
     const scores = new Map();
     for (const id of teamIds) {
       const live = week === currentWeek ? liveWeek?.get(id) : null;
-      scores.set(id, live ? Math.max(live.floor - 10, live.mean + live.sd * normal()) : teamMean(id) + weeklySd * normal());
+      scores.set(id, live ? Math.max(live.floor - 10, live.mean + live.sd * normal()) : simulateScore(id, week));
     }
     addWeek(table, weekGames, scores);
   }
