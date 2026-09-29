@@ -33,7 +33,7 @@ Kevin’s squad finally met its maker, falling to a pedestrian 119.7 points afte
 
 Joe Burrowed himself six feet under, Bucky Irving ran out of luck, and De’Von Achane couldn’t outrun the Grim Reaper. Chris Olave’d his last goodbye, while Ladd McConkey couldn’t connect to a lifeline. Breece Hall stumbled into the afterlife, and poor Tee Higgins couldn’t catch a break. Meanwhile, Malik Nabers discovered that nobody visits you in the fantasy graveyard.
 
-Kevin valued depth at draft time and his bench obliged--outscoring his starters and digging a deeper grave. Kevin’s bench offered no Warren of hope, and Dallas Goedert had nothing good to report.
+Kevin valued depth at draft time and his bench obliged--outscoring his starters just to dig him a deeper grave. Kevin’s bench offered no Warren of hope, and Dallas Goedert had nothing good to report.
 
 Plan B now rests in pieces, its FAAB dreams buried alongside its dignity.
 
