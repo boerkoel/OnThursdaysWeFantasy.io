@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "currentWeek": 3,
+  "currentWeek": 4,
   "weeks": [
     {
       "week": 1,
@@ -228,6 +228,122 @@
         "winnerScore": 168.52,
         "loserScore": 89.6,
         "margin": 78.92
+      }
+    },
+    {
+      "week": 3,
+      "recap": [
+        {
+          "type": "HIGH SCORE",
+          "text": "🔥 Brock You Like a Hurricane dropped 188.98 points — the week's highest score."
+        },
+        {
+          "type": "CLOSEST MATCHUP",
+          "text": "⚔️ TDsMaGee edged Ruffing the Passer by just 1.98 points."
+        },
+        {
+          "type": "BIGGEST REGRET",
+          "text": "🪑 Gibb it to Me Baby left 31.28 points on the bench with Brock Purdy."
+        },
+        {
+          "type": "TOUGH LUCK",
+          "text": "😬 Kyle Tucker scored 133.96 and still took the L."
+        },
+        {
+          "type": "BLOWOUT",
+          "text": "💥 Brock You Like a Hurricane beat Kyle Tucker 188.98-133.96 (55.02 points)."
+        },
+        {
+          "type": "LUCKY WIN",
+          "text": "🍀 Ruffing the Passer won with just 122.48 points — below the league median."
+        }
+      ],
+      "matchups": [
+        {
+          "id": 13,
+          "week": 3,
+          "homeTeamId": 6,
+          "awayTeamId": 12,
+          "homeScore": 142.16,
+          "awayScore": 105.78,
+          "margin": 36.379999999999995,
+          "winner": "HOME",
+          "completed": true
+        },
+        {
+          "id": 14,
+          "week": 3,
+          "homeTeamId": 11,
+          "awayTeamId": 3,
+          "homeScore": 188.98,
+          "awayScore": 133.96,
+          "margin": 55.01999999999998,
+          "winner": "HOME",
+          "completed": true
+        },
+        {
+          "id": 15,
+          "week": 3,
+          "homeTeamId": 8,
+          "awayTeamId": 4,
+          "homeScore": 138.34,
+          "awayScore": 130.12,
+          "margin": 8.219999999999999,
+          "winner": "HOME",
+          "completed": true
+        },
+        {
+          "id": 16,
+          "week": 3,
+          "homeTeamId": 2,
+          "awayTeamId": 7,
+          "homeScore": 120.5,
+          "awayScore": 122.48,
+          "margin": 1.980000000000004,
+          "winner": "AWAY",
+          "completed": true
+        },
+        {
+          "id": 17,
+          "week": 3,
+          "homeTeamId": 9,
+          "awayTeamId": 1,
+          "homeScore": 139.84,
+          "awayScore": 103.78,
+          "margin": 36.06,
+          "winner": "HOME",
+          "completed": true
+        },
+        {
+          "id": 18,
+          "week": 3,
+          "homeTeamId": 5,
+          "awayTeamId": 10,
+          "homeScore": 107.34,
+          "awayScore": 129.66,
+          "margin": 22.319999999999993,
+          "winner": "AWAY",
+          "completed": true
+        }
+      ],
+      "highestScore": {
+        "week": 3,
+        "teamId": 11,
+        "team": "Brock You Like a Hurricane",
+        "opponentId": 3,
+        "opponent": "Kyle Tucker",
+        "score": 188.98,
+        "result": "W"
+      },
+      "largestBlowout": {
+        "week": 3,
+        "winnerTeamId": 11,
+        "winner": "Brock You Like a Hurricane",
+        "loserTeamId": 3,
+        "loser": "Kyle Tucker",
+        "winnerScore": 188.98,
+        "loserScore": 133.96,
+        "margin": 55.02
       }
     }
   ]
