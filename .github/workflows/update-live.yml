@@ -126,6 +126,27 @@ jobs:
           PREVIOUS_SCOREBOARD_PATH: /tmp/previous-scoreboard.json
         run: node scripts/league-wire.js
 
+      # One annotation per run with each live file's timestamp, so a stale
+      # file (e.g. a continue-on-error step that failed) shows on the run page.
+      - name: Report live data freshness
+        if: steps.gate.outputs.update == 'true'
+        run: |
+          node -e '
+            const fs = require("fs");
+            const files = ["scoreboard", "guillotine", "marquee", "live-plays", "season-odds"];
+            const now = Date.now();
+            const parts = files.map(f => {
+              try {
+                const d = JSON.parse(fs.readFileSync(`data/current/${f}.json`, "utf8"));
+                const t = Date.parse(d.lastUpdated || d.updatedAt || "");
+                const age = Number.isFinite(t) ? Math.round((now - t) / 1000) + "s" : "no timestamp";
+                return `${f} wk${d.week ?? "?"} ${age}`;
+              } catch (e) { return `${f} unreadable`; }
+            });
+            const stale = parts.some(p => !/ \d+s$/.test(p) || Number(p.match(/(\d+)s$/)[1]) > 300);
+            console.log(`::${stale ? "warning" : "notice"} title=Live data::${parts.join(" · ")}`);
+          '
+
       - name: Install dependencies
         if: steps.gate.outputs.update == 'true'
         run: npm ci

@@ -643,3 +643,19 @@ section,details,.odds-block{scroll-margin-top:72px}
   .raffle-row .raffle-weeks{grid-column:2;grid-row:2;font-size:11px}
   .raffle-row>strong{grid-column:3;grid-row:1 / span 2;text-align:right}
 }
+
+/* League Wire: tap or swipe through stories. */
+.marquee-stack[role="button"]{cursor:pointer;touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+.marquee-stack[role="button"]:focus-visible{outline:2px solid #6b7a52;outline-offset:4px;border-radius:6px}
+.marquee-count{margin-right:4px;color:#8f978c;font-size:10px;font-weight:800;font-variant-numeric:tabular-nums}
+/* Phones: the Live tab's League Wire pins under the section strip, compact:
+   label and story counter on one line, the story underneath. */
+@media(max-width:700px){
+  .league-marquee{position:sticky;top:var(--section-nav-h,0px);z-index:28;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;margin:6px 0 4px;padding:9px 12px;box-shadow:0 6px 14px rgba(0,0,0,.35)}
+  .league-marquee .marquee-label{grid-column:1;grid-row:1}
+  .league-marquee .marquee-dots{grid-column:2;grid-row:1;justify-content:flex-end}
+  .league-marquee .marquee-stack{grid-column:1 / -1;grid-row:2}
+  .league-marquee .marquee-dots button{display:none}
+  .marquee-story b{margin-bottom:2px}
+  section,details,.odds-block{scroll-margin-top:calc(var(--section-nav-h,64px) + var(--wire-h,0px) + 8px)}
+}

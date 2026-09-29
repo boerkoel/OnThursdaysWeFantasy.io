@@ -1,4 +1,26 @@
 import React, { useEffect, useRef, useState } from "react";
+
+// Publishes a pinned (position: sticky) element's height as a CSS variable on
+// <html>, or 0px when it isn't pinned at this screen size or is gone, so
+// pinned pieces can stack under it and section jumps clear them.
+export function usePinnedHeight(ref, variable) {
+  useEffect(() => {
+    const root = document.documentElement.style;
+    const el = ref.current;
+    if (!el) return;
+    const update = () => root.setProperty(variable, (getComputedStyle(el).position === "sticky" ? el.offsetHeight : 0) + "px");
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => { observer.disconnect(); root.setProperty(variable, "0px"); };
+  });
+}
+
+// How far down the pinned strips reach (section strip + League Wire).
+const pinnedBottom = () => {
+  const style = getComputedStyle(document.documentElement);
+  return (parseFloat(style.getPropertyValue("--section-nav-h")) || 0) + (parseFloat(style.getPropertyValue("--wire-h")) || 0);
+};
 import { TAB_SECTIONS, TABS } from "../lib/tabs.js";
 
 // Tab bar: pinned under the header on wide screens, fixed to the bottom of the
@@ -44,7 +66,7 @@ export function SectionNav({ tab }) {
       let current = sections[0][0];
       for (const [id] of sections) {
         const el = document.getElementById(id);
-        if (el && el.getBoundingClientRect().top <= 110) current = id;
+        if (el && el.getBoundingClientRect().top <= pinnedBottom() + 40) current = id;
       }
       setActive(current);
     };
@@ -57,6 +79,8 @@ export function SectionNav({ tab }) {
     const chip = strip.current?.querySelector("button.active");
     if (chip && strip.current) strip.current.scrollTo({ left: chip.offsetLeft - 16, behavior: "smooth" });
   }, [active]);
+
+  usePinnedHeight(strip, "--section-nav-h");
 
   if (!present.length) return null;
   const go = id => {
