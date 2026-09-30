@@ -158,6 +158,16 @@ function settledLineupRegret(liveTeam) {
 const pts = n => money(n) + " pts";
 const possessive = team => team + (team.endsWith("s") ? "'" : "'s");
 const listNames = names => names.length <= 1 ? names.join("") : names.slice(0, -1).join(", ") + " and " + names[names.length - 1];
+// "Swift and D/ST (PHI @ CHI)": players ({name, game}) with each game named once.
+function playersWithGames(players) {
+  const games = [...new Set(players.map(p => p.game || ""))];
+  return listNames(games.map(g => listNames(players.filter(p => (p.game || "") === g).map(p => p.name)) + (g ? " (" + g + ")" : "")));
+}
+// Stories should fit in about three lines on a phone (the pinned wire box is
+// as tall as its longest story). fit() takes a story's versions, longest
+// first, and returns the first that fits (or the shortest).
+const STORY_MAX_CHARS = 160;
+const fit = (...versions) => versions.find(v => v.length <= STORY_MAX_CHARS) ?? versions.reduce((a, b) => b.length < a.length ? b : a);
 
 function buildMarqueeStories() {
   const stories = [];
@@ -165,7 +175,10 @@ function buildMarqueeStories() {
   const previousProjectedMedian = previousScoreboard?.week === currentWeek
     ? Number(previousScoreboard.projectedMedian ?? previousScoreboard.median)
     : null;
-  const add = (type, text, score) => stories.push({type, text, score:Number.isFinite(score) ? round(score) : 0});
+  const add = (type, text, score) => {
+    if (text.length > STORY_MAX_CHARS) console.warn("League Wire: " + type + " runs " + text.length + " chars (budget " + STORY_MAX_CHARS + "): " + text);
+    stories.push({type, text, score:Number.isFinite(score) ? round(score) : 0});
+  };
   // Player stories only cover the games being played now (or the most
   // recently finished slot), so Thursday's hero doesn't lead on Sunday night.
   const recentGames = recentGameIds();
@@ -250,7 +263,11 @@ function buildMarqueeStories() {
     }
 
     if (nearMedian.length >= 4) {
-      add("MEDIAN CLUSTER","🎯 " + nearMedian.length + " teams are in the thick of the median race: " + listNames(nearMedian.map(s => s.team)) + ".",58 + nearMedian.length);
+      const closest = nearMedian[0];
+      add("MEDIAN CLUSTER",fit(
+        "🎯 " + nearMedian.length + " teams are in the thick of the median race: " + listNames(nearMedian.map(s => s.team)) + ".",
+        "🎯 " + nearMedian.length + " teams are in the thick of the median race, with " + closest.team + " right on the line (" + money(closest.aboveMedianProbability) + "%)."
+      ),58 + nearMedian.length);
     }
   }
   const rising=currentScores.filter(s=>s.projectionTrend==="up").sort((a,b)=>Number(b.projectionAverage)-Number(a.projectionAverage))[0];
@@ -303,7 +320,11 @@ function addPickupStories(add) {
   const fresh = pickups.filter(p => !p.played && p !== hot).sort((a, b) => b.addedOn - a.addedOn).slice(0, 3);
   if (fresh.length) {
     const describe = p => p.team + " added " + p.name + " (" + p.position + (p.projection != null ? ", projected " + pts(p.projection) : "") + ")";
-    add("FRESH OFF THE WIRE","🗞️ Fresh off the wire: " + listNames(fresh.map(describe)) + ".",24 + fresh.length);
+    const versions = fresh.map((_, i) => {
+      const more = fresh.length - (i + 1);
+      return "🗞️ Fresh off the wire: " + listNames(fresh.slice(0, i + 1).map(describe)) + (more ? ", plus " + more + " more pickup" + (more === 1 ? "" : "s") : "") + ".";
+    }).reverse();
+    add("FRESH OFF THE WIRE",fit(...versions),24 + fresh.length);
   }
 }
 
@@ -328,7 +349,11 @@ function addRaffleStories(add, previousScores) {
     .sort((a, b) => b.topScoreProbability - a.topScoreProbability)[0];
   if (chaser) {
     const left = (liveTeams.get(chaser.teamId)?.players || []).filter(p => !p.bench && !p.finished).map(p => p.lastName);
-    add("RAFFLE WATCH","🎟️ RAFFLE WATCH: " + chaser.team + " (" + money(chaser.topScoreProbability) + "% to take the ticket) is chasing " + possessive(leader.team) + " " + money(leader.score) + " — " + pts(Number(leader.score) - Number(chaser.score)) + " back" + (left.length ? " with " + listNames(left) + " still to play" : "") + ".",76 + chaser.topScoreProbability / 10);
+    const chase = "🎟️ RAFFLE WATCH: " + chaser.team + " (" + money(chaser.topScoreProbability) + "% to take the ticket) is chasing " + possessive(leader.team) + " " + money(leader.score) + " — " + pts(Number(leader.score) - Number(chaser.score)) + " back";
+    add("RAFFLE WATCH",fit(
+      chase + (left.length ? " with " + listNames(left) + " still to play" : "") + ".",
+      chase + " with " + left.length + " starter" + (left.length === 1 ? "" : "s") + " still to play."
+    ),76 + chaser.topScoreProbability / 10);
   } else if (leader.topScoreProbability >= 95 && leader.topScoreProbability < 100) {
     add("RAFFLE LOCK","🎟️ RAFFLE LOCK: " + leader.team + " has all but clinched this week's raffle ticket with " + pts(leader.score) + " (" + money(leader.topScoreProbability) + "%).",62);
   }
@@ -393,13 +418,13 @@ function addDeathWatchStory(add) {
   const atRisk = (guillotineData.teams || []).filter(t => t.chopProbability > 0);
   const [first, second] = atRisk;
   if (!first) return;
-  const left = t => (t.remaining || []).map(p => p.name.split(" ").slice(-1)[0] + (p.game ? " (" + p.game + ")" : ""));
+  const left = t => playersWithGames((t.remaining || []).map(p => ({name:p.name.split(" ").slice(-1)[0], game:p.game})));
   if (first.chopProbability >= 100) {
     add("DEATH WATCH","🪓 DEATH WATCH: the blade has fallen — " + first.team + " is getting chopped from " + guillotineData.leagueName + " with " + pts(first.score) + ".",90);
   } else if (first.survivalNeed && first.playersLeft) {
-    add("DEATH WATCH","🪓 DEATH WATCH: " + first.team + " (" + money(first.chopProbability) + "% chop odds) needs " + pts(first.survivalNeed.points) + " more from " + listNames(left(first)) + " to pass " + first.survivalNeed.passTeam + " and survive.",86);
+    add("DEATH WATCH","🪓 DEATH WATCH: " + first.team + " (" + money(first.chopProbability) + "% chop odds) needs " + pts(first.survivalNeed.points) + " more from " + left(first) + " to pass " + first.survivalNeed.passTeam + " and survive.",86);
   } else if (second?.survivalNeed && second.playersLeft) {
-    add("DEATH WATCH","🪓 DEATH WATCH: " + first.team + " is on the chopping block (" + money(first.chopProbability) + "%) — unless " + listNames(left(second)) + " can't find " + pts(second.survivalNeed.points) + ", which would send " + second.team + " to the guillotine instead.",86);
+    add("DEATH WATCH","🪓 DEATH WATCH: " + first.team + " is on the chopping block (" + money(first.chopProbability) + "%) — unless " + left(second) + " can't find " + pts(second.survivalNeed.points) + " for " + second.team + ".",86);
   } else {
     add("DEATH WATCH","🪓 DEATH WATCH: " + first.team + " leads the chopping-block odds at " + money(first.chopProbability) + "%" + (second ? ", with " + second.team + " next at " + money(second.chopProbability) + "%" : "") + ".",70);
   }
@@ -418,17 +443,21 @@ function addLineupMistakeStories(add, matchupStates, regrets) {
       const swappedScore = score + swap.gain;
       const teamDone = x.m.completed || team.startersLeft === 0;
       const oppDone = x.m.completed || opp.startersLeft === 0;
-      const swapText = swap.benchPlayer.name + " (" + pts(swap.benchPlayer.actual) + ") over " + swap.starter.name + " (" + pts(swap.starter.actual) + ")";
+      // With and without each player's points.
+      const swapTexts = [
+        swap.benchPlayer.name + " (" + pts(swap.benchPlayer.actual) + ") over " + swap.starter.name + " (" + pts(swap.starter.actual) + ")",
+        swap.benchPlayer.name + " over " + swap.starter.name
+      ];
       if (score < oppScore && swappedScore > oppScore && teamDone && oppDone) {
-        candidates.push({type:"INSTANT REGRET", text:"😱 INSTANT REGRET: " + team.team + " would have beaten " + opp.team + " by starting " + swapText + ". Oops!", score:97});
+        candidates.push({type:"INSTANT REGRET", text:fit(...swapTexts.map(t => "😱 INSTANT REGRET: " + team.team + " would have beaten " + opp.team + " by starting " + t + ". Oops!")), score:97});
       } else if (score < oppScore && swappedScore > oppScore && oppDone) {
-        candidates.push({type:"INSTANT REGRET", text:"😱 INSTANT REGRET: starting " + swapText + " would have locked up a win over " + opp.team + " for " + team.team + ". Instead they need " + pts(oppScore - score) + " more.", score:95});
+        candidates.push({type:"INSTANT REGRET", text:fit(...swapTexts.map(t => "😱 INSTANT REGRET: " + team.team + " needs " + pts(oppScore - score) + " more to beat " + opp.team + ". Starting " + t + " would have locked it up.")), score:95});
       } else if (score < oppScore && swappedScore > oppScore) {
-        candidates.push({type:"LINEUP MISTAKE", text:"😬 " + team.team + " would be leading " + opp.team + " if they'd started " + swapText + " — instead they trail by " + pts(oppScore - score) + ".", score:88});
+        candidates.push({type:"LINEUP MISTAKE", text:fit(...swapTexts.map(t => "😬 " + team.team + " would be leading " + opp.team + " if they'd started " + t + " — instead they trail by " + pts(oppScore - score) + ".")), score:88});
       } else if (!teamDone || !oppDone) {
         const winOdds = Number(team.winProbability);
         if (swap.gain >= 5 && winOdds >= 30 && winOdds <= 70) {
-          candidates.push({type:"LINEUP MISTAKE", text:"😅 " + team.team + " could be sitting pretty by starting " + swapText + ", but instead they're sweating out a close one with " + opp.team + " (" + money(winOdds) + "% to win).", score:80});
+          candidates.push({type:"LINEUP MISTAKE", text:fit(...swapTexts.map(t => "😅 " + team.team + " is sweating out a close one with " + opp.team + " (" + money(winOdds) + "% to win). Starting " + t + " would have helped.")), score:80});
         }
       }
     }
@@ -442,6 +471,7 @@ function addLineupMistakeStories(add, matchupStates, regrets) {
 function addPrimetimeStories(add, matchupStates) {
   const startersLeft = teamId => (liveTeams.get(teamId)?.players || []).filter(p => !p.bench && !p.finished);
   const withGame = p => p.lastName + (p.game?.name ? " (" + p.game.name + ")" : "");
+  const withGames = players => playersWithGames(players.map(p => ({name:p.lastName, game:p.game?.name})));
   const projectedRest = players => round(players.reduce((sum, p) => sum + Math.max(0, (p.projection ?? 0) - p.actual), 0));
 
   // Odds below this are long shots: they get one "there's a chance" story
@@ -463,7 +493,7 @@ function addPrimetimeStories(add, matchupStates) {
     if (!Number.isFinite(trailerOdds) || trailerOdds <= NO_SIMULATED_WINS) continue;
     const deficit = round(Number(leader.score) - Number(trailer.score));
     const urgency = 92 - Math.min(deficit, 30) / 10;
-    const odds = " " + possessive(trailer.team) + " win chance: " + money(trailerOdds) + "%.";
+    const odds = money(trailerOdds) + "%";
 
     if (trailerOdds < LONG_SHOT_ODDS) {
       const chance = "🤞 So you're saying there's a chance… ";
@@ -471,13 +501,22 @@ function addPrimetimeStories(add, matchupStates) {
       if (!leaderLeft.length && trailerLeft.length === 1) {
         const p = trailerLeft[0];
         const projected = p.projection != null ? " (ESPN projects " + pts(p.projection) + ")" : "";
-        text = chance + trailer.team + " needs " + withGame(p) + " to top " + pts(round(p.actual + deficit)) + projected + " to steal it from " + leader.team + ".";
+        text = fit(
+          chance + trailer.team + " (" + odds + ") needs " + withGame(p) + " to top " + pts(round(p.actual + deficit)) + projected + " to steal it from " + leader.team + ".",
+          chance + trailer.team + " (" + odds + ") needs " + p.lastName + " to top " + pts(round(p.actual + deficit)) + " to steal it from " + leader.team + "."
+        );
       } else if (!leaderLeft.length) {
-        text = chance + trailer.team + " needs " + pts(deficit) + " from " + listNames(trailerLeft.map(withGame)) + " to catch " + leader.team + ".";
+        text = fit(
+          chance + trailer.team + " (" + odds + ") needs " + pts(deficit) + " from " + withGames(trailerLeft) + " to catch " + leader.team + ".",
+          chance + trailer.team + " (" + odds + ") needs " + pts(deficit) + " from " + listNames(trailerLeft.map(p => p.lastName)) + " to catch " + leader.team + "."
+        );
       } else {
-        text = chance + trailer.team + " trails " + leader.team + " by " + pts(deficit) + ", but a big night from " + listNames(trailerLeft.map(withGame)) + " and a quiet one from " + listNames(leaderLeft.map(p => p.lastName)) + " (late scratch, anyone?) could flip it.";
+        text = fit(
+          chance + trailer.team + " (" + odds + ") trails " + leader.team + " by " + pts(deficit) + ", but a big night from " + withGames(trailerLeft) + " and a quiet one from " + listNames(leaderLeft.map(p => p.lastName)) + " could flip it.",
+          chance + trailer.team + " (" + odds + ") trails " + leader.team + " by " + pts(deficit) + ", but a big night from " + listNames(trailerLeft.map(p => p.lastName)) + " could flip it."
+        );
       }
-      longShots.push({type:"LONG SHOT", text:text + odds, score:66 + trailerOdds});
+      longShots.push({type:"LONG SHOT", text, score:66 + trailerOdds});
       continue;
     }
 
@@ -486,11 +525,22 @@ function addPrimetimeStories(add, matchupStates) {
       const target = round(p.actual + deficit);
       const soFar = p.actual > 0 ? " (" + money(p.actual) + " so far)" : "";
       const projected = p.projection != null ? " ESPN projects " + pts(p.projection) + "." : "";
-      storylines.push({type:"ALL EYES ON", text:"👀 All eyes on " + withGame(p) + ": if " + p.lastName + " tops " + pts(target) + soFar + ", " + trailer.team + " beats " + leader.team + ". Otherwise " + leader.team + " takes it." + projected + odds, score:urgency + 3});
+      storylines.push({type:"ALL EYES ON", text:fit(
+        "👀 All eyes on " + withGame(p) + ": if " + p.lastName + " tops " + pts(target) + soFar + ", " + trailer.team + " (" + odds + ") beats " + leader.team + "." + projected,
+        "👀 All eyes on " + withGame(p) + ": if " + p.lastName + " tops " + pts(target) + ", " + trailer.team + " (" + odds + ") beats " + leader.team + ".",
+        "👀 All eyes on " + p.lastName + ": " + pts(target) + " and " + trailer.team + " (" + odds + ") beats " + leader.team + "."
+      ), score:urgency + 3});
     } else if (!leaderLeft.length) {
-      storylines.push({type:"COMEBACK WATCH", text:"⏳ " + trailer.team + " needs " + pts(deficit) + " more from " + listNames(trailerLeft.map(withGame)) + " to catch " + leader.team + " (ESPN projects " + pts(projectedRest(trailerLeft)) + ")." + odds, score:urgency});
+      storylines.push({type:"COMEBACK WATCH", text:fit(
+        "⏳ " + trailer.team + " (" + odds + ") needs " + pts(deficit) + " more from " + withGames(trailerLeft) + " to catch " + leader.team + ". ESPN projects " + pts(projectedRest(trailerLeft)) + ".",
+        "⏳ " + trailer.team + " (" + odds + ") needs " + pts(deficit) + " more from " + withGames(trailerLeft) + " to catch " + leader.team + ".",
+        "⏳ " + trailer.team + " (" + odds + ") needs " + pts(deficit) + " more from " + listNames(trailerLeft.map(p => p.lastName)) + " to catch " + leader.team + "."
+      ), score:urgency});
     } else {
-      storylines.push({type:"SHOWDOWN", text:"⚔️ SHOWDOWN: " + leader.team + " leads " + trailer.team + " by " + pts(deficit) + " — it's " + listNames(leaderLeft.map(withGame)) + " vs " + listNames(trailerLeft.map(withGame)) + " the rest of the way." + odds, score:urgency});
+      storylines.push({type:"SHOWDOWN", text:fit(
+        "⚔️ SHOWDOWN: " + leader.team + " leads " + trailer.team + " (" + odds + ") by " + pts(deficit) + " — it's " + withGames(leaderLeft) + " vs " + withGames(trailerLeft) + " the rest of the way.",
+        "⚔️ SHOWDOWN: " + leader.team + " leads " + trailer.team + " (" + odds + ") by " + pts(deficit) + " — it's " + listNames(leaderLeft.map(p => p.lastName)) + " vs " + listNames(trailerLeft.map(p => p.lastName)) + " the rest of the way."
+      ), score:urgency});
     }
   }
   storylines.sort((a,b) => b.score - a.score).slice(0, 4).forEach(story => add(story.type, story.text, story.score));
@@ -507,7 +557,12 @@ function addPrimetimeStories(add, matchupStates) {
     .filter(m => Number.isFinite(m.odds) && m.odds <= 80)
     .sort((a,b) => a.odds - b.odds);
   if (live.length) {
-    add("MATCHUPS THAT MATTER","🏈 Matchups that matter: " + live.map(m => m.x.a.team + " vs " + m.x.b.team + " (" + m.fav.team + " " + money(m.odds) + "%)").join(" · ") + ".",60 + live.length);
+    const describe = m => m.x.a.team + " vs " + m.x.b.team + " (" + m.fav.team + " " + money(m.odds) + "%)";
+    add("MATCHUPS THAT MATTER",fit(
+      "🏈 Matchups that matter: " + live.map(describe).join(" · ") + ".",
+      "🏈 " + live.length + " matchups are still up for grabs, and " + describe(live[0]) + " is the tightest.",
+      "🏈 " + live.length + " matchups are still up for grabs, and " + live[0].x.a.team + " vs " + live[0].x.b.team + " is the tightest."
+    ),60 + live.length);
   }
 
   // Median races that come down to one or two players.
@@ -518,7 +573,7 @@ function addPrimetimeStories(add, matchupStates) {
     .sort((a,b) => Math.abs(Number(a.s.aboveMedianProbability) - 50) - Math.abs(Number(b.s.aboveMedianProbability) - 50))
     .slice(0, 2);
   for (const {s, left} of medianStakes) {
-    add("MEDIAN STAKES","🎯 MEDIAN STAKES: " + possessive(s.team) + " shot at a median win (" + money(s.aboveMedianProbability) + "%) rides on " + listNames(left.map(withGame)) + ".",74);
+    add("MEDIAN STAKES","🎯 MEDIAN STAKES: " + possessive(s.team) + " shot at a median win (" + money(s.aboveMedianProbability) + "%) rides on " + withGames(left) + ".",74);
   }
 }
 
