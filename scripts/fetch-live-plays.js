@@ -9,8 +9,8 @@ async function readJson(path, fallback = null) {
 }
 
 // ---- Momentum ---------------------------------------------------------------
-// How much a play moved its fantasy matchup: the win odds now versus the odds
-// with the play's points taken back out. A team's final score is roughly
+// How much a play moved its fantasy matchup: the win odds just after it versus
+// the odds with the play's points taken back out. A team's final score is roughly
 // normal (projection, projectionSd), so the margin is too, with the two SDs
 // combined. Only plays from the last 15 minutes get one, so a backfilled
 // play isn't judged against a much later scoreboard.
@@ -28,23 +28,41 @@ function normalQuantile(p) {
   for (let i = 0; i < 60; i++) { const mid = (lo + hi) / 2; if (normalCdf(mid) < p) lo = mid; else hi = mid; }
   return (lo + hi) / 2;
 }
-function momentumOf(play, scoresByTeam) {
-  if (!play.wallclock || Date.now() - Date.parse(play.wallclock) > MOMENTUM_MAX_AGE_MS) return null;
-  const team = scoresByTeam.get(Number(play.fantasyTeamId));
-  const opponent = team && scoresByTeam.get(Number(team.opponentId));
-  if (!team || !opponent || !Number.isFinite(Number(team.winProbability))) return null;
-  const marginSd = Math.max(MIN_MARGIN_SD, Math.hypot(Number(team.projectionSd) || 0, Number(opponent.projectionSd) || 0));
-  const after = Math.min(0.9999, Math.max(0.0001, Number(team.winProbability) / 100));
-  const before = normalCdf(normalQuantile(after) - Number(play.points) / marginSd);
-  const shift = Math.round((after - before) * 1000) / 10;
-  if (!shift) return null;
-  const toward = shift > 0 ? team : opponent;
-  return {
-    towardTeamId: Number(toward.teamId),
-    toward: toward.team,
-    shift: Math.abs(shift),
-    winProbability: Math.round((shift > 0 ? after : 1 - after) * 1000) / 10
-  };
+// Plays first seen in the same run all happened before this one scoreboard,
+// so each matchup's new plays are walked newest first: a play is judged
+// against the odds just after it (the current odds with every later play
+// taken back out). Returns play id -> momentum.
+function momentumByPlay(newPlays, scoresByTeam) {
+  const result = new Map();
+  const byMatchup = new Map();
+  for (const play of newPlays) {
+    if (!play.wallclock || Date.now() - Date.parse(play.wallclock) > MOMENTUM_MAX_AGE_MS) continue;
+    if (!byMatchup.has(play.matchupId)) byMatchup.set(play.matchupId, []);
+    byMatchup.get(play.matchupId).push(play);
+  }
+  for (const plays of byMatchup.values()) {
+    const team = scoresByTeam.get(Number(plays[0].fantasyTeamId));
+    const opponent = team && scoresByTeam.get(Number(team.opponentId));
+    if (!team || !opponent || !Number.isFinite(Number(team.winProbability))) continue;
+    const marginSd = Math.max(MIN_MARGIN_SD, Math.hypot(Number(team.projectionSd) || 0, Number(opponent.projectionSd) || 0));
+    let z = normalQuantile(Math.min(0.9999, Math.max(0.0001, Number(team.winProbability) / 100)));
+    plays.sort((x, y) => Date.parse(y.wallclock) - Date.parse(x.wallclock));
+    for (const play of plays) {
+      const delta = (Number(play.fantasyTeamId) === Number(team.teamId) ? 1 : -1) * Number(play.points) / marginSd;
+      const after = normalCdf(z), before = normalCdf(z - delta);
+      z -= delta;
+      const shift = Math.round((after - before) * 1000) / 10;
+      if (!shift) continue;
+      const toward = shift > 0 ? team : opponent;
+      result.set(play.id, {
+        towardTeamId: Number(toward.teamId),
+        toward: toward.team,
+        shift: Math.abs(shift),
+        winProbability: Math.round((shift > 0 ? after : 1 - after) * 1000) / 10
+      });
+    }
+  }
+  return result;
 }
 
 async function fetchJson(url) {
@@ -433,11 +451,11 @@ try {
   const previousById = new Map(previousPlays.map(p => [p.id, p]));
   const scoreboard = await readJson("data/current/scoreboard.json", {});
   const scoresByTeam = Number(scoreboard.week) === currentWeek ? new Map((scoreboard.scores || []).map(s => [Number(s.teamId), s])) : new Map();
+  const fresh = momentumByPlay(relevant.filter(p => !previousById.has(p.id)), scoresByTeam);
   const deduped = new Map();
   for (const play of [...relevant, ...previousPlays]) {
     if (deduped.has(play.id)) continue;
-    const seen = previousById.get(play.id);
-    const momentum = seen ? seen.momentum : momentumOf(play, scoresByTeam);
+    const momentum = previousById.has(play.id) ? previousById.get(play.id).momentum : fresh.get(play.id);
     deduped.set(play.id, momentum ? { ...play, momentum } : play);
   }
 

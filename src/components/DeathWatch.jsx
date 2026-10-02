@@ -40,9 +40,15 @@ const zoneOf = t => t.chopProbability >= CHOPPING_ZONE ? "zone-chop" : t.chopPro
 const RIVAL_SHOWN_AT = 30;
 // Last name, except defenses ("Rams D/ST").
 const short = n => /D\/ST/.test(n) ? n : n.split(" ").slice(1).join(" ") || n;
-const swingLine = t => t.swingPlayer
-  ? `${short(t.swingPlayer.name)} decides it${t.swingPlayer.game ? ` (${t.swingPlayer.game})` : ""}: ${money(t.swingPlayer.chopIfAbove)}% chop odds if he tops ${money(t.swingPlayer.projectedRest)} more pts, ${money(t.swingPlayer.chopIfBelow)}% if he doesn't.`
-  : null;
+// "a big game (~33 pts) drops the chop odds to 9%; a quiet one (~13 pts) raises them to 26%"
+const swingLine = t => {
+  const p = t.swingPlayer;
+  if (!p) return null;
+  const where = p.game ? ` (${p.game})` : "";
+  return p.bigGame != null
+    ? `${short(p.name)} decides it${where}: a big game (~${Math.round(p.bigGame)} pts) drops the chop odds to ${Math.round(p.chopIfAbove)}%; a quiet one (~${Math.round(p.quietGame)} pts) raises them to ${Math.round(p.chopIfBelow)}%.`
+    : `${short(p.name)} decides it${where}: ${Math.round(p.chopIfAbove)}% chop odds if he tops his projection, ${Math.round(p.chopIfBelow)}% if he doesn't.`;
+};
 const rivalLine = t => t.rival?.share >= RIVAL_SHOWN_AT
   ? `Racing ${t.rival.team}: they're the team just above in ${Math.round(t.rival.share)}% of the simulated chops.`
   : null;

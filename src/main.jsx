@@ -140,10 +140,11 @@ function App() {
   const myScore = scores.find(s => Number(s.teamId) === Number(myTeamId)) || null;
   const myMatchupId = myScore?.matchupId ?? null;
   const seasonOddsWeeksLeft = live.seasonOdds?.remainingWeeks?.length ?? 0;
-  // A matchup shows its 5 most recent 4+ point swings from the last 5 hours.
+  // A matchup shows its 5 most recent key plays from the last 5 hours: 4+
+  // point swings, or plays that moved the win odds 3% or more.
   const KEY_PLAY_MAX_AGE_MS = 5 * 60 * 60 * 1000;
   const keyPlaysFor = matchupId => (livePlayFeed.plays || [])
-    .filter(p => Number(p.matchupId) === Number(matchupId) && Math.abs(Number(p.points)) >= 4)
+    .filter(p => Number(p.matchupId) === Number(matchupId) && (Math.abs(Number(p.points)) >= 4 || p.momentum?.shift >= 3))
     .filter(p => p.wallclock && Date.now() - Date.parse(p.wallclock) <= KEY_PLAY_MAX_AGE_MS)
     .sort((a, b) => Date.parse(b.wallclock) - Date.parse(a.wallclock))
     .slice(0, 5);
@@ -271,7 +272,7 @@ function App() {
         </div>
         {keyPlaysFor(matchupId).length ? (
           <div className="key-plays" aria-label="Key plays">
-            <div className="key-plays-heading"><span>KEY PLAYS</span><em>4+ PT SWINGS</em></div>
+            <div className="key-plays-heading"><span>KEY PLAYS</span><em>4+ PTS OR 3%+ ODDS</em></div>
             <div className="key-play-list">
               {keyPlaysFor(matchupId).map(play => (
                 <div className="key-play" key={play.id}>

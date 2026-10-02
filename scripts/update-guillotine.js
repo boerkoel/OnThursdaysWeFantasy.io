@@ -129,7 +129,7 @@ const alive = [...scoreByTeam.values()]
 //   (the team it's really racing).
 const rng = seededRng(alive.map(t => [t.teamId, t.score, t.projected]));
 const chopCounts = new Map(alive.map(t => [t.teamId, 0]));
-const playerTallies = new Map(alive.map(t => [t.teamId, t.remaining.map(() => ({ above: 0, choppedAbove: 0, choppedBelow: 0 }))]));
+const playerTallies = new Map(alive.map(t => [t.teamId, t.remaining.map(() => ({ above: 0, choppedAbove: 0, choppedBelow: 0, pointsAbove: 0, pointsBelow: 0 }))]));
 const escapedBy = new Map(alive.map(t => [t.teamId, new Map()]));
 const playerPoints = new Map(alive.map(t => [t.teamId, new Array(t.remaining.length)]));
 for (let sim = 0; sim < SIMULATIONS; sim++) {
@@ -144,8 +144,8 @@ for (let sim = 0; sim < SIMULATIONS; sim++) {
     const points = playerPoints.get(t.teamId);
     t.remaining.forEach((p, i) => {
       const tally = playerTallies.get(t.teamId)[i];
-      if (points[i] >= p.rest) { tally.above++; tally.choppedAbove += chopped; }
-      else tally.choppedBelow += chopped;
+      if (points[i] >= p.rest) { tally.above++; tally.choppedAbove += chopped; tally.pointsAbove += points[i]; }
+      else { tally.choppedBelow += chopped; tally.pointsBelow += points[i]; }
     });
   }
 }
@@ -167,10 +167,12 @@ const MIN_SIDE_SIMULATIONS = 500;
 for (const t of alive) {
   if (t.chopProbability <= 0 || t.chopProbability >= 100) continue;
   const swing = t.remaining.map((p, i) => {
-    const { above, choppedAbove, choppedBelow } = playerTallies.get(t.teamId)[i];
+    const { above, choppedAbove, choppedBelow, pointsAbove, pointsBelow } = playerTallies.get(t.teamId)[i];
     const below = SIMULATIONS - above;
     if (above < MIN_SIDE_SIMULATIONS || below < MIN_SIDE_SIMULATIONS) return null;
-    return { name: p.name, game: p.game, projectedRest: round(p.rest), chopIfAbove: round(100 * choppedAbove / above), chopIfBelow: round(100 * choppedBelow / below) };
+    return { name: p.name, game: p.game, projectedRest: round(p.rest), chopIfAbove: round(100 * choppedAbove / above), chopIfBelow: round(100 * choppedBelow / below),
+      // His typical total in each half: a big game vs a quiet one.
+      bigGame: round(p.actual + pointsAbove / above), quietGame: round(p.actual + pointsBelow / below) };
   }).filter(Boolean).sort((a, b) => (b.chopIfBelow - b.chopIfAbove) - (a.chopIfBelow - a.chopIfAbove))[0];
   if (swing && swing.chopIfBelow - swing.chopIfAbove >= 1) t.swingPlayer = swing;
   const chops = [...escapedBy.get(t.teamId).values()].reduce((a, b) => a + b, 0);
