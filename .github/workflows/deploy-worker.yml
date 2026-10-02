@@ -1,7 +1,9 @@
 name: Deploy notification service
 
 # Deploys worker/ (the Cloudflare Worker behind the app's notifications).
-# Uses the CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID repository secrets.
+# Uses the CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID repository secrets,
+# plus LIVE_REFRESH_TOKEN (a fine-grained GitHub token for this repo with
+# Actions: read and write) so pull-to-refresh can start a live update.
 # CLOUDFLARE_API_TOKEN must be just the token (about 40 letters, digits, - and
 # _), not Cloudflare's sample "curl ... Bearer ..." command.
 on:
@@ -99,6 +101,15 @@ jobs:
           echo "Using KV namespace $ID"
       - name: Deploy
         run: npx --yes wrangler@4 deploy
+      - name: Give the service its GitHub token
+        env:
+          LIVE_REFRESH_TOKEN: ${{ secrets.LIVE_REFRESH_TOKEN }}
+        run: |
+          if [ -z "$LIVE_REFRESH_TOKEN" ]; then
+            echo "::warning::LIVE_REFRESH_TOKEN secret is not set, so pull-to-refresh can't start live updates."
+            exit 0
+          fi
+          printf %s "$LIVE_REFRESH_TOKEN" | tr -d '[:space:]' | npx --yes wrangler@4 secret put GITHUB_TOKEN
       - name: Check the service responds
         run: |
           sleep 10

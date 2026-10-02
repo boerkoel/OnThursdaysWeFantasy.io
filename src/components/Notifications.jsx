@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { TeamLogo } from "./LiveBits.jsx";
+import { NOTIFY_SERVICE } from "../lib/data.js";
 
 // Notifications panel: choose what to follow and turn alerts on for this
 // phone. Subscriptions and choices are stored by the alert service (worker/),
 // which pushes new events every couple of minutes.
-const SERVICE = "https://otwf-notify.otwf.workers.dev";
+const SERVICE = NOTIFY_SERVICE;
 const PREFS_KEY = "notificationPrefs";
 
 const supported = () => "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;

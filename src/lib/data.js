@@ -12,6 +12,9 @@ export const formatDay = iso => iso
   ? new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric", timeZone: "America/New_York" })
   : "—";
 
+// The Cloudflare Worker behind notifications and pull-to-refresh (worker/).
+export const NOTIFY_SERVICE = "https://otwf-notify.otwf.workers.dev";
+
 // Files published next to the bundle by vite.config.js.
 const DATA_URL = import.meta.env.BASE_URL + "data/current/";
 
@@ -59,8 +62,26 @@ const INITIAL_LIVE = {
   guillotine: initialGuillotine,
   seasonOdds: initialSeasonOdds
 };
+// While a requested live update is on its way, poll faster so it shows up soon after it's published.
+const WAITING_POLL_MS = 8000;
+const WAITING_FOR_MS = 4 * 60 * 1000;
 export function useLiveData() {
-  const [live, refresh] = usePolledData("live.json", INITIAL_LIVE);
+  const [waitingUntil, setWaitingUntil] = useState(0);
+  const [live, reload] = usePolledData("live.json", INITIAL_LIVE, waitingUntil > Date.now() ? WAITING_POLL_MS : 15000);
+  // Reloads now and asks the worker to start a live update on GitHub if the
+  // published data is stale. Resolves to the worker's answer ({ started,
+  // reason, lastUpdated }), or null if it couldn't be reached.
+  const refresh = async () => {
+    reload();
+    try {
+      const response = await fetch(NOTIFY_SERVICE + "/refresh", { method: "POST" });
+      const result = response.ok ? await response.json() : null;
+      if (result?.started || result?.reason === "pending") setWaitingUntil(Date.now() + WAITING_FOR_MS);
+      return result;
+    } catch {
+      return null;
+    }
+  };
   return { ...INITIAL_LIVE, ...live, refresh };
 }
 

@@ -1,21 +1,30 @@
 // Notification service for the On Thursdays We Fantasy home-screen app.
 //
 // - fetch: phones sign up (/subscribe) with their Web Push subscription and
-//   what they want to follow; /unsubscribe; /test sends a test alert.
+//   what they want to follow; /unsubscribe; /test sends a test alert;
+//   /refresh starts the GitHub live-update workflow if the published data is
+//   stale (pull-to-refresh in the app).
 // - scheduled (every 2 minutes): reads the site's published live.json, finds
 //   what's new since last time (lead changes, new favorites, finals, League
 //   Wire highlights, Death Watch changes) and pushes it to matching phones.
 //
 // KV (SUBS): "vapid" (this service's own key pair, created on first use),
-// "sub:<id>" (one per phone), "state" (what was already seen and sent).
+// "sub:<id>" (one per phone), "state" (what was already seen and sent),
+// "refresh-requested" (when /refresh last started a workflow run).
+// Secret GITHUB_TOKEN: a token allowed to run the repo's Actions workflows.
 import { generateVapidKeys, sendPush } from "./webpush.js";
 
 const SITE = "https://boerkoel.github.io/OnThursdaysWeFantasy.io/";
+const REPO = "boerkoel/OnThursdaysWeFantasy.io";
 const ALLOWED_ORIGINS = ["https://boerkoel.github.io", "http://localhost:4173", "http://localhost:5173"];
 // Only real browser push services may be stored as endpoints.
 const PUSH_HOSTS = [/\.push\.apple\.com$/, /(^|\.)fcm\.googleapis\.com$/, /(^|\.)push\.services\.mozilla\.com$/, /\.notify\.windows\.com$/];
 const TEAM_ALERT_GAP_MS = 5 * 60 * 1000;
 const MAX_ALERTS_PER_PHONE_PER_RUN = 3;
+// /refresh starts a live update only when the published data is older than
+// this, and at most once per gap (a run takes ~2 minutes to publish).
+const REFRESH_STALE_MS = 5 * 60 * 1000;
+const REFRESH_GAP_MS = 4 * 60 * 1000;
 const WIRE_HIGHLIGHTS = new Set(["MATCHUP FLIP", "PROJECTION FLIP", "MEDIAN FLIP", "ALL EYES ON", "INSTANT REGRET", "COMEBACK",
   "HEART ATTACK GAME", "MOMENTUM SHIFT", "RAFFLE FLIP", "HOT PICKUP"]);
 
@@ -75,6 +84,7 @@ export default {
       }
       if (request.method === "GET" && pathname === "/health") return json({ ok: true }, 200, origin);
       if (request.method !== "POST") return json({ error: "Not found" }, 404, origin);
+      if (pathname === "/refresh") return json(await requestLiveUpdate(env), 200, origin);
 
       const body = await request.json().catch(() => ({}));
       const subscription = body.subscription || {};
@@ -110,6 +120,38 @@ export default {
     ctx.waitUntil(checkForAlerts(env));
   }
 };
+
+// ---- Pull-to-refresh -----------------------------------------------------------
+
+// Starts update-live.yml (a manual run, which also takes over the chain of
+// scheduled runs) unless the data is fresh or a run was just started.
+// reason: "fresh" | "pending" | "started" | "unavailable".
+async function requestLiveUpdate(env) {
+  const response = await fetch(`${SITE}data/current/live.json?ts=${Date.now()}`, { cf: { cacheTtl: 0 } });
+  const lastUpdated = response.ok ? (await response.json()).scoreboard?.lastUpdated || null : null;
+  const now = Date.now();
+  if (lastUpdated && now - Date.parse(lastUpdated) < REFRESH_STALE_MS) return { started: false, reason: "fresh", lastUpdated };
+  const requestedAt = Number(await env.SUBS.get("refresh-requested")) || 0;
+  if (now - requestedAt < REFRESH_GAP_MS) return { started: false, reason: "pending", lastUpdated, requestedAt };
+  if (!env.GITHUB_TOKEN) return { started: false, reason: "unavailable", lastUpdated };
+
+  await env.SUBS.put("refresh-requested", String(now));
+  const dispatch = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/update-live.yml/dispatches`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.GITHUB_TOKEN}`,
+      Accept: "application/vnd.github+json",
+      "User-Agent": "otwf-notify",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ ref: "main", inputs: { force_update: "true" } })
+  });
+  if (!dispatch.ok) {
+    await env.SUBS.delete("refresh-requested");
+    return { started: false, reason: "unavailable", lastUpdated, status: dispatch.status };
+  }
+  return { started: true, reason: "started", lastUpdated, requestedAt: now };
+}
 
 // ---- Finding what's new --------------------------------------------------------
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { usePinnedHeight } from "./Navigation.jsx";
+import { ShareButton } from "./LiveBits.jsx";
 
 const AUTO_ADVANCE_MS = 6000;
 // After you tap or swipe, give the story you picked a bit longer.
@@ -11,7 +12,7 @@ const SWIPE_PX = 40;
 // story instead of resizing as they rotate. On phones it's pinned under the
 // section strip; tap the right side (or swipe left) for the next story, the
 // left side (or swipe right) for the previous one.
-export default function LeagueWire({ stories, status }) {
+export default function LeagueWire({ stories, status, week }) {
   const [index, setIndex] = useState(0);
   const [tapped, setTapped] = useState(false);
   const box = useRef(null);
@@ -26,6 +27,7 @@ export default function LeagueWire({ stories, status }) {
 
   if (!stories.length) return null;
   const active = index % stories.length;
+  const story = stories[active];
   const show = i => { setTapped(true); setIndex((i + stories.length) % stories.length); };
 
   const onPointerDown = event => { pointer.current = { x: event.clientX, y: event.clientY }; };
@@ -62,6 +64,11 @@ export default function LeagueWire({ stories, status }) {
       <div className="marquee-dots">
         {stories.length > 1 ? <small className="marquee-count">{active + 1}/{stories.length}</small> : null}
         {stories.map((story, i) => <button key={i} type="button" className={i === active ? "active" : ""} aria-label={"Show " + story.type} onClick={() => show(i)}></button>)}
+        <ShareButton iconOnly label="Share this story" filename={`league-wire-week-${week}-${story.type}`.replace(/[^\w-]+/g, "-").toLowerCase()} build={() => ({
+          kicker: `League Wire · Week ${week}`,
+          title: story.type,
+          lines: [{ text: story.text, size: 38, weight: 700 }]
+        })} />
       </div>
     </section>
   );

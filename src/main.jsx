@@ -11,6 +11,7 @@ import weekly from "../data/current/weekly.json";
 import { fetchData, gameState, money, useLiveData } from "./lib/data.js";
 import { ShareButton, TeamLogo, UpdatedAgo, useChangedScores } from "./components/LiveBits.jsx";
 import LeagueWire from "./components/LeagueWire.jsx";
+import { useRefresh } from "./components/PullToRefresh.jsx";
 import TeamCards from "./components/TeamCards.jsx";
 import { DeathWatch } from "./components/DeathWatch.jsx";
 import SwingChart from "./components/SwingChart.jsx";
@@ -131,6 +132,7 @@ function App() {
   const scores = scoreboard.scores || [];
   const [scoreSort, setScoreSort] = useState("current");
   const status = gameState(scoreboard);
+  const refresher = useRefresh(live.refresh, scoreboard.lastUpdated);
   const flashingScores = useChangedScores(scores);
   const [tab, goToTab] = useTabs();
   const [myTeamId, setMyTeamId] = useMyTeam();
@@ -305,6 +307,7 @@ function App() {
 
   return (
     <main className="site">
+      {refresher.view}
       <header className="topbar">
         <div>
           <p className="eyebrow">ON THURSDAYS WE WATCH FOOTBALL</p>
@@ -325,11 +328,11 @@ function App() {
           : "Between games. Here’s where everyone stands."}</p></div>
         <div className="hero-stat"><strong>{scoreboard.projectedMedian != null ? money(scoreboard.projectedMedian) : "—"}</strong><span>Projected median</span></div>
       </section>
-      <LeagueWire stories={live.marquee.stories || []} status={status} />
+      <LeagueWire stories={live.marquee.stories || []} status={status} week={live.marquee.week ?? scoreboard.week} />
       {renderMyTeam()}
       <Notifications teams={teamsData.teams || []} />
       <section id="scores" className="section">
-        <div className="section-heading"><div><span className="section-kicker">RIGHT NOW</span><h2>Week {scoreboard.week} Scores</h2></div><button type="button" className={status === "LIVE" ? "live-pill is-live" : "live-pill"} onClick={live.refresh} title="Refresh now">● {status} ↻</button></div>
+        <div className="section-heading"><div><span className="section-kicker">RIGHT NOW</span><h2>Week {scoreboard.week} Scores</h2></div><button type="button" className={status === "LIVE" ? "live-pill is-live" : "live-pill"} onClick={refresher.run} title="Refresh now">● {status} ↻</button></div>
         <div className="matchups">
           {matchupIds.filter(id => id !== myMatchupId).map(id => renderMatchup(id))}
         </div>
