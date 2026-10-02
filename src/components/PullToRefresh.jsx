@@ -77,35 +77,42 @@ export function useRefresh(refresh, lastUpdated) {
       distance = Math.min(MAX_PULL_PX, dy * 0.5);
       setPull(distance);
     };
+    // A pull past the threshold refreshes when the finger lifts. iOS doesn't
+    // always deliver touchend, so pointer events and the next touch count as
+    // the release too.
     const onEnd = () => {
       if (start && distance >= PULL_TO_REFRESH_PX) runRef.current();
       start = null;
       distance = 0;
       setPull(0);
     };
-    window.addEventListener("touchstart", onStart, { passive: true });
+    const onNextTouch = event => { if (start && distance >= PULL_TO_REFRESH_PX) onEnd(); onStart(event); };
+    const ends = ["touchend", "touchcancel", "pointerup", "pointercancel"];
+    window.addEventListener("touchstart", onNextTouch, { passive: true });
     window.addEventListener("touchmove", onMove, { passive: false });
-    window.addEventListener("touchend", onEnd);
-    window.addEventListener("touchcancel", onEnd);
+    for (const name of ends) window.addEventListener(name, onEnd);
     return () => {
-      window.removeEventListener("touchstart", onStart);
+      window.removeEventListener("touchstart", onNextTouch);
       window.removeEventListener("touchmove", onMove);
-      window.removeEventListener("touchend", onEnd);
-      window.removeEventListener("touchcancel", onEnd);
+      for (const name of ends) window.removeEventListener(name, onEnd);
     };
   }, []);
 
+  // One pill near the top: the pull, then "Refreshing…", then the result.
   const ready = pull >= PULL_TO_REFRESH_PX;
-  const view = (
-    <>
-      {pull > 0 || busy ? (
-        <div className="pull-indicator" style={{ transform: `translate(-50%, ${busy ? 56 : pull}px)` }} aria-hidden="true">
-          <span className={busy ? "pull-arrow spinning" : "pull-arrow"} style={busy ? undefined : { transform: `rotate(${ready ? 180 : 0}deg)` }}>{busy ? "↻" : "↓"}</span>
-          {busy ? "Refreshing…" : ready ? "Release to refresh" : "Pull to refresh"}
-        </div>
-      ) : null}
-      {message ? <div className="refresh-toast" role="status">{message}</div> : null}
-    </>
-  );
+  const view = pull > 0 || busy || message ? (
+    <div className="pull-indicator" role="status" style={{ transform: `translate(-50%, ${pull > 0 ? pull : 56}px)` }}>
+      {pull > 0 ? <>
+        <span className="pull-arrow" style={{ transform: `rotate(${ready ? 180 : 0}deg)` }}>↓</span>
+        {ready ? "Release to refresh" : "Pull to refresh"}
+      </> : busy ? <>
+        <span className="pull-arrow spinning">↻</span>
+        Refreshing…
+      </> : <>
+        {waitingSince ? <span className="pull-arrow spinning">↻</span> : <span className="pull-arrow">✓</span>}
+        {message}
+      </>}
+    </div>
+  ) : null;
   return { run, view };
 }

@@ -663,13 +663,11 @@ section,details,.odds-block{scroll-margin-top:72px}
 .instant-regret{grid-column:1 / -1;margin:2px 0 0;padding-top:8px;border-top:1px solid #242620;color:#c9ccc2;font-size:11px;line-height:1.45}
 .instant-regret b{margin-right:4px;color:#e0b36a;font-size:9px;letter-spacing:.08em}
 
-/* League Wire: icon-only share button at the end of the dots row. */
-.share-button.icon-only{margin-left:auto;padding:2px 8px;font-size:13px;line-height:1.2;letter-spacing:0}
+/* League Wire: icon-only share button at the end of the dots row (undoes the dot styles, which phones also hide). */
+.marquee-dots .share-button.icon-only,.league-marquee .marquee-dots .share-button.icon-only{display:inline-block;box-sizing:border-box;width:auto;height:auto;margin-left:8px;padding:2px 8px;border:1px solid #3b4134;border-radius:999px;background:transparent;background-clip:border-box;color:#b8c69b;font-size:13px;line-height:1.2;letter-spacing:0;transform:none}
 
-/* Pull-to-refresh (home-screen app) and the message after a refresh. */
-.pull-indicator{position:fixed;top:calc(env(safe-area-inset-top) - 40px);left:50%;z-index:60;display:flex;gap:7px;align-items:center;padding:7px 13px;border:1px solid #3b4134;border-radius:999px;background:#171a15;color:#dfe7d7;font-size:12px;font-weight:800;box-shadow:0 6px 18px rgba(0,0,0,.4);pointer-events:none}
+/* Pull-to-refresh (home-screen app): one pill for the pull, progress and result. */
+.pull-indicator{position:fixed;top:calc(env(safe-area-inset-top) - 40px);left:50%;z-index:60;display:flex;max-width:calc(100vw - 32px);gap:7px;align-items:center;padding:7px 13px;border:1px solid #3b4134;border-radius:999px;background:#171a15;color:#dfe7d7;font-size:12px;font-weight:800;box-shadow:0 6px 18px rgba(0,0,0,.4);pointer-events:none}
 .pull-arrow{display:inline-block;color:#b8c69b;font-size:15px;transition:transform .15s}
 .pull-arrow.spinning{animation:pull-spin .9s linear infinite}
 @keyframes pull-spin{to{transform:rotate(360deg)}}
-.refresh-toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));z-index:60;transform:translateX(-50%);max-width:calc(100vw - 32px);padding:9px 15px;border:1px solid #3b4134;border-radius:12px;background:#171a15;color:#dfe7d7;font-size:12px;font-weight:700;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.4)}
-@media(max-width:700px){.refresh-toast{bottom:calc(84px + env(safe-area-inset-bottom))}}
