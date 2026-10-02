@@ -491,11 +491,11 @@
               "medianWinsAdded": 0,
               "winsAdded": 0,
               "mutualTrade": {
-                "playerId": 4429835,
-                "player": "George Holani",
+                "playerId": 4568490,
+                "player": "RJ Harvey",
                 "position": "RB",
                 "startRate": 0,
-                "boost": 6.2,
+                "boost": 5.1,
                 "h2hWinsAdded": 0,
                 "medianWinsAdded": 0,
                 "winsAdded": 0
@@ -526,11 +526,11 @@
               "medianWinsAdded": 1,
               "winsAdded": 1,
               "mutualTrade": {
-                "playerId": 4429835,
-                "player": "George Holani",
+                "playerId": 4568490,
+                "player": "RJ Harvey",
                 "position": "RB",
                 "startRate": 0,
-                "boost": 3.5,
+                "boost": 2.4,
                 "h2hWinsAdded": 0,
                 "medianWinsAdded": 0,
                 "winsAdded": 0
@@ -564,6 +564,22 @@
                 "week": 2,
                 "points": 27,
                 "gain": 23.5
+              }
+            ],
+            "winsAdded": 1
+          },
+          {
+            "playerId": -16029,
+            "player": "Panthers D/ST",
+            "position": "DST",
+            "boost": 19,
+            "h2hWinsAdded": 0,
+            "medianWinsAdded": 1,
+            "weeks": [
+              {
+                "week": 2,
+                "points": 24,
+                "gain": 19
               }
             ],
             "winsAdded": 1
@@ -819,6 +835,34 @@
           ],
           "targets": [
             {
+              "playerId": 15818,
+              "player": "Keenan Allen",
+              "position": "WR",
+              "startRate": 0,
+              "rosteredWeeks": 2,
+              "startedWeeks": 0,
+              "boost": 12.7,
+              "teamId": 7,
+              "team": "Ruffing the Passer",
+              "h2hWinsAdded": 0,
+              "medianWinsAdded": 0,
+              "winsAdded": 0,
+              "mutualTrade": null,
+              "otherNeeds": [
+                {
+                  "position": "QB",
+                  "percent": -30.21
+                },
+                {
+                  "position": "WR",
+                  "percent": -16.12
+                }
+              ],
+              "needsMatch": [
+                "WR"
+              ]
+            },
+            {
               "playerId": 4685720,
               "player": "Bryce Young",
               "position": "QB",
@@ -886,36 +930,6 @@
                 {
                   "position": "DST",
                   "percent": -54.07
-                }
-              ],
-              "needsMatch": []
-            },
-            {
-              "playerId": 4569587,
-              "player": "Wan'Dale Robinson",
-              "position": "WR",
-              "startRate": 0,
-              "rosteredWeeks": 3,
-              "startedWeeks": 0,
-              "boost": 13.6,
-              "teamId": 2,
-              "team": "TDsMaGee",
-              "h2hWinsAdded": 0,
-              "medianWinsAdded": 0,
-              "winsAdded": 0,
-              "mutualTrade": null,
-              "otherNeeds": [
-                {
-                  "position": "TE",
-                  "percent": -85.58
-                },
-                {
-                  "position": "K",
-                  "percent": -19.87
-                },
-                {
-                  "position": "DST",
-                  "percent": -19.62
                 }
               ],
               "needsMatch": []
@@ -1370,22 +1384,17 @@
             "winsAdded": 2
           },
           {
-            "playerId": -16017,
-            "player": "Patriots D/ST",
+            "playerId": -16029,
+            "player": "Panthers D/ST",
             "position": "DST",
-            "boost": 26,
+            "boost": 28,
             "h2hWinsAdded": 1,
             "medianWinsAdded": 0,
             "weeks": [
               {
-                "week": 1,
-                "points": 7,
-                "gain": 2
-              },
-              {
                 "week": 2,
-                "points": 20,
-                "gain": 24
+                "points": 24,
+                "gain": 28
               }
             ],
             "winsAdded": 1
@@ -1489,8 +1498,8 @@
           "points": null,
           "draftPick": 176,
           "round": 15,
-          "rosRank": 255,
-          "valueGap": -79
+          "rosRank": 254,
+          "valueGap": -78
         },
         "boomMachine": {
           "playerId": 4259545,
@@ -1997,6 +2006,35 @@
               ]
             },
             {
+              "playerId": 15818,
+              "player": "Keenan Allen",
+              "position": "WR",
+              "startRate": 0,
+              "rosteredWeeks": 2,
+              "startedWeeks": 0,
+              "boost": 10,
+              "teamId": 7,
+              "team": "Ruffing the Passer",
+              "h2hWinsAdded": 0,
+              "medianWinsAdded": 0,
+              "winsAdded": 0,
+              "mutualTrade": null,
+              "otherNeeds": [
+                {
+                  "position": "QB",
+                  "percent": -30.21
+                },
+                {
+                  "position": "WR",
+                  "percent": -16.12
+                }
+              ],
+              "needsMatch": [
+                "QB",
+                "WR"
+              ]
+            },
+            {
               "playerId": 4697815,
               "player": "Rachaad White",
               "position": "RB",
@@ -2036,32 +2074,6 @@
               "needsMatch": [
                 "WR"
               ]
-            },
-            {
-              "playerId": 4832800,
-              "player": "Denzel Boston",
-              "position": "WR",
-              "startRate": 0,
-              "rosteredWeeks": 3,
-              "startedWeeks": 0,
-              "boost": 17.7,
-              "teamId": 3,
-              "team": "Kyle Tucker",
-              "h2hWinsAdded": 0,
-              "medianWinsAdded": 0,
-              "winsAdded": 0,
-              "mutualTrade": null,
-              "otherNeeds": [
-                {
-                  "position": "TE",
-                  "percent": -43.46
-                },
-                {
-                  "position": "RB",
-                  "percent": -23.84
-                }
-              ],
-              "needsMatch": []
             }
           ]
         },
@@ -2318,56 +2330,14 @@
               "medianWinsAdded": 2,
               "winsAdded": 3,
               "mutualTrade": {
-                "playerId": 4361432,
-                "player": "Romeo Doubs",
+                "playerId": 15818,
+                "player": "Keenan Allen",
                 "position": "WR",
-                "startRate": 33.33,
+                "startRate": 0,
                 "boost": 7.6,
-                "h2hWinsAdded": 0,
-                "medianWinsAdded": 0,
-                "winsAdded": 0
-              },
-              "otherNeeds": [
-                {
-                  "position": "TE",
-                  "percent": -85.58
-                },
-                {
-                  "position": "K",
-                  "percent": -19.87
-                },
-                {
-                  "position": "DST",
-                  "percent": -19.62
-                }
-              ],
-              "needsMatch": [
-                "TE",
-                "DST"
-              ]
-            },
-            {
-              "playerId": 4429835,
-              "player": "George Holani",
-              "position": "RB",
-              "startRate": 0,
-              "rosteredWeeks": 2,
-              "startedWeeks": 0,
-              "boost": 5,
-              "teamId": 2,
-              "team": "TDsMaGee",
-              "h2hWinsAdded": 0,
-              "medianWinsAdded": 1,
-              "winsAdded": 1,
-              "mutualTrade": {
-                "playerId": 4361432,
-                "player": "Romeo Doubs",
-                "position": "WR",
-                "startRate": 33.33,
-                "boost": 7.6,
-                "h2hWinsAdded": 0,
-                "medianWinsAdded": 0,
-                "winsAdded": 0
+                "h2hWinsAdded": 1,
+                "medianWinsAdded": 1,
+                "winsAdded": 2
               },
               "otherNeeds": [
                 {
@@ -2423,6 +2393,47 @@
               ],
               "needsMatch": [
                 "DST"
+              ]
+            },
+            {
+              "playerId": 4697815,
+              "player": "Rachaad White",
+              "position": "RB",
+              "startRate": 33.33,
+              "rosteredWeeks": 3,
+              "startedWeeks": 1,
+              "boost": 14.2,
+              "teamId": 12,
+              "team": "Beautiful Dark Twisted Fantasy",
+              "h2hWinsAdded": 0,
+              "medianWinsAdded": 2,
+              "winsAdded": 2,
+              "mutualTrade": {
+                "playerId": 4361432,
+                "player": "Romeo Doubs",
+                "position": "WR",
+                "startRate": 33.33,
+                "boost": 8.6,
+                "h2hWinsAdded": 0,
+                "medianWinsAdded": 1,
+                "winsAdded": 1
+              },
+              "otherNeeds": [
+                {
+                  "position": "TE",
+                  "percent": -63.83
+                },
+                {
+                  "position": "WR",
+                  "percent": -53.4
+                },
+                {
+                  "position": "RB",
+                  "percent": -20.92
+                }
+              ],
+              "needsMatch": [
+                "TE"
               ]
             }
           ]
@@ -2527,8 +2538,8 @@
           "points": null,
           "draftPick": 129,
           "round": 11,
-          "rosRank": 219,
-          "valueGap": -90
+          "rosRank": 218,
+          "valueGap": -89
         },
         "boomMachine": {
           "playerId": 4890973,
@@ -2782,6 +2793,22 @@
               }
             ],
             "winsAdded": 1
+          },
+          {
+            "playerId": -16029,
+            "player": "Panthers D/ST",
+            "position": "DST",
+            "boost": 17,
+            "h2hWinsAdded": 0,
+            "medianWinsAdded": 1,
+            "weeks": [
+              {
+                "week": 2,
+                "points": 24,
+                "gain": 17
+              }
+            ],
+            "winsAdded": 1
           }
         ],
         "trend": {
@@ -2882,8 +2909,8 @@
           "points": null,
           "draftPick": 123,
           "round": 11,
-          "rosRank": 254,
-          "valueGap": -131
+          "rosRank": 255,
+          "valueGap": -132
         },
         "boomMachine": {
           "playerId": 3139477,
@@ -3887,13 +3914,13 @@
           "valueGap": 62
         },
         "worstDraftValue": {
-          "playerId": 17427,
-          "player": "Cairo Santos",
+          "playerId": 4430834,
+          "player": "Jalen McMillan",
           "points": null,
-          "draftPick": 175,
-          "round": 15,
-          "rosRank": 241,
-          "valueGap": -66
+          "draftPick": 162,
+          "round": 14,
+          "rosRank": 238,
+          "valueGap": -76
         },
         "boomMachine": {
           "playerId": 3117251,
@@ -4130,22 +4157,17 @@
             "winsAdded": 2
           },
           {
-            "playerId": 2576925,
-            "player": "Darren Waller",
-            "position": "TE",
-            "boost": 17.3,
+            "playerId": -16029,
+            "player": "Panthers D/ST",
+            "position": "DST",
+            "boost": 14,
             "h2hWinsAdded": 0,
             "medianWinsAdded": 1,
             "weeks": [
               {
                 "week": 2,
-                "points": 18.3,
-                "gain": 14.3
-              },
-              {
-                "week": 3,
-                "points": 10.1,
-                "gain": 3
+                "points": 24,
+                "gain": 14
               }
             ],
             "winsAdded": 1
