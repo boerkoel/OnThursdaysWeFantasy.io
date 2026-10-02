@@ -8,6 +8,45 @@ async function readJson(path, fallback = null) {
   catch { return fallback; }
 }
 
+// ---- Momentum ---------------------------------------------------------------
+// How much a play moved its fantasy matchup: the win odds now versus the odds
+// with the play's points taken back out. A team's final score is roughly
+// normal (projection, projectionSd), so the margin is too, with the two SDs
+// combined. Only plays from the last 15 minutes get one, so a backfilled
+// play isn't judged against a much later scoreboard.
+const MOMENTUM_MAX_AGE_MS = 15 * 60 * 1000;
+const MIN_MARGIN_SD = 3;
+function normalCdf(z) {
+  // Abramowitz & Stegun 7.1.26, accurate to about 1e-7.
+  const x = Math.abs(z) / Math.SQRT2;
+  const t = 1 / (1 + 0.3275911 * x);
+  const erf = 1 - t * (0.254829592 + t * (-0.284496736 + t * (1.421413741 + t * (-1.453152027 + t * 1.061405429)))) * Math.exp(-x * x);
+  return z >= 0 ? (1 + erf) / 2 : (1 - erf) / 2;
+}
+function normalQuantile(p) {
+  let lo = -8, hi = 8;
+  for (let i = 0; i < 60; i++) { const mid = (lo + hi) / 2; if (normalCdf(mid) < p) lo = mid; else hi = mid; }
+  return (lo + hi) / 2;
+}
+function momentumOf(play, scoresByTeam) {
+  if (!play.wallclock || Date.now() - Date.parse(play.wallclock) > MOMENTUM_MAX_AGE_MS) return null;
+  const team = scoresByTeam.get(Number(play.fantasyTeamId));
+  const opponent = team && scoresByTeam.get(Number(team.opponentId));
+  if (!team || !opponent || !Number.isFinite(Number(team.winProbability))) return null;
+  const marginSd = Math.max(MIN_MARGIN_SD, Math.hypot(Number(team.projectionSd) || 0, Number(opponent.projectionSd) || 0));
+  const after = Math.min(0.9999, Math.max(0.0001, Number(team.winProbability) / 100));
+  const before = normalCdf(normalQuantile(after) - Number(play.points) / marginSd);
+  const shift = Math.round((after - before) * 1000) / 10;
+  if (!shift) return null;
+  const toward = shift > 0 ? team : opponent;
+  return {
+    towardTeamId: Number(toward.teamId),
+    toward: toward.team,
+    shift: Math.abs(shift),
+    winProbability: Math.round((shift > 0 ? after : 1 - after) * 1000) / 10
+  };
+}
+
 async function fetchJson(url) {
   const response = await fetch(url, {
     headers: { Accept: "application/json", "User-Agent": "OnThursdaysWeFantasy/1.0" }
@@ -389,9 +428,17 @@ try {
     if (Number(previous.week) === Number(currentWeek)) previousPlays = previous.plays || [];
   } catch {}
 
+  // A play keeps the momentum it was given when it was first seen; new ones
+  // get it from this run's freshly updated scoreboard.
+  const previousById = new Map(previousPlays.map(p => [p.id, p]));
+  const scoreboard = await readJson("data/current/scoreboard.json", {});
+  const scoresByTeam = Number(scoreboard.week) === currentWeek ? new Map((scoreboard.scores || []).map(s => [Number(s.teamId), s])) : new Map();
   const deduped = new Map();
   for (const play of [...relevant, ...previousPlays]) {
-    if (!deduped.has(play.id)) deduped.set(play.id, play);
+    if (deduped.has(play.id)) continue;
+    const seen = previousById.get(play.id);
+    const momentum = seen ? seen.momentum : momentumOf(play, scoresByTeam);
+    deduped.set(play.id, momentum ? { ...play, momentum } : play);
   }
 
   const plays = [...deduped.values()]

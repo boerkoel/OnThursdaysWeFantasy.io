@@ -16,7 +16,7 @@ import TeamCards from "./components/TeamCards.jsx";
 import { DeathWatch } from "./components/DeathWatch.jsx";
 import SwingChart from "./components/SwingChart.jsx";
 import RecordBook from "./components/RecordBook.jsx";
-import Notifications from "./components/Notifications.jsx";
+import Notifications, { useFollowedTeams } from "./components/Notifications.jsx";
 import { seriesLine } from "./lib/recordBook.js";
 import { useMyTeam, useTabs } from "./lib/tabs.js";
 import { BackToTop, SectionNav, TabBar } from "./components/Navigation.jsx";
@@ -147,6 +147,9 @@ function App() {
     .filter(p => p.wallclock && Date.now() - Date.parse(p.wallclock) <= KEY_PLAY_MAX_AGE_MS)
     .sort((a, b) => Date.parse(b.wallclock) - Date.parse(a.wallclock))
     .slice(0, 5);
+  // "Momentum shift: swung the odds 6.2% toward X (now 58.0%)", for plays that moved the odds at least half a point.
+  const momentumLine = play => play.momentum?.shift >= 0.5
+    ? `Momentum shift: swung the odds ${play.momentum.shift.toFixed(1)}% toward ${play.momentum.toward} (now ${play.momentum.winProbability.toFixed(1)}%)` : null;
 
   // Standings, teams, awards, etc. are bundled and only change with the daily
   // ESPN update, so reload the page when that update's timestamp changes.
@@ -226,9 +229,12 @@ function App() {
   };
 
   // One live matchup card. On phones the details (series, swing chart, share,
-  // key plays) collapse behind a toggle; the pinned "my team" card starts open.
-  const [expandedMatchups, setExpandedMatchups] = useState(() => new Set());
-  const toggleMatchup = id => setExpandedMatchups(prev => {
+  // key plays) collapse behind a toggle. The pinned "my team" card is always
+  // open, and matchups with a followed team start open; toggled holds the
+  // matchups flipped from how they start.
+  const followedTeams = useFollowedTeams();
+  const [toggledMatchups, setToggledMatchups] = useState(() => new Set());
+  const toggleMatchup = id => setToggledMatchups(prev => {
     const next = new Set(prev);
     next.has(id) ? next.delete(id) : next.add(id);
     return next;
@@ -237,7 +243,8 @@ function App() {
     const pair = scores.filter(s => s.matchupId === matchupId);
     const a = pair[0], b = pair[1];
     if (!a || !b) return null;
-    const expanded = featured || expandedMatchups.has(matchupId);
+    const followed = followedTeams.includes(Number(a.teamId)) || followedTeams.includes(Number(b.teamId));
+    const expanded = featured || followed !== toggledMatchups.has(matchupId);
     return <article className={["matchup", featured ? "featured" : "", expanded ? "expanded" : ""].join(" ").trim()} key={matchupId}>
       <MatchupTeam team={a} opponent={b} logo={teamLogos[a.teamId]} projected={scoreSort === "projected"} flashing={flashingScores.has(a.teamId)} dotClass={medianDotClass(a)} />
       <div className="versus">vs</div>
@@ -258,7 +265,7 @@ function App() {
             })),
             lines: [
               seriesLine(a.teamId, b.teamId) ? { text: "⚔️ " + seriesLine(a.teamId, b.teamId), size: 28, color: "accent", weight: 800, gap: 36 } : null,
-              ...keyPlaysFor(matchupId).slice(0, 2).map((play, i) => ({ text: `${play.points > 0 ? "+" : ""}${money(play.points)} · ${play.player} ${play.text}`, size: 26, gap: i ? 8 : 30 }))
+              ...keyPlaysFor(matchupId).slice(0, 2).map((play, i) => ({ text: `${play.points > 0 ? "+" : ""}${money(play.points)} · ${play.player} ${play.text}${momentumLine(play) ? ` ⚡ ${momentumLine(play)}` : ""}`, size: 26, gap: i ? 8 : 30 }))
             ].filter(Boolean)
           })} />
         </div>
@@ -269,7 +276,7 @@ function App() {
               {keyPlaysFor(matchupId).map(play => (
                 <div className="key-play" key={play.id}>
                   <strong className={play.points < 0 ? "negative" : ""}>{play.points > 0 ? "+" : ""}{money(play.points)}</strong>
-                  <span><b>{play.player}</b> {play.text}</span>
+                  <span><b>{play.player}</b> {play.text}{momentumLine(play) ? <em className="key-play-momentum">⚡ {momentumLine(play)}</em> : null}</span>
                 </div>
               ))}
             </div>

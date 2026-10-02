@@ -281,6 +281,8 @@ function buildMarqueeStories() {
   addRaffleStories(add, previousScores);
   addPrimetimeStories(add, matchupStates);
   addWeekAheadStories(add);
+  addWhatToWatchStories(add, matchupStates);
+  addEarlyMomentumStories(add, matchupStates);
 
   const biggestLead=matchupStates.filter(x=>!x.m.completed).sort((a,b)=>b.diff-a.diff)[0];
   if(biggestLead&&biggestLead.diff>=20){const leader=biggestLead.currentDiff>0?biggestLead.a.team:biggestLead.b.team;const trailer=biggestLead.currentDiff>0?biggestLead.b.team:biggestLead.a.team;add("LEAGUE GOSSIP","👀 League gossip: " + leader + " has " + money(biggestLead.diff) + " pts to play with against " + trailer + ".",28);}
@@ -574,6 +576,103 @@ function addPrimetimeStories(add, matchupStates) {
     .slice(0, 2);
   for (const {s, left} of medianStakes) {
     add("MEDIAN STAKES","🎯 MEDIAN STAKES: " + possessive(s.team) + " shot at a median win (" + money(s.aboveMedianProbability) + "%) rides on " + withGames(left) + ".",74);
+  }
+}
+
+// ---- What to watch ---------------------------------------------------------
+// Between games: the next kickoff slot (games starting within half an hour of
+// the first one), which league starters play in it, and what's riding on it.
+const SLOT_SPREAD_MS = 30 * 60 * 1000;
+const WATCH_AHEAD_MS = 36 * 60 * 60 * 1000;
+const kickoffLabel = iso => {
+  const d = new Date(iso);
+  const day = d.toLocaleDateString("en-US", {weekday:"long", timeZone:"America/New_York"});
+  const time = d.toLocaleTimeString("en-US", {hour:"numeric", minute:"2-digit", timeZone:"America/New_York"}).replace(":00", "");
+  return day + " " + time;
+};
+function addWhatToWatchStories(add, matchupStates) {
+  if (nflGames.some(g => g.state === "in")) return;
+  const upcoming = nflGames.filter(g => g.state === "pre" && g.kickoff).sort((a, b) => Date.parse(a.kickoff) - Date.parse(b.kickoff));
+  if (!upcoming.length) return;
+  const first = Date.parse(upcoming[0].kickoff);
+  if (first - Date.now() > WATCH_AHEAD_MS) return;
+  const slot = new Set(upcoming.filter(g => Date.parse(g.kickoff) - first <= SLOT_SPREAD_MS).map(g => g.id));
+  const inSlot = teamId => (liveTeams.get(teamId)?.players || []).filter(p => !p.bench && p.game && slot.has(p.game.id));
+  const when = kickoffLabel(upcoming[0].kickoff) + (slot.size === 1 ? " (" + upcoming[0].name + ")" : "");
+
+  const stakes = matchupStates.filter(x => !x.m.completed).map(x => {
+    const players = [...inSlot(x.a.teamId), ...inSlot(x.b.teamId)];
+    const projected = round(players.reduce((sum, p) => sum + (p.projection ?? 0), 0));
+    const odds = Number(x.a.winProbability);
+    return {x, players, projected, closeness:Number.isFinite(odds) ? 1 - Math.abs(odds - 50) / 50 : 0.5};
+  }).filter(m => m.players.length);
+  const starters = stakes.reduce((n, m) => n + m.players.length, 0);
+  if (!starters) return;
+  const top = [...stakes].sort((a, b) => b.projected - a.projected)[0];
+  const startsFor = teamId => { const ps = inSlot(teamId); return ps.length ? listNames(ps.map(p => p.lastName)) + " for " + name(teamId) : null; };
+  const lineups = [...new Set(stakes.flatMap(m => [m.x.a.teamId, m.x.b.teamId]))].map(startsFor).filter(Boolean);
+  add("WHAT TO WATCH",fit(
+    "📺 Up next, " + when + ": " + lineups.join("; ") + ".",
+    "📺 Up next, " + when + ": " + starters + " league starters in action. Most riding on it: " + top.x.a.team + " vs " + top.x.b.team + " (" + pts(top.projected) + " projected).",
+    "📺 Up next, " + when + ": " + starters + " league starters, led by " + top.x.a.team + " vs " + top.x.b.team + ".",
+    "📺 Up next, " + when + ": " + starters + " league starters in action."
+  ),76);
+
+  // The starter whose game matters most: a big projection in a close matchup.
+  const swing = stakes.flatMap(m => m.players.map(p => ({p, m, weight:(p.projection ?? 0) * m.closeness})))
+    .sort((a, b) => b.weight - a.weight)[0];
+  if (swing && swing.weight > 0) {
+    const mine = name(swing.p.teamId), other = swing.p.teamId === swing.m.x.a.teamId ? swing.m.x.b : swing.m.x.a;
+    const odds = Number(currentScores.find(s => s.teamId === swing.p.teamId)?.winProbability);
+    add("PLAYER TO WATCH",fit(
+      "🔭 Player to watch: " + swing.p.name + (swing.p.game ? " (" + swing.p.game.name + ")" : "") + ". ESPN projects " + pts(swing.p.projection ?? 0) + ", and " + mine + (Number.isFinite(odds) ? " is " + money(odds) + "%" : " is in a tight one") + " against " + other.team + ".",
+      "🔭 Player to watch: " + swing.p.lastName + ", with " + mine + (Number.isFinite(odds) ? " at " + money(odds) + "%" : "") + " against " + other.team + "."
+    ),70);
+  }
+}
+
+// ---- Early momentum ---------------------------------------------------------
+// Early in the week (most starters yet to play): the matchup whose win odds
+// have moved most since the week began, and who moved them. Plus the single
+// play that swung a matchup the most in the last 45 minutes.
+const EARLY_SHARE_PLAYED = 0.4;
+const EARLY_MIN_SWING = 5;
+const BIG_PLAY_WINDOW_MS = 45 * 60 * 1000;
+const BIG_PLAY_MIN_SHIFT = 4;
+const livePlayFeed = await readJson("data/current/live-plays.json").catch(() => null);
+function addEarlyMomentumStories(add, matchupStates) {
+  const starters = [...liveTeams.values()].flatMap(t => t.players).filter(p => !p.bench);
+  const started = starters.filter(p => p.game && p.game.state !== "pre");
+  const history = Number(liveScoreboard.winHistory?.week) === currentWeek ? liveScoreboard.winHistory.points || [] : [];
+  if (started.length && starters.length && started.length / starters.length <= EARLY_SHARE_PLAYED && history.length >= 2) {
+    const baseline = history[0], latest = history[history.length - 1];
+    const movers = matchupStates.flatMap(x => [[x.a, x.b], [x.b, x.a]]).map(([team, opp]) => ({
+      team, opp, before:Number(baseline.p?.[team.teamId]), after:Number(latest.p?.[team.teamId])
+    })).filter(m => Number.isFinite(m.before) && Number.isFinite(m.after) && m.after - m.before >= EARLY_MIN_SWING)
+      .sort((a, b) => (b.after - b.before) - (a.after - a.before));
+    const best = movers[0];
+    if (best) {
+      const leader = started.filter(p => p.teamId === best.team.teamId).sort((a, b) => b.actual - a.actual)[0];
+      const by = leader && leader.actual > 0 ? ", led by " + leader.lastName + " (" + pts(leader.actual) + ")" : "";
+      const others = movers.slice(1, 3).filter(m => m.team.teamId !== best.opp.teamId);
+      add("EARLY EDGE",fit(
+        "⚡ Early edge: " + best.team.team + " went from " + money(best.before) + "% to " + money(best.after) + "% against " + best.opp.team + by + "." + (others.length ? " Also up: " + listNames(others.map(m => m.team.team + " (+" + money(m.after - m.before) + ")")) + "." : ""),
+        "⚡ Early edge: " + best.team.team + " went from " + money(best.before) + "% to " + money(best.after) + "% against " + best.opp.team + by + ".",
+        "⚡ Early edge: " + best.team.team + " is up to " + money(best.after) + "% against " + best.opp.team + by + "."
+      ),80 + (best.after - best.before) / 10);
+    }
+  }
+
+  const bigPlay = (Number(livePlayFeed?.week) === currentWeek ? livePlayFeed.plays || [] : [])
+    .filter(p => p.momentum?.shift >= BIG_PLAY_MIN_SHIFT && p.wallclock && Date.now() - Date.parse(p.wallclock) <= BIG_PLAY_WINDOW_MS)
+    .sort((a, b) => b.momentum.shift - a.momentum.shift)[0];
+  if (bigPlay) {
+    const team = name(Number(bigPlay.fantasyTeamId));
+    const sign = bigPlay.points > 0 ? "+" : "";
+    add("BIGGEST PLAY",fit(
+      "💥 Biggest play: " + bigPlay.player + " (" + sign + pts(bigPlay.points) + " for " + team + ") swung the odds " + money(bigPlay.momentum.shift) + "% toward " + bigPlay.momentum.toward + ", now " + money(bigPlay.momentum.winProbability) + "%.",
+      "💥 Biggest play: " + bigPlay.player + " (" + sign + pts(bigPlay.points) + ") swung the odds " + money(bigPlay.momentum.shift) + "% toward " + bigPlay.momentum.toward + "."
+    ),84 + bigPlay.momentum.shift / 5);
   }
 }
 

@@ -16,8 +16,10 @@ function loadPrefs() {
   try { return { wire: true, deathWatch: false, teams: [], ...JSON.parse(localStorage.getItem(PREFS_KEY) || "{}") }; }
   catch { return { wire: true, deathWatch: false, teams: [] }; }
 }
+const PREFS_EVENT = "notification-prefs-changed";
 function savePrefs(prefs) {
   try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch {}
+  window.dispatchEvent(new Event(PREFS_EVENT));
 }
 const keyBytes = base64 => {
   const padded = base64.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((base64.length + 3) % 4);
@@ -27,6 +29,17 @@ async function post(path, body) {
   const response = await fetch(SERVICE + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   if (!response.ok) throw new Error((await response.json().catch(() => ({}))).error || `HTTP ${response.status}`);
   return response.json();
+}
+
+// The teams this phone follows for alerts, kept current as they change.
+export function useFollowedTeams() {
+  const [teams, setTeams] = useState(() => loadPrefs().teams.map(Number));
+  useEffect(() => {
+    const update = () => setTeams(loadPrefs().teams.map(Number));
+    window.addEventListener(PREFS_EVENT, update);
+    return () => window.removeEventListener(PREFS_EVENT, update);
+  }, []);
+  return teams;
 }
 
 export default function Notifications({ teams }) {

@@ -36,7 +36,7 @@ const SURVIVAL_SORTS = {
 };
 
 // Every surviving team, sortable; collapsed by default.
-function SurvivalOdds({ teams }) {
+function SurvivalOdds({ teams, guillotine }) {
   const [sort, setSort] = useState("odds");
   const sorted = [...teams].sort(SURVIVAL_SORTS[sort].compare);
   return (
@@ -47,7 +47,7 @@ function SurvivalOdds({ teams }) {
           <button key={key} type="button" className={sort === key ? "active" : ""} onClick={() => setSort(key)}>{option.label}</button>)}
       </div>
       <div className="survival-table">
-        <div className="survival-row survival-header"><span>#</span><span>Team</span><span>Current</span><span>Projected</span><span>Left</span><span>Survive</span></div>
+        <div className="survival-row survival-header"><span>#</span><span>Team</span><span>Current</span><span>Projected</span><span>Left</span><span>Survive</span><span aria-hidden="true"></span></div>
         {sorted.map((t, i) => <div className="survival-row" key={t.teamId}>
           <span>{i + 1}</span>
           <strong><DwLogo team={t} /><span>{t.team}</span></strong>
@@ -55,6 +55,15 @@ function SurvivalOdds({ teams }) {
           <span>{money(t.projected)}</span>
           <span>{t.playersLeft ? t.playersLeft : "final"}</span>
           <b>{money(100 - t.chopProbability)}%</b>
+          <ShareButton iconOnly label={`Share ${t.team}'s survival odds`} filename={`survival-week-${guillotine.week}-${t.team}`.replace(/[^\w-]+/g, "-")} build={() => ({
+            kicker: `${guillotine.leagueName} · Week ${guillotine.week} survival odds`,
+            title: t.team,
+            teams: [{ name: t.team, score: money(100 - t.chopProbability) + "%", logo: t.logo, highlight: true, note: "chance to survive the week" }],
+            lines: [
+              { text: `${money(t.score)} pts${t.playersLeft ? ` · projected ${money(t.projected)} · ${t.playersLeft} still to play` : " · final"}`, size: 32, gap: 30 },
+              t.survivalNeed ? { text: `Needs ${money(t.survivalNeed.points)} more pts to pass ${t.survivalNeed.passTeam}`, size: 30, color: "ink" } : null
+            ].filter(Boolean)
+          })} />
         </div>)}
       </div>
     </details>
@@ -146,7 +155,7 @@ export function DeathWatch({ guillotine }) {
         </article>)}
       </div>
       {guillotine.chopped?.length ? <p className="median-note">Already chopped: {guillotine.chopped.map(c => `${c.team} (Week ${c.week})`).join(" · ")} · <a href="#rip" onClick={openObituaries}>Rest in peace</a></p> : null}
-      <SurvivalOdds teams={guillotine.teams} />
+      <SurvivalOdds teams={guillotine.teams} guillotine={guillotine} />
       <Obituaries guillotine={guillotine} />
     </section>
   );
