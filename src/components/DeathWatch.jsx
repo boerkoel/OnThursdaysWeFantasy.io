@@ -29,13 +29,23 @@ function DwLogo({ team, size = "sm" }) {
 const obituaryFor = chop => handwrittenObituaries.get(chop.team.trim().toLowerCase()) ||
   (obituaryData.obituaries || []).find(o => o.teamId === chop.teamId && o.week === chop.week)?.text;
 
-// Chop-odds zones for the survival table: the chopping zone is within 1 SD
-// of the chop line (the lowest of the other teams' scores, from the
-// simulations), or mathematically chopped; safe is under 5% chop odds (or
-// locked); everything else is at risk.
+// Survival zones. The chopping zone is the fewest teams, most at risk first,
+// whose chop odds add up to half: a 50% chance the chopped team is one of
+// them. It's wide when the week is wide open and shrinks as it resolves.
+// Safe is under 5% chop odds; everyone else is at risk.
+const CHOPPING_ZONE_SHARE = 50;
 const SAFE_BELOW = 5;
-const CHOP_ZONE_SD = 1;
-const zoneOf = t => t.chopProbability >= 100 || (t.chopLine && t.chopLine.z < CHOP_ZONE_SD) ? "zone-chop" : t.chopProbability < SAFE_BELOW ? "zone-safe" : "zone-risk";
+function choppingZone(teams) {
+  const zone = new Set();
+  let covered = 0;
+  for (const t of [...teams].sort((a, b) => b.chopProbability - a.chopProbability)) {
+    if (covered >= CHOPPING_ZONE_SHARE || t.chopProbability <= 0) break;
+    zone.add(t.teamId);
+    covered += t.chopProbability;
+  }
+  return zone;
+}
+const zoneOf = (t, zone) => zone.has(t.teamId) ? "zone-chop" : t.chopProbability < SAFE_BELOW ? "zone-safe" : "zone-risk";
 
 // Card lines from the simulations: the player whose game matters most, the
 // team they're really racing (once one stands out), and who's left.
@@ -77,6 +87,7 @@ const SURVIVAL_SORTS = {
 function SurvivalOdds({ teams, guillotine }) {
   const [sort, setSort] = useState("odds");
   const sorted = [...teams].sort(SURVIVAL_SORTS[sort].compare);
+  const zone = choppingZone(teams);
   return (
     <details className="collapsible" id="survival">
       <summary>Survival odds <span>{teams.length} teams</span></summary>
@@ -84,10 +95,10 @@ function SurvivalOdds({ teams, guillotine }) {
         {Object.entries(SURVIVAL_SORTS).map(([key, option]) =>
           <button key={key} type="button" className={sort === key ? "active" : ""} onClick={() => setSort(key)}>{option.label}</button>)}
       </div>
-      <p className="survival-legend"><span className="zone-chop">Chopping zone (within {CHOP_ZONE_SD} SD of the lowest score)</span><span className="zone-risk">At risk</span><span className="zone-safe">Safe (under {SAFE_BELOW}%)</span></p>
+      <p className="survival-legend"><span className="zone-chop">Chopping zone: a {CHOPPING_ZONE_SHARE}% chance the chopped team is one of these</span><span className="zone-risk">At risk</span><span className="zone-safe">Safe (under {SAFE_BELOW}%)</span></p>
       <div className="survival-table">
         <div className="survival-row survival-header"><span>#</span><span>Team</span><span>Current</span><span>Projected</span><span>Left</span><span>Survive</span><span aria-hidden="true"></span></div>
-        {sorted.map((t, i) => <div className={`survival-row ${zoneOf(t)}`} key={t.teamId} title={t.chopLine ? `${t.chopLine.z.toFixed(1)} SD above the chop line` : undefined}>
+        {sorted.map((t, i) => <div className={`survival-row ${zoneOf(t, zone)}`} key={t.teamId}>
           <span>{i + 1}</span>
           <strong><DwLogo team={t} /><span>{t.team}</span></strong>
           <span>{money(t.score)}</span>

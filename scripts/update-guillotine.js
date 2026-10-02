@@ -131,10 +131,6 @@ const rng = seededRng(alive.map(t => [t.teamId, t.score, t.projected]));
 const chopCounts = new Map(alive.map(t => [t.teamId, 0]));
 const playerTallies = new Map(alive.map(t => [t.teamId, t.remaining.map(() => ({ above: 0, choppedAbove: 0, choppedBelow: 0, pointsAbove: 0, pointsBelow: 0 }))]));
 const escapedBy = new Map(alive.map(t => [t.teamId, new Map()]));
-// Each team's gap to the chop line (the lowest score among the other teams):
-// it's chopped exactly when the gap is below zero. Running sum and sum of
-// squares give its mean and SD across the simulations.
-const chopGap = new Map(alive.map(t => [t.teamId, { sum: 0, squares: 0 }]));
 // The same split for each NFL game: all of a team's starters in it together.
 const gameTallies = new Map(alive.map(t => {
   const groups = new Map();
@@ -147,13 +143,6 @@ for (let sim = 0; sim < SIMULATIONS; sim++) {
   const lowest = Math.min(...finals.map(f => f.score));
   const last = finals.filter(f => f.score === lowest);
   for (const f of last) chopCounts.set(f.teamId, chopCounts.get(f.teamId) + 1 / last.length);
-  const sortedScores = finals.map(f => f.score).sort((a, b) => a - b);
-  for (const f of finals) {
-    const line = f.score === sortedScores[0] ? sortedScores[1] : sortedScores[0];
-    const gap = chopGap.get(f.teamId);
-    gap.sum += f.score - line;
-    gap.squares += (f.score - line) ** 2;
-  }
   const nextUp = last.length === 1 ? finals.filter(f => f.score > lowest).sort((a, b) => a.score - b.score)[0] : null;
   if (nextUp) { const m = escapedBy.get(last[0].teamId); m.set(nextUp.teamId, (m.get(nextUp.teamId) || 0) + 1); }
   for (const t of alive) {
@@ -216,15 +205,6 @@ for (const t of alive) {
     const rival = alive.find(o => o.teamId === rivalId);
     t.rival = { teamId: rivalId, team: rival.team, share: round(100 * count / chops) };
   }
-}
-// How many SDs above the chop line a team's expected final is (negative:
-// expected to be lowest). Locked teams get none.
-for (const t of alive) {
-  if (t.chopProbability <= 0 || t.chopProbability >= 100 || alive.length < 2) continue;
-  const { sum, squares } = chopGap.get(t.teamId);
-  const mean = sum / SIMULATIONS;
-  const sd = Math.sqrt(Math.max(0, squares / SIMULATIONS - mean * mean));
-  if (sd > 0) t.chopLine = { gap: round(mean), sd: round(sd), z: round(mean / sd) };
 }
 for (const t of alive) {
   t.playersLeft = t.remaining.length;
