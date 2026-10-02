@@ -609,7 +609,7 @@ function addWhatToWatchStories(add, matchupStates) {
   const starters = stakes.reduce((n, m) => n + m.players.length, 0);
   if (!starters) return;
   const top = [...stakes].sort((a, b) => b.projected - a.projected)[0];
-  const startsFor = teamId => { const ps = inSlot(teamId); return ps.length ? listNames(ps.map(p => p.lastName)) + " for " + name(teamId) : null; };
+  const startsFor = teamId => { const ps = inSlot(teamId); return ps.length ? listNames(ps.map(shortName)) + " for " + name(teamId) : null; };
   const lineups = [...new Set(stakes.flatMap(m => [m.x.a.teamId, m.x.b.teamId]))].map(startsFor).filter(Boolean);
   add("WHAT TO WATCH",fit(
     "📺 Up next, " + when + ": " + lineups.join("; ") + ".",
@@ -626,7 +626,7 @@ function addWhatToWatchStories(add, matchupStates) {
     const odds = Number(currentScores.find(s => s.teamId === swing.p.teamId)?.winProbability);
     add("PLAYER TO WATCH",fit(
       "🔭 Player to watch: " + swing.p.name + (swing.p.game ? " (" + swing.p.game.name + ")" : "") + ". ESPN projects " + pts(swing.p.projection ?? 0) + ", and " + mine + (Number.isFinite(odds) ? " is " + money(odds) + "%" : " is in a tight one") + " against " + other.team + ".",
-      "🔭 Player to watch: " + swing.p.lastName + ", with " + mine + (Number.isFinite(odds) ? " at " + money(odds) + "%" : "") + " against " + other.team + "."
+      "🔭 Player to watch: " + shortName(swing.p) + ", with " + mine + (Number.isFinite(odds) ? " at " + money(odds) + "%" : "") + " against " + other.team + "."
     ),70);
   }
 }
@@ -636,6 +636,8 @@ function addWhatToWatchStories(add, matchupStates) {
 // have moved most since the week began, and who moved them. Plus the single
 // play that swung a matchup the most in the last 45 minutes.
 const EARLY_SHARE_PLAYED = 0.4;
+// Last name, except defenses keep their team ("Steelers D/ST", not "D/ST").
+const shortName = p => /D\/ST/.test(p.lastName) ? p.name : p.lastName;
 const EARLY_MIN_SWING = 5;
 const BIG_PLAY_WINDOW_MS = 45 * 60 * 1000;
 const BIG_PLAY_MIN_SHIFT = 4;
@@ -653,7 +655,7 @@ function addEarlyMomentumStories(add, matchupStates) {
     const best = movers[0];
     if (best) {
       const leader = started.filter(p => p.teamId === best.team.teamId).sort((a, b) => b.actual - a.actual)[0];
-      const by = leader && leader.actual > 0 ? ", led by " + leader.lastName + " (" + pts(leader.actual) + ")" : "";
+      const by = leader && leader.actual > 0 ? ", led by " + shortName(leader) + " (" + pts(leader.actual) + ")" : "";
       const others = movers.slice(1, 3).filter(m => m.team.teamId !== best.opp.teamId);
       add("EARLY EDGE",fit(
         "⚡ Early edge: " + best.team.team + " went from " + money(best.before) + "% to " + money(best.after) + "% against " + best.opp.team + by + "." + (others.length ? " Also up: " + listNames(others.map(m => m.team.team + " (+" + money(m.after - m.before) + ")")) + "." : ""),
