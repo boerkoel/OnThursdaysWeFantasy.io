@@ -29,8 +29,32 @@ function DwLogo({ team, size = "sm" }) {
 const obituaryFor = chop => handwrittenObituaries.get(chop.team.trim().toLowerCase()) ||
   (obituaryData.obituaries || []).find(o => o.teamId === chop.teamId && o.week === chop.week)?.text;
 
+// Chop-odds zones for the survival table: the chopping zone (25%+), still at
+// risk, and safe (under 2%, or locked).
+const CHOPPING_ZONE = 25;
+const SAFE_BELOW = 2;
+const zoneOf = t => t.chopProbability >= CHOPPING_ZONE ? "zone-chop" : t.chopProbability < SAFE_BELOW ? "zone-safe" : "zone-risk";
+
+// Card lines from the simulations: the player whose game matters most, the
+// team they're really racing (once one stands out), and who's left.
+const RIVAL_SHOWN_AT = 30;
+// Last name, except defenses ("Rams D/ST").
+const short = n => /D\/ST/.test(n) ? n : n.split(" ").slice(1).join(" ") || n;
+const swingLine = t => t.swingPlayer
+  ? `${short(t.swingPlayer.name)} decides it${t.swingPlayer.game ? ` (${t.swingPlayer.game})` : ""}: ${money(t.swingPlayer.chopIfAbove)}% chop odds if he tops ${money(t.swingPlayer.projectedRest)} more pts, ${money(t.swingPlayer.chopIfBelow)}% if he doesn't.`
+  : null;
+const rivalLine = t => t.rival?.share >= RIVAL_SHOWN_AT
+  ? `Racing ${t.rival.team}: they're the team just above in ${Math.round(t.rival.share)}% of the simulated chops.`
+  : null;
+const leftLine = t => {
+  if (!t.playersLeft) return "No players left to play";
+  const top = [...t.remaining].sort((a, b) => b.projectedRest - a.projectedRest);
+  const names = top.slice(0, 2).map(p => short(p.name)).join(", ") + (top.length > 2 ? ` +${top.length - 2}` : "");
+  return `${t.playersLeft} left, ${money(t.projected - t.score)} projected pts (${names})`;
+};
+
 const SURVIVAL_SORTS = {
-  odds: { label: "ODDS", compare: (a, b) => a.chopProbability - b.chopProbability || b.projected - a.projected },
+  odds: { label: "ODDS", compare: (a, b) => b.chopProbability - a.chopProbability || a.projected - b.projected },
   current: { label: "CURRENT", compare: (a, b) => b.score - a.score },
   projected: { label: "PROJECTED", compare: (a, b) => b.projected - a.projected }
 };
@@ -46,9 +70,10 @@ function SurvivalOdds({ teams, guillotine }) {
         {Object.entries(SURVIVAL_SORTS).map(([key, option]) =>
           <button key={key} type="button" className={sort === key ? "active" : ""} onClick={() => setSort(key)}>{option.label}</button>)}
       </div>
+      <p className="survival-legend"><span className="zone-chop">Chopping zone ({CHOPPING_ZONE}%+ chop odds)</span><span className="zone-risk">At risk</span><span className="zone-safe">Safe (under {SAFE_BELOW}%)</span></p>
       <div className="survival-table">
         <div className="survival-row survival-header"><span>#</span><span>Team</span><span>Current</span><span>Projected</span><span>Left</span><span>Survive</span><span aria-hidden="true"></span></div>
-        {sorted.map((t, i) => <div className="survival-row" key={t.teamId}>
+        {sorted.map((t, i) => <div className={`survival-row ${zoneOf(t)}`} key={t.teamId}>
           <span>{i + 1}</span>
           <strong><DwLogo team={t} /><span>{t.team}</span></strong>
           <span>{money(t.score)}</span>
@@ -138,8 +163,10 @@ export function DeathWatch({ guillotine }) {
           <strong className="dw-team"><DwLogo team={t} size="md" />{t.team}</strong>
           <b className="chop-odds">{money(t.chopProbability)}% chance of being chopped</b>
           <p>{money(t.score)} pts{t.playersLeft ? ` · projected ${money(t.projected)}` : " · final"}</p>
-          <p>{t.playersLeft ? "Still to play: " + t.remaining.map(p => p.name + (p.game ? ` (${p.game})` : "")).join(", ") : "No players left to play"}</p>
           {t.survivalNeed ? <p>Needs {money(t.survivalNeed.points)} more pts to pass {t.survivalNeed.passTeam}</p> : null}
+          {swingLine(t) ? <p className="dw-insight">🎲 {swingLine(t)}</p> : null}
+          {rivalLine(t) ? <p className="dw-insight">🏁 {rivalLine(t)}</p> : null}
+          <p className="dw-left">{leftLine(t)}</p>
           <div className="card-actions">
             <ShareButton filename={`death-watch-week-${guillotine.week}-${t.team}`.replace(/[^\w-]+/g, "-")} build={() => ({
               kicker: `${guillotine.leagueName} · Week ${guillotine.week} Death Watch`,
@@ -147,8 +174,10 @@ export function DeathWatch({ guillotine }) {
               lines: [
                 { text: `${money(t.chopProbability)}% chance of being chopped`, size: 48, color: "alert", weight: 800, gap: 40 },
                 { text: `${money(t.score)} pts${t.playersLeft ? ` · projected ${money(t.projected)}` : " · final"}`, size: 34 },
-                t.playersLeft ? { text: "Still to play: " + t.remaining.map(p => p.name).join(", "), size: 30 } : null,
-                t.survivalNeed ? { text: `Needs ${money(t.survivalNeed.points)} more pts to pass ${t.survivalNeed.passTeam}`, size: 30, color: "ink" } : null
+                t.survivalNeed ? { text: `Needs ${money(t.survivalNeed.points)} more pts to pass ${t.survivalNeed.passTeam}`, size: 30, color: "ink" } : null,
+                swingLine(t) ? { text: "🎲 " + swingLine(t), size: 28, color: "ink", gap: 24 } : null,
+                rivalLine(t) ? { text: "🏁 " + rivalLine(t), size: 28 } : null,
+                { text: leftLine(t), size: 26, color: "muted" }
               ].filter(Boolean)
             })} />
           </div>

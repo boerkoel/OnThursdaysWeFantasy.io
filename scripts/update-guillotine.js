@@ -122,13 +122,32 @@ const alive = [...scoreByTeam.values()]
     };
   });
 
+// Besides chop odds, each simulation tallies, per team:
+// - for each player still to play, chops when he beats his projection and
+//   when he doesn't (to find the player whose game matters most), and
+// - in the simulations where the team is chopped, who finished just above it
+//   (the team it's really racing).
 const rng = seededRng(alive.map(t => [t.teamId, t.score, t.projected]));
 const chopCounts = new Map(alive.map(t => [t.teamId, 0]));
+const playerTallies = new Map(alive.map(t => [t.teamId, t.remaining.map(() => ({ above: 0, choppedAbove: 0, choppedBelow: 0 }))]));
+const escapedBy = new Map(alive.map(t => [t.teamId, new Map()]));
+const playerPoints = new Map(alive.map(t => [t.teamId, new Array(t.remaining.length)]));
 for (let sim = 0; sim < SIMULATIONS; sim++) {
-  const finals = alive.map(t => ({ teamId: t.teamId, score: simulateFinal({ score: t.score, players: t.remaining }, rng) }));
+  const finals = alive.map(t => ({ teamId: t.teamId, score: simulateFinal({ score: t.score, players: t.remaining }, rng, playerPoints.get(t.teamId)) }));
   const lowest = Math.min(...finals.map(f => f.score));
   const last = finals.filter(f => f.score === lowest);
   for (const f of last) chopCounts.set(f.teamId, chopCounts.get(f.teamId) + 1 / last.length);
+  const nextUp = last.length === 1 ? finals.filter(f => f.score > lowest).sort((a, b) => a.score - b.score)[0] : null;
+  if (nextUp) { const m = escapedBy.get(last[0].teamId); m.set(nextUp.teamId, (m.get(nextUp.teamId) || 0) + 1); }
+  for (const t of alive) {
+    const chopped = last.some(f => f.teamId === t.teamId) ? 1 / last.length : 0;
+    const points = playerPoints.get(t.teamId);
+    t.remaining.forEach((p, i) => {
+      const tally = playerTallies.get(t.teamId)[i];
+      if (points[i] >= p.rest) { tally.above++; tally.choppedAbove += chopped; }
+      else tally.choppedBelow += chopped;
+    });
+  }
 }
 
 // Exact 0%/100% only when locked, judged from each team's lowest and highest
@@ -140,6 +159,26 @@ for (const t of alive) {
   const surelySafe = others.some(o => o.max < me.min);
   const surelyChopped = others.every(o => o.min > me.max);
   t.chopProbability = surelySafe ? 0 : surelyChopped ? 100 : possibleOdds(chopCounts.get(t.teamId));
+}
+// The swing player: the one whose beating his projection or not moves the
+// team's chop odds most (with enough simulations on both sides to trust it).
+// The rival: who most often finished just above the team when it was chopped.
+const MIN_SIDE_SIMULATIONS = 500;
+for (const t of alive) {
+  if (t.chopProbability <= 0 || t.chopProbability >= 100) continue;
+  const swing = t.remaining.map((p, i) => {
+    const { above, choppedAbove, choppedBelow } = playerTallies.get(t.teamId)[i];
+    const below = SIMULATIONS - above;
+    if (above < MIN_SIDE_SIMULATIONS || below < MIN_SIDE_SIMULATIONS) return null;
+    return { name: p.name, game: p.game, projectedRest: round(p.rest), chopIfAbove: round(100 * choppedAbove / above), chopIfBelow: round(100 * choppedBelow / below) };
+  }).filter(Boolean).sort((a, b) => (b.chopIfBelow - b.chopIfAbove) - (a.chopIfBelow - a.chopIfAbove))[0];
+  if (swing && swing.chopIfBelow - swing.chopIfAbove >= 1) t.swingPlayer = swing;
+  const chops = [...escapedBy.get(t.teamId).values()].reduce((a, b) => a + b, 0);
+  const [rivalId, count] = [...escapedBy.get(t.teamId).entries()].sort((a, b) => b[1] - a[1])[0] || [];
+  if (rivalId != null && chops >= MIN_SIDE_SIMULATIONS / 5) {
+    const rival = alive.find(o => o.teamId === rivalId);
+    t.rival = { teamId: rivalId, team: rival.team, share: round(100 * count / chops) };
+  }
 }
 for (const t of alive) {
   t.playersLeft = t.remaining.length;

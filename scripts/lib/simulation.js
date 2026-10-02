@@ -67,13 +67,16 @@ function normal(rng) {
 }
 
 // team: { score, players: [playerOutlook, ...] } for starters still to play.
-export function simulateFinal(team, rng) {
+// If given, playerPoints[i] is set to player i's simulated points.
+export function simulateFinal(team, rng, playerPoints = null) {
   let total = team.score;
-  for (const p of team.players) {
-    total += rng() < p.exitRisk
+  team.players.forEach((p, i) => {
+    const points = rng() < p.exitRisk
       ? p.rest * EARLY_EXIT_SHARE * rng()
       : Math.max(-p.floor, p.rest + p.sd * normal(rng));
-  }
+    if (playerPoints) playerPoints[i] = points;
+    total += points;
+  });
   return total;
 }
 

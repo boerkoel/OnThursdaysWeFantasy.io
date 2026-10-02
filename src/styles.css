@@ -676,3 +676,14 @@ section,details,.odds-block{scroll-margin-top:72px}
 .key-play-momentum{display:block;margin-top:2px;color:#b8c69b;font-size:10px;font-style:normal;font-weight:800;letter-spacing:.02em}
 /* Survival odds: per-row share icon. */
 .survival-row .share-button.icon-only{justify-self:end;padding:1px 7px;font-size:12px;line-height:1.2;letter-spacing:0}
+/* Survival odds zones: chopping zone (red), at risk (yellow), safe (green). */
+.survival-legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:0 0 10px;font-size:10px;font-weight:800;letter-spacing:.04em;color:#999c94}
+.survival-legend span::before{content:"";display:inline-block;width:8px;height:8px;margin-right:6px;border-radius:2px;vertical-align:middle;background:currentColor}
+.survival-legend .zone-chop{color:#d96b67}.survival-legend .zone-risk{color:#e6c85c}.survival-legend .zone-safe{color:#72b96a}
+.survival-row.zone-chop{box-shadow:inset 3px 0 #d96b67;background:#d96b6712}
+.survival-row.zone-risk{box-shadow:inset 3px 0 #e6c85c}
+.survival-row.zone-safe{box-shadow:inset 3px 0 #72b96a}
+.survival-row.zone-chop>b{color:#ef9a96}.survival-row.zone-risk>b{color:#e6c85c}.survival-row.zone-safe>b{color:#8fd087}
+/* Death Watch cards: simulation insights, then who's left. */
+.award-card p.dw-insight{color:#d0d3cb;font-size:12px;line-height:1.45}
+.award-card p.dw-left{color:#777a72;font-size:11px}
