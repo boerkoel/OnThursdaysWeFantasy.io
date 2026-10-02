@@ -410,7 +410,7 @@
 .collapsible>summary span{margin-left:auto;color:#777a72;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
 .collapsible>.score-sort-controls{margin:0 16px 10px}
 .survival-table{border-top:1px solid #242620}
-.survival-row{display:grid;grid-template-columns:28px minmax(0,1fr) 70px 78px 44px 70px 34px;gap:10px;align-items:center;padding:10px 16px;border-bottom:1px solid #242620;font-size:13px}
+.survival-row{display:grid;grid-template-columns:28px minmax(0,1fr) 70px 78px 44px 70px;gap:10px;align-items:center;padding:10px 16px;border-bottom:1px solid #242620;font-size:13px}
 .survival-row:last-child{border-bottom:0}
 .survival-row>span{color:#999c94;text-align:right}
 .survival-row>span:first-child{text-align:left;color:#686b63}
@@ -419,7 +419,7 @@
 .survival-header{color:#777a72;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
 .survival-header>span{color:#777a72}
 .survival-header>span:nth-child(2){text-align:left}
-@media(max-width:560px){.survival-row{grid-template-columns:22px minmax(0,1fr) 58px 58px 58px 28px;gap:6px;padding:10px 12px}.survival-row>:nth-child(5){display:none}}
+@media(max-width:560px){.survival-row{grid-template-columns:22px minmax(0,1fr) 58px 58px 58px;gap:6px;padding:10px 12px}.survival-row>:nth-child(5){display:none}}
 /* Obituary carousel: all cards share one grid cell (steady height). */
 .obit-carousel{padding:0 16px 16px}
 .obit-stack{display:grid}
@@ -674,8 +674,9 @@ section,details,.odds-block{scroll-margin-top:72px}
 
 /* Key plays: how much the play moved the matchup's win odds. */
 .key-play-momentum{display:block;margin-top:2px;color:#b8c69b;font-size:10px;font-style:normal;font-weight:800;letter-spacing:.02em}
-/* Survival odds: per-row share icon. */
-.survival-row .share-button.icon-only{justify-self:end;padding:1px 7px;font-size:12px;line-height:1.2;letter-spacing:0}
+/* Survival odds: one share icon for the whole table. */
+.survival-share{display:flex;justify-content:flex-end;margin:-4px 0 6px}
+.survival-share .share-button.icon-only{padding:2px 9px;font-size:13px;line-height:1.2;letter-spacing:0}
 /* Survival odds zones: chopping zone (red), at risk (yellow), safe (green). */
 .survival-legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:0 0 10px;font-size:10px;font-weight:800;letter-spacing:.04em;color:#999c94}
 .survival-legend span::before{content:"";display:inline-block;width:8px;height:8px;margin-right:6px;border-radius:2px;vertical-align:middle;background:currentColor}

@@ -45,6 +45,7 @@ function choppingZone(teams) {
   }
   return zone;
 }
+const ZONE_COLORS = { "zone-chop": "#ef9a96", "zone-risk": "#e6c85c", "zone-safe": "#8fd087" };
 const zoneOf = (t, zone) => zone.has(t.teamId) ? "zone-chop" : t.chopProbability < SAFE_BELOW ? "zone-safe" : "zone-risk";
 
 // Card lines from the simulations: the player whose game matters most, the
@@ -95,9 +96,23 @@ function SurvivalOdds({ teams, guillotine }) {
         {Object.entries(SURVIVAL_SORTS).map(([key, option]) =>
           <button key={key} type="button" className={sort === key ? "active" : ""} onClick={() => setSort(key)}>{option.label}</button>)}
       </div>
-      <p className="survival-legend"><span className="zone-chop">Chopping zone: a {CHOPPING_ZONE_SHARE}% chance the chopped team is one of these</span><span className="zone-risk">At risk</span><span className="zone-safe">Safe (under {SAFE_BELOW}%)</span></p>
+      <div className="survival-share">
+        <ShareButton iconOnly label="Share the survival odds table" filename={`survival-odds-week-${guillotine.week}`} build={() => ({
+          kicker: `${guillotine.leagueName} · Week ${guillotine.week} survival odds`,
+          title: "Who survives?",
+          lines: [
+            ...sorted.map((t, i) => ({
+              text: `${i + 1}. ${t.team} · ${money(100 - t.chopProbability)}% to survive`,
+              size: sorted.length > 10 ? 26 : 30, weight: 800, gap: i ? 6 : 20,
+              color: ZONE_COLORS[zoneOf(t, zone)]
+            })),
+            { text: `Red: a ${CHOPPING_ZONE_SHARE}% chance one of these teams gets chopped · Green: under ${SAFE_BELOW}% chop odds`, size: 22, color: "faint", gap: 28 }
+          ]
+        })} />
+      </div>
+      <p className="survival-legend"><span className="zone-chop">Chopping zone: a {CHOPPING_ZONE_SHARE}% chance one of these teams gets chopped</span><span className="zone-risk">At risk</span><span className="zone-safe">Safe (under {SAFE_BELOW}%)</span></p>
       <div className="survival-table">
-        <div className="survival-row survival-header"><span>#</span><span>Team</span><span>Current</span><span>Projected</span><span>Left</span><span>Survive</span><span aria-hidden="true"></span></div>
+        <div className="survival-row survival-header"><span>#</span><span>Team</span><span>Current</span><span>Projected</span><span>Left</span><span>Survive</span></div>
         {sorted.map((t, i) => <div className={`survival-row ${zoneOf(t, zone)}`} key={t.teamId}>
           <span>{i + 1}</span>
           <strong><DwLogo team={t} /><span>{t.team}</span></strong>
@@ -105,15 +120,6 @@ function SurvivalOdds({ teams, guillotine }) {
           <span>{money(t.projected)}</span>
           <span>{t.playersLeft ? t.playersLeft : "final"}</span>
           <b>{money(100 - t.chopProbability)}%</b>
-          <ShareButton iconOnly label={`Share ${t.team}'s survival odds`} filename={`survival-week-${guillotine.week}-${t.team}`.replace(/[^\w-]+/g, "-")} build={() => ({
-            kicker: `${guillotine.leagueName} · Week ${guillotine.week} survival odds`,
-            title: t.team,
-            teams: [{ name: t.team, score: money(100 - t.chopProbability) + "%", logo: t.logo, highlight: true, note: "chance to survive the week" }],
-            lines: [
-              { text: `${money(t.score)} pts${t.playersLeft ? ` · projected ${money(t.projected)} · ${t.playersLeft} still to play` : " · final"}`, size: 32, gap: 30 },
-              t.survivalNeed ? { text: `Needs ${money(t.survivalNeed.points)} more pts to pass ${t.survivalNeed.passTeam}`, size: 30, color: "ink" } : null
-            ].filter(Boolean)
-          })} />
         </div>)}
       </div>
     </details>
