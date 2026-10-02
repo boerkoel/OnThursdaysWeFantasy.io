@@ -29,12 +29,13 @@ function DwLogo({ team, size = "sm" }) {
 const obituaryFor = chop => handwrittenObituaries.get(chop.team.trim().toLowerCase()) ||
   (obituaryData.obituaries || []).find(o => o.teamId === chop.teamId && o.week === chop.week)?.text;
 
-// Chop-odds zones for the survival table: safe is under 5%; the chopping zone
-// is above 1 / (teams left + 1), a bit under an even share, so it's easy to
-// fall into; everything else is at risk. The chopping zone wins if they overlap.
+// Chop-odds zones for the survival table: the chopping zone is within 1 SD
+// of the chop line (the lowest of the other teams' scores, from the
+// simulations), or mathematically chopped; safe is under 5% chop odds (or
+// locked); everything else is at risk.
 const SAFE_BELOW = 5;
-const choppingZone = teamsLeft => 100 / (teamsLeft + 1);
-const zoneOf = (t, teamsLeft) => t.chopProbability > choppingZone(teamsLeft) ? "zone-chop" : t.chopProbability < SAFE_BELOW ? "zone-safe" : "zone-risk";
+const CHOP_ZONE_SD = 1;
+const zoneOf = t => t.chopProbability >= 100 || (t.chopLine && t.chopLine.z < CHOP_ZONE_SD) ? "zone-chop" : t.chopProbability < SAFE_BELOW ? "zone-safe" : "zone-risk";
 
 // Card lines from the simulations: the player whose game matters most, the
 // team they're really racing (once one stands out), and who's left.
@@ -83,10 +84,10 @@ function SurvivalOdds({ teams, guillotine }) {
         {Object.entries(SURVIVAL_SORTS).map(([key, option]) =>
           <button key={key} type="button" className={sort === key ? "active" : ""} onClick={() => setSort(key)}>{option.label}</button>)}
       </div>
-      <p className="survival-legend"><span className="zone-chop">Chopping zone (over {Math.round(choppingZone(teams.length))}% chop odds)</span><span className="zone-risk">At risk</span><span className="zone-safe">Safe (under {SAFE_BELOW}%)</span></p>
+      <p className="survival-legend"><span className="zone-chop">Chopping zone (within {CHOP_ZONE_SD} SD of the lowest score)</span><span className="zone-risk">At risk</span><span className="zone-safe">Safe (under {SAFE_BELOW}%)</span></p>
       <div className="survival-table">
         <div className="survival-row survival-header"><span>#</span><span>Team</span><span>Current</span><span>Projected</span><span>Left</span><span>Survive</span><span aria-hidden="true"></span></div>
-        {sorted.map((t, i) => <div className={`survival-row ${zoneOf(t, teams.length)}`} key={t.teamId}>
+        {sorted.map((t, i) => <div className={`survival-row ${zoneOf(t)}`} key={t.teamId} title={t.chopLine ? `${t.chopLine.z.toFixed(1)} SD above the chop line` : undefined}>
           <span>{i + 1}</span>
           <strong><DwLogo team={t} /><span>{t.team}</span></strong>
           <span>{money(t.score)}</span>
