@@ -106,11 +106,11 @@ function SurvivalOdds({ teams, guillotine }) {
               size: sorted.length > 10 ? 26 : 30, weight: 800, gap: i ? 6 : 20,
               color: ZONE_COLORS[zoneOf(t, zone)]
             })),
-            { text: `Red: a ${CHOPPING_ZONE_SHARE}% chance one of these teams gets chopped · Green: under ${SAFE_BELOW}% chop odds`, size: 22, color: "faint", gap: 28 }
+            { text: `Red: ${CHOPPING_ZONE_SHARE}% chance one of these teams gets chopped · Green: under ${SAFE_BELOW}% chop odds`, size: 22, color: "faint", gap: 28 }
           ]
         })} />
       </div>
-      <p className="survival-legend"><span className="zone-chop">Chopping zone: a {CHOPPING_ZONE_SHARE}% chance one of these teams gets chopped</span><span className="zone-risk">At risk</span><span className="zone-safe">Safe (under {SAFE_BELOW}%)</span></p>
+      <p className="survival-legend"><span className="zone-chop">Chopping zone: {CHOPPING_ZONE_SHARE}% chance one of these teams gets chopped</span><span className="zone-risk">At risk</span><span className="zone-safe">Safe (under {SAFE_BELOW}%)</span></p>
       <div className="survival-table">
         <div className="survival-row survival-header"><span>#</span><span>Team</span><span>Current</span><span>Projected</span><span>Left</span><span>Survive</span></div>
         {sorted.map((t, i) => <div className={`survival-row ${zoneOf(t, zone)}`} key={t.teamId}>
