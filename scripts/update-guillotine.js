@@ -131,6 +131,12 @@ const rng = seededRng(alive.map(t => [t.teamId, t.score, t.projected]));
 const chopCounts = new Map(alive.map(t => [t.teamId, 0]));
 const playerTallies = new Map(alive.map(t => [t.teamId, t.remaining.map(() => ({ above: 0, choppedAbove: 0, choppedBelow: 0, pointsAbove: 0, pointsBelow: 0 }))]));
 const escapedBy = new Map(alive.map(t => [t.teamId, new Map()]));
+// The same split for each NFL game: all of a team's starters in it together.
+const gameTallies = new Map(alive.map(t => {
+  const groups = new Map();
+  t.remaining.forEach((p, i) => { if (p.game) groups.set(p.game, [...(groups.get(p.game) || []), i]); });
+  return [t.teamId, [...groups].map(([game, players]) => ({ game, players, rest: players.reduce((sum, i) => sum + t.remaining[i].rest, 0), above: 0, choppedAbove: 0, choppedBelow: 0, pointsAbove: 0, pointsBelow: 0 }))];
+}));
 const playerPoints = new Map(alive.map(t => [t.teamId, new Array(t.remaining.length)]));
 for (let sim = 0; sim < SIMULATIONS; sim++) {
   const finals = alive.map(t => ({ teamId: t.teamId, score: simulateFinal({ score: t.score, players: t.remaining }, rng, playerPoints.get(t.teamId)) }));
@@ -147,6 +153,11 @@ for (let sim = 0; sim < SIMULATIONS; sim++) {
       if (points[i] >= p.rest) { tally.above++; tally.choppedAbove += chopped; tally.pointsAbove += points[i]; }
       else { tally.choppedBelow += chopped; tally.pointsBelow += points[i]; }
     });
+    for (const g of gameTallies.get(t.teamId)) {
+      const total = g.players.reduce((sum, i) => sum + points[i], 0);
+      if (total >= g.rest) { g.above++; g.choppedAbove += chopped; g.pointsAbove += total; }
+      else { g.choppedBelow += chopped; g.pointsBelow += total; }
+    }
   }
 }
 
@@ -175,6 +186,19 @@ for (const t of alive) {
       bigGame: round(p.actual + pointsAbove / above), quietGame: round(p.actual + pointsBelow / below) };
   }).filter(Boolean).sort((a, b) => (b.chopIfBelow - b.chopIfAbove) - (a.chopIfBelow - a.chopIfAbove))[0];
   if (swing && swing.chopIfBelow - swing.chopIfAbove >= 1) t.swingPlayer = swing;
+  // Each NFL game's swing (biggest first, top 3, for the League Wire), and
+  // the swing game: the biggest one with 2+ of the team's starters in it.
+  const games = gameTallies.get(t.teamId).map(g => {
+    const below = SIMULATIONS - g.above;
+    if (g.above < MIN_SIDE_SIMULATIONS || below < MIN_SIDE_SIMULATIONS) return null;
+    const actual = g.players.reduce((sum, i) => sum + t.remaining[i].actual, 0);
+    return { game: g.game, players: g.players.map(i => t.remaining[i].name), projectedRest: round(g.rest),
+      chopIfAbove: round(100 * g.choppedAbove / g.above), chopIfBelow: round(100 * g.choppedBelow / below),
+      bigGame: round(actual + g.pointsAbove / g.above), quietGame: round(actual + g.pointsBelow / below) };
+  }).filter(g => g && g.chopIfBelow - g.chopIfAbove >= 1).sort((a, b) => (b.chopIfBelow - b.chopIfAbove) - (a.chopIfBelow - a.chopIfAbove));
+  if (games.length) t.gameSwings = games.slice(0, 3);
+  const swingGame = games.find(g => g.players.length >= 2);
+  if (swingGame) t.swingGame = swingGame;
   const chops = [...escapedBy.get(t.teamId).values()].reduce((a, b) => a + b, 0);
   const [rivalId, count] = [...escapedBy.get(t.teamId).entries()].sort((a, b) => b[1] - a[1])[0] || [];
   if (rivalId != null && chops >= MIN_SIDE_SIMULATIONS / 5) {

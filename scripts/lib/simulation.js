@@ -90,3 +90,31 @@ export function scoreRange(team) {
 // Odds for an outcome that is still possible either way: start with one
 // simulated success and one failure so it never reads exactly 0% or 100%.
 export const possibleOdds = count => round(((count + 1) / (SIMULATIONS + 2)) * 100);
+
+// Standard normal CDF and its inverse, for odds from a normal approximation.
+export function normalCdf(z) {
+  // Abramowitz & Stegun 7.1.26, accurate to about 1e-7.
+  const x = Math.abs(z) / Math.SQRT2;
+  const t = 1 / (1 + 0.3275911 * x);
+  const erf = 1 - t * (0.254829592 + t * (-0.284496736 + t * (1.421413741 + t * (-1.453152027 + t * 1.061405429)))) * Math.exp(-x * x);
+  return z >= 0 ? (1 + erf) / 2 : (1 - erf) / 2;
+}
+export function normalQuantile(p) {
+  let lo = -8, hi = 8;
+  for (let i = 0; i < 60; i++) { const mid = (lo + hi) / 2; if (normalCdf(mid) < p) lo = mid; else hi = mid; }
+  return (lo + hi) / 2;
+}
+
+// A player's or group's typical points in a big game versus a quiet one: the
+// average of the upper and lower halves of a normal is 0.8 SD from the middle.
+export const HALF_MEAN_SD = 0.7979;
+
+// How far a normal-approximation probability moves between a big and a quiet
+// game from players whose points have the given SD, when the outcome's own
+// SD is outcomeSd: P(big) - P(quiet), in percentage points.
+export function swingOdds(probabilityPct, playersSd, outcomeSd) {
+  if (!(outcomeSd > 0) || !(playersSd > 0) || !Number.isFinite(Number(probabilityPct))) return 0;
+  const z = normalQuantile(Math.min(0.9999, Math.max(0.0001, Number(probabilityPct) / 100)));
+  const shift = HALF_MEAN_SD * playersSd / outcomeSd;
+  return round(100 * (normalCdf(z + shift) - normalCdf(z - shift)));
+}

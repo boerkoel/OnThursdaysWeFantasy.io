@@ -1,4 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises";
+import { normalCdf, normalQuantile } from "./lib/simulation.js";
 
 const season = process.env.ESPN_SEASON || "2026";
 const includeCompleted = process.env.ESPN_INCLUDE_COMPLETED === "true";
@@ -16,18 +17,6 @@ async function readJson(path, fallback = null) {
 // play isn't judged against a much later scoreboard.
 const MOMENTUM_MAX_AGE_MS = 15 * 60 * 1000;
 const MIN_MARGIN_SD = 3;
-function normalCdf(z) {
-  // Abramowitz & Stegun 7.1.26, accurate to about 1e-7.
-  const x = Math.abs(z) / Math.SQRT2;
-  const t = 1 / (1 + 0.3275911 * x);
-  const erf = 1 - t * (0.254829592 + t * (-0.284496736 + t * (1.421413741 + t * (-1.453152027 + t * 1.061405429)))) * Math.exp(-x * x);
-  return z >= 0 ? (1 + erf) / 2 : (1 - erf) / 2;
-}
-function normalQuantile(p) {
-  let lo = -8, hi = 8;
-  for (let i = 0; i < 60; i++) { const mid = (lo + hi) / 2; if (normalCdf(mid) < p) lo = mid; else hi = mid; }
-  return (lo + hi) / 2;
-}
 // Plays first seen in the same run all happened before this one scoreboard,
 // so each matchup's new plays are walked newest first: a play is judged
 // against the odds just after it (the current odds with every later play

@@ -1,5 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises";
-import { round } from "./lib/simulation.js";
+import { playerOutlook, round, swingOdds } from "./lib/simulation.js";
 
 // League Wire: the rotating live stories and each matchup's key plays. Runs
 // on every live update (after update-live-scoreboard.js, which it reads) and
@@ -90,6 +90,7 @@ for (const g of allLiveSchedules) for (const side of [g.home, g.away]) {
         actual:round(Number(entry.playerPoolEntry.appliedStatTotal ?? 0)),
         projection:Number.isFinite(projection) ? round(projection) : null,
         eligibleSlots:(player.eligibleSlots || []).map(Number),
+        positionId:Number(player.defaultPositionId),
         game,
         // No game this week (bye) counts as finished with its current points.
         finished:game ? game.completed : nflGames.length > 0,
@@ -283,6 +284,8 @@ function buildMarqueeStories() {
   addWeekAheadStories(add);
   addWhatToWatchStories(add, matchupStates);
   addEarlyMomentumStories(add, matchupStates);
+  // Newest story; a bug in it shouldn't take down the whole wire.
+  try { addGameToWatchStory(add, matchupStates); } catch (error) { console.warn("League Wire: game to watch failed: " + error.message); }
 
   const biggestLead=matchupStates.filter(x=>!x.m.completed).sort((a,b)=>b.diff-a.diff)[0];
   if(biggestLead&&biggestLead.diff>=20){const leader=biggestLead.currentDiff>0?biggestLead.a.team:biggestLead.b.team;const trailer=biggestLead.currentDiff>0?biggestLead.b.team:biggestLead.a.team;add("LEAGUE GOSSIP","👀 League gossip: " + leader + " has " + money(biggestLead.diff) + " pts to play with against " + trailer + ".",28);}
@@ -629,6 +632,50 @@ function addWhatToWatchStories(add, matchupStates) {
       "🔭 Player to watch: " + shortName(swing.p) + ", with " + mine + (Number.isFinite(odds) ? " at " + money(odds) + "%" : "") + " against " + other.team + "."
     ),70);
   }
+}
+
+// ---- Game to watch ---------------------------------------------------------
+// The NFL game (live, or kicking off within 36 hours) that could move the most
+// odds: how far a big versus a quiet game from the league's starters in it
+// swings each H2H matchup and each median race (normal approximation from
+// the projections), plus the guillotine league's chop odds (from its
+// simulations), added up.
+const GAME_WATCH_MIN_SWING = 15;
+function addGameToWatchStory(add, matchupStates) {
+  const sdIn = (teamId, gameId) => Math.hypot(...(liveTeams.get(teamId)?.players || [])
+    .filter(p => !p.bench && !p.finished && p.game?.id === gameId)
+    .map(p => playerOutlook({actual:p.actual, projection:p.projection, positionId:p.positionId}).sd));
+  const candidates = nflGames.filter(g => !g.completed && (g.state === "in" || (g.kickoff && Date.parse(g.kickoff) - Date.now() <= WATCH_AHEAD_MS)));
+  const games = candidates.map(g => {
+    const starters = [...liveTeams.values()].flatMap(t => t.players).filter(p => !p.bench && !p.finished && p.game?.id === g.id);
+    const pointsLeft = round(starters.reduce((sum, p) => sum + Math.max(0, (p.projection ?? 0) - p.actual), 0));
+    const h2h = matchupStates.filter(x => !x.m.completed).map(x => ({
+      x, swing:swingOdds(x.a.winProbability, Math.hypot(sdIn(x.a.teamId, g.id), sdIn(x.b.teamId, g.id)), Math.hypot(Number(x.a.projectionSd) || 0, Number(x.b.projectionSd) || 0))
+    })).sort((a, b) => b.swing - a.swing);
+    const median = currentScores.map(s => ({s, swing:swingOdds(s.aboveMedianProbability, sdIn(s.teamId, g.id), Number(s.projectionSd))})).sort((a, b) => b.swing - a.swing);
+    const chop = (guillotineData?.teams || []).map(t => {
+      const gs = (t.gameSwings || []).find(x => x.game === g.name);
+      return gs ? {t, swing:round(gs.chopIfBelow - gs.chopIfAbove)} : null;
+    }).filter(Boolean).sort((a, b) => b.swing - a.swing);
+    const total = [...h2h, ...median, ...chop].reduce((sum, x) => sum + x.swing, 0);
+    return {g, starters, pointsLeft, h2h:h2h[0], median:median[0], chop:chop[0], total};
+  }).filter(x => x.starters.length).sort((a, b) => b.total - a.total);
+  const best = games[0];
+  if (!best || Math.max(best.h2h?.swing || 0, best.median?.swing || 0, best.chop?.swing || 0) < GAME_WATCH_MIN_SWING) return;
+
+  const when = best.g.state === "in" ? "live now" : kickoffLabel(best.g.kickoff);
+  const stakes = [
+    best.h2h?.swing >= GAME_WATCH_MIN_SWING ? best.h2h.x.a.team + " vs " + best.h2h.x.b.team + " by " + Math.round(best.h2h.swing) + "%" : null,
+    best.median?.swing >= GAME_WATCH_MIN_SWING ? possessive(best.median.s.team) + " median odds by " + Math.round(best.median.swing) + "%" : null,
+    best.chop?.swing >= 10 ? possessive(best.chop.t.team) + " chop odds by " + Math.round(best.chop.swing) + "%" : null
+  ].filter(Boolean);
+  const intro = "🏟️ Game to watch: " + best.g.name + " (" + when + "), " + best.starters.length + " league starters in action with " + pts(best.pointsLeft) + " up for grabs.";
+  add("GAME TO WATCH",fit(
+    intro + " It could swing " + listNames(stakes) + ".",
+    intro + " It could swing " + listNames(stakes.slice(0, 2)) + ".",
+    intro + " It could swing " + stakes[0] + ".",
+    intro
+  ),best.g.state === "in" ? 82 : 77);
 }
 
 // ---- Early momentum ---------------------------------------------------------

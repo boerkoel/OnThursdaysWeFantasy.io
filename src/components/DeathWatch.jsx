@@ -29,11 +29,12 @@ function DwLogo({ team, size = "sm" }) {
 const obituaryFor = chop => handwrittenObituaries.get(chop.team.trim().toLowerCase()) ||
   (obituaryData.obituaries || []).find(o => o.teamId === chop.teamId && o.week === chop.week)?.text;
 
-// Chop-odds zones for the survival table: the chopping zone (25%+), still at
-// risk, and safe (under 2%, or locked).
-const CHOPPING_ZONE = 25;
-const SAFE_BELOW = 2;
-const zoneOf = t => t.chopProbability >= CHOPPING_ZONE ? "zone-chop" : t.chopProbability < SAFE_BELOW ? "zone-safe" : "zone-risk";
+// Chop-odds zones for the survival table: safe is under 5%; the chopping zone
+// is above 1 / (teams left + 1), a bit under an even share, so it's easy to
+// fall into; everything else is at risk. The chopping zone wins if they overlap.
+const SAFE_BELOW = 5;
+const choppingZone = teamsLeft => 100 / (teamsLeft + 1);
+const zoneOf = (t, teamsLeft) => t.chopProbability > choppingZone(teamsLeft) ? "zone-chop" : t.chopProbability < SAFE_BELOW ? "zone-safe" : "zone-risk";
 
 // Card lines from the simulations: the player whose game matters most, the
 // team they're really racing (once one stands out), and who's left.
@@ -48,6 +49,12 @@ const swingLine = t => {
   return p.bigGame != null
     ? `${short(p.name)} decides it${where}: a big game (~${Math.round(p.bigGame)} pts) drops the chop odds to ${Math.round(p.chopIfAbove)}%; a quiet one (~${Math.round(p.quietGame)} pts) raises them to ${Math.round(p.chopIfBelow)}%.`
     : `${short(p.name)} decides it${where}: ${Math.round(p.chopIfAbove)}% chop odds if he tops his projection, ${Math.round(p.chopIfBelow)}% if he doesn't.`;
+};
+// All of a team's starters in one NFL game, when that's a bigger swing.
+const gameLine = t => {
+  const g = t.swingGame;
+  if (!g) return null;
+  return `${g.game} is the difference maker (${g.players.map(short).join(", ")}): a big game (~${Math.round(g.bigGame)} pts) drops the chop odds to ${Math.round(g.chopIfAbove)}%; a quiet one (~${Math.round(g.quietGame)} pts) raises them to ${Math.round(g.chopIfBelow)}%.`;
 };
 const rivalLine = t => t.rival?.share >= RIVAL_SHOWN_AT
   ? `Racing ${t.rival.team}: they're the team just above in ${Math.round(t.rival.share)}% of the simulated chops.`
@@ -76,10 +83,10 @@ function SurvivalOdds({ teams, guillotine }) {
         {Object.entries(SURVIVAL_SORTS).map(([key, option]) =>
           <button key={key} type="button" className={sort === key ? "active" : ""} onClick={() => setSort(key)}>{option.label}</button>)}
       </div>
-      <p className="survival-legend"><span className="zone-chop">Chopping zone ({CHOPPING_ZONE}%+ chop odds)</span><span className="zone-risk">At risk</span><span className="zone-safe">Safe (under {SAFE_BELOW}%)</span></p>
+      <p className="survival-legend"><span className="zone-chop">Chopping zone (over {Math.round(choppingZone(teams.length))}% chop odds)</span><span className="zone-risk">At risk</span><span className="zone-safe">Safe (under {SAFE_BELOW}%)</span></p>
       <div className="survival-table">
         <div className="survival-row survival-header"><span>#</span><span>Team</span><span>Current</span><span>Projected</span><span>Left</span><span>Survive</span><span aria-hidden="true"></span></div>
-        {sorted.map((t, i) => <div className={`survival-row ${zoneOf(t)}`} key={t.teamId}>
+        {sorted.map((t, i) => <div className={`survival-row ${zoneOf(t, teams.length)}`} key={t.teamId}>
           <span>{i + 1}</span>
           <strong><DwLogo team={t} /><span>{t.team}</span></strong>
           <span>{money(t.score)}</span>
@@ -170,6 +177,7 @@ export function DeathWatch({ guillotine }) {
           <b className="chop-odds">{money(t.chopProbability)}% chance of being chopped</b>
           <p>{money(t.score)} pts{t.playersLeft ? ` · projected ${money(t.projected)}` : " · final"}</p>
           {t.survivalNeed ? <p>Needs {money(t.survivalNeed.points)} more pts to pass {t.survivalNeed.passTeam}</p> : null}
+          {gameLine(t) ? <p className="dw-insight">🏟️ {gameLine(t)}</p> : null}
           {swingLine(t) ? <p className="dw-insight">🎲 {swingLine(t)}</p> : null}
           {rivalLine(t) ? <p className="dw-insight">🏁 {rivalLine(t)}</p> : null}
           <p className="dw-left">{leftLine(t)}</p>
@@ -181,7 +189,8 @@ export function DeathWatch({ guillotine }) {
                 { text: `${money(t.chopProbability)}% chance of being chopped`, size: 48, color: "alert", weight: 800, gap: 40 },
                 { text: `${money(t.score)} pts${t.playersLeft ? ` · projected ${money(t.projected)}` : " · final"}`, size: 34 },
                 t.survivalNeed ? { text: `Needs ${money(t.survivalNeed.points)} more pts to pass ${t.survivalNeed.passTeam}`, size: 30, color: "ink" } : null,
-                swingLine(t) ? { text: "🎲 " + swingLine(t), size: 28, color: "ink", gap: 24 } : null,
+                gameLine(t) ? { text: "🏟️ " + gameLine(t), size: 28, color: "ink", gap: 24 } : null,
+                swingLine(t) ? { text: "🎲 " + swingLine(t), size: 28, color: "ink", gap: gameLine(t) ? 8 : 24 } : null,
                 rivalLine(t) ? { text: "🏁 " + rivalLine(t), size: 28 } : null,
                 { text: leftLine(t), size: 26, color: "muted" }
               ].filter(Boolean)
