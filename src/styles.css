@@ -688,3 +688,36 @@ section,details,.odds-block{scroll-margin-top:72px}
 /* Death Watch cards: simulation insights, then who's left. */
 .award-card p.dw-insight{color:#d0d3cb;font-size:12px;line-height:1.45}
 .award-card p.dw-left{color:#777a72;font-size:11px}
+
+/* ESPN-style lineups inside an expanded matchup card: left team, slot, right
+   team, with each side's points next to the slot column. */
+.matchup-lineup{grid-column:1 / -1;display:flex;flex-direction:column;margin-top:4px;border-top:1px solid #4b513f;min-width:0}
+.lineup-row{display:grid;grid-template-columns:minmax(0,1fr) 46px 34px 46px minmax(0,1fr);align-items:center;border-bottom:1px solid #242620;min-height:46px}
+.lineup-player{display:flex;flex-direction:column;gap:2px;min-width:0;padding:6px 0}
+.lineup-player.right{text-align:right;align-items:flex-end}
+.lineup-player b{font-size:12px;font-weight:750;color:#f0f3ed;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.lineup-player small{font-size:10px;color:#8f978c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.lineup-player.empty{color:#555850;font-size:11px}
+.lineup-injury{margin-left:4px;color:#d96b67;font-size:9px;font-style:normal;font-weight:900}
+.lineup-points{display:flex;flex-direction:column;gap:2px;font-variant-numeric:tabular-nums}
+.lineup-points.left{text-align:right;padding-right:6px}
+.lineup-points.right{text-align:left;padding-left:6px}
+.lineup-points b{font-size:13px;color:#f7f7f2}
+.lineup-points small{font-size:10px;color:#777a72}
+.lineup-points.regret b{color:#72b96a}
+.lineup-slot{align-self:stretch;display:flex;align-items:center;justify-content:center;background:#ffffff08;color:#b8c69b;font-size:9px;font-weight:900;letter-spacing:.04em;text-align:center}
+.lineup-bench-heading{margin-top:10px;padding:6px 0;border-bottom:1px solid #30332d;color:#b8c69b;font-size:9px;font-weight:900;letter-spacing:.1em;text-align:center}
+.lineup-optimal-row{display:grid;grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr);gap:0 46px;padding:8px 0 2px}
+.lineup-optimal{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border:1px dashed #4a533e;border-radius:10px;background:#4a533e1a}
+.lineup-optimal-row .lineup-optimal:last-child{text-align:right;align-items:flex-end}
+.lineup-optimal.empty{border:0;background:none}
+.lineup-optimal small{color:#8f978c;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.lineup-optimal b{font-size:15px;color:#dfe9c7;font-variant-numeric:tabular-nums}
+.lineup-optimal b span{font-size:11px;color:#72b96a}
+.lineup-optimal em{font-size:10px;font-style:normal;font-weight:800;color:#e6c85c}
+@media(max-width:520px){
+  .lineup-row{grid-template-columns:minmax(0,1fr) 40px 30px 40px minmax(0,1fr)}
+  .lineup-optimal-row{gap:0 8px;grid-template-columns:minmax(0,1fr) 0 minmax(0,1fr)}
+  .lineup-player b{font-size:11px}
+  .lineup-points b{font-size:12px}
+}

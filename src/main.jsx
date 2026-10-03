@@ -15,6 +15,7 @@ import { useRefresh } from "./components/PullToRefresh.jsx";
 import TeamCards from "./components/TeamCards.jsx";
 import { DeathWatch } from "./components/DeathWatch.jsx";
 import SwingChart from "./components/SwingChart.jsx";
+import MatchupLineup from "./components/MatchupLineup.jsx";
 import RecordBook from "./components/RecordBook.jsx";
 import Notifications, { useFollowedTeams } from "./components/Notifications.jsx";
 import { seriesLine } from "./lib/recordBook.js";
@@ -270,6 +271,7 @@ function App() {
             ].filter(Boolean)
           })} />
         </div>
+        <MatchupLineup a={a} b={b} nflGames={scoreboard.nflGames || []} />
         {keyPlaysFor(matchupId).length ? (
           <div className="key-plays" aria-label="Key plays">
             <div className="key-plays-heading"><span>KEY PLAYS</span><em>4+ PTS OR 3%+ ODDS</em></div>

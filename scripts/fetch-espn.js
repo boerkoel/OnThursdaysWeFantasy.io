@@ -9,7 +9,7 @@ const base = `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${
 // to fetch just the small league files they need.
 const coreOnly = process.env.ESPN_CORE_ONLY === "true";
 const views = coreOnly
-  ? ["mSettings", "mTeam", "mMatchup"]
+  ? ["mSettings", "mTeam", "mMatchup", "mDraftDetail"]
   : ["mSettings", "mTeam", "mRoster", "mMatchup", "mScoreboard", "mLiveScoring", "mDraftDetail"];
 
 const espnS2 = process.env.ESPN_S2;

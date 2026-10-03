@@ -1,4 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises";
+import { BENCH_SLOT, IR_SLOT, settledLineupRegret } from "./lib/lineup.js";
 import { SIMULATIONS, medianOf, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
 
 const season = process.env.ESPN_SEASON || "2026";
@@ -111,7 +112,9 @@ for (const event of nflWeek?.events || []) {
     state: status?.state || "pre",
     completed: status?.completed === true || status?.state === "post",
     detail: status?.shortDetail || "",
-    teamIds: (competition.competitors || []).map(c => Number(c.team?.id)).filter(Number.isFinite)
+    teamIds: (competition.competitors || []).map(c => Number(c.team?.id)).filter(Number.isFinite),
+    // For the matchup cards' lineups: "@CLE 24-27 Final".
+    teams: (competition.competitors || []).map(c => ({ id: Number(c.team?.id), abbrev: c.team?.abbreviation || "", score: Number(c.score) || 0, home: c.homeAway === "home" }))
   };
   nflGames.push(game);
   for (const teamId of game.teamIds) nflGamesByTeam.set(teamId, game);
@@ -193,6 +196,45 @@ for (const teamId of teams.keys()) {
 
 const liveProjectionTeamIds = new Set(espnProjectionByTeam.keys());
 
+// Each team's lineup for the matchup cards: the starters, plus (once their
+// games are over) bench players who outscored a starter they could have
+// replaced, and what the best possible lineup would have scored.
+const INJURY_SHORT = { QUESTIONABLE: "Q", DOUBTFUL: "D", OUT: "O", INJURY_RESERVE: "IR", SUSPENSION: "SSPD" };
+const POSITIONS = { 1: "QB", 2: "RB", 3: "WR", 4: "TE", 5: "K", 16: "D/ST" };
+const lineupByTeam = new Map();
+for (const teamId of teams.keys()) {
+  const players = rosterEntriesForTeam(teamId)
+    .filter(entry => entry.playerPoolEntry?.player && Number(entry.lineupSlotId) !== IR_SLOT)
+    .map(entry => {
+      const player = entry.playerPoolEntry.player;
+      const actual = weeklyStat(player, 0);
+      const projection = weeklyProjection(player);
+      const game = nflGamesByTeam.get(Number(player.proTeamId));
+      const slot = Number(entry.lineupSlotId);
+      return {
+        id: Number(entry.playerId),
+        name: /D\/ST/.test(player.fullName) ? player.fullName : (player.firstName ? player.firstName[0] + ". " : "") + (player.lastName || player.fullName),
+        pos: POSITIONS[Number(player.defaultPositionId)] || "",
+        proTeamId: Number(player.proTeamId),
+        slot,
+        bench: slot === BENCH_SLOT,
+        actual: Number.isFinite(actual) ? round(actual) : 0,
+        projection: Number.isFinite(projection) ? round(projection) : null,
+        injury: INJURY_SHORT[player.injuryStatus] || null,
+        eligibleSlots: (player.eligibleSlots || []).map(Number),
+        // No game this week (bye) counts as finished.
+        finished: game ? game.completed : nflGames.length > 0
+      };
+    });
+  const regret = settledLineupRegret(players);
+  const card = ({ eligibleSlots, finished, bench, ...p }) => p;
+  lineupByTeam.set(teamId, {
+    starters: players.filter(p => !p.bench).map(card),
+    regretBench: regret.pointsLeft > 0 ? regret.regretBench.map(card) : [],
+    pointsLeft: regret.pointsLeft
+  });
+}
+
 const currentScores = currentWeekMatchups.flatMap(m => [
   { teamId: m.homeTeamId, opponentId: m.awayTeamId, score: liveByTeam.get(m.homeTeamId) ?? m.homeScore, opponentScore: liveByTeam.get(m.awayTeamId) ?? m.awayScore, matchupId: m.id },
   { teamId: m.awayTeamId, opponentId: m.homeTeamId, score: liveByTeam.get(m.awayTeamId) ?? m.awayScore, opponentScore: liveByTeam.get(m.homeTeamId) ?? m.homeScore, matchupId: m.id }
@@ -207,7 +249,8 @@ const currentScores = currentWeekMatchups.flatMap(m => [
     projection: { espn: projection },
     projectionAverage: projection,
     projectionTrend: null,
-    status: matchup?.completed ? "FINAL" : "LIVE"
+    status: matchup?.completed ? "FINAL" : "LIVE",
+    lineup: lineupByTeam.get(x.teamId) || null
   };
 }).sort((a,b) => b.score - a.score);
 

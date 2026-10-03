@@ -1,5 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { playerOutlook, round, swingOdds } from "./lib/simulation.js";
+import { BENCH_SLOT, IR_SLOT, settledLineupRegret } from "./lib/lineup.js";
 
 // League Wire: the rotating live stories and each matchup's key plays. Runs
 // on every live update (after update-live-scoreboard.js, which it reads) and
@@ -65,8 +66,6 @@ async function buildKeyPlays() {
 // NFL game status comes from update-live-scoreboard.js via scoreboard.json.
 const nflGames = Number(liveScoreboard.week) === currentWeek ? (liveScoreboard.nflGames || []) : [];
 const nflGameByProTeam = new Map(nflGames.flatMap(g => (g.teamIds || []).map(id => [Number(id), g])));
-const BENCH_SLOT = 20;
-const IR_SLOT = 21;
 
 // One entry per fantasy team: its players this week with weekly points,
 // projection, lineup slot and NFL game status.
@@ -112,50 +111,6 @@ function recentGameIds() {
   return new Set(done.filter(g => Date.parse(g.kickoff) >= latest - 60 * 60 * 1000).map(g => g.id));
 }
 
-// Best total from filling `slots` with `players` (each used at most once, only
-// in slots they're eligible for). Every slot must be filled.
-function optimalFill(slots, players) {
-  const full = (1 << slots.length) - 1;
-  const memo = new Map();
-  const best = (i, used) => {
-    if (i >= players.length) return used === full ? 0 : -Infinity;
-    const key = i + "|" + used;
-    if (memo.has(key)) return memo.get(key);
-    let value = best(i + 1, used);
-    for (let s = 0; s < slots.length; s++) {
-      if (used & (1 << s) || !players[i].eligibleSlots.includes(slots[s])) continue;
-      value = Math.max(value, players[i].actual + best(i + 1, used | (1 << s)));
-    }
-    memo.set(key, value);
-    return value;
-  };
-  return best(0, 0);
-}
-
-// Settled lineup decisions: only players whose games are over can be swapped,
-// so an unplayed starter never looks like a mistake. Returns points left on
-// the bench and the single best bench-for-starter swap.
-function settledLineupRegret(liveTeam) {
-  const finished = liveTeam.players.filter(p => p.finished);
-  const starters = finished.filter(p => !p.bench);
-  const bench = finished.filter(p => p.bench);
-  const actual = starters.reduce((sum, p) => sum + p.actual, 0);
-  const optimal = starters.length ? optimalFill(starters.map(p => p.slot), finished) : actual;
-  let bestSwap = null;
-  for (const b of bench) for (const s of starters) {
-    const gain = b.actual - s.actual;
-    if (gain > 0 && b.eligibleSlots.includes(s.slot) && (!bestSwap || gain > bestSwap.gain)) {
-      bestSwap = {benchPlayer:b, starter:s, gain:round(gain)};
-    }
-  }
-  return {
-    pointsLeft:round(Math.max(0, optimal - actual)),
-    finishedStarters:starters.length,
-    finishedBench:bench.length,
-    bestSwap
-  };
-}
-
 const pts = n => money(n) + " pts";
 const possessive = team => team + (team.endsWith("s") ? "'" : "'s");
 const listNames = names => names.length <= 1 ? names.join("") : names.slice(0, -1).join(", ") + " and " + names[names.length - 1];
@@ -195,7 +150,7 @@ function buildMarqueeStories() {
   if (dud) add("DUD ALERT","🫠 " + dud.name + " laid an egg for " + dud.team + " — " + pts(dud.actual) + " against a " + pts(dud.projection) + " projection.",18 - dud.overProjection / 2);
 
   // Lineup decisions that are already settled (both players' games are over).
-  const regrets = [...liveTeams.values()].map(t => ({...t, ...settledLineupRegret(t)}));
+  const regrets = [...liveTeams.values()].map(t => ({...t, ...settledLineupRegret(t.players)}));
   const regret = regrets.filter(r => r.pointsLeft >= 8).sort((a,b) => b.pointsLeft - a.pointsLeft)[0];
   if (regret) {
     const swap = regret.bestSwap ? " Starting " + regret.bestSwap.benchPlayer.name + " (" + pts(regret.bestSwap.benchPlayer.actual) + ") over " + regret.bestSwap.starter.name + " (" + pts(regret.bestSwap.starter.actual) + ") alone was worth " + pts(regret.bestSwap.gain) + "." : "";
@@ -278,6 +233,7 @@ function buildMarqueeStories() {
   addLineupMistakeStories(add, matchupStates, regrets);
   addDeathWatchStory(add);
   addPickupStories(add);
+  try { addRosterStories(add); } catch (error) { console.warn("League Wire: roster stories failed: " + error.message); }
   addSwingStories(add, matchupStates);
   addRaffleStories(add, previousScores);
   addPrimetimeStories(add, matchupStates);
@@ -330,6 +286,111 @@ function addPickupStories(add) {
       return "🗞️ Fresh off the wire: " + listNames(fresh.slice(0, i + 1).map(describe)) + (more ? ", plus " + more + " more pickup" + (more === 1 ? "" : "s") : "") + ".";
     }).reverse();
     add("FRESH OFF THE WIRE",fit(...versions),24 + fresh.length);
+  }
+}
+
+// ---- Roster stories ----------------------------------------------------------
+// Injury wards (a team missing a lot of draft capital) and bold roster
+// constructions (piles of onesies, no depth where it counts). Neither depends
+// on the games, so they run all week.
+const draftData = await readJson("data/current/mDraftDetail.json").catch(() => null);
+const draftRound = new Map((draftData?.draftDetail?.picks || []).map(p => [Number(p.playerId), Number(p.roundId)]));
+const settingsData = await readJson("data/current/mSettings.json").catch(() => null);
+const slotCounts = settingsData?.settings?.rosterSettings?.lineupSlotCounts || {};
+const startersAt = slot => Number(slotCounts[slot] ?? 1);
+const OUT_STATUSES = new Set(["OUT", "INJURY_RESERVE", "DOUBTFUL", "SUSPENSION"]);
+// Draft capital lost to injury: a 1st-rounder counts 8, a 2nd 7, ... an 8th 1.
+const draftValue = round => round ? Math.max(0, 9 - round) : 0;
+const INJURY_WARD_MIN_VALUE = 12;
+const ONESIE_LABEL = {1:"QB", 4:"TE", 5:"K", 16:"D/ST"};
+const BOLD_MIN_SCORE = 4;
+
+function rosterReport(t) {
+  const players = (t.roster?.entries || []).filter(e => e.playerPoolEntry?.player).map(e => {
+    const player = e.playerPoolEntry.player;
+    const status = player.injuryStatus || e.injuryStatus || "ACTIVE";
+    return {
+      name:player.fullName,
+      lastName:(player.lastName || player.fullName).replace(/\s+(Jr\.|Sr\.|II|III|IV)$/, ""),
+      positionId:Number(player.defaultPositionId),
+      slot:Number(e.lineupSlotId),
+      round:draftRound.get(Number(e.playerId)) || null,
+      out:OUT_STATUSES.has(status)
+    };
+  });
+  const healthy = players.filter(p => !p.out);
+  const count = pos => healthy.filter(p => p.positionId === pos);
+
+  const injured = players.filter(p => p.out && draftValue(p.round) > 0).sort((a, b) => a.round - b.round);
+  const injuryValue = injured.reduce((sum, p) => sum + draftValue(p.round), 0);
+
+  // Quirks, each with a weight for how bold it is. Onesie stockpiles count
+  // healthy players only, so an injury-forced backup QB isn't "bold".
+  const quirks = [];
+  const tes = count(4), qbs = count(1), ks = count(5), dsts = count(16);
+  if (tes.length >= 3) quirks.push({weight:2 + tes.length - 3, text:tes.length + " TEs", detail:tes.map(p => p.lastName)});
+  if (qbs.length >= 3) quirks.push({weight:2 + qbs.length - 3, text:qbs.length + " QBs", detail:qbs.map(p => p.lastName)});
+  if (ks.length >= 2) quirks.push({weight:3, text:ks.length + " kickers"});
+  if (dsts.length >= 2) quirks.push({weight:1, text:dsts.length + " defenses"});
+  const bench = players.filter(p => p.slot === BENCH_SLOT);
+  const benchOnesies = bench.filter(p => ONESIE_LABEL[p.positionId]);
+  if (bench.length >= 3 && benchOnesies.length === bench.length) quirks.push({weight:3, text:"a bench made entirely of onesies (" + listNames([...new Set(benchOnesies.map(p => ONESIE_LABEL[p.positionId]))]) + ")"});
+  else if (bench.length >= 3 && benchOnesies.length / bench.length >= 0.6) quirks.push({weight:1, text:benchOnesies.length + " of " + bench.length + " bench spots on onesies"});
+  // No healthy depth behind the starters at RB or WR.
+  const thin = [];
+  for (const [pos, slot, label] of [[2, 2, "RB"], [3, 4, "WR"]]) {
+    const healthyAt = count(pos);
+    if (healthyAt.length > startersAt(slot)) continue;
+    thin.push({label, healthy:healthyAt.map(p => p.lastName), short:healthyAt.length < startersAt(slot)});
+    quirks.push({weight:2, text:(healthyAt.length ? "just " + healthyAt.length : "no") + " healthy " + label + (healthyAt.length === 1 ? "" : "s")});
+  }
+  quirks.sort((a, b) => b.weight - a.weight);
+  return {teamId:Number(t.id), team:name(Number(t.id)), injured, injuryValue, quirks, thin, boldness:quirks.reduce((sum, q) => sum + q.weight, 0)};
+}
+
+function addRosterStories(add) {
+  const reports = (rosterData.teams || []).map(rosterReport);
+  // Roster stories lead the week-ahead wire and sit behind live game stories.
+  const pregame = currentScores.every(s => Number(s.score) === 0);
+  const COTTON = " It's a bold strategy, Cotton. Let's see if it pays off for 'em.";
+  const injuredList = (r, n) => listNames(r.injured.slice(0, n).map(p => p.lastName + " (Rd " + p.round + ")"));
+  const injuredNames = (r, n) => listNames(r.injured.slice(0, n).map(p => p.lastName));
+  const quirkList = (r, n, withDetail) => listNames(r.quirks.slice(0, n).map(q => q.text + (withDetail && q.detail ? " (" + listNames(q.detail) + ")" : "")));
+
+  const slammed = reports.filter(r => r.injuryValue >= INJURY_WARD_MIN_VALUE).sort((a, b) => b.injuryValue - a.injuryValue)[0];
+  const bold = reports.filter(r => r.boldness >= BOLD_MIN_SCORE).sort((a, b) => b.boldness - a.boldness)[0];
+  if (slammed) {
+    const n = slammed.injured.length;
+    add("INJURY WARD",fit(
+      "🚑 INJURY WARD: " + slammed.team + " is absolutely slammed — " + injuredList(slammed, 4) + (n > 4 ? " and " + (n - 4) + " more" : "") + (n === 1 ? " is" : " are") + " out.",
+      "🚑 INJURY WARD: " + slammed.team + " is without " + injuredList(slammed, 3) + ".",
+      "🚑 INJURY WARD: " + slammed.team + " is without " + injuredNames(slammed, 3) + "."
+    ),(pregame ? 62 : 32) + slammed.injuryValue / 4);
+  }
+  if (bold) {
+    add("BOLD STRATEGY",fit(
+      "🎲 " + bold.team + " is rolling with " + quirkList(bold, 3, true) + "." + COTTON,
+      "🎲 " + bold.team + " is rolling with " + quirkList(bold, 2, true) + "." + COTTON,
+      "🎲 " + bold.team + " is rolling with " + quirkList(bold, 2, false) + "." + COTTON,
+      "🎲 " + bold.team + " is rolling with " + quirkList(bold, 1, false) + "." + COTTON
+    ),(pregame ? 60 : 30) + bold.boldness);
+  }
+
+  // Thin ice: no healthy backup at RB or WR (or already a hole in the
+  // lineup). The bold team already got its depth called out.
+  const thin = reports.filter(r => r !== bold).flatMap(r => r.thin.map(x => ({...x, team:r.team})))
+    .sort((a, b) => b.short - a.short || a.healthy.length - b.healthy.length);
+  if (thin.length) {
+    const describe = (x, withNames) => x.short
+      ? x.team + " is down to " + (x.healthy.length ? x.healthy.length + " healthy " + x.label + (withNames ? " (" + listNames(x.healthy) + ")" : "") : "zero healthy " + x.label + "s")
+      : x.team + " has no healthy backup " + x.label + (withNames ? " behind " + listNames(x.healthy) : "");
+    const tail = thin[0].short ? " That's already a hole in the lineup." : " One more injury and there's a hole in the lineup.";
+    add("THIN ICE",fit(
+      "🧊 THIN ICE: " + listNames(thin.slice(0, 2).map(x => describe(x, true))) + "." + tail,
+      "🧊 THIN ICE: " + listNames(thin.slice(0, 2).map(x => describe(x, false))) + "." + tail,
+      "🧊 THIN ICE: " + describe(thin[0], true) + "." + tail,
+      "🧊 THIN ICE: " + describe(thin[0], false) + "." + tail
+    ),(pregame ? 58 : 28) + (thin[0].short ? 4 : 0));
   }
 }
 
