@@ -245,11 +245,12 @@ function App() {
     return odds > 50 ? "projection-dot green" : "projection-dot red";
   };
 
-  // One live matchup card. On phones the details (series, swing chart, share,
-  // key plays) collapse behind a toggle. The pinned "my team" card is always
-  // open, and matchups with a followed team start open; toggled holds the
-  // matchups flipped from how they start.
+  // One live matchup card. The odds panel (series, swing chart, share, key
+  // plays) and the lineups each have their own toggle. The odds panel starts
+  // open on the pinned "my team" card, on matchups with a followed team, and
+  // on wider screens; toggled holds the matchups flipped from how they start.
   const followedTeams = useFollowedTeams();
+  const [wideScreen] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 601px)").matches);
   const [toggledMatchups, setToggledMatchups] = useState(() => new Set());
   const toggleIn = setter => id => setter(prev => {
     const next = new Set(prev);
@@ -265,7 +266,7 @@ function App() {
     const a = pair[0], b = pair[1];
     if (!a || !b) return null;
     const followed = followedTeams.includes(Number(a.teamId)) || followedTeams.includes(Number(b.teamId));
-    const expanded = featured || followed !== toggledMatchups.has(matchupId);
+    const expanded = (featured || followed || wideScreen) !== toggledMatchups.has(matchupId);
     const lineupOpen = openLineups.has(matchupId);
     const keyPlays = keyPlaysFor(matchupId);
     return <article className={["matchup", featured ? "featured" : "", expanded ? "expanded" : ""].join(" ").trim()} key={matchupId}>

@@ -557,7 +557,6 @@
 .matchups.single{grid-template-columns:1fr}
 .matchup.featured{border-color:#4a533e}
 .matchup-details{grid-column:1 / -1;display:grid;gap:10px;min-width:0}
-.matchup-toggle{display:none}
 .back-to-top{position:fixed;right:18px;bottom:22px;z-index:31;width:42px;height:42px;border:1px solid #4a533e;border-radius:50%;background:#1d2319;color:#dfe7d7;font-size:18px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.4)}
 .marquee-dots button{box-sizing:content-box;padding:6px;background-clip:content-box}
 .marquee-dots{gap:0}
@@ -574,9 +573,6 @@
   .back-to-top{bottom:calc(86px + env(safe-area-inset-bottom))}
 }
 @media(max-width:600px){
-  .matchup-toggle{display:block}
-  .matchup.featured .matchup-toggle{display:none}
-  .matchup:not(.expanded) .matchup-details{display:none}
 }
 /* Respect Reduce Motion: no pulsing, flashing or smooth scrolling. */
 @media (prefers-reduced-motion: reduce){
@@ -734,9 +730,9 @@ section,details,.odds-block{scroll-margin-top:72px}
 .swing-play-tip-row em{display:block;color:#b8c69b;font-size:10px;font-style:normal;font-weight:800}
 .swing-play-more{color:#777a72;font-size:9px;font-weight:800}
 
-/* Matchup card expanders: odds & key plays (phones only; always open on wider
-   screens and on the pinned card) and lineups (everywhere, closed at first). */
+/* Matchup card expanders: odds & key plays, and lineups, each toggled on its own. */
 .matchup-toggles{grid-column:1 / -1;display:flex;justify-content:flex-end;gap:16px}
+.matchup:not(.expanded) .matchup-details{display:none}
 .matchup-toggle,.lineup-toggle{padding:2px 0;border:0;background:none;color:#8f978c;font-size:11px;font-weight:800;letter-spacing:.04em;cursor:pointer}
 .lineup-toggle{display:block}
 .matchup-toggle:hover,.lineup-toggle:hover{color:#dfe5d5}
