@@ -574,7 +574,7 @@
   .back-to-top{bottom:calc(86px + env(safe-area-inset-bottom))}
 }
 @media(max-width:600px){
-  .matchup-toggle{display:block;grid-column:1 / -1;justify-self:end;padding:2px 0;border:0;background:none;color:#8f978c;font-size:11px;font-weight:800;letter-spacing:.04em;cursor:pointer}
+  .matchup-toggle{display:block}
   .matchup.featured .matchup-toggle{display:none}
   .matchup:not(.expanded) .matchup-details{display:none}
 }
@@ -721,3 +721,22 @@ section,details,.odds-block{scroll-margin-top:72px}
   .lineup-player b{font-size:11px}
   .lineup-points b{font-size:12px}
 }
+
+/* Key-play footballs on the swing chart, and the play they open. */
+.swing-play-marker{position:absolute;z-index:2;width:18px;height:18px;margin:-9px 0 0 -9px;padding:0;border:0;border-radius:50%;background:#151713;font-size:11px;line-height:18px;text-align:center;cursor:pointer;box-shadow:0 0 0 1px #4a533e;transition:transform .12s}
+.swing-play-marker:hover,.swing-play-marker.active{transform:scale(1.25);box-shadow:0 0 0 1px #b8c69b}
+.swing-play-tip{position:absolute;z-index:5;bottom:calc(100% + 6px);transform:translateX(-50%);width:min(280px,88vw);display:flex;flex-direction:column;gap:8px;padding:9px 11px;border:1px solid #4a533e;border-radius:10px;background:#1b1e18;box-shadow:0 8px 20px rgba(0,0,0,.5);pointer-events:none}
+.swing-play-tip-row div{font-size:11px;font-weight:800;color:#f0f3ed}
+.swing-play-tip-row div b{color:#b8c69b;font-variant-numeric:tabular-nums}
+.swing-play-tip-row div b.negative{color:#d96b67}
+.swing-play-tip-row div small{margin-left:4px;color:#777a72;font-size:9px;font-weight:700}
+.swing-play-tip-row p{margin:3px 0;color:#c7cac1;font-size:10px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.swing-play-tip-row em{display:block;color:#b8c69b;font-size:10px;font-style:normal;font-weight:800}
+.swing-play-more{color:#777a72;font-size:9px;font-weight:800}
+
+/* Matchup card expanders: odds & key plays (phones only; always open on wider
+   screens and on the pinned card) and lineups (everywhere, closed at first). */
+.matchup-toggles{grid-column:1 / -1;display:flex;justify-content:flex-end;gap:16px}
+.matchup-toggle,.lineup-toggle{padding:2px 0;border:0;background:none;color:#8f978c;font-size:11px;font-weight:800;letter-spacing:.04em;cursor:pointer}
+.lineup-toggle{display:block}
+.matchup-toggle:hover,.lineup-toggle:hover{color:#dfe5d5}

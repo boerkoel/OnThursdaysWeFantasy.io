@@ -448,9 +448,10 @@ try {
     deduped.set(play.id, momentum ? { ...play, momentum } : play);
   }
 
-  const plays = [...deduped.values()]
-    .sort((a, b) => new Date(b.wallclock || 0) - new Date(a.wallclock || 0))
-    .slice(0, 60);
+  // The newest 60 plays, plus every play this week that moved a matchup's
+  // odds 3%+ (the football markers on the swing charts).
+  const sorted = [...deduped.values()].sort((a, b) => new Date(b.wallclock || 0) - new Date(a.wallclock || 0));
+  const plays = sorted.filter((play, i) => i < 60 || play.momentum?.shift >= 3);
 
   await writeFile("data/current/live-plays.json", JSON.stringify({
     week: currentWeek,

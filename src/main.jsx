@@ -141,14 +141,29 @@ function App() {
   const myScore = scores.find(s => Number(s.teamId) === Number(myTeamId)) || null;
   const myMatchupId = myScore?.matchupId ?? null;
   const seasonOddsWeeksLeft = live.seasonOdds?.remainingWeeks?.length ?? 0;
-  // A matchup shows its 5 most recent key plays from the last 5 hours: 4+
-  // point swings, or plays that moved the win odds 3% or more.
+  // A matchup's key plays: its 5 most recent from the last 5 hours (4+ point
+  // swings, or plays that moved the win odds 3%+), then the week's biggest
+  // odds swings, up to 10 in all, newest first. The swings are also the 🏈
+  // markers on the odds chart.
   const KEY_PLAY_MAX_AGE_MS = 5 * 60 * 60 * 1000;
-  const keyPlaysFor = matchupId => (livePlayFeed.plays || [])
-    .filter(p => Number(p.matchupId) === Number(matchupId) && (Math.abs(Number(p.points)) >= 4 || p.momentum?.shift >= 3))
-    .filter(p => p.wallclock && Date.now() - Date.parse(p.wallclock) <= KEY_PLAY_MAX_AGE_MS)
-    .sort((a, b) => Date.parse(b.wallclock) - Date.parse(a.wallclock))
-    .slice(0, 5);
+  const KEY_PLAYS_RECENT = 5;
+  const KEY_PLAYS_MAX = 10;
+  const BIG_SWING = 3;
+  const newestFirst = (a, b) => Date.parse(b.wallclock) - Date.parse(a.wallclock);
+  const keyPlaysFor = matchupId => {
+    const plays = (Number(livePlayFeed.week) === Number(scoreboard.week) ? livePlayFeed.plays || [] : [])
+      .filter(p => Number(p.matchupId) === Number(matchupId) && p.wallclock);
+    const recent = plays
+      .filter(p => (Math.abs(Number(p.points)) >= 4 || p.momentum?.shift >= BIG_SWING) && Date.now() - Date.parse(p.wallclock) <= KEY_PLAY_MAX_AGE_MS)
+      .sort(newestFirst)
+      .slice(0, KEY_PLAYS_RECENT);
+    const chosen = new Map(recent.map(p => [p.id, p]));
+    for (const p of plays.filter(p => p.momentum?.shift >= BIG_SWING).sort((a, b) => b.momentum.shift - a.momentum.shift)) {
+      if (chosen.size >= KEY_PLAYS_MAX) break;
+      chosen.set(p.id, p);
+    }
+    return [...chosen.values()].sort(newestFirst);
+  };
   // "Momentum shift: swung the odds 6.2% toward X (now 58.0%)", for plays that moved the odds at least half a point.
   const momentumLine = play => play.momentum?.shift >= 0.5
     ? `Momentum shift: swung the odds ${play.momentum.shift.toFixed(1)}% toward ${play.momentum.toward} (now ${play.momentum.winProbability.toFixed(1)}%)` : null;
@@ -236,25 +251,35 @@ function App() {
   // matchups flipped from how they start.
   const followedTeams = useFollowedTeams();
   const [toggledMatchups, setToggledMatchups] = useState(() => new Set());
-  const toggleMatchup = id => setToggledMatchups(prev => {
+  const toggleIn = setter => id => setter(prev => {
     const next = new Set(prev);
     next.has(id) ? next.delete(id) : next.add(id);
     return next;
   });
+  const toggleMatchup = toggleIn(setToggledMatchups);
+  // Lineups are long, so every card (pinned ones too) starts with them closed.
+  const [openLineups, setOpenLineups] = useState(() => new Set());
+  const toggleLineup = toggleIn(setOpenLineups);
   const renderMatchup = (matchupId, featured = false) => {
     const pair = scores.filter(s => s.matchupId === matchupId);
     const a = pair[0], b = pair[1];
     if (!a || !b) return null;
     const followed = followedTeams.includes(Number(a.teamId)) || followedTeams.includes(Number(b.teamId));
     const expanded = featured || followed !== toggledMatchups.has(matchupId);
+    const lineupOpen = openLineups.has(matchupId);
+    const keyPlays = keyPlaysFor(matchupId);
     return <article className={["matchup", featured ? "featured" : "", expanded ? "expanded" : ""].join(" ").trim()} key={matchupId}>
       <MatchupTeam team={a} opponent={b} logo={teamLogos[a.teamId]} projected={scoreSort === "projected"} flashing={flashingScores.has(a.teamId)} dotClass={medianDotClass(a)} />
       <div className="versus">vs</div>
       <MatchupTeam team={b} opponent={a} logo={teamLogos[b.teamId]} projected={scoreSort === "projected"} flashing={flashingScores.has(b.teamId)} dotClass={medianDotClass(b)} />
-      <button type="button" className="matchup-toggle" aria-expanded={expanded} onClick={() => toggleMatchup(matchupId)}>{expanded ? "Hide details ▴" : "Details ▾"}</button>
+      <div className="matchup-toggles">
+        <button type="button" className="matchup-toggle" aria-expanded={expanded} onClick={() => toggleMatchup(matchupId)}>{expanded ? "Hide odds ▴" : "Odds & key plays ▾"}</button>
+        {a.lineup && b.lineup ? <button type="button" className="lineup-toggle" aria-expanded={lineupOpen} onClick={() => toggleLineup(matchupId)}>{lineupOpen ? "Hide lineups ▴" : "Lineups ▾"}</button> : null}
+      </div>
       <div className="matchup-details">
         {seriesLine(a.teamId, b.teamId) ? <p className="rivalry-line">⚔️ {seriesLine(a.teamId, b.teamId)}</p> : null}
-        <SwingChart points={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} teamId={a.teamId} teamName={a.team} opponentName={b.team} />
+        <SwingChart points={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} teamId={a.teamId} teamName={a.team} opponentName={b.team}
+          plays={keyPlays.filter(p => p.momentum?.shift >= BIG_SWING)} />
         <div className="card-actions">
           <ShareButton filename={`week-${scoreboard.week}-${a.team}-vs-${b.team}`.replace(/[^\w-]+/g, "-")} build={() => ({
             kicker: `Week ${scoreboard.week} · ${status === "FINAL" ? "Final" : status === "LIVE" ? "Live" : "Matchup"}`,
@@ -267,16 +292,15 @@ function App() {
             })),
             lines: [
               seriesLine(a.teamId, b.teamId) ? { text: "⚔️ " + seriesLine(a.teamId, b.teamId), size: 28, color: "accent", weight: 800, gap: 36 } : null,
-              ...keyPlaysFor(matchupId).slice(0, 2).map((play, i) => ({ text: `${play.points > 0 ? "+" : ""}${money(play.points)} · ${play.player} ${play.text}${momentumLine(play) ? ` ⚡ ${momentumLine(play)}` : ""}`, size: 26, gap: i ? 8 : 30 }))
+              ...keyPlays.slice(0, 2).map((play, i) => ({ text: `${play.points > 0 ? "+" : ""}${money(play.points)} · ${play.player} ${play.text}${momentumLine(play) ? ` ⚡ ${momentumLine(play)}` : ""}`, size: 26, gap: i ? 8 : 30 }))
             ].filter(Boolean)
           })} />
         </div>
-        <MatchupLineup a={a} b={b} nflGames={scoreboard.nflGames || []} />
-        {keyPlaysFor(matchupId).length ? (
+        {keyPlays.length ? (
           <div className="key-plays" aria-label="Key plays">
-            <div className="key-plays-heading"><span>KEY PLAYS</span><em>4+ PTS OR 3%+ ODDS</em></div>
+            <div className="key-plays-heading"><span>KEY PLAYS</span><em>LATEST + BIGGEST SWINGS</em></div>
             <div className="key-play-list">
-              {keyPlaysFor(matchupId).map(play => (
+              {keyPlays.map(play => (
                 <div className="key-play" key={play.id}>
                   <strong className={play.points < 0 ? "negative" : ""}>{play.points > 0 ? "+" : ""}{money(play.points)}</strong>
                   <span><b>{play.player}</b> {play.text}{momentumLine(play) ? <em className="key-play-momentum">⚡ {momentumLine(play)}</em> : null}</span>
@@ -286,6 +310,7 @@ function App() {
           </div>
         ) : null}
       </div>
+      {lineupOpen ? <MatchupLineup a={a} b={b} nflGames={scoreboard.nflGames || []} /> : null}
     </article>;
   };
 
