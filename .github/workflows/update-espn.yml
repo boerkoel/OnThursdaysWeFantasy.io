@@ -66,6 +66,16 @@ jobs:
         run: node scripts/write-obituaries.js
       - name: Calculate league stats
         run: node scripts/calculate-stats.js
+      # Recent drops and how those players are doing (MANAGER MISCUE story).
+      - name: Fetch recent drops
+        continue-on-error: true
+        env:
+          ESPN_SEASON: "2026"
+          ESPN_LEAGUE_ID: "998599827"
+          ESPN_S2: ${{ secrets.ESPN_S2 }}
+          ESPN_SWID: ${{ secrets.ESPN_SWID }}
+        run: node scripts/fetch-drops.js
+
       # After the stats, so the week-in-review stories read the new weekly recap.
       - name: Update League Wire
         env:

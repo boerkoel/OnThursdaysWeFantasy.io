@@ -120,6 +120,17 @@ jobs:
           ESPN_INCLUDE_COMPLETED: ${{ inputs.force_update == true && 'true' || 'false' }}
         run: node scripts/fetch-live-plays.js
 
+      # Recent drops and how those players are doing (MANAGER MISCUE story).
+      - name: Fetch recent drops
+        if: steps.gate.outputs.update == 'true'
+        continue-on-error: true
+        env:
+          ESPN_SEASON: "2026"
+          ESPN_LEAGUE_ID: "998599827"
+          ESPN_S2: ${{ secrets.ESPN_S2 }}
+          ESPN_SWID: ${{ secrets.ESPN_SWID }}
+        run: node scripts/fetch-drops.js
+
       - name: Update League Wire
         if: steps.gate.outputs.update == 'true'
         env:

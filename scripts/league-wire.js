@@ -243,6 +243,7 @@ function buildMarqueeStories() {
   // Newest stories; a bug in one shouldn't take down the whole wire.
   try { addGameToWatchStory(add, matchupStates); } catch (error) { console.warn("League Wire: game to watch failed: " + error.message); }
   try { addInjuryStories(add); } catch (error) { console.warn("League Wire: injury stories failed: " + error.message); }
+  try { addMiscueStory(add); } catch (error) { console.warn("League Wire: manager miscue failed: " + error.message); }
 
   const biggestLead=matchupStates.filter(x=>!x.m.completed).sort((a,b)=>b.diff-a.diff)[0];
   if(biggestLead&&biggestLead.diff>=20){const leader=biggestLead.currentDiff>0?biggestLead.a.team:biggestLead.b.team;const trailer=biggestLead.currentDiff>0?biggestLead.b.team:biggestLead.a.team;add("LEAGUE GOSSIP","👀 League gossip: " + leader + " has " + money(biggestLead.diff) + " pts to play with against " + trailer + ".",28);}
@@ -837,6 +838,25 @@ function addInjuryStories(add) {
     }
   }
   candidates.sort((a, b) => b.swing - a.swing).slice(0, 2).forEach(c => add(c.type, c.text, 90 + Math.min(c.swing, 30) / 5));
+}
+
+// ---- Manager miscue ----------------------------------------------------------
+// A player dropped in the last week who's having a big week (drops.json, from
+// fetch-drops.js): the one with the most points, 12+.
+const MISCUE_MIN_POINTS = 12;
+const dropsData = await readJson("data/current/drops.json").catch(() => null);
+function addMiscueStory(add) {
+  if (Number(dropsData?.week) !== currentWeek) return;
+  const miscue = (dropsData.drops || []).filter(d => d.points >= MISCUE_MIN_POINTS && teamNames.has(d.fromTeamId)).sort((a, b) => b.points - a.points)[0];
+  if (!miscue) return;
+  const day = new Date(miscue.droppedAt).toLocaleDateString("en-US", {weekday:"long", timeZone:"America/New_York"});
+  const where = miscue.nowOnTeamId === miscue.fromTeamId ? "" : miscue.nowOnTeamId ? ", now for " + name(miscue.nowOnTeamId) : ", and he's still sitting on waivers";
+  const who = miscue.player + (miscue.position ? " (" + miscue.position + ")" : "");
+  add("MANAGER MISCUE",fit(
+    "🤦 MANAGER MISCUE: " + name(miscue.fromTeamId) + " dropped " + who + " on " + day + " — he has " + pts(miscue.points) + " this week" + where + ".",
+    "🤦 MANAGER MISCUE: " + name(miscue.fromTeamId) + " dropped " + miscue.player + " on " + day + " — he has " + pts(miscue.points) + " this week" + where + ".",
+    "🤦 MANAGER MISCUE: " + name(miscue.fromTeamId) + " dropped " + miscue.player + " — he has " + pts(miscue.points) + " this week."
+  ),74 + Math.min(miscue.points, 40) / 4);
 }
 
 const keyPlays = await buildKeyPlays();

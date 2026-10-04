@@ -1,0 +1,78 @@
+import { readFile, writeFile } from "node:fs/promises";
+
+// Recent drops and how the dropped players are doing this week, for the
+// League Wire's MANAGER MISCUE story. Reads this week's and last week's
+// executed transactions, then looks up each dropped player's points this
+// week (league scoring) and where he is now (another team, or unowned).
+// Writes data/current/drops.json. Uses the ESPN cookies when present (the
+// main league is private); a public league works without them.
+const season = process.env.ESPN_SEASON || "2026";
+const leagueId = process.env.ESPN_LEAGUE_ID || "998599827";
+const base = `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${season}/segments/0/leagues/${leagueId}`;
+const espnS2 = process.env.ESPN_S2;
+const swid = process.env.ESPN_SWID;
+const OUT = process.env.DROPS_PATH || "data/current/drops.json";
+const DROP_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+const POSITIONS = { 1: "QB", 2: "RB", 3: "WR", 4: "TE", 5: "K", 16: "D/ST" };
+
+async function fetchJson(url, extraHeaders = {}) {
+  const response = await fetch(url, {
+    headers: {
+      Accept: "application/json",
+      "User-Agent": "OnThursdaysWeFantasy/1.0",
+      ...(espnS2 && swid ? { Cookie: `espn_s2=${espnS2}; SWID=${swid}` } : {}),
+      ...extraHeaders
+    }
+  });
+  if (!response.ok) throw new Error(`ESPN request failed: ${response.status} ${response.statusText}`);
+  return response.json();
+}
+
+const matchup = JSON.parse(await readFile("data/current/mMatchup.json", "utf8").catch(() => "{}"));
+const week = Number(process.env.DROPS_WEEK || matchup.scoringPeriodId || 1);
+
+const periods = [week, week - 1].filter(w => w >= 1);
+const transactions = (await Promise.all(periods.map(w => fetchJson(`${base}?view=mTransactions2&scoringPeriodId=${w}`).then(d => d.transactions || []))))
+  .flat()
+  .filter(t => t.status === "EXECUTED" && Date.now() - Number(t.processDate) <= DROP_WINDOW_MS);
+
+const drops = [];
+for (const t of transactions) {
+  for (const item of t.items || []) {
+    // Defenses have negative ids; skip them (and anything malformed).
+    if (item.type !== "DROP" || !(Number(item.playerId) > 0)) continue;
+    drops.push({ playerId: Number(item.playerId), fromTeamId: Number(item.fromTeamId), droppedAt: new Date(Number(t.processDate)).toISOString() });
+  }
+}
+
+let players = [];
+if (drops.length) {
+  const filter = JSON.stringify({ players: { filterIds: { value: [...new Set(drops.map(d => d.playerId))] } } });
+  const data = await fetchJson(`${base}?view=kona_player_info&scoringPeriodId=${week}`, { "X-Fantasy-Filter": filter });
+  players = data.players || [];
+}
+const byId = new Map(players.map(p => [Number(p.player?.id ?? p.id), p]));
+const stat = (player, source) => Number((player?.stats || []).find(s =>
+  Number(s.scoringPeriodId) === week && Number(s.statSourceId) === source && Number(s.statSplitTypeId) === 1)?.appliedTotal);
+
+const out = drops.map(d => {
+  const entry = byId.get(d.playerId);
+  const player = entry?.player;
+  if (!player) return null;
+  const points = stat(player, 0), projection = stat(player, 1);
+  return {
+    ...d,
+    player: player.fullName,
+    position: POSITIONS[Number(player.defaultPositionId)] || "",
+    proTeamId: Number(player.proTeamId),
+    nowOnTeamId: Number(entry.onTeamId) || null,
+    points: Number.isFinite(points) ? Math.round(points * 100) / 100 : 0,
+    projection: Number.isFinite(projection) ? Math.round(projection * 100) / 100 : null
+  };
+}).filter(Boolean)
+  // The same player dropped twice (picked up and dropped again): keep the latest.
+  .sort((a, b) => Date.parse(b.droppedAt) - Date.parse(a.droppedAt))
+  .filter((d, i, all) => all.findIndex(x => x.playerId === d.playerId) === i);
+
+await writeFile(OUT, JSON.stringify({ week, updatedAt: new Date().toISOString(), drops: out }, null, 2) + "\n");
+console.log(`Drops: ${out.length} in the last 7 days; best this week: ${[...out].sort((a, b) => b.points - a.points).slice(0, 3).map(d => `${d.player} ${d.points}`).join(", ") || "none"}.`);
