@@ -77,8 +77,8 @@
           "points": null,
           "draftPick": 130,
           "round": 11,
-          "rosRank": 231,
-          "valueGap": -101
+          "rosRank": 230,
+          "valueGap": -100
         },
         "boomMachine": {
           "playerId": 4689114,
@@ -96,8 +96,8 @@
           "player": "Caleb Douglas",
           "round": 15,
           "draftPick": 178,
-          "rosRank": 138,
-          "valueGap": 40,
+          "rosRank": 137,
+          "valueGap": 41,
           "points": null
         },
         "boomBust": {
@@ -447,6 +447,45 @@
           "partners": [],
           "targets": [
             {
+              "playerId": 4241478,
+              "player": "DeVonta Smith",
+              "position": "WR",
+              "startRate": 66.67,
+              "rosteredWeeks": 3,
+              "startedWeeks": 2,
+              "boost": 24.7,
+              "teamId": 1,
+              "team": "Ramosverse",
+              "h2hWinsAdded": 0,
+              "medianWinsAdded": 1,
+              "winsAdded": 1,
+              "mutualTrade": {
+                "playerId": 4568490,
+                "player": "RJ Harvey",
+                "position": "RB",
+                "startRate": 0,
+                "boost": 9,
+                "h2hWinsAdded": 0,
+                "medianWinsAdded": 0,
+                "winsAdded": 0
+              },
+              "otherNeeds": [
+                {
+                  "position": "QB",
+                  "percent": -34.47
+                },
+                {
+                  "position": "RB",
+                  "percent": -31.5
+                },
+                {
+                  "position": "WR",
+                  "percent": -16.49
+                }
+              ],
+              "needsMatch": []
+            },
+            {
               "playerId": 4361741,
               "player": "Brock Purdy",
               "position": "QB",
@@ -508,37 +547,6 @@
                 {
                   "position": "RB",
                   "percent": -23.84
-                }
-              ],
-              "needsMatch": []
-            },
-            {
-              "playerId": 4428718,
-              "player": "Tre Tucker",
-              "position": "WR",
-              "startRate": 0,
-              "rosteredWeeks": 3,
-              "startedWeeks": 0,
-              "boost": 18.9,
-              "teamId": 6,
-              "team": "Claremont In Yo Stace!",
-              "h2hWinsAdded": 0,
-              "medianWinsAdded": 1,
-              "winsAdded": 1,
-              "mutualTrade": {
-                "playerId": 4568490,
-                "player": "RJ Harvey",
-                "position": "RB",
-                "startRate": 0,
-                "boost": 2.4,
-                "h2hWinsAdded": 0,
-                "medianWinsAdded": 0,
-                "winsAdded": 0
-              },
-              "otherNeeds": [
-                {
-                  "position": "K",
-                  "percent": -16.06
                 }
               ],
               "needsMatch": []
@@ -674,8 +682,8 @@
           "points": null,
           "draftPick": 164,
           "round": 14,
-          "rosRank": 78,
-          "valueGap": 86
+          "rosRank": 77,
+          "valueGap": 87
         },
         "worstDraftValue": {
           "playerId": 4678008,
@@ -702,8 +710,8 @@
           "player": "Denzel Boston",
           "round": 14,
           "draftPick": 164,
-          "rosRank": 78,
-          "valueGap": 86,
+          "rosRank": 77,
+          "valueGap": 87,
           "points": null
         },
         "boomBust": {
@@ -835,6 +843,66 @@
           ],
           "targets": [
             {
+              "playerId": 4241478,
+              "player": "DeVonta Smith",
+              "position": "WR",
+              "startRate": 66.67,
+              "rosteredWeeks": 3,
+              "startedWeeks": 2,
+              "boost": 16.7,
+              "teamId": 1,
+              "team": "Ramosverse",
+              "h2hWinsAdded": 0,
+              "medianWinsAdded": 0,
+              "winsAdded": 0,
+              "mutualTrade": null,
+              "otherNeeds": [
+                {
+                  "position": "QB",
+                  "percent": -34.47
+                },
+                {
+                  "position": "RB",
+                  "percent": -31.5
+                },
+                {
+                  "position": "WR",
+                  "percent": -16.49
+                }
+              ],
+              "needsMatch": [
+                "WR"
+              ]
+            },
+            {
+              "playerId": 3121422,
+              "player": "Terry McLaurin",
+              "position": "WR",
+              "startRate": 33.33,
+              "rosteredWeeks": 3,
+              "startedWeeks": 1,
+              "boost": 14.1,
+              "teamId": 9,
+              "team": "The Mahomies",
+              "h2hWinsAdded": 0,
+              "medianWinsAdded": 0,
+              "winsAdded": 0,
+              "mutualTrade": null,
+              "otherNeeds": [
+                {
+                  "position": "DST",
+                  "percent": -77.03
+                },
+                {
+                  "position": "WR",
+                  "percent": -16.36
+                }
+              ],
+              "needsMatch": [
+                "WR"
+              ]
+            },
+            {
               "playerId": 15818,
               "player": "Keenan Allen",
               "position": "WR",
@@ -861,78 +929,6 @@
               "needsMatch": [
                 "WR"
               ]
-            },
-            {
-              "playerId": 4685720,
-              "player": "Bryce Young",
-              "position": "QB",
-              "startRate": 0,
-              "rosteredWeeks": 2,
-              "startedWeeks": 0,
-              "boost": 11.9,
-              "teamId": 12,
-              "team": "Beautiful Dark Twisted Fantasy",
-              "h2hWinsAdded": 0,
-              "medianWinsAdded": 0,
-              "winsAdded": 0,
-              "mutualTrade": {
-                "playerId": 4832800,
-                "player": "Denzel Boston",
-                "position": "WR",
-                "startRate": 0,
-                "boost": 26.2,
-                "h2hWinsAdded": 1,
-                "medianWinsAdded": 1,
-                "winsAdded": 2
-              },
-              "otherNeeds": [
-                {
-                  "position": "TE",
-                  "percent": -63.83
-                },
-                {
-                  "position": "WR",
-                  "percent": -53.4
-                },
-                {
-                  "position": "RB",
-                  "percent": -20.92
-                }
-              ],
-              "needsMatch": [
-                "WR"
-              ]
-            },
-            {
-              "playerId": 4361741,
-              "player": "Brock Purdy",
-              "position": "QB",
-              "startRate": 0,
-              "rosteredWeeks": 3,
-              "startedWeeks": 0,
-              "boost": 25.68,
-              "teamId": 10,
-              "team": "Gibb it to Me Baby",
-              "h2hWinsAdded": 0,
-              "medianWinsAdded": 0,
-              "winsAdded": 0,
-              "mutualTrade": {
-                "playerId": 4832800,
-                "player": "Denzel Boston",
-                "position": "WR",
-                "startRate": 0,
-                "boost": 22.8,
-                "h2hWinsAdded": 0,
-                "medianWinsAdded": 1,
-                "winsAdded": 1
-              },
-              "otherNeeds": [
-                {
-                  "position": "DST",
-                  "percent": -54.07
-                }
-              ],
-              "needsMatch": []
             }
           ]
         },
@@ -1498,8 +1494,8 @@
           "points": null,
           "draftPick": 176,
           "round": 15,
-          "rosRank": 255,
-          "valueGap": -79
+          "rosRank": 256,
+          "valueGap": -80
         },
         "boomMachine": {
           "playerId": 4259545,
@@ -1954,6 +1950,39 @@
           ],
           "targets": [
             {
+              "playerId": 4241478,
+              "player": "DeVonta Smith",
+              "position": "WR",
+              "startRate": 66.67,
+              "rosteredWeeks": 3,
+              "startedWeeks": 2,
+              "boost": 18.8,
+              "teamId": 1,
+              "team": "Ramosverse",
+              "h2hWinsAdded": 0,
+              "medianWinsAdded": 0,
+              "winsAdded": 0,
+              "mutualTrade": null,
+              "otherNeeds": [
+                {
+                  "position": "QB",
+                  "percent": -34.47
+                },
+                {
+                  "position": "RB",
+                  "percent": -31.5
+                },
+                {
+                  "position": "WR",
+                  "percent": -16.49
+                }
+              ],
+              "needsMatch": [
+                "QB",
+                "WR"
+              ]
+            },
+            {
               "playerId": 4242355,
               "player": "Jake Ferguson",
               "position": "TE",
@@ -2021,47 +2050,6 @@
               ],
               "needsMatch": [
                 "QB",
-                "WR"
-              ]
-            },
-            {
-              "playerId": 4697815,
-              "player": "Rachaad White",
-              "position": "RB",
-              "startRate": 33.33,
-              "rosteredWeeks": 3,
-              "startedWeeks": 1,
-              "boost": 7.6,
-              "teamId": 12,
-              "team": "Beautiful Dark Twisted Fantasy",
-              "h2hWinsAdded": 0,
-              "medianWinsAdded": 0,
-              "winsAdded": 0,
-              "mutualTrade": {
-                "playerId": 4428718,
-                "player": "Tre Tucker",
-                "position": "WR",
-                "startRate": 0,
-                "boost": 20.6,
-                "h2hWinsAdded": 1,
-                "medianWinsAdded": 1,
-                "winsAdded": 2
-              },
-              "otherNeeds": [
-                {
-                  "position": "TE",
-                  "percent": -63.83
-                },
-                {
-                  "position": "WR",
-                  "percent": -53.4
-                },
-                {
-                  "position": "RB",
-                  "percent": -20.92
-                }
-              ],
-              "needsMatch": [
                 "WR"
               ]
             }
@@ -2528,8 +2516,8 @@
           "points": null,
           "draftPick": 129,
           "round": 11,
-          "rosRank": 218,
-          "valueGap": -89
+          "rosRank": 219,
+          "valueGap": -90
         },
         "boomMachine": {
           "playerId": 4890973,
@@ -2899,8 +2887,8 @@
           "points": null,
           "draftPick": 123,
           "round": 11,
-          "rosRank": 256,
-          "valueGap": -133
+          "rosRank": 254,
+          "valueGap": -131
         },
         "boomMachine": {
           "playerId": 3139477,
@@ -3046,7 +3034,16 @@
               "h2hWinsAdded": 0,
               "medianWinsAdded": 0,
               "winsAdded": 0,
-              "mutualTrade": null,
+              "mutualTrade": {
+                "playerId": 3121422,
+                "player": "Terry McLaurin",
+                "position": "WR",
+                "startRate": 33.33,
+                "boost": 15.1,
+                "h2hWinsAdded": 0,
+                "medianWinsAdded": 0,
+                "winsAdded": 0
+              },
               "otherNeeds": [
                 {
                   "position": "TE",
@@ -3078,7 +3075,16 @@
               "h2hWinsAdded": 0,
               "medianWinsAdded": 0,
               "winsAdded": 0,
-              "mutualTrade": null,
+              "mutualTrade": {
+                "playerId": 3121422,
+                "player": "Terry McLaurin",
+                "position": "WR",
+                "startRate": 33.33,
+                "boost": 16,
+                "h2hWinsAdded": 0,
+                "medianWinsAdded": 1,
+                "winsAdded": 1
+              },
               "otherNeeds": [
                 {
                   "position": "DST",
@@ -3100,7 +3106,16 @@
               "h2hWinsAdded": 0,
               "medianWinsAdded": 0,
               "winsAdded": 0,
-              "mutualTrade": null,
+              "mutualTrade": {
+                "playerId": 3121422,
+                "player": "Terry McLaurin",
+                "position": "WR",
+                "startRate": 33.33,
+                "boost": 10.4,
+                "h2hWinsAdded": 0,
+                "medianWinsAdded": 0,
+                "winsAdded": 0
+              },
               "otherNeeds": [
                 {
                   "position": "QB",
@@ -3371,6 +3386,47 @@
           ],
           "targets": [
             {
+              "playerId": 4241478,
+              "player": "DeVonta Smith",
+              "position": "WR",
+              "startRate": 66.67,
+              "rosteredWeeks": 3,
+              "startedWeeks": 2,
+              "boost": 25.8,
+              "teamId": 1,
+              "team": "Ramosverse",
+              "h2hWinsAdded": 0,
+              "medianWinsAdded": 0,
+              "winsAdded": 0,
+              "mutualTrade": {
+                "playerId": 4361741,
+                "player": "Brock Purdy",
+                "position": "QB",
+                "startRate": 0,
+                "boost": 21.5,
+                "h2hWinsAdded": 1,
+                "medianWinsAdded": 1,
+                "winsAdded": 2
+              },
+              "otherNeeds": [
+                {
+                  "position": "QB",
+                  "percent": -34.47
+                },
+                {
+                  "position": "RB",
+                  "percent": -31.5
+                },
+                {
+                  "position": "WR",
+                  "percent": -16.49
+                }
+              ],
+              "needsMatch": [
+                "WR"
+              ]
+            },
+            {
               "playerId": 4242355,
               "player": "Jake Ferguson",
               "position": "TE",
@@ -3442,47 +3498,6 @@
               ],
               "needsMatch": [
                 "K"
-              ]
-            },
-            {
-              "playerId": 4697815,
-              "player": "Rachaad White",
-              "position": "RB",
-              "startRate": 33.33,
-              "rosteredWeeks": 3,
-              "startedWeeks": 1,
-              "boost": 14.7,
-              "teamId": 12,
-              "team": "Beautiful Dark Twisted Fantasy",
-              "h2hWinsAdded": 0,
-              "medianWinsAdded": 1,
-              "winsAdded": 1,
-              "mutualTrade": {
-                "playerId": 4361741,
-                "player": "Brock Purdy",
-                "position": "QB",
-                "startRate": 0,
-                "boost": 13.1,
-                "h2hWinsAdded": 0,
-                "medianWinsAdded": 0,
-                "winsAdded": 0
-              },
-              "otherNeeds": [
-                {
-                  "position": "TE",
-                  "percent": -63.83
-                },
-                {
-                  "position": "WR",
-                  "percent": -53.4
-                },
-                {
-                  "position": "RB",
-                  "percent": -20.92
-                }
-              ],
-              "needsMatch": [
-                "WR"
               ]
             }
           ]
@@ -3752,31 +3767,31 @@
               ]
             },
             {
-              "playerId": 4685720,
-              "player": "Bryce Young",
-              "position": "QB",
-              "startRate": 0,
-              "rosteredWeeks": 2,
-              "startedWeeks": 0,
-              "boost": 17.92,
-              "teamId": 12,
-              "team": "Beautiful Dark Twisted Fantasy",
+              "playerId": 4241478,
+              "player": "DeVonta Smith",
+              "position": "WR",
+              "startRate": 66.67,
+              "rosteredWeeks": 3,
+              "startedWeeks": 2,
+              "boost": 19.5,
+              "teamId": 1,
+              "team": "Ramosverse",
               "h2hWinsAdded": 0,
               "medianWinsAdded": 0,
               "winsAdded": 0,
               "mutualTrade": null,
               "otherNeeds": [
                 {
-                  "position": "TE",
-                  "percent": -63.83
-                },
-                {
-                  "position": "WR",
-                  "percent": -53.4
+                  "position": "QB",
+                  "percent": -34.47
                 },
                 {
                   "position": "RB",
-                  "percent": -20.92
+                  "percent": -31.5
+                },
+                {
+                  "position": "WR",
+                  "percent": -16.49
                 }
               ],
               "needsMatch": [
