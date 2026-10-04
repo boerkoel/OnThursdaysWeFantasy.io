@@ -245,6 +245,8 @@ function buildMarqueeStories() {
   try { addInjuryStories(add); } catch (error) { console.warn("League Wire: injury stories failed: " + error.message); }
   try { addMiscueStory(add); } catch (error) { console.warn("League Wire: manager miscue failed: " + error.message); }
   try { addShrewdSwapStory(add); } catch (error) { console.warn("League Wire: shrewd swap failed: " + error.message); }
+  try { addZombieStories(add); } catch (error) { console.warn("League Wire: zombie starters failed: " + error.message); }
+  try { addStockWatchStory(add); } catch (error) { console.warn("League Wire: stock watch failed: " + error.message); }
 
   const biggestLead=matchupStates.filter(x=>!x.m.completed).sort((a,b)=>b.diff-a.diff)[0];
   if(biggestLead&&biggestLead.diff>=20){const leader=biggestLead.currentDiff>0?biggestLead.a.team:biggestLead.b.team;const trailer=biggestLead.currentDiff>0?biggestLead.b.team:biggestLead.a.team;add("LEAGUE GOSSIP","👀 League gossip: " + leader + " has " + money(biggestLead.diff) + " pts to play with against " + trailer + ".",28);}
@@ -901,6 +903,127 @@ function addMiscueStory(add) {
   if (best) add("MANAGER MISCUE", best.text, best.score);
 }
 
+// ---- Sass -------------------------------------------------------------------
+// Several lines per situation; the pick is fixed per team/player/week so a
+// story doesn't change wording on every refresh.
+function pickLine(key, lines) {
+  let h = 2166136261;
+  for (const c of key + "|" + currentWeek) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; }
+  return lines[h % lines.length];
+}
+
+// ---- Zombie starters ---------------------------------------------------------
+// A starter who's OUT, on IR, suspended or on a bye. Before kickoff: LINEUP
+// ALERT (there's still time). After: ZOMBIE STARTER, with whoever was on the
+// bench. Both leagues; at most one story each.
+const ZOMBIE_STATUS = { OUT: ["OUT", "listed OUT"], INJURY_RESERVE: ["on IR", "on injured reserve"], SUSPENSION: ["suspended", "suspended"], O: ["OUT", "listed OUT"], IR: ["on IR", "on injured reserve"], SSPD: ["suspended", "suspended"] };
+const BYE = ["on a bye", "on a bye this week"];
+function addZombieStories(add) {
+  const whenOf = game => kickoffLabel(game.kickoff);
+  const zombieOf = (proTeamId, status, actual) => {
+    if (actual > 0) return null;
+    const game = nflGameByProTeam.get(Number(proTeamId));
+    if (!game && nflGames.length) return { why: BYE, game: null, started: true };
+    if (game && ZOMBIE_STATUS[status]) return { why: ZOMBIE_STATUS[status], game, started: game.state !== "pre" };
+    return null;
+  };
+
+  // Main league: starters from the roster (injury status lives there).
+  const main = [];
+  for (const t of rosterData.teams || []) {
+    const teamId = Number(t.id);
+    for (const e of t.roster?.entries || []) {
+      const slot = Number(e.lineupSlotId), player = e.playerPoolEntry?.player;
+      if (!player || slot === BENCH_SLOT || slot === IR_SLOT) continue;
+      const live = (liveTeams.get(teamId)?.players || []).find(p => p.playerId === Number(e.playerId));
+      const z = zombieOf(player.proTeamId, player.injuryStatus, live?.actual ?? 0);
+      if (!z) continue;
+      // Best bench option for that slot, by points if he's played, else projection.
+      const bench = (liveTeams.get(teamId)?.players || []).filter(p => p.bench && p.eligibleSlots.includes(slot))
+        .map(p => ({...p, value: p.game && p.game.state !== "pre" ? p.actual : (p.projection ?? 0), played: p.game && p.game.state !== "pre"}))
+        .sort((a, b) => b.value - a.value)[0];
+      main.push({teamId, team:name(teamId), player:player.fullName, z, bench});
+    }
+  }
+  const m = main.sort((a, b) => Number(a.z.started) - Number(b.z.started))[0];
+  if (m) {
+    const [why, whyLong] = m.z.why;
+    const benchNote = m.bench && m.bench.value > 0 ? (m.bench.played
+      ? ", while " + m.bench.name + " put up " + pts(m.bench.actual) + " on the bench"
+      : " with " + m.bench.name + " (projected " + pts(m.bench.projection ?? 0) + ") on the bench") : "";
+    const key = m.team + m.player;
+    if (!m.z.started) {
+      add("LINEUP ALERT",fit(...pickLine(key, [
+        ["🧟 LINEUP ALERT: " + m.team + " is starting " + m.player + " (" + why + "). Kickoff's " + whenOf(m.z.game) + " — plenty of time to fix it. Or don't. We'll be watching.",
+         "🧟 LINEUP ALERT: " + m.team + " is starting " + m.player + " (" + why + "). Kickoff's " + whenOf(m.z.game) + ". We'll be watching."],
+        ["🧟 LINEUP ALERT: " + m.player + " is " + whyLong + ", and yet there he is in " + possessive(m.team) + " starting lineup. You have until " + whenOf(m.z.game) + ".",
+         "🧟 LINEUP ALERT: " + m.player + " (" + why + ") is in " + possessive(m.team) + " starting lineup. Clock's ticking."],
+        ["🧟 LINEUP ALERT: Somebody wake up " + m.team + " — " + m.player + " (" + why + ") is in the lineup and kicks off " + whenOf(m.z.game) + ".",
+         "🧟 LINEUP ALERT: Somebody wake up " + m.team + " — " + m.player + " (" + why + ") is in the lineup."]
+      ])),88);
+    } else {
+      add("ZOMBIE STARTER",fit(...pickLine(key, [
+        ["🧟 ZOMBIE STARTER: " + m.team + " started " + m.player + " (" + why + "). That's a 0.00 in the lineup" + benchNote + ". Bold strategy.",
+         "🧟 ZOMBIE STARTER: " + m.team + " started " + m.player + " (" + why + "). That's a 0.00 in the lineup. Bold strategy."],
+        ["🧟 ZOMBIE STARTER: " + m.player + " was " + whyLong + ". " + m.team + " started him anyway" + benchNote + ". Inspiring commitment.",
+         "🧟 ZOMBIE STARTER: " + m.player + " was " + whyLong + ". " + m.team + " started him anyway. Inspiring commitment."],
+        ["🧟 ZOMBIE STARTER: Breaking: " + m.player + " did not score for " + m.team + ". Sources say it's because he was " + whyLong + ".",
+         "🧟 ZOMBIE STARTER: " + m.player + " did not score for " + m.team + ". Sources say he was " + whyLong + "."]
+      ])),80);
+    }
+  }
+
+  // Guillotine league: its lineups carry the injury tag.
+  if (Number(guillotineData?.week) !== currentWeek) return;
+  const g = (guillotineData.teams || []).flatMap(t => (t.lineup || []).map(p => ({t, p, z: zombieOf(p.proTeamId, p.injury, p.actual)})).filter(x => x.z))
+    .sort((a, b) => Number(a.z.started) - Number(b.z.started) || b.t.chopProbability - a.t.chopProbability)[0];
+  if (g) {
+    const [why] = g.z.why;
+    const player = g.p.name;
+    add(g.z.started ? "DEATH WATCH ZOMBIE" : "DEATH WATCH ALERT", g.z.started
+      ? pickLine(g.t.team + player, [
+          "🪓🧟 " + g.t.team + " started " + player + " (" + why + ") — a 0.00 in a league where the lowest score gets chopped. Chop odds: " + money(g.t.chopProbability) + "%.",
+          "🪓🧟 " + g.t.team + " is playing a man down with " + player + " (" + why + ") in the lineup. The guillotine has noticed (" + money(g.t.chopProbability) + "%)."
+        ])
+      : pickLine(g.t.team + player, [
+          "🪓🧟 " + g.t.team + " is starting " + player + " (" + why + ") in a league where the lowest score gets chopped. Fix it by " + whenOf(g.z.game) + ", or the guillotine thanks you for your service.",
+          "🪓🧟 Bold move: " + g.t.team + " has " + player + " (" + why + ") in the lineup with " + money(g.t.chopProbability) + "% chop odds. Kickoff's " + whenOf(g.z.game) + "."
+        ]), g.z.started ? 78 : 86);
+  }
+}
+
+// ---- Stock report ------------------------------------------------------------
+// Playoff odds movers: this week so far (from the start-of-week snapshot in
+// season-odds.json), and last week's final moves in the week in review.
+const STOCK_MIN_MOVE = 10;
+function stockMovers(start, end, names = id => name(Number(id))) {
+  return Object.keys(end || {}).filter(id => start?.[id] && Number.isFinite(start[id].playoffOdds) && Number.isFinite(end[id].playoffOdds))
+    .map(id => ({team: names(id), from: start[id].playoffOdds, to: end[id].playoffOdds, move: end[id].playoffOdds - start[id].playoffOdds}))
+    .filter(x => Math.abs(x.move) >= STOCK_MIN_MOVE).sort((a, b) => b.move - a.move);
+}
+// Up to two stories: the biggest riser and the biggest faller.
+function stockLines(movers, label) {
+  const up = movers[0]?.move > 0 ? movers[0] : null;
+  const down = movers.at(-1)?.move < 0 ? movers.at(-1) : null;
+  const pct = x => Math.round(x) + "%";
+  const upText = up && pickLine("up" + up.team + label, [
+    possessive(up.team) + " playoff odds are up from " + pct(up.from) + " to " + pct(up.to) + ". Buy now before it's too late.",
+    possessive(up.team) + " playoff odds surged from " + pct(up.from) + " to " + pct(up.to) + ". Analysts are calling it a bubble.",
+    possessive(up.team) + " playoff odds climbed from " + pct(up.from) + " to " + pct(up.to) + ". Somebody's been reading the waiver wire."
+  ]);
+  const downText = down && pickLine("down" + down.team + label, [
+    possessive(down.team) + " playoff odds slid from " + pct(down.from) + " to " + pct(down.to) + ". Thoughts and prayers.",
+    possessive(down.team) + " playoff odds cratered from " + pct(down.from) + " to " + pct(down.to) + ". Somebody check on the group chat.",
+    possessive(down.team) + " playoff odds fell from " + pct(down.from) + " to " + pct(down.to) + ". Selling at a loss is still selling."
+  ]);
+  return [up && "📈 " + label + ": " + upText, down && "📉 " + label + ": " + downText].filter(Boolean);
+}
+function addStockWatchStory(add) {
+  if (Number(seasonOddsData?.week) !== currentWeek || currentScores.every(s => Number(s.score) === 0)) return;
+  stockLines(stockMovers(seasonOddsData.weekStart, Object.fromEntries((seasonOddsData.teams || []).map(t => [String(t.teamId), t]))), "STOCK WATCH")
+    .forEach((text, i) => add("STOCK WATCH", text, 66 - i));
+}
+
 const keyPlays = await buildKeyPlays();
 await writeJson("data/current/key-plays.json", {
   week: currentWeek,
@@ -977,6 +1100,10 @@ async function weekInReview(previous, archive) {
   const RECAP_SCORES = {"HIGH SCORE":80, "CLOSEST MATCHUP":79, "INSTANT REGRET":77, "TOUGH LUCK":72, "BLOWOUT":70, "LUCKY WIN":69, "BIGGEST REGRET":62};
   for (const story of recap) stories.push({type:label(story.type), text:story.text, score:RECAP_SCORES[story.type] ?? 60});
   if (archive?.week === week) for (const story of archive.stories) stories.push({...story, type:label(story.type)});
+  const lw = seasonOddsData?.lastWeek;
+  if (Number(lw?.week) === week) {
+    stockLines(stockMovers(lw.start, lw.end), "STOCK REPORT").forEach((text, i) => stories.push({type:label("STOCK REPORT"), text, score:75 - i}));
+  }
   const chop = (guillotineData?.chopped || []).find(c => Number(c.week) === week);
   if (chop) stories.push({type:label("CHOPPED"), text:"🪦 " + chop.team + " got the axe in " + (guillotineData.leagueName || "the guillotine league") + " with " + pts(chop.finalScore) + (chop.survivedBy ? ", " + pts(chop.margin) + " short of " + chop.survivedBy.team : "") + ".", score:76});
   return {stories:stories.sort((a, b) => b.score - a.score), meta};

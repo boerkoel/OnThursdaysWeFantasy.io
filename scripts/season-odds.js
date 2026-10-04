@@ -206,6 +206,22 @@ const teams = teamIds.map(id => {
   };
 }).sort((a, b) => b.playoffOdds - a.playoffOdds || a.averageSeed - b.averageSeed);
 
+// Odds snapshots for the League Wire's STOCK REPORT: each team's odds at the
+// start of this week (carried through the week), and last week's start and
+// end (saved when the week rolls over).
+const snapshotOf = list => Object.fromEntries(list.map(t => [String(t.teamId), { playoffOdds: t.playoffOdds, titleOdds: t.titleOdds, ultimateLoserOdds: t.ultimateLoserOdds }]));
+const previousOdds = await readFile("data/current/season-odds.json", "utf8").then(JSON.parse).catch(() => null);
+const baseline = await readFile("data/current/season-odds-baseline.json", "utf8").then(JSON.parse).catch(() => null);
+let weekStart, lastWeek = previousOdds?.lastWeek || null;
+if (previousOdds && Number(previousOdds.week) === currentWeek) {
+  weekStart = previousOdds.weekStart || (Number(baseline?.week) === currentWeek ? baseline.odds : snapshotOf(teams));
+} else {
+  if (previousOdds?.teams?.length && previousOdds.weekStart) {
+    lastWeek = { week: Number(previousOdds.week), start: previousOdds.weekStart, end: snapshotOf(previousOdds.teams) };
+  }
+  weekStart = snapshotOf(teams);
+}
+
 await writeFile("data/current/season-odds.json", JSON.stringify({
   week: currentWeek,
   lastUpdated: new Date().toISOString(),
@@ -213,7 +229,9 @@ await writeFile("data/current/season-odds.json", JSON.stringify({
   remainingWeeks,
   seeding: seedByPoints ? "points" : "record",
   playoffTeamCount,
-  teams
+  teams,
+  weekStart,
+  lastWeek
 }, null, 2) + "\n");
 
 console.log(`Season odds: ${remainingWeeks.length} weeks left; playoff odds ${teams.map(t => `${t.team.split(" ")[0]} ${t.playoffOdds}%`).join(", ")}.`);
