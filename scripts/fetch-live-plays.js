@@ -345,11 +345,12 @@ try {
     // "T.Shough pass short left to N.Fant for 3 yards, TOUCHDOWN."
     // Do not require the literal phrase "pass to" because route/direction
     // words can appear between "pass" and "to".
-    const isPassCompletion =
-      /pass\s+(?:complete|incomplete)/i.test(text) ||
+    // An incompletion ("pass incomplete short left to X") scores nothing.
+    const isPassCompletion = !/\bincomplete\b/i.test(text) && (
+      /pass\s+complete/i.test(text) ||
       /complete to\b/i.test(text) ||
       /\bpass\b.*\bto\b.*\bfor\s+-?\d+\s+yards?/i.test(text) ||
-      /\b-?\d+\s+yds?\s+pass\s+from\b/i.test(text);
+      /\b-?\d+\s+yds?\s+pass\s+from\b/i.test(text));
 
     const isRush =
       /rush|rushed|run for|running play|left end|right end|up the middle|scrambles/i.test(text);

@@ -245,6 +245,24 @@ function App() {
     return odds > 50 ? "projection-dot green" : "projection-dot red";
   };
 
+  // The whole median scoreboard as one share card, in the order on screen,
+  // with the projected median where the page draws it. Colors match the
+  // median dots: green likely above, yellow near the median, red likely below.
+  const shareScoreboard = () => {
+    const sortLabel = { current: "current score", projected: "projected score", odds: "odds of beating the median" }[scoreSort];
+    const asOf = new Date(scoreboard.lastUpdated || Date.now()).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+    const mid = Math.floor(displayScores.length / 2);
+    const colorFor = s => projectedMedianEdgeTeams.has(s.teamId) ? "#e6c85c" : Number(s.aboveMedianProbability) > 50 ? "#8fd087" : "#ef9a96";
+    const lines = [];
+    displayScores.forEach((s, i) => {
+      if (i === mid) lines.push({ text: `— projected median ${scoreboard.projectedMedian != null ? money(scoreboard.projectedMedian) : "—"} —`, size: 24, color: "accent", weight: 800, gap: 14 });
+      const shown = scoreSort === "projected" ? `${money(s.projectionAverage)} proj (${money(s.score)} now)` : `${money(s.score)} (proj ${s.projectionAverage != null ? money(s.projectionAverage) : "—"})`;
+      lines.push({ text: `${i + 1}. ${s.team} · ${shown} · ${s.aboveMedianProbability != null ? Math.round(s.aboveMedianProbability) : "—"}% above median`, size: 25, weight: 700, color: colorFor(s), gap: i === 0 ? 24 : i === mid ? 14 : 6 });
+    });
+    lines.push({ text: `Sorted by ${sortLabel}. Green: likely above the median · Yellow: near it · Red: likely below.`, size: 20, color: "faint", gap: 24 });
+    return { kicker: `Week ${scoreboard.week} · ${status === "FINAL" ? "Final" : "As of " + asOf}`, title: "Median scoreboard", lines };
+  };
+
   // One live matchup card. The odds panel (series, swing chart, share, key
   // plays) and the lineups each have their own toggle. The odds panel starts
   // open on the pinned "my team" card, on matchups with a followed team, and
@@ -374,7 +392,8 @@ function App() {
         </div>
       </section>
       <section id="scoreboard" className="section">
-        <div className="section-heading"><div><span className="section-kicker">MEDIAN SCORING</span><h2>Week {scoreboard.week} Scoreboard</h2></div></div>
+        <div className="section-heading"><div><span className="section-kicker">MEDIAN SCORING</span><h2>Week {scoreboard.week} Scoreboard</h2></div>
+          {displayScores.length ? <ShareButton iconOnly label="Share the scoreboard" filename={`week-${scoreboard.week}-scoreboard`} build={shareScoreboard} /> : null}</div>
         <div className="score-list">
           <div className="score-sort-controls" role="group" aria-label="Sort scoreboard">
           <button className={scoreSort === "current" ? "active" : ""} onClick={() => setScoreSort("current")}>CURRENT SCORE</button>
