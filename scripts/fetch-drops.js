@@ -36,18 +36,22 @@ const transactions = (await Promise.all(periods.map(w => fetchJson(`${base}?view
   .flat()
   .filter(t => t.status === "EXECUTED" && Date.now() - Number(t.processDate) <= DROP_WINDOW_MS);
 
+// Each drop, with the player added in the same move (a waiver claim or
+// free-agent pickup is one transaction holding both the ADD and the DROP).
 const drops = [];
 for (const t of transactions) {
+  const added = (t.items || []).find(i => i.type === "ADD" && Number(i.playerId) > 0);
   for (const item of t.items || []) {
     // Defenses have negative ids; skip them (and anything malformed).
     if (item.type !== "DROP" || !(Number(item.playerId) > 0)) continue;
-    drops.push({ playerId: Number(item.playerId), fromTeamId: Number(item.fromTeamId), droppedAt: new Date(Number(t.processDate)).toISOString() });
+    drops.push({ playerId: Number(item.playerId), fromTeamId: Number(item.fromTeamId), droppedAt: new Date(Number(t.processDate)).toISOString(),
+      addedPlayerId: added && Number(added.toTeamId) === Number(item.fromTeamId) ? Number(added.playerId) : null });
   }
 }
 
 let players = [];
 if (drops.length) {
-  const filter = JSON.stringify({ players: { filterIds: { value: [...new Set(drops.map(d => d.playerId))] } } });
+  const filter = JSON.stringify({ players: { filterIds: { value: [...new Set(drops.flatMap(d => [d.playerId, d.addedPlayerId]).filter(Boolean))] } } });
   const data = await fetchJson(`${base}?view=kona_player_info&scoringPeriodId=${week}`, { "X-Fantasy-Filter": filter });
   players = data.players || [];
 }
@@ -55,13 +59,12 @@ const byId = new Map(players.map(p => [Number(p.player?.id ?? p.id), p]));
 const stat = (player, source) => Number((player?.stats || []).find(s =>
   Number(s.scoringPeriodId) === week && Number(s.statSourceId) === source && Number(s.statSplitTypeId) === 1)?.appliedTotal);
 
-const out = drops.map(d => {
-  const entry = byId.get(d.playerId);
+const describe = id => {
+  const entry = byId.get(id);
   const player = entry?.player;
   if (!player) return null;
   const points = stat(player, 0), projection = stat(player, 1);
   return {
-    ...d,
     player: player.fullName,
     position: POSITIONS[Number(player.defaultPositionId)] || "",
     proTeamId: Number(player.proTeamId),
@@ -69,6 +72,12 @@ const out = drops.map(d => {
     points: Number.isFinite(points) ? Math.round(points * 100) / 100 : 0,
     projection: Number.isFinite(projection) ? Math.round(projection * 100) / 100 : null
   };
+};
+const out = drops.map(({ addedPlayerId, ...d }) => {
+  const dropped = describe(d.playerId);
+  if (!dropped) return null;
+  const added = addedPlayerId ? describe(addedPlayerId) : null;
+  return { ...d, ...dropped, added: added && { playerId: addedPlayerId, ...added } };
 }).filter(Boolean)
   // The same player dropped twice (picked up and dropped again): keep the latest.
   .sort((a, b) => Date.parse(b.droppedAt) - Date.parse(a.droppedAt))

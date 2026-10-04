@@ -244,6 +244,7 @@ function buildMarqueeStories() {
   try { addGameToWatchStory(add, matchupStates); } catch (error) { console.warn("League Wire: game to watch failed: " + error.message); }
   try { addInjuryStories(add); } catch (error) { console.warn("League Wire: injury stories failed: " + error.message); }
   try { addMiscueStory(add); } catch (error) { console.warn("League Wire: manager miscue failed: " + error.message); }
+  try { addShrewdSwapStory(add); } catch (error) { console.warn("League Wire: shrewd swap failed: " + error.message); }
 
   const biggestLead=matchupStates.filter(x=>!x.m.completed).sort((a,b)=>b.diff-a.diff)[0];
   if(biggestLead&&biggestLead.diff>=20){const leader=biggestLead.currentDiff>0?biggestLead.a.team:biggestLead.b.team;const trailer=biggestLead.currentDiff>0?biggestLead.b.team:biggestLead.a.team;add("LEAGUE GOSSIP","👀 League gossip: " + leader + " has " + money(biggestLead.diff) + " pts to play with against " + trailer + ".",28);}
@@ -276,7 +277,9 @@ function addPickupStories(add) {
     }));
   const day = ms => new Date(ms).toLocaleDateString("en-US", { weekday: "long", timeZone: "America/New_York" });
 
-  const hot = pickups.filter(p => p.points >= 10).sort((a, b) => b.points - a.points)[0];
+  let shrewd = [];
+  try { shrewd = shrewdSwaps().slice(0, 1).map(d => d.added.player); } catch {}
+  const hot = pickups.filter(p => p.points >= 10 && !shrewd.includes(p.name)).sort((a, b) => b.points - a.points)[0];
   if (hot) {
     add("HOT PICKUP","🛒 HOT PICKUP: " + hot.team + " grabbed " + hot.name + " (" + hot.position + ") off the wire on " + day(hot.addedOn) + ", and it's paying off — " + pts(hot.points) + " this week" + (hot.bench ? " (from the bench!)" : "") + ".",30 + hot.points);
   }
@@ -841,22 +844,61 @@ function addInjuryStories(add) {
 }
 
 // ---- Manager miscue ----------------------------------------------------------
-// A player dropped in the last week who's having a big week (drops.json, from
-// fetch-drops.js): the one with the most points, 12+.
+// From drops.json (fetch-drops.js), players dropped in the last week:
+// - one having a big week (12+ points), or
+// - one outscoring the player picked up in his place (by 3+, with 5+ points,
+//   once both have played).
+// The bigger miscue of the two gets the story. The positive version, SHREWD
+// SWAP: the pickup outscoring the player he replaced (8+ points, by 5+); it
+// replaces HOT PICKUP for that player.
 const MISCUE_MIN_POINTS = 12;
+const SWAP_MIN_POINTS = 5;
+const SWAP_MIN_GAP = 3;
+const SHREWD_MIN_POINTS = 8;
+const SHREWD_MIN_GAP = 5;
 const dropsData = await readJson("data/current/drops.json").catch(() => null);
+const swapPlayed = proTeamId => { const g = nflGameByProTeam.get(Number(proTeamId)); return Boolean(g && g.state !== "pre"); };
+function shrewdSwaps() {
+  if (Number(dropsData?.week) !== currentWeek) return [];
+  return (dropsData.drops || [])
+    .filter(d => teamNames.has(d.fromTeamId) && d.added && d.added.nowOnTeamId === d.fromTeamId && swapPlayed(d.proTeamId) && swapPlayed(d.added.proTeamId)
+      && d.added.points >= SHREWD_MIN_POINTS && d.added.points - d.points >= SHREWD_MIN_GAP)
+    .sort((a, b) => (b.added.points - b.points) - (a.added.points - a.points));
+}
+function addShrewdSwapStory(add) {
+  const d = shrewdSwaps()[0];
+  if (!d) return;
+  const last = n => n.split(" ").slice(-1)[0];
+  add("SHREWD SWAP",fit(
+    "🧠 SHREWD SWAP: " + name(d.fromTeamId) + " cut " + d.player + " for " + d.added.player + ", and it's paying off — " + last(d.added.player) + " " + pts(d.added.points) + ", " + last(d.player) + " " + pts(d.points) + ".",
+    "🧠 SHREWD SWAP: " + name(d.fromTeamId) + " swapped " + d.player + " for " + d.added.player + " — " + pts(d.added.points) + " vs " + pts(d.points) + "."
+  ),72 + Math.min(d.added.points - d.points, 30) / 2);
+}
 function addMiscueStory(add) {
   if (Number(dropsData?.week) !== currentWeek) return;
-  const miscue = (dropsData.drops || []).filter(d => d.points >= MISCUE_MIN_POINTS && teamNames.has(d.fromTeamId)).sort((a, b) => b.points - a.points)[0];
-  if (!miscue) return;
-  const day = new Date(miscue.droppedAt).toLocaleDateString("en-US", {weekday:"long", timeZone:"America/New_York"});
-  const where = miscue.nowOnTeamId === miscue.fromTeamId ? "" : miscue.nowOnTeamId ? ", now for " + name(miscue.nowOnTeamId) : ", and he's still sitting on waivers";
-  const who = miscue.player + (miscue.position ? " (" + miscue.position + ")" : "");
-  add("MANAGER MISCUE",fit(
-    "🤦 MANAGER MISCUE: " + name(miscue.fromTeamId) + " dropped " + who + " on " + day + " — he has " + pts(miscue.points) + " this week" + where + ".",
-    "🤦 MANAGER MISCUE: " + name(miscue.fromTeamId) + " dropped " + miscue.player + " on " + day + " — he has " + pts(miscue.points) + " this week" + where + ".",
-    "🤦 MANAGER MISCUE: " + name(miscue.fromTeamId) + " dropped " + miscue.player + " — he has " + pts(miscue.points) + " this week."
-  ),74 + Math.min(miscue.points, 40) / 4);
+  const played = swapPlayed;
+  const day = d => new Date(d.droppedAt).toLocaleDateString("en-US", {weekday:"long", timeZone:"America/New_York"});
+  const candidates = [];
+  for (const d of (dropsData.drops || []).filter(d => teamNames.has(d.fromTeamId))) {
+    const team = name(d.fromTeamId);
+    const a = d.added;
+    if (a && d.points >= SWAP_MIN_POINTS && played(d.proTeamId) && played(a.proTeamId) && d.points - a.points >= SWAP_MIN_GAP) {
+      const gap = d.points - a.points;
+      candidates.push({score:76 + Math.min(gap, 30) / 2, text:fit(
+        "🤦 MANAGER MISCUE: " + team + " dropped " + d.player + " for " + a.player + " on " + day(d) + ". So far: " + d.player.split(" ").slice(-1)[0] + " " + pts(d.points) + ", " + a.player.split(" ").slice(-1)[0] + " " + pts(a.points) + ".",
+        "🤦 MANAGER MISCUE: " + team + " swapped " + d.player + " for " + a.player + " — " + pts(d.points) + " vs " + pts(a.points) + " so far."
+      )});
+    } else if (d.points >= MISCUE_MIN_POINTS) {
+      const where = d.nowOnTeamId === d.fromTeamId ? "" : d.nowOnTeamId ? ", now for " + name(d.nowOnTeamId) : ", and he's still sitting on waivers";
+      candidates.push({score:74 + Math.min(d.points, 40) / 4, text:fit(
+        "🤦 MANAGER MISCUE: " + team + " dropped " + d.player + (d.position ? " (" + d.position + ")" : "") + " on " + day(d) + " — he has " + pts(d.points) + " this week" + where + ".",
+        "🤦 MANAGER MISCUE: " + team + " dropped " + d.player + " on " + day(d) + " — he has " + pts(d.points) + " this week" + where + ".",
+        "🤦 MANAGER MISCUE: " + team + " dropped " + d.player + " — he has " + pts(d.points) + " this week."
+      )});
+    }
+  }
+  const best = candidates.sort((x, y) => y.score - x.score)[0];
+  if (best) add("MANAGER MISCUE", best.text, best.score);
 }
 
 const keyPlays = await buildKeyPlays();
