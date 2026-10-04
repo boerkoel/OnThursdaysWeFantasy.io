@@ -1,5 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises";
-import { playerOutlook, round, swingOdds } from "./lib/simulation.js";
+import { normalCdf, normalQuantile, playerOutlook, round, swingOdds } from "./lib/simulation.js";
 import { BENCH_SLOT, IR_SLOT, settledLineupRegret } from "./lib/lineup.js";
 
 // League Wire: the rotating live stories and each matchup's key plays. Runs
@@ -240,8 +240,9 @@ function buildMarqueeStories() {
   addWeekAheadStories(add);
   addWhatToWatchStories(add, matchupStates);
   addEarlyMomentumStories(add, matchupStates);
-  // Newest story; a bug in it shouldn't take down the whole wire.
+  // Newest stories; a bug in one shouldn't take down the whole wire.
   try { addGameToWatchStory(add, matchupStates); } catch (error) { console.warn("League Wire: game to watch failed: " + error.message); }
+  try { addInjuryStories(add); } catch (error) { console.warn("League Wire: injury stories failed: " + error.message); }
 
   const biggestLead=matchupStates.filter(x=>!x.m.completed).sort((a,b)=>b.diff-a.diff)[0];
   if(biggestLead&&biggestLead.diff>=20){const leader=biggestLead.currentDiff>0?biggestLead.a.team:biggestLead.b.team;const trailer=biggestLead.currentDiff>0?biggestLead.b.team:biggestLead.a.team;add("LEAGUE GOSSIP","👀 League gossip: " + leader + " has " + money(biggestLead.diff) + " pts to play with against " + trailer + ".",28);}
@@ -784,6 +785,58 @@ function addEarlyMomentumStories(add, matchupStates) {
       "💥 Biggest play: " + bigPlay.player + " (" + sign + pts(bigPlay.points) + ") swung the odds " + money(bigPlay.momentum.shift) + "% toward " + bigPlay.momentum.toward + "."
     ),84 + bigPlay.momentum.shift / 5);
   }
+}
+
+// ---- Injury alerts -----------------------------------------------------------
+// A starter hurt mid-game (from ESPN's play-by-play injury updates): what his
+// team's odds become if he doesn't return. Main league: win odds against the
+// opponent. Guillotine: chop odds. Quiet once he's back in.
+const INJURY_STATUS_TEXT = { injured: "went down injured", questionable: "is questionable to return", doubtful: "is doubtful to return", out: "is out for the game" };
+const INJURY_MIN_SWING = 3;
+const INJURY_MAX_AGE_MS = 3 * 60 * 60 * 1000;
+function addInjuryStories(add) {
+  if (Number(livePlayFeed?.week) !== currentWeek) return;
+  const latest = new Map();
+  for (const i of livePlayFeed.injuries || []) {
+    const key = i.league + "|" + i.playerId + "|" + i.teamId;
+    if (!latest.has(key) || Date.parse(i.wallclock) > Date.parse(latest.get(key).wallclock)) latest.set(key, i);
+  }
+  const clamp = p => Math.min(0.9999, Math.max(0.0001, p));
+  const candidates = [];
+  for (const i of latest.values()) {
+    if (!INJURY_STATUS_TEXT[i.status] || !i.wallclock || Date.now() - Date.parse(i.wallclock) > INJURY_MAX_AGE_MS) continue;
+    const who = i.player.split(" ").slice(-1)[0];
+    if (i.league === "main") {
+      const team = currentScores.find(s => s.teamId === Number(i.teamId));
+      const opp = team && currentScores.find(s => s.teamId === Number(team.opponentId));
+      const player = (liveTeams.get(Number(i.teamId))?.players || []).find(p => p.playerId === Number(i.playerId));
+      if (!team || !opp || !player || player.bench || player.finished) continue;
+      const rest = Math.max(0, (player.projection ?? 0) - player.actual);
+      const odds = Number(team.winProbability);
+      if (!rest || !(odds > 0 && odds < 100)) continue;
+      const sd = Math.max(3, Math.hypot(Number(team.projectionSd) || 0, Number(opp.projectionSd) || 0));
+      const done = 100 * normalCdf(normalQuantile(clamp(odds / 100)) - rest / sd);
+      if (odds - done < INJURY_MIN_SWING) continue;
+      candidates.push({type:"INJURY ALERT", swing:odds - done, text:fit(
+        "🚑 INJURY ALERT: " + i.player + " " + INJURY_STATUS_TEXT[i.status] + " for " + team.team + ". If he's done, their odds against " + opp.team + " fall from " + money(odds) + "% to " + money(done) + "%.",
+        "🚑 INJURY ALERT: " + who + " " + INJURY_STATUS_TEXT[i.status] + " for " + team.team + " — " + money(odds) + "% → " + money(done) + "% vs " + opp.team + " if he's done."
+      )});
+    } else if (Number(guillotineData?.week) === currentWeek) {
+      const team = (guillotineData.teams || []).find(t => t.teamId === Number(i.teamId));
+      const player = (team?.remaining || []).find(p => p.name === i.player);
+      const chop = Number(team?.chopProbability);
+      if (!team || !player?.projectedRest || !(chop > 0 && chop < 100)) continue;
+      const sds = (guillotineData.teams || []).map(t => Number(t.projectionSd) || 0).sort((a, b) => a - b);
+      const sd = Math.max(3, Math.hypot(Number(team.projectionSd) || 0, sds[Math.floor(sds.length / 2)] || 0));
+      const done = 100 * normalCdf(normalQuantile(clamp(chop / 100)) + player.projectedRest / sd);
+      if (done - chop < INJURY_MIN_SWING) continue;
+      candidates.push({type:"DEATH WATCH INJURY", swing:done - chop, text:fit(
+        "🚑🪓 " + i.player + " " + INJURY_STATUS_TEXT[i.status] + " for " + team.team + ". If he's done, their chop odds jump from " + money(chop) + "% to " + money(done) + "%.",
+        "🚑🪓 " + who + " " + INJURY_STATUS_TEXT[i.status] + " for " + team.team + ": chop odds " + money(chop) + "% → " + money(done) + "% if he's done."
+      )});
+    }
+  }
+  candidates.sort((a, b) => b.swing - a.swing).slice(0, 2).forEach(c => add(c.type, c.text, 90 + Math.min(c.swing, 30) / 5));
 }
 
 const keyPlays = await buildKeyPlays();

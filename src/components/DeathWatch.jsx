@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { formatDay, money } from "../lib/data.js";
 import { ShareButton, TeamLogo } from "./LiveBits.jsx";
+import { TeamLineup } from "./MatchupLineup.jsx";
+import ChopChart from "./ChopChart.jsx";
 import obituaryData from "../../data/current/obituaries.json";
 import obituariesMarkdown from "../../content/obituaries.md?raw";
 
@@ -178,8 +180,14 @@ const openObituaries = () => {
   if (details) details.open = true;
 };
 
-export function DeathWatch({ guillotine }) {
+export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
+  const [openLineups, setOpenLineups] = useState(() => new Set());
   if (!(guillotine.teams?.length)) return null;
+  const toggleLineup = id => setOpenLineups(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
+  const atRisk = guillotine.teams.filter(t => t.chopProbability > 0).slice(0, 3);
+  const atRiskIds = new Set(atRisk.map(t => t.teamId));
+  const history = Number(guillotine.chopHistory?.week) === Number(guillotine.week) ? guillotine.chopHistory.points : [];
+  const plays = Number(livePlays?.week) === Number(guillotine.week) ? (livePlays.guillotinePlays || []).filter(p => atRiskIds.has(Number(p.teamId))) : [];
   return (
     <section id="death-watch" className="section">
       <div className="section-heading">
@@ -188,7 +196,7 @@ export function DeathWatch({ guillotine }) {
       </div>
       <p className="raffle-intro">Our guillotine side league: the lowest score each week gets chopped. Chop odds come from {Number(guillotine.simulations || 0).toLocaleString()} simulations of the rest of the week.</p>
       <div className="award-grid">
-        {guillotine.teams.filter(t => t.chopProbability > 0).slice(0, 3).map((t, i) => <article className="award-card" key={t.teamId}>
+        {atRisk.map((t, i) => <article className="award-card" key={t.teamId}>
           <span>{i === 0 ? "🪓" : "😰"}</span>
           <small>{i === 0 ? "ON THE CHOPPING BLOCK" : `#${i + 1} MOST AT RISK`}</small>
           <strong className="dw-team"><DwLogo team={t} size="md" />{t.team}</strong>
@@ -199,6 +207,8 @@ export function DeathWatch({ guillotine }) {
           {swingLine(t) ? <p className="dw-insight">🎲 {swingLine(t)}</p> : null}
           {rivalLine(t) ? <p className="dw-insight">🏁 {rivalLine(t)}</p> : null}
           <p className="dw-left">{leftLine(t)}</p>
+          {t.lineup?.length ? <button type="button" className="dw-lineup-toggle" aria-expanded={openLineups.has(t.teamId)} onClick={() => toggleLineup(t.teamId)}>{openLineups.has(t.teamId) ? "Hide lineup ▴" : "Lineup ▾"}</button> : null}
+          {openLineups.has(t.teamId) ? <TeamLineup lineup={t.lineup} nflGames={nflGames} /> : null}
           <div className="card-actions">
             <ShareButton filename={`death-watch-week-${guillotine.week}-${t.team}`.replace(/[^\w-]+/g, "-")} build={() => ({
               kicker: `${guillotine.leagueName} · Week ${guillotine.week} Death Watch`,
@@ -216,6 +226,7 @@ export function DeathWatch({ guillotine }) {
           </div>
         </article>)}
       </div>
+      {atRisk.length ? <ChopChart history={history} teams={atRisk} plays={plays} /> : null}
       {guillotine.chopped?.length ? <p className="median-note">Already chopped: {guillotine.chopped.map(c => `${c.team} (Week ${c.week})`).join(" · ")} · <a href="#rip" onClick={openObituaries}>Rest in peace</a></p> : null}
       <SurvivalOdds teams={guillotine.teams} guillotine={guillotine} />
       <Obituaries guillotine={guillotine} />

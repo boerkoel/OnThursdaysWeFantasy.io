@@ -94,15 +94,26 @@ for (const t of weekEntry?.teams || []) {
 chopped.sort((a, b) => b.week - a.week);
 const draftDate = league.settings?.draftSettings?.date ? new Date(league.settings.draftSettings.date).toISOString() : null;
 
+// Each team's starters for the Death Watch cards' lineup expander, in the
+// same shape as the main league's matchup lineups (scoreboard.json).
+const POSITIONS = { 1: "QB", 2: "RB", 3: "WR", 4: "TE", 5: "K", 16: "D/ST" };
+const INJURY_SHORT = { QUESTIONABLE: "Q", DOUBTFUL: "D", OUT: "O", INJURY_RESERVE: "IR", SUSPENSION: "SSPD" };
+const shortName = player => /D\/ST/.test(player.fullName) ? player.fullName : (player.firstName ? player.firstName[0] + ". " : "") + (player.lastName || player.fullName);
+
 const alive = [...scoreByTeam.values()]
   .filter(t => Number(t.eliminationMatchupPeriod) === 0)
   .map(t => {
     const teamId = Number(t.teamId);
     const remaining = [];
+    const lineup = [];
     for (const entry of rosterByTeam.get(teamId) || []) {
       const slot = Number(entry.lineupSlotId);
       const player = entry.playerPoolEntry?.player;
       if (slot === BENCH_SLOT || slot === IR_SLOT || !player) continue;
+      const weekActual = weeklyStat(player, 0), weekProjection = weeklyStat(player, 1);
+      lineup.push({ id: Number(entry.playerId), name: shortName(player), pos: POSITIONS[Number(player.defaultPositionId)] || "", proTeamId: Number(player.proTeamId), slot,
+        actual: Number.isFinite(weekActual) ? round(weekActual) : 0, projection: Number.isFinite(weekProjection) ? round(weekProjection) : null,
+        injury: INJURY_SHORT[player.injuryStatus] || null });
       const game = nflGameByProTeam.get(Number(player.proTeamId));
       // Bye weeks (no game) and finished games have nothing left to add.
       if (nflWeek && (!game || game.completed)) continue;
@@ -118,7 +129,10 @@ const alive = [...scoreByTeam.values()]
       logo: teamInfo.get(teamId)?.logo || null,
       score,
       projected: round(score + remaining.reduce((sum, p) => sum + p.rest, 0)),
-      remaining
+      // Spread of the final score, for estimating how much one play moves the chop odds.
+      projectionSd: round(Math.hypot(...remaining.map(p => p.sd))),
+      remaining,
+      lineup
     };
   });
 
@@ -221,6 +235,16 @@ for (const t of alive) {
 }
 alive.sort((a, b) => b.chopProbability - a.chopProbability || a.projected - b.projected);
 
+// Chop-odds history for the Death Watch chart: one snapshot per update while
+// the odds are moving, thinned out if it gets long (like the main league's
+// win-odds history).
+const MAX_CHOP_HISTORY = 400;
+let chopHistory = Number(previous?.chopHistory?.week) === week ? [...(previous.chopHistory.points || [])] : [];
+const snapshot = { t: new Date().toISOString(), p: Object.fromEntries(alive.map(t => [t.teamId, t.chopProbability])) };
+const lastSnapshot = chopHistory[chopHistory.length - 1];
+if (!lastSnapshot || Object.entries(snapshot.p).some(([id, p]) => lastSnapshot.p?.[id] !== p)) chopHistory.push(snapshot);
+if (chopHistory.length > MAX_CHOP_HISTORY) chopHistory = chopHistory.filter((_, i) => i % 2 === 0 || i >= chopHistory.length - 100);
+
 await writeFile("data/current/guillotine.json", JSON.stringify({
   leagueId,
   leagueName: league.settings?.name || "Guillotine League",
@@ -229,7 +253,8 @@ await writeFile("data/current/guillotine.json", JSON.stringify({
   lastUpdated: new Date().toISOString(),
   simulations: SIMULATIONS,
   teams: alive,
-  chopped
+  chopped,
+  chopHistory: { week, points: chopHistory }
 }, null, 2) + "\n");
 
 console.log(`Guillotine week ${week}: ${alive.length} teams alive; most at risk: ${alive.slice(0, 3).map(t => `${t.abbrev} ${t.chopProbability}%`).join(", ")}.`);

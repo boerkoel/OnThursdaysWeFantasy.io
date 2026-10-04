@@ -512,7 +512,7 @@ function App() {
       </> : null}
 
       {tab === "death-watch" ? <>
-      <DeathWatch guillotine={guillotine} />
+      <DeathWatch guillotine={guillotine} nflGames={Number(scoreboard.week) === Number(guillotine.week) ? scoreboard.nflGames || [] : []} livePlays={livePlayFeed} />
       </> : null}
 
       {tab === "league" ? <>

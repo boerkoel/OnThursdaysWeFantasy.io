@@ -736,3 +736,24 @@ section,details,.odds-block{scroll-margin-top:72px}
 .matchup-toggle,.lineup-toggle{padding:2px 0;border:0;background:none;color:#8f978c;font-size:11px;font-weight:800;letter-spacing:.04em;cursor:pointer}
 .lineup-toggle{display:block}
 .matchup-toggle:hover,.lineup-toggle:hover{color:#dfe5d5}
+
+/* Death Watch: one team's lineup inside a card (award-card styles reset). */
+.team-lineup{margin-top:10px;border-top:1px solid #4b513f}
+.team-lineup-row{display:grid;grid-template-columns:38px minmax(0,1fr) 52px;align-items:center;column-gap:8px;border-bottom:1px solid #242620;min-height:42px}
+.award-grid .team-lineup small{display:block;margin:0;letter-spacing:0;font-weight:400;font-size:10px}
+.award-grid .team-lineup .lineup-points small{color:#777a72}
+.dw-lineup-toggle{align-self:flex-end;margin-top:8px;padding:2px 0;border:0;background:none;color:#8f978c;font-size:11px;font-weight:800;letter-spacing:.04em;cursor:pointer}
+.dw-lineup-toggle:hover{color:#dfe5d5}
+
+/* Death Watch chop-odds panel: three teams' lines, key plays below. */
+.chop-panel{margin-top:14px;padding:14px 16px;border:1px solid #30332d;border-radius:16px;background:#ffffff06}
+.chop-legend{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin:4px 0 6px;font-size:11px;color:#c7cac1}
+.chop-legend div{display:flex;align-items:center;gap:5px}
+.chop-legend i{display:inline-block;width:12px;height:3px;border-radius:2px}
+.chop-legend b{color:#f0f3ed;font-variant-numeric:tabular-nums}
+.chop-legend em{margin-left:auto;color:#777a72;font-style:normal;font-size:10px}
+.chop-plot{height:90px}
+.chop-axis{position:absolute;left:0;color:#5f635b;font-size:9px;font-style:normal;pointer-events:none}
+.chop-axis.top{top:0}.chop-axis.bottom{bottom:0}
+.chop-team-dot{display:inline-block;width:7px;height:7px;margin:0 4px 0 2px;border-radius:50%;vertical-align:middle}
+.chop-panel .key-plays{margin-top:10px}

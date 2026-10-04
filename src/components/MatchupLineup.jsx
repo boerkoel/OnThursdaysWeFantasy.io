@@ -85,3 +85,26 @@ export default function MatchupLineup({ a, b, nflGames = [] }) {
     </> : null}
   </div>;
 }
+
+// One team's starters (the Death Watch cards): slot, player and game, points.
+export function TeamLineup({ lineup = [], nflGames = [] }) {
+  const rows = SLOT_ORDER.flatMap(slot => lineup.filter(p => p.slot === slot));
+  const other = lineup.filter(p => !SLOT_ORDER.includes(p.slot));
+  return <div className="team-lineup" aria-label="Lineup">
+    {[...rows, ...other].map(p => {
+      const game = nflGames.find(g => (g.teamIds || []).includes(p.proTeamId));
+      const started = !game || game.state !== "pre";
+      return <div className="team-lineup-row" key={p.id}>
+        <div className="lineup-slot">{SLOT_LABELS[p.slot] || p.pos}</div>
+        <div className="lineup-player left">
+          <b>{p.name}{p.injury ? <em className="lineup-injury">{p.injury}</em> : null}</b>
+          <small>{gameLine(p.proTeamId, nflGames)}</small>
+        </div>
+        <div className="lineup-points left">
+          <b>{started ? money(p.actual) : "-"}</b>
+          <small>{p.projection != null ? money(p.projection) : ""}</small>
+        </div>
+      </div>;
+    })}
+  </div>;
+}

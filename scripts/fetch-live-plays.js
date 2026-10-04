@@ -54,6 +54,38 @@ function momentumByPlay(newPlays, scoresByTeam) {
   return result;
 }
 
+// Chop-odds swing of a guillotine play: a team's chop odds are treated as
+// normal in its final score, with the spread of its own score and of the
+// chop line (roughly another team's) combined. Positive shift = safer.
+// Returns play id -> { shift, chopProbability }.
+function chopMomentum(newPlays, guillotine) {
+  const result = new Map();
+  const teams = new Map((guillotine?.teams || []).map(t => [Number(t.teamId), t]));
+  const sds = [...teams.values()].map(t => Number(t.projectionSd) || 0).sort((a, b) => a - b);
+  const typicalSd = sds.length ? sds[Math.floor(sds.length / 2)] : 0;
+  const byTeam = new Map();
+  for (const play of newPlays) {
+    if (!play.wallclock || Date.now() - Date.parse(play.wallclock) > MOMENTUM_MAX_AGE_MS) continue;
+    if (!byTeam.has(play.teamId)) byTeam.set(play.teamId, []);
+    byTeam.get(play.teamId).push(play);
+  }
+  for (const [teamId, plays] of byTeam) {
+    const team = teams.get(Number(teamId));
+    const chop = Number(team?.chopProbability);
+    if (!team || !(chop > 0 && chop < 100)) continue;
+    const sd = Math.max(MIN_MARGIN_SD, Math.hypot(Number(team.projectionSd) || 0, typicalSd));
+    let z = normalQuantile(Math.min(0.9999, Math.max(0.0001, chop / 100)));
+    plays.sort((x, y) => Date.parse(y.wallclock) - Date.parse(x.wallclock));
+    for (const play of plays) {
+      const after = normalCdf(z), before = normalCdf(z + Number(play.points) / sd);
+      z += Number(play.points) / sd;
+      const shift = Math.round((before - after) * 1000) / 10;
+      if (shift) result.set(play.id, { shift, chopProbability: Math.round(after * 1000) / 10 });
+    }
+  }
+  return result;
+}
+
 async function fetchJson(url) {
   const response = await fetch(url, {
     headers: { Accept: "application/json", "User-Agent": "OnThursdaysWeFantasy/1.0" }
@@ -173,7 +205,8 @@ try {
     receivingReceptions: 53, lostFumbles: 72,
     madeFieldGoalsFrom50Plus: 74, madeFieldGoalsFrom40To49: 77,
     madeFieldGoalsFromUnder40: 80, missedFieldGoals: 85,
-    madeExtraPoints: 86, missedExtraPoints: 88
+    madeExtraPoints: 86, missedExtraPoints: 88,
+    passingFirstDowns: 211, rushingFirstDowns: 212, receivingFirstDowns: 213
   };
 
   const playerMapByProTeam = new Map();
@@ -181,6 +214,35 @@ try {
     if (!playerMapByProTeam.has(player.proTeamId)) playerMapByProTeam.set(player.proTeamId, []);
     playerMapByProTeam.get(player.proTeamId).push(player);
   }
+
+  // The guillotine side league (public): its live starters, scored by its own
+  // rules (half PPR plus half a point per first down).
+  const guillotine = await readJson("data/current/guillotine.json");
+  const guillotinePlayers = new Map();
+  let guillotineRules = new Map();
+  if (Number(guillotine?.week) === currentWeek) {
+    try {
+      const gBase = `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${season}/segments/0/leagues/${guillotine.leagueId}`;
+      const [gSettings, gRoster] = await Promise.all([fetchJson(`${gBase}?view=mSettings`), fetchJson(`${gBase}?view=mRoster&scoringPeriodId=${currentWeek}`)]);
+      guillotineRules = new Map((gSettings?.settings?.scoringSettings?.scoringItems || [])
+        .map(item => [Number(item.statId), Number(item.points)]).filter(([id, points]) => Number.isFinite(id) && points));
+      const aliveIds = new Set((guillotine.teams || []).map(t => Number(t.teamId)));
+      for (const team of gRoster?.teams || []) {
+        if (!aliveIds.has(Number(team.id))) continue;
+        for (const entry of team.roster?.entries || []) {
+          if (Number(entry.lineupSlotId) === 20 || Number(entry.lineupSlotId) === 21) continue;
+          const player = entry.playerPoolEntry?.player;
+          if (!player?.id || !player?.proTeamId) continue;
+          guillotinePlayers.set(Number(player.id), { playerId: Number(player.id), player: player.fullName, positionId: Number(player.defaultPositionId || 0),
+            proTeamId: Number(player.proTeamId), guillotineTeamId: Number(team.id) });
+          if (!playerMapByProTeam.has(Number(player.proTeamId))) playerMapByProTeam.set(Number(player.proTeamId), []);
+        }
+      }
+    } catch (error) {
+      console.warn(`Guillotine play mapping unavailable: ${error.message}`);
+    }
+  }
+  console.log(`Guillotine play mapping: ${guillotinePlayers.size} starters`);
 
   const nflScoreboard = await fetchJson(
     `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?week=${currentWeek}&seasontype=2&season=${season}`
@@ -259,7 +321,7 @@ try {
     return null;
   }
 
-  function fantasyPointsFromText(text, fantasyPlayer, play) {
+  function fantasyPointsFromText(text, fantasyPlayer, play, rules = scoringRules) {
     const lower = text.toLowerCase();
     const yards = Number.isFinite(Number(play.statYardage)) ? Number(play.statYardage) : yardageFromText(text);
     let points = 0;
@@ -269,10 +331,10 @@ try {
     // Handle extra points separately because the kicker is the scorer there.
     if (Number(fantasyPlayer.positionId) === 5) {
       if (/extra point is good/i.test(text)) {
-        return scoringRules.get(statIds.madeExtraPoints) || 0;
+        return rules.get(statIds.madeExtraPoints) || 0;
       }
       if (/extra point is (?:blocked|no good|missed)/i.test(text)) {
-        return scoringRules.get(statIds.missedExtraPoints) || 0;
+        return rules.get(statIds.missedExtraPoints) || 0;
       }
       return 0;
     }
@@ -298,53 +360,71 @@ try {
       (lower.includes(fantasyPlayer.player.toLowerCase()) || /catch|complete to|pass\b.*\bto\b/i.test(text));
 
     if (isPasser && isPassCompletion && Number.isFinite(yards)) {
-      points += yards * (scoringRules.get(statIds.passingYards) || 0);
+      points += yards * (rules.get(statIds.passingYards) || 0);
     }
 
     if (isRush && !isPassCompletion && Number.isFinite(yards)) {
-      points += yards * (scoringRules.get(statIds.rushingYards) || 0);
+      points += yards * (rules.get(statIds.rushingYards) || 0);
     }
 
     if (isReception && Number.isFinite(yards)) {
-      points += yards * (scoringRules.get(statIds.receivingYards) || 0);
-      points += scoringRules.get(statIds.receivingReceptions) || 0;
+      points += yards * (rules.get(statIds.receivingYards) || 0);
+      points += rules.get(statIds.receivingReceptions) || 0;
     }
 
     if (/touchdown/i.test(text)) {
       if (isPasser) {
-        points += scoringRules.get(statIds.passingTouchdowns) || 0;
+        points += rules.get(statIds.passingTouchdowns) || 0;
       } else if (isPassCompletion || /receiv|caught|catch/i.test(text)) {
-        points += scoringRules.get(statIds.receivingTouchdowns) || 0;
+        points += rules.get(statIds.receivingTouchdowns) || 0;
       } else if (isRush || /rushing|rush/i.test(text)) {
-        points += scoringRules.get(statIds.rushingTouchdowns) || 0;
+        points += rules.get(statIds.rushingTouchdowns) || 0;
       } else if (/intercepted|interception/i.test(text)) {
         // Conservative: don't assign an interception return to a fantasy player
         // unless ESPN identifies that returner as a participant.
       } else {
-        points += scoringRules.get(statIds.rushingTouchdowns) || 0;
+        points += rules.get(statIds.rushingTouchdowns) || 0;
       }
     }
 
     if (/2-point conversion/i.test(text)) {
       if (isPassCompletion || /receiv|caught|catch/i.test(text)) {
-        points += scoringRules.get(statIds.receiving2PtConversions) || 0;
+        points += rules.get(statIds.receiving2PtConversions) || 0;
       } else if (isRush) {
-        points += scoringRules.get(statIds.rushing2PtConversions) || 0;
+        points += rules.get(statIds.rushing2PtConversions) || 0;
       }
     }
 
     if (/intercepted|interception/i.test(text) && /pass|thrown/i.test(text)) {
-      points += scoringRules.get(statIds.passingInterceptions) || 0;
+      points += rules.get(statIds.passingInterceptions) || 0;
     }
 
     if (/fumble/i.test(text) && /lost/i.test(text)) {
-      points += scoringRules.get(statIds.lostFumbles) || 0;
+      points += rules.get(statIds.lostFumbles) || 0;
+    }
+
+    // First downs (the guillotine league scores them): the play gained at
+    // least the yards needed. Credited to the passer, rusher or receiver.
+    const toGo = Number(play.start?.distance);
+    if (Number.isFinite(yards) && toGo > 0 && yards >= toGo && !/no play|penalty/i.test(text)) {
+      if (isPasser && isPassCompletion) points += rules.get(statIds.passingFirstDowns) || 0;
+      else if (isReception) points += rules.get(statIds.receivingFirstDowns) || 0;
+      else if (isRush && !isPassCompletion) points += rules.get(statIds.rushingFirstDowns) || 0;
     }
 
     return Math.round(points * 100) / 100;
   }
 
   const relevant = [];
+  const guillotineRelevant = [];
+  const injuries = [];
+  // "** Injury Update: SF-B.Purdy has a shoulder injury and his return is
+  // questionable." / "J.Smith was injured during the play." -> status.
+  const injuryStatus = segment => /returned to the game|has returned/i.test(segment) ? "returned"
+    : /ruled out|will not return|won't return|is out for the (?:game|day)/i.test(segment) ? "out"
+    : /return is doubtful|doubtful to return/i.test(segment) ? "doubtful"
+    : /return is questionable|questionable to return/i.test(segment) ? "questionable"
+    : /injured/i.test(segment) ? "injured" : null;
   for (const event of relevantGames) {
     const plays = await getPlays(event.id);
     console.log(`NFL game ${event.id}: received ${plays.length} plays`);
@@ -407,6 +487,33 @@ try {
         uniquePlayers.push(item);
       }
 
+      const base = {
+        eventId: String(event.id),
+        text: text.replace(/^\([^)]*\)\s*/, "").trim(),
+        clock: play.clock?.displayValue || "",
+        period: Number(play.period?.number || 0),
+        wallclock: play.wallclock || play.modified || null
+      };
+
+      // Guillotine starters, matched by name like the fallback above.
+      for (const gp of guillotinePlayers.values()) {
+        if (!eventTeamIds.has(gp.proTeamId) || !playerNameMatches(text, gp)) continue;
+        const points = fantasyPointsFromText(text, gp, play, guillotineRules);
+        if (points !== 0) guillotineRelevant.push({ ...base, id: `${event.id}-${play.id}-g${gp.playerId}`, teamId: gp.guillotineTeamId, playerId: gp.playerId, player: gp.player, points });
+      }
+
+      // Injury updates for any starter in either league.
+      for (const segment of text.split(/\*\*/).map(x => x.trim()).filter(x => /injur|returned to the game/i.test(x))) {
+        const status = injuryStatus(segment);
+        if (!status) continue;
+        const named = [...playerMap.values(), ...guillotinePlayers.values()].filter(p => eventTeamIds.has(p.proTeamId) && playerNameMatches(segment, p));
+        for (const p of named) {
+          injuries.push({ ...base, id: `${event.id}-${play.id}-i${p.playerId}-${p.guillotineTeamId ? "g" : "m"}`, text: segment.replace(/^Injury Update:\s*/i, ""),
+            status, playerId: p.playerId, player: p.player, league: p.guillotineTeamId ? "guillotine" : "main",
+            teamId: p.guillotineTeamId ?? p.fantasyTeamId, matchupId: p.matchupId ?? null });
+        }
+      }
+
       for (const { fantasyPlayer, fantasyPoints } of uniquePlayers) {
         if (fantasyPoints === 0) continue;
         relevant.push({
@@ -429,10 +536,14 @@ try {
   // Merge the new ESPN snapshot with the previous saved feed so a 5-minute
   // refresh does not erase recent plays. ESPN can return only the latest slice
   // of PBP, so persistence has to happen here rather than in the frontend.
-  let previousPlays = [];
+  let previousPlays = [], previousGuillotine = [], previousInjuries = [];
   try {
     const previous = JSON.parse(await readFile("data/current/live-plays.json", "utf8"));
-    if (Number(previous.week) === Number(currentWeek)) previousPlays = previous.plays || [];
+    if (Number(previous.week) === Number(currentWeek)) {
+      previousPlays = previous.plays || [];
+      previousGuillotine = previous.guillotinePlays || [];
+      previousInjuries = previous.injuries || [];
+    }
   } catch {}
 
   // A play keeps the momentum it was given when it was first seen; new ones
@@ -453,13 +564,33 @@ try {
   const sorted = [...deduped.values()].sort((a, b) => new Date(b.wallclock || 0) - new Date(a.wallclock || 0));
   const plays = sorted.filter((play, i) => i < 60 || play.momentum?.shift >= 3);
 
+  // Guillotine plays: each new one gets the chop-odds swing it caused, judged
+  // like matchup momentum (newest first per team, against this run's odds).
+  const previousGuillotineIds = new Map(previousGuillotine.map(p => [p.id, p]));
+  const freshChop = chopMomentum(guillotineRelevant.filter(p => !previousGuillotineIds.has(p.id)), guillotine);
+  const guillotineById = new Map();
+  for (const play of [...guillotineRelevant, ...previousGuillotine]) {
+    if (guillotineById.has(play.id)) continue;
+    const momentum = previousGuillotineIds.has(play.id) ? previousGuillotineIds.get(play.id).momentum : freshChop.get(play.id);
+    guillotineById.set(play.id, momentum ? { ...play, momentum } : play);
+  }
+  const guillotinePlays = [...guillotineById.values()]
+    .sort((a, b) => new Date(b.wallclock || 0) - new Date(a.wallclock || 0))
+    .filter((play, i) => i < 60 || Math.abs(play.momentum?.shift || 0) >= 3);
+
+  // Injury updates for the week, newest first (small: a few per game).
+  const injuryById = new Map([...injuries, ...previousInjuries].map(i => [i.id, i]));
+  const injuryList = [...injuryById.values()].sort((a, b) => new Date(b.wallclock || 0) - new Date(a.wallclock || 0)).slice(0, 80);
+
   await writeFile("data/current/live-plays.json", JSON.stringify({
     week: currentWeek,
     updatedAt: new Date().toISOString(),
-    plays
+    plays,
+    guillotinePlays,
+    injuries: injuryList
   }, null, 2) + "\n");
 
-  console.log(`Live-play parser: ${relevant.length} fantasy-relevant plays retained; stored ${plays.length} across ${relevantGames.length} relevant NFL games.`);
+  console.log(`Live-play parser: ${relevant.length} fantasy-relevant plays retained; stored ${plays.length} across ${relevantGames.length} relevant NFL games; ${guillotinePlays.length} guillotine plays; ${injuryList.length} injury updates.`);
 } catch (error) {
   console.warn(`Live play feed unavailable: ${error.message}`);
   if (!previous || Number(previous.week) !== currentWeek) {
