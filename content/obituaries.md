@@ -39,7 +39,7 @@ Plan B now rests in pieces, its FAAB dreams buried alongside its dignity.
 
 Rest in pieces, Kevin. There is no Plan C.
 
-##Stacey's Scarey Team
+##. Stacey's Smart Team
 
 “It Wasn’t Very Smart”
 
