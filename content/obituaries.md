@@ -39,6 +39,30 @@ Plan B now rests in pieces, its FAAB dreams buried alongside its dignity.
 
 Rest in pieces, Kevin. There is no Plan C.
 
+##Stacey's Scarey Team
 
+“It Wasn’t Very Smart”
+
+We gather today to mourn Stacey Mette and her tragically poorly named fantasy football team, whose life was cut short by the cruelest weapon in the league: a razor-thin margin of defeat.
+
+There once was a manager named Mette,
+Whose team was a terrible betty.
+With Diggs looking sick,
+And Kincaid doing tricks,
+She was chopped by a team without a name yet.
+
+Josh Allen did his part, but Cook couldn’t cook. Skattebo took the wrong road, McBride never found his groove, and even Golden couldn’t strike gold.
+
+Meanwhile, the executioner fielded Terry McLaurin—a literal zombie starter—and STILL managed to survive.
+
+That’s right: Stacey’s season was ended by a team so devoid of identity it doesn’t even have a name.
+
+Let that sink in.
+
+A nameless team.
+A zombie starter.
+And somehow… Stacey is the one being buried.
+
+May she rest in peace—and may her roster rest in waivers.
 
 
