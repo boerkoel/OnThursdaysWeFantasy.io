@@ -164,6 +164,10 @@ function findEvents(live, state) {
     updated: [scoreboard.lastUpdated, live.marquee?.lastUpdated, live.guillotine?.lastUpdated].join("|"),
     leaders: {}, favorites: {}, finals: [],
     wireKeys: [],
+    // Everything already alerted this week, so a story or chopping-block
+    // leader that drops out for an update and comes back isn't sent again.
+    sentWire: [], chopBlockSent: [],
+    scoreboardUpdated: scoreboard.lastUpdated || null,
     chopLeader: null, chopped: [],
     guillotineWeek: Number(live.guillotine?.week),
     lastSent: state?.lastSent || {}
@@ -171,6 +175,8 @@ function findEvents(live, state) {
   // A new week (or the very first run) only records a baseline.
   const baseline = !state || state.week !== week;
   const previous = baseline ? {} : state;
+  next.sentWire = [...(previous.sentWire || [])];
+  next.chopBlockSent = [...(previous.chopBlockSent || [])];
 
   const byMatchup = new Map();
   for (const s of scoreboard.scores || []) {
@@ -218,10 +224,13 @@ function findEvents(live, state) {
     if (!WIRE_HIGHLIGHTS.has(story.type)) continue;
     const key = story.type + "|" + String(story.text).replace(/[\d.,%–-]+/g, "#");
     next.wireKeys.push(key);
-    if (!baseline && !(previous.wireKeys || []).includes(key)) {
+    const alreadySent = (previous.wireKeys || []).includes(key) || next.sentWire.includes(key);
+    if (!baseline && !alreadySent) {
       events.push({ id: `wire-${key}`, topics: ["wire"], tag: `wire-${story.type}`, title: "⚡ League Wire", body: story.text.replace(/^\S+\s/, "") });
     }
+    if (!next.sentWire.includes(key)) next.sentWire.push(key);
   }
+  next.sentWire = next.sentWire.slice(-400);
 
   // Death Watch: a new team on the chopping block, or a chop.
   const guillotine = live.guillotine || {};
@@ -229,7 +238,10 @@ function findEvents(live, state) {
   const atRisk = (guillotine.teams || []).filter(t => t.chopProbability > 0).sort((x, y) => y.chopProbability - x.chopProbability);
   next.chopLeader = atRisk[0]?.teamId ?? null;
   next.chopped = (guillotine.teams || []).filter(t => t.chopProbability >= 100).map(t => t.teamId);
-  if (sameGuillotineWeek && atRisk[0] && atRisk[0].chopProbability < 100 && state.chopLeader != null && state.chopLeader !== atRisk[0].teamId) {
+  if (!sameGuillotineWeek) next.chopBlockSent = [];
+  if (sameGuillotineWeek && atRisk[0] && atRisk[0].chopProbability < 100 && state.chopLeader != null && state.chopLeader !== atRisk[0].teamId
+    && !next.chopBlockSent.includes(atRisk[0].teamId)) {
+    next.chopBlockSent.push(atRisk[0].teamId);
     events.push({ id: `chopblock-${guillotine.week}-${atRisk[0].teamId}-${guillotine.lastUpdated}`, topics: ["guillotine"], tag: "death-watch",
       title: "🪓 Death Watch", body: `${atRisk[0].team} is now on the chopping block (${Math.round(atRisk[0].chopProbability)}%).` });
   }
@@ -255,6 +267,9 @@ async function checkForAlerts(env) {
   const state = await env.SUBS.get("state", "json");
   const updated = [live.scoreboard?.lastUpdated, live.marquee?.lastUpdated, live.guillotine?.lastUpdated].join("|");
   if (state && state.updated === updated) return; // nothing new published
+  // An older snapshot republished (two deploys racing) would look like a
+  // lot of "new" news, and then again when the newer data returns: skip it.
+  if (state?.scoreboardUpdated && Date.parse(live.scoreboard?.lastUpdated) < Date.parse(state.scoreboardUpdated)) return;
 
   const { events, next } = findEvents(live, state);
   if (events.length) {
