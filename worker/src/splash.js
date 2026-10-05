@@ -13,7 +13,8 @@ const APP_HEADERS = {
   Origin: "https://contests.app.splashsports.com",
   Referer: "https://contests.app.splashsports.com/",
   "x-app-platform": "web-v2",
-  "x-app-version": "0.0.0"
+  "x-app-version": "0.0.0",
+  "splash-accept-version": "3"
 };
 const RENEW_BEFORE_MS = 5 * 60 * 1000;
 
@@ -87,7 +88,7 @@ function shape(value, depth = 0) {
 
 export async function splashProbe(env) {
   const cached = await env.SUBS.get("splash-probe", "json");
-  if (cached && Date.now() - Date.parse(cached.at) < 10 * 60 * 1000) return cached;
+  if (cached && !cached.error && Date.now() - Date.parse(cached.at) < 10 * 60 * 1000) return cached;
   const result = { at: new Date().toISOString(), routes: {} };
   try {
     const contest = await splashGet(env, `/contests/${CONTEST}`);
