@@ -110,6 +110,16 @@ jobs:
             exit 0
           fi
           printf %s "$LIVE_REFRESH_TOKEN" | tr -d '[:space:]' | npx --yes wrangler@4 secret put GITHUB_TOKEN
+      # The league survivor contest on Splash Sports: seeds the service's
+      # session once (it renews and stores newer tokens itself afterwards).
+      - name: Give the service its Splash session
+        env:
+          SPLASH_ACCESS_TOKEN: ${{ secrets.SPLASH_ACCESS_TOKEN }}
+          SPLASH_REFRESH_TOKEN: ${{ secrets.SPLASH_REFRESH_TOKEN }}
+        run: |
+          if [ -z "$SPLASH_REFRESH_TOKEN" ]; then echo "::warning::SPLASH_REFRESH_TOKEN is not set; the survivor feed is off."; exit 0; fi
+          printf %s "$SPLASH_ACCESS_TOKEN" | tr -d '[:space:]' | npx --yes wrangler@4 secret put SPLASH_ACCESS_TOKEN
+          printf %s "$SPLASH_REFRESH_TOKEN" | tr -d '[:space:]' | npx --yes wrangler@4 secret put SPLASH_REFRESH_TOKEN
       - name: Check the service responds
         run: |
           sleep 10
