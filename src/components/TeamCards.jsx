@@ -68,13 +68,13 @@ function TeamProfile({ team, onClose }) {
             {team.profileAnalytics.rosterFit.targets.map(p => <div className="trade-target" key={p.teamId + "-" + p.playerId}>
               <div className="trade-target-info">
                 <strong>{p.player}{p.position ? `, ${p.position}` : ""}</strong>
-                <span>{p.team} has only started {p.startRate}% of the time</span>
+                <span>{p.team} {Number(p.startRate) > 0 ? `has started him just ${Math.round(p.startRate)}% of the time` : "has never started him"}</span>
                 <span>Needs: {p.otherNeeds?.length ? p.otherNeeds.map(x => x.position).join(" / ") : "None"}</span>
               </div>
               <div className="trade-target-impact">
                 <b>+{money(p.boost)} pts</b>
                 <em>Optimal lineup improvement</em>
-                <em>{(p.winsAdded ?? 0)} total wins added ({p.h2hWinsAdded ?? 0} H2H + {p.medianWinsAdded ?? 0} median)</em>{p.mutualTrade ? <em className="trade-mutual">↔ {p.mutualTrade.player} has been on your bench {p.mutualTrade.startRate != null ? (100 - p.mutualTrade.startRate) : 0}% of the time and would improve their optimal lineup by {money(p.mutualTrade.boost)} pts and {p.mutualTrade.winsAdded ?? 0} wins</em> : null}
+                <em>{(p.winsAdded ?? 0)} total wins added ({p.h2hWinsAdded ?? 0} H2H + {p.medianWinsAdded ?? 0} median)</em>{p.mutualTrade ? <em className="trade-mutual">↔ {p.mutualTrade.player} has been on your bench {p.mutualTrade.startRate != null ? Math.round(100 - p.mutualTrade.startRate) : 0}% of the time and would improve their optimal lineup by {money(p.mutualTrade.boost)} pts and {p.mutualTrade.winsAdded ?? 0} wins</em> : null}
               </div>
             </div>)}
           </div>
