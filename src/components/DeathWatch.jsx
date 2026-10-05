@@ -103,7 +103,7 @@ function SurvivalOdds({ teams, guillotine }) {
           <button key={key} type="button" className={sort === key ? "active" : ""} onClick={() => setSort(key)}>{option.label}</button>)}
       </div>
       <div className="survival-share">
-        <ShareButton iconOnly label="Share the survival odds table" filename={`survival-odds-week-${guillotine.week}`} build={() => ({
+        <ShareButton section="survival" iconOnly label="Share the survival odds table" filename={`survival-odds-week-${guillotine.week}`} build={() => ({
           kicker: `${guillotine.leagueName} · Week ${guillotine.week} survival odds`,
           title: "Who survives?",
           lines: [
@@ -166,7 +166,7 @@ function Obituaries({ guillotine }) {
                 ? obituary.split(/\n\s*\n/).map((paragraph, p) => <p className="rip-obituary" key={p}>{paragraph.replace(/\s*\n\s*/g, " ")}</p>)
                 : <p className="rip-obituary">Obituary pending.</p>}
               <div className="card-actions">
-                <ShareButton filename={`rip-${c.team}`.replace(/[^\w-]+/g, "-")} build={() => ({
+                <ShareButton section="rip" filename={`rip-${c.team}`.replace(/[^\w-]+/g, "-")} build={() => ({
                   kicker: `Rest in peace · ${guillotine.leagueName}`,
                   title: `🪦 ${c.team}`,
                   lines: [
@@ -234,7 +234,7 @@ export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
           {t.lineup?.length ? <button type="button" className="dw-lineup-toggle" aria-expanded={openLineups.has(t.teamId)} onClick={() => toggleLineup(t.teamId)}>{openLineups.has(t.teamId) ? "Hide lineup ▴" : "Lineup ▾"}</button> : null}
           {openLineups.has(t.teamId) ? <TeamLineup lineup={t.lineup} nflGames={nflGames} /> : null}
           <div className="card-actions">
-            <ShareButton filename={`death-watch-week-${guillotine.week}-${t.team}`.replace(/[^\w-]+/g, "-")} build={() => ({
+            <ShareButton section="death-watch" filename={`death-watch-week-${guillotine.week}-${t.team}`.replace(/[^\w-]+/g, "-")} build={() => ({
               kicker: `${guillotine.leagueName} · Week ${guillotine.week} Death Watch`,
               title: `🪓 ${t.team}`,
               lines: [

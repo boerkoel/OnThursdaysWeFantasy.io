@@ -169,7 +169,7 @@ export default function PrimetimeWatch({ scores, nflGames, guillotine, logos, we
     <section id="primetime" className="section">
       <div className="section-heading">
         <div><span className="section-kicker">{st.games} · {when}</span><h2>{st.label} What to Watch</h2></div>
-        <ShareButton iconOnly label={`Share the ${st.label} What to Watch`} filename={`week-${week}-${st.label.toLowerCase()}-what-to-watch`} build={share} />
+        <ShareButton section="primetime" iconOnly label={`Share the ${st.label} What to Watch`} filename={`week-${week}-${st.label.toLowerCase()}-what-to-watch`} build={share} />
       </div>
       <div className="primetime-summary">
         <span>{[

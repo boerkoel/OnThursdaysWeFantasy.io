@@ -64,7 +64,7 @@ export default function LeagueWire({ stories, status, week }) {
       <div className="marquee-dots">
         {stories.length > 1 ? <small className="marquee-count">{active + 1}/{stories.length}</small> : null}
         {stories.map((story, i) => <button key={i} type="button" className={i === active ? "active" : ""} aria-label={"Show " + story.type} onClick={() => show(i)}></button>)}
-        <ShareButton iconOnly label="Share this story" filename={`league-wire-week-${week}-${story.type}`.replace(/[^\w-]+/g, "-").toLowerCase()} build={() => ({
+        <ShareButton section="live" iconOnly label="Share this story" filename={`league-wire-week-${week}-${story.type}`.replace(/[^\w-]+/g, "-").toLowerCase()} build={() => ({
           kicker: `League Wire · Week ${week}`,
           title: story.type,
           lines: [{ text: story.text, size: 38, weight: 700 }]

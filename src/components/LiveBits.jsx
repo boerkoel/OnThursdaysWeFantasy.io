@@ -3,12 +3,13 @@ import { shareCard } from "../lib/shareCard.js";
 
 // Small "Share" button; build() returns the share card spec when clicked.
 // iconOnly shows just the arrow (label is then only read out by screen readers).
-export function ShareButton({ build, filename, label = "Share", iconOnly = false }) {
+// section: the page section the shared link points to (see shareCard.js).
+export function ShareButton({ build, filename, section, label = "Share", iconOnly = false }) {
   const [busy, setBusy] = useState(false);
   const onClick = async event => {
     event.stopPropagation();
     setBusy(true);
-    try { await shareCard(build(), filename); } finally { setBusy(false); }
+    try { await shareCard(build(), filename, section); } finally { setBusy(false); }
   };
   if (iconOnly) {
     return <button type="button" className="share-button icon-only" onClick={onClick} disabled={busy} aria-label={label + " as an image"} title={label}>{busy ? "…" : "⤴"}</button>;

@@ -19,7 +19,7 @@ export const TAB_SECTIONS = {
   league: [["history", "History"], ["awards", "Awards"], ["record-book", "Record Book"], ["rivalries", "Rivalries"]],
   teams: []
 };
-const SECTION_TAB = {
+export const SECTION_TAB = {
   scores: "live", primetime: "live", "ticket-race": "live", scoreboard: "live", notifications: "live", "my-team": "live",
   "standings-odds": "standings", playoffs: "standings", "ultimate-loser": "standings", raffle: "standings",
   rip: "death-watch", survival: "death-watch",

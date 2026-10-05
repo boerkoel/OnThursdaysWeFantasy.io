@@ -323,7 +323,7 @@ function App() {
         <SwingChart points={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} teamId={a.teamId} teamName={a.team} opponentName={b.team}
           plays={keyPlays.filter(p => p.momentum?.shift >= BIG_SWING)} />
         <div className="card-actions">
-          <ShareButton filename={`week-${scoreboard.week}-${a.team}-vs-${b.team}`.replace(/[^\w-]+/g, "-")} build={() => ({
+          <ShareButton section="scores" filename={`week-${scoreboard.week}-${a.team}-vs-${b.team}`.replace(/[^\w-]+/g, "-")} build={() => ({
             kicker: `Week ${scoreboard.week} · ${status === "FINAL" ? "Final" : status === "LIVE" ? "Live" : "Matchup"}`,
             teams: [a, b].map(t => ({
               name: t.team,
@@ -421,7 +421,7 @@ function App() {
         plays={Number(livePlayFeed.week) === Number(scoreboard.week) ? livePlayFeed.plays || [] : []} nflGames={scoreboard.nflGames || []} />
       <section id="scoreboard" className="section">
         <div className="section-heading"><div><span className="section-kicker">MEDIAN SCORING</span><h2>Week {scoreboard.week} Scoreboard</h2></div>
-          {displayScores.length ? <ShareButton iconOnly label="Share the scoreboard" filename={`week-${scoreboard.week}-scoreboard`} build={shareScoreboard} /> : null}</div>
+          {displayScores.length ? <ShareButton section="scoreboard" iconOnly label="Share the scoreboard" filename={`week-${scoreboard.week}-scoreboard`} build={shareScoreboard} /> : null}</div>
         <div className="score-list">
           <div className="score-sort-controls" role="group" aria-label="Sort scoreboard">
           <button className={scoreSort === "current" ? "active" : ""} onClick={() => setScoreSort("current")}>CURRENT SCORE</button>

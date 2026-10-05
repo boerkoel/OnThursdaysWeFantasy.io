@@ -1,3 +1,4 @@
+import { SECTION_TAB, TABS } from "./tabs.js";
 // Share cards: a 1080px-wide image (height fits the content) drawn on a canvas, shared through the phone's
 // share sheet when available, otherwise downloaded. Drawn directly (not a
 // page screenshot) so layout is predictable; only same-origin logos are drawn
@@ -126,18 +127,30 @@ export async function renderShareCard(spec) {
   return card;
 }
 
-export async function shareCard(spec, filename) {
+// Shared along with the image: a link to the card's section. /s/<tab>/ is a
+// tiny page (made by vite.config.js) whose link preview carries the tab's
+// name, and which forwards to /#<section> on the site.
+export const sectionLink = section => {
+  const tab = !section ? "live" : TABS.some(t => t.id === section) ? section : SECTION_TAB[section] || "live";
+  const hash = section && section !== tab ? `#${section}` : "";
+  return new URL(`s/${tab}/${hash}`, window.location.origin + import.meta.env.BASE_URL).href;
+};
+
+export async function shareCard(spec, filename, section) {
   const canvas = await renderShareCard(spec);
   const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
   if (!blob) return;
   const file = new File([blob], filename + ".png", { type: "image/png" });
-  try {
-    if (navigator.canShare?.({ files: [file] })) {
-      await navigator.share({ files: [file], title: spec.title || "On Thursdays We Fantasy" });
-      return;
+  if (navigator.canShare?.({ files: [file] })) {
+    for (const data of [{ files: [file], url: sectionLink(section) }, { files: [file] }]) {
+      try {
+        await navigator.share(data);
+        return;
+      } catch (error) {
+        if (error?.name === "AbortError") return; // closed the share sheet
+        // Some browsers refuse a link alongside files: try the image alone.
+      }
     }
-  } catch (error) {
-    if (error?.name === "AbortError") return; // closed the share sheet
   }
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
