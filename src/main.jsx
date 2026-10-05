@@ -19,6 +19,7 @@ import MatchupLineup from "./components/MatchupLineup.jsx";
 import RafflePodium from "./components/RafflePodium.jsx";
 import PrimetimeWatch from "./components/PrimetimeWatch.jsx";
 import Sheet from "./components/Sheet.jsx";
+import SurvivorTab from "./components/SurvivorTab.jsx";
 import RecordBook from "./components/RecordBook.jsx";
 import Notifications, { useFollowedTeams } from "./components/Notifications.jsx";
 import { seriesLine } from "./lib/recordBook.js";
@@ -667,6 +668,8 @@ function App() {
         <TeamCards teams={teamsData.teams || []} />
       </section>
       </> : null}
+
+      {tab === "survivor" ? <SurvivorTab /> : null}
 
       <footer>On Thursdays We Fantasy · 2026 · Officially unofficial.</footer>
       {newVersion ? <button type="button" className="new-version-bar" onClick={reloadKeepingScroll}>✨ New version of the site — tap to refresh</button> : null}

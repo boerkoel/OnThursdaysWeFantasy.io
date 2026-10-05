@@ -134,3 +134,126 @@ export async function splashProbe(env) {
   await env.SUBS.put("splash-probe", JSON.stringify(result));
   return result;
 }
+
+// ---- Survivor feed (/survivor) ------------------------------------------------------
+// The pool for the site's Survivor tab, rebuilt at most every 2 minutes.
+// Picks are hidden until kickoff on Splash, but the commissioner's session
+// can see them early: a pick is published only once it's graded or its game
+// has started (ESPN), and never for a week that hasn't started.
+//   { contest: { name, totalEntries, alive, eliminated, currentWeek, updatedAt },
+//     weeks: [{ week, locked, final, hidden, picks: [{ team, count, result }] }],
+//     entries: [{ id, user, entry, alive, eliminatedWeek, picks: { [week]: { team, result } } }] }
+const FEED_MAX_AGE_MS = 2 * 60 * 1000;
+const STANDINGS_PAGE = 100;
+const ESPN_SCOREBOARD = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard";
+const alias = a => ({ WSH: "WAS", JAC: "JAX", LA: "LAR" }[String(a || "").toUpperCase()] || String(a || "").toUpperCase());
+const gradeOf = g => (/^w/i.test(g || "") ? "won" : /^(l|t)/i.test(g || "") ? "lost" : "pending");
+const weekOf = (slate, i) => Number(String(slate?.name || slate?.alias || "").match(/\d+/)?.[0]) || i + 4;
+
+// Teams whose game this week has kicked off (or null if ESPN is unreachable).
+async function startedTeams(week) {
+  try {
+    const response = await fetch(`${ESPN_SCOREBOARD}?seasontype=2&week=${week}&dates=${new Date().getUTCFullYear()}`);
+    if (!response.ok) return null;
+    const events = (await response.json()).events || [];
+    const started = new Set();
+    for (const event of events) {
+      const competition = event.competitions?.[0];
+      const state = competition?.status?.type?.state || event.status?.type?.state;
+      if (state && state !== "pre") for (const c of competition?.competitors || []) started.add(alias(c.team?.abbreviation));
+    }
+    return started;
+  } catch {
+    return null;
+  }
+}
+
+async function buildSurvivorFeed(env) {
+  const contest = await splashGet(env, `/contests/${CONTEST}`);
+  if (contest.status >= 400) throw new Error(`Splash contest ${contest.status}`);
+  const rows = [];
+  let slates = [];
+  let cursor = null;
+  for (let page = 0; page < 10; page++) {
+    const query = new URLSearchParams({ contestId: CONTEST, limit: String(STANDINGS_PAGE) });
+    if (cursor) query.set("cursor", cursor);
+    const { status, body } = await splashGet(env, `/team-survivor/standings?${query}`);
+    if (status >= 400) throw new Error(`Splash standings ${status}`);
+    rows.push(...(body?.data || []));
+    if (body?.metadata?.slates?.length) slates = body.metadata.slates;
+    cursor = body?.nextCursor;
+    if (!cursor || !(body?.data || []).length) break;
+  }
+
+  const now = Date.now();
+  const slateWeek = new Map(slates.map((s, i) => [s.slateId, weekOf(s, i)]));
+  const startedSlates = slates.filter(s => Date.parse(s.startDate) <= now);
+  const current = startedSlates[startedSlates.length - 1] || slates[0];
+  const currentWeek = current ? slateWeek.get(current.slateId) : null;
+  const isFinal = s => s && !/progress|upcoming|open|pending|scheduled|live/i.test(s.status || "");
+  const kicked = current && !isFinal(current) ? await startedTeams(currentWeek) : null;
+
+  const tally = new Map();
+  const hidden = new Map();
+  const entries = rows.map(row => {
+    const picks = {};
+    for (const s of row.slates || []) {
+      const slate = slates.find(x => x.slateId === s.slateId);
+      const week = slateWeek.get(s.slateId);
+      if (!slate || !week || Date.parse(slate.startDate) > now) continue;
+      for (const p of s.picks || []) {
+        const team = alias(p.team?.alias);
+        if (!team) continue;
+        const result = gradeOf(p.grade || s.grade);
+        const visible = result !== "pending" || isFinal(slate) || (slate === current && kicked?.has(team));
+        if (!visible) { hidden.set(week, (hidden.get(week) || 0) + 1); continue; }
+        picks[week] = { team, result };
+        const key = `${week}:${team}`;
+        const t = tally.get(key) || { week, team, count: 0, result };
+        t.count++;
+        if (result !== "pending") t.result = result;
+        tally.set(key, t);
+      }
+    }
+    const eliminatedWeek = row.eliminatedSlateId ? slateWeek.get(row.eliminatedSlateId) || null : null;
+    return {
+      id: row.entry?.id,
+      user: row.user?.handle || "?",
+      entry: row.entry?.order || 1,
+      alive: !eliminatedWeek && !/elim|out|dead/i.test(row.entry?.status || ""),
+      eliminatedWeek,
+      picks
+    };
+  });
+
+  const weeks = startedSlates.map(s => {
+    const week = slateWeek.get(s.slateId);
+    const picks = [...tally.values()].filter(t => t.week === week).map(({ team, count, result }) => ({ team, count, result }))
+      .sort((a, b) => b.count - a.count);
+    return { week, locked: picks.length > 0, final: isFinal(s), hidden: hidden.get(week) || 0, picks };
+  });
+  const next = slates.find(s => Date.parse(s.startDate) > now);
+  if (next) weeks.push({ week: slateWeek.get(next.slateId), locked: false, final: false, hidden: 0, picks: [] });
+
+  const c = contest.body?.data?.contest || {};
+  const alive = entries.filter(e => e.alive).length;
+  return {
+    contest: { name: c.name || "Survivor", totalEntries: c.totalEntries || entries.length, alive, eliminated: entries.length - alive, currentWeek, updatedAt: new Date().toISOString() },
+    weeks,
+    entries
+  };
+}
+
+export async function survivorFeed(env) {
+  const cached = await env.SUBS.get("survivor-feed", "json");
+  if (cached && Date.now() - Date.parse(cached.contest?.updatedAt) < FEED_MAX_AGE_MS) return cached;
+  try {
+    const feed = await buildSurvivorFeed(env);
+    await env.SUBS.put("survivor-feed", JSON.stringify(feed));
+    return feed;
+  } catch (error) {
+    // Splash or the session failing: keep serving the last good feed.
+    if (cached) return { ...cached, stale: true };
+    throw error;
+  }
+}

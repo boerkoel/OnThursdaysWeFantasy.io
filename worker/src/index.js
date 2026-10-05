@@ -13,7 +13,7 @@
 // "refresh-requested" (when /refresh last started a workflow run).
 // Secret GITHUB_TOKEN: a token allowed to run the repo's Actions workflows.
 import { generateVapidKeys, sendPush } from "./webpush.js";
-import { splashProbe } from "./splash.js";
+import { splashProbe, survivorFeed } from "./splash.js";
 
 const SITE = "https://boerkoel.github.io/OnThursdaysWeFantasy.io/";
 const REPO = "boerkoel/OnThursdaysWeFantasy.io";
@@ -86,6 +86,8 @@ export default {
       if (request.method === "GET" && pathname === "/health") return json({ ok: true }, 200, origin);
       // Survivor contest (Splash): response shapes only, for building the feed.
       if (request.method === "GET" && pathname === "/splash/probe") return json(await splashProbe(env), 200, origin);
+      // The Survivor tab's feed: standings and picks that have locked.
+      if (request.method === "GET" && pathname === "/survivor") return json(await survivorFeed(env), 200, origin);
       if (request.method !== "POST") return json({ error: "Not found" }, 404, origin);
       if (pathname === "/refresh") return json(await requestLiveUpdate(env), 200, origin);
 

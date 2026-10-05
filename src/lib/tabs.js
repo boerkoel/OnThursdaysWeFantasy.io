@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-// The site's five tabs. The address hash picks the tab (#standings, #league,
+// The site's six tabs. The address hash picks the tab (#standings, #league,
 // ...), so links, the Back button and the home-screen app all work. Older
 // section links (#playoffs, #rip, ...) open the tab that holds that section
 // and scroll to it.
@@ -9,7 +9,8 @@ export const TABS = [
   { id: "standings", label: "Standings", icon: "🏆" },
   { id: "death-watch", label: "Death Watch", icon: "🪓" },
   { id: "league", label: "League", icon: "📚" },
-  { id: "teams", label: "Teams", icon: "👥" }
+  { id: "teams", label: "Teams", icon: "👥" },
+  { id: "survivor", label: "Survivor", icon: "🛡️" }
 ];
 // Sections within each tab, for the phone section strip (ids on the page).
 export const TAB_SECTIONS = {
@@ -17,13 +18,15 @@ export const TAB_SECTIONS = {
   standings: [["standings-odds", "Standings"], ["playoffs", "Playoffs"], ["ultimate-loser", "Ultimate Loser"], ["raffle", "Raffle"]],
   "death-watch": [["death-watch", "At risk"], ["survival", "Survival odds"], ["rip", "RIP"]],
   league: [["history", "History"], ["awards", "Awards"], ["record-book", "Record Book"], ["rivalries", "Rivalries"]],
-  teams: []
+  teams: [],
+  survivor: [["survivor", "Pool"], ["survivor-picks", "Picks"], ["survivor-standings", "Entries"]]
 };
 export const SECTION_TAB = {
   scores: "live", primetime: "live", "ticket-race": "live", scoreboard: "live", "my-team": "live",
   "standings-odds": "standings", playoffs: "standings", "ultimate-loser": "standings", raffle: "standings",
   rip: "death-watch", survival: "death-watch",
-  history: "league", awards: "league", "record-book": "league", rivalries: "league"
+  history: "league", awards: "league", "record-book": "league", rivalries: "league",
+  "survivor-picks": "survivor", "survivor-standings": "survivor"
 };
 const isTab = id => TABS.some(t => t.id === id);
 const tabFor = hash => {

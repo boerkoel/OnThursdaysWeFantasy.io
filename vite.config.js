@@ -16,7 +16,7 @@ try { BUILD_TIME = Number(execSync("git log -1 --format=%ct", { encoding: "utf8"
 // preview tags (crawlers never see the part after #, so the hash alone can't
 // do this) and forwards to the site, keeping any #section from the link.
 const SITE_URL = "https://boerkoel.github.io/OnThursdaysWeFantasy.io/";
-const SHARE_TABS = { live: "Live", standings: "Standings", "death-watch": "Death Watch", league: "League", teams: "Teams" };
+const SHARE_TABS = { live: "Live", standings: "Standings", "death-watch": "Death Watch", league: "League", teams: "Teams", survivor: "Survivor" };
 const escapeHtml = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 function sharePage(tab, title) {
   const full = escapeHtml(`${title} · On Thursdays We Fantasy`);
