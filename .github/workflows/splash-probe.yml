@@ -1,0 +1,23 @@
+name: Splash probe (one-time)
+
+# Prints the shape of the Splash survivor API responses (no names, teams or
+# picks) to design the survivor feed. Uses only the access token; it never
+# refreshes the session. Safe to delete once the feed exists.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Probe
+        env:
+          SPLASH_ACCESS_TOKEN: ${{ secrets.SPLASH_ACCESS_TOKEN }}
+        run: node scripts/splash-probe.js
