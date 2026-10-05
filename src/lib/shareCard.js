@@ -141,21 +141,25 @@ export async function shareCard(spec, filename, section) {
   const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
   if (!blob) return;
   const file = new File([blob], filename + ".png", { type: "image/png" });
+  // Text with the image: the card's headline and its context line, then the
+  // link (sent as a link where the browser allows, otherwise in the text).
+  const link = sectionLink(section);
+  const title = [spec.title, spec.kicker].filter(Boolean).join(" · ") || "On Thursdays We Fantasy";
   if (navigator.canShare?.({ files: [file] })) {
-    for (const data of [{ files: [file], url: sectionLink(section) }, { files: [file] }]) {
+    for (const data of [{ files: [file], text: title, url: link }, { files: [file], text: `${title}\n${link}` }, { files: [file] }]) {
       try {
         await navigator.share(data);
         return;
       } catch (error) {
         if (error?.name === "AbortError") return; // closed the share sheet
-        // Some browsers refuse a link alongside files: try the image alone.
+        // Some browsers refuse a link (or text) alongside files: try less.
       }
     }
   }
   const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = file.name;
-  link.click();
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = file.name;
+  anchor.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
