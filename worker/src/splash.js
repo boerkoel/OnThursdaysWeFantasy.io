@@ -8,7 +8,9 @@
 export const CONTEST = "contest_01M3NEWY24GPHGZ5TYKSZ220S6";
 const API = "https://api.splashsports.com/contests-service-v2/api";
 const AUTH = "https://api.auth.splashsports.com";
+// Splash's firewall (CloudFront) blocks requests that don't identify as a browser.
 const APP_HEADERS = {
+  "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
   Accept: "application/json",
   Origin: "https://contests.app.splashsports.com",
   Referer: "https://contests.app.splashsports.com/",
