@@ -26,6 +26,11 @@ on:
         required: false
         default: false
         type: boolean
+      capture_snapshot:
+        description: "Save this run's League Wire inputs and output for scripts/test-wire.js"
+        required: false
+        default: false
+        type: boolean
   schedule:
     - cron: "2/5 * * * *"
 
@@ -131,11 +136,32 @@ jobs:
           ESPN_SWID: ${{ secrets.ESPN_SWID }}
         run: node scripts/fetch-drops.js
 
+      # Story test snapshot (manual runs only): the League Wire's inputs, saved
+      # just before it runs; its output is added right after.
+      - name: Capture League Wire inputs
+        if: steps.gate.outputs.update == 'true' && inputs.capture_snapshot == true
+        run: |
+          mkdir -p wire-snapshot
+          cp data/current/*.json wire-snapshot/
+          cp /tmp/previous-scoreboard.json wire-snapshot/previous-scoreboard.json || true
+          echo "{\"capturedAt\": $(date +%s000)}" > wire-snapshot/capture.json
+
       - name: Update League Wire
         if: steps.gate.outputs.update == 'true'
         env:
           PREVIOUS_SCOREBOARD_PATH: /tmp/previous-scoreboard.json
         run: node scripts/league-wire.js
+
+      - name: Save League Wire snapshot
+        if: steps.gate.outputs.update == 'true' && inputs.capture_snapshot == true
+        run: cp data/current/marquee.json wire-snapshot/expected-marquee.json
+      - name: Upload League Wire snapshot
+        if: steps.gate.outputs.update == 'true' && inputs.capture_snapshot == true
+        uses: actions/upload-artifact@v4
+        with:
+          name: wire-snapshot-${{ github.run_id }}
+          path: wire-snapshot/
+          retention-days: 30
 
       # One annotation per run with each live file's timestamp, so a stale
       # file (e.g. a continue-on-error step that failed) shows on the run page.

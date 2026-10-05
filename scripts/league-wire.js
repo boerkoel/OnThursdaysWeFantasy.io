@@ -7,15 +7,21 @@ import { BENCH_SLOT, IR_SLOT, settledLineupRegret } from "./lib/lineup.js";
 // in the daily update. Only needs the current week's data.
 function money(n){return Number.isFinite(Number(n)) ? Number(n).toFixed(2) : "0.00"}
 const readJson = async p => JSON.parse(await readFile(p, "utf8"));
+// Where to read and write (data/current normally; scripts/test-wire.js points
+// these at a captured snapshot), and the clock (a snapshot replays at the
+// time it was captured, so time windows behave as they did live).
+const DATA = process.env.WIRE_DATA_DIR || "data/current";
+const OUT = process.env.WIRE_OUT_DIR || DATA;
+const clockNow = () => Number(process.env.WIRE_NOW) || Date.now();
 const writeJson = async (p, v) => writeFile(p, JSON.stringify(v, null, 2) + "\n");
 
-const previousScoreboard = await readJson(process.env.PREVIOUS_SCOREBOARD_PATH || "data/current/scoreboard.json").catch(() => null);
-const teamData = await readJson("data/current/mTeam.json");
-const matchupData = await readJson("data/current/mMatchup.json");
-const guillotineData = await readJson("data/current/guillotine.json").catch(() => null);
-const liveScoringData = await readJson("data/current/mLiveScoring.json");
-const boxscoreData = await readJson("data/current/mBoxscore.json");
-const rosterData = await readJson("data/current/mRoster.json").catch(() => ({ teams: [] }));
+const previousScoreboard = await readJson(process.env.PREVIOUS_SCOREBOARD_PATH || `${DATA}/scoreboard.json`).catch(() => null);
+const teamData = await readJson(`${DATA}/mTeam.json`);
+const matchupData = await readJson(`${DATA}/mMatchup.json`);
+const guillotineData = await readJson(`${DATA}/guillotine.json`).catch(() => null);
+const liveScoringData = await readJson(`${DATA}/mLiveScoring.json`);
+const boxscoreData = await readJson(`${DATA}/mBoxscore.json`);
+const rosterData = await readJson(`${DATA}/mRoster.json`).catch(() => ({ teams: [] }));
 
 const teamNames = new Map((teamData.teams || []).map(t => [t.id, (t.name || "").trim()]));
 const name = id => teamNames.get(id) || "Team " + id;
@@ -33,7 +39,7 @@ const allLiveSchedules = [...liveSchedule, ...boxscoreSchedule];
 
 // The live scoreboard (scores, ESPN projections, Monte Carlo odds) is built by
 // update-live-scoreboard.js, which must run before this script.
-const liveScoreboard = await readJson("data/current/scoreboard.json");
+const liveScoreboard = await readJson(`${DATA}/scoreboard.json`);
 const currentScores = Number(liveScoreboard.week) === currentWeek ? (liveScoreboard.scores || []) : [];
 const projectedMedian = Number(liveScoreboard.projectedMedian);
 // "Near median" is decided by update-live-scoreboard.js (the teams on either
@@ -41,7 +47,7 @@ const projectedMedian = Number(liveScoreboard.projectedMedian);
 const isNearMedian = s => Boolean(s?.nearMedian);
 
 async function buildKeyPlays() {
-  const plays = await readJson("data/current/live-plays.json").catch(() => ({ plays: [] }));
+  const plays = await readJson(`${DATA}/live-plays.json`).catch(() => ({ plays: [] }));
   return (plays.plays || [])
     .filter(play => Math.abs(Number(play.points)) >= 4)
     .sort((a, b) => {
@@ -261,7 +267,7 @@ const PICKUP_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 const POSITIONS = { 1: "QB", 2: "RB", 3: "WR", 4: "TE", 5: "K", 16: "D/ST" };
 function addPickupStories(add) {
   const pickups = (rosterData.teams || []).flatMap(t => (t.roster?.entries || [])
-    .filter(e => e.acquisitionType === "ADD" && Date.now() - Number(e.acquisitionDate) <= PICKUP_WINDOW_MS && e.playerPoolEntry?.player)
+    .filter(e => e.acquisitionType === "ADD" && clockNow() - Number(e.acquisitionDate) <= PICKUP_WINDOW_MS && e.playerPoolEntry?.player)
     .map(e => {
       const player = e.playerPoolEntry.player;
       const stat = source => Number((player.stats || []).find(s => Number(s.scoringPeriodId) === currentWeek && Number(s.statSourceId) === source && Number(s.statSplitTypeId) === 1)?.appliedTotal);
@@ -300,9 +306,9 @@ function addPickupStories(add) {
 // Injury wards (a team missing a lot of draft capital) and bold roster
 // constructions (piles of onesies, no depth where it counts). Neither depends
 // on the games, so they run all week.
-const draftData = await readJson("data/current/mDraftDetail.json").catch(() => null);
+const draftData = await readJson(`${DATA}/mDraftDetail.json`).catch(() => null);
 const draftRound = new Map((draftData?.draftDetail?.picks || []).map(p => [Number(p.playerId), Number(p.roundId)]));
-const settingsData = await readJson("data/current/mSettings.json").catch(() => null);
+const settingsData = await readJson(`${DATA}/mSettings.json`).catch(() => null);
 const slotCounts = settingsData?.settings?.rosterSettings?.lineupSlotCounts || {};
 const startersAt = slot => Number(slotCounts[slot] ?? 1);
 const OUT_STATUSES = new Set(["OUT", "INJURY_RESERVE", "DOUBTFUL", "SUSPENSION"]);
@@ -666,7 +672,7 @@ function addWhatToWatchStories(add, matchupStates) {
   const upcoming = nflGames.filter(g => g.state === "pre" && g.kickoff).sort((a, b) => Date.parse(a.kickoff) - Date.parse(b.kickoff));
   if (!upcoming.length) return;
   const first = Date.parse(upcoming[0].kickoff);
-  if (first - Date.now() > WATCH_AHEAD_MS) return;
+  if (first - clockNow() > WATCH_AHEAD_MS) return;
   const slot = new Set(upcoming.filter(g => Date.parse(g.kickoff) - first <= SLOT_SPREAD_MS).map(g => g.id));
   const inSlot = teamId => (liveTeams.get(teamId)?.players || []).filter(p => !p.bench && p.game && slot.has(p.game.id));
   const when = kickoffLabel(upcoming[0].kickoff) + (slot.size === 1 ? " (" + upcoming[0].name + ")" : "");
@@ -713,7 +719,7 @@ function addGameToWatchStory(add, matchupStates) {
   const sdIn = (teamId, gameId) => Math.hypot(...(liveTeams.get(teamId)?.players || [])
     .filter(p => !p.bench && !p.finished && p.game?.id === gameId)
     .map(p => playerOutlook({actual:p.actual, projection:p.projection, positionId:p.positionId}).sd));
-  const candidates = nflGames.filter(g => !g.completed && (g.state === "in" || (g.kickoff && Date.parse(g.kickoff) - Date.now() <= WATCH_AHEAD_MS)));
+  const candidates = nflGames.filter(g => !g.completed && (g.state === "in" || (g.kickoff && Date.parse(g.kickoff) - clockNow() <= WATCH_AHEAD_MS)));
   const games = candidates.map(g => {
     const starters = [...liveTeams.values()].flatMap(t => t.players).filter(p => !p.bench && !p.finished && p.game?.id === g.id);
     const pointsLeft = round(starters.reduce((sum, p) => sum + Math.max(0, (p.projection ?? 0) - p.actual), 0));
@@ -756,7 +762,7 @@ const shortName = p => /D\/ST/.test(p.lastName) ? p.name : p.lastName;
 const EARLY_MIN_SWING = 5;
 const BIG_PLAY_WINDOW_MS = 45 * 60 * 1000;
 const BIG_PLAY_MIN_SHIFT = 4;
-const livePlayFeed = await readJson("data/current/live-plays.json").catch(() => null);
+const livePlayFeed = await readJson(`${DATA}/live-plays.json`).catch(() => null);
 function addEarlyMomentumStories(add, matchupStates) {
   const starters = [...liveTeams.values()].flatMap(t => t.players).filter(p => !p.bench);
   const started = starters.filter(p => p.game && p.game.state !== "pre");
@@ -781,7 +787,7 @@ function addEarlyMomentumStories(add, matchupStates) {
   }
 
   const bigPlay = (Number(livePlayFeed?.week) === currentWeek ? livePlayFeed.plays || [] : [])
-    .filter(p => p.momentum?.shift >= BIG_PLAY_MIN_SHIFT && p.wallclock && Date.now() - Date.parse(p.wallclock) <= BIG_PLAY_WINDOW_MS)
+    .filter(p => p.momentum?.shift >= BIG_PLAY_MIN_SHIFT && p.wallclock && clockNow() - Date.parse(p.wallclock) <= BIG_PLAY_WINDOW_MS)
     .sort((a, b) => b.momentum.shift - a.momentum.shift)[0];
   if (bigPlay) {
     const team = name(Number(bigPlay.fantasyTeamId));
@@ -810,7 +816,7 @@ function addInjuryStories(add) {
   const clamp = p => Math.min(0.9999, Math.max(0.0001, p));
   const candidates = [];
   for (const i of latest.values()) {
-    if (!INJURY_STATUS_TEXT[i.status] || !i.wallclock || Date.now() - Date.parse(i.wallclock) > INJURY_MAX_AGE_MS) continue;
+    if (!INJURY_STATUS_TEXT[i.status] || !i.wallclock || clockNow() - Date.parse(i.wallclock) > INJURY_MAX_AGE_MS) continue;
     const who = i.player.split(" ").slice(-1)[0];
     if (i.league === "main") {
       const team = currentScores.find(s => s.teamId === Number(i.teamId));
@@ -858,7 +864,7 @@ const SWAP_MIN_POINTS = 5;
 const SWAP_MIN_GAP = 3;
 const SHREWD_MIN_POINTS = 8;
 const SHREWD_MIN_GAP = 5;
-const dropsData = await readJson("data/current/drops.json").catch(() => null);
+const dropsData = await readJson(`${DATA}/drops.json`).catch(() => null);
 const swapPlayed = proTeamId => { const g = nflGameByProTeam.get(Number(proTeamId)); return Boolean(g && g.state !== "pre"); };
 function shrewdSwaps() {
   if (Number(dropsData?.week) !== currentWeek) return [];
@@ -1025,7 +1031,7 @@ function addStockWatchStory(add) {
 }
 
 const keyPlays = await buildKeyPlays();
-await writeJson("data/current/key-plays.json", {
+await writeJson(`${OUT}/key-plays.json`, {
   week: currentWeek,
   updatedAt: new Date().toISOString(),
   plays: keyPlays
@@ -1091,11 +1097,11 @@ async function weekInReview(previous, archive) {
   const kickoff = await lastKickoff(week, previous);
   const meta = {week, lastKickoff:kickoff};
   const reviewUntil = kickoff ? Date.parse(kickoff) + GAME_LENGTH_MS + REVIEW_HOURS_AFTER_LAST_GAME * 60 * 60 * 1000 : 0;
-  if (Date.now() > reviewUntil) return {stories:[], meta};
+  if (clockNow() > reviewUntil) return {stories:[], meta};
 
   const label = type => "WEEK " + week + " · " + type;
   const stories = [];
-  const weekly = await readJson("data/current/weekly.json").catch(() => null);
+  const weekly = await readJson(`${DATA}/weekly.json`).catch(() => null);
   const recap = (weekly?.weeks || []).find(w => Number(w.week) === week)?.recap || [];
   const RECAP_SCORES = {"HIGH SCORE":80, "CLOSEST MATCHUP":79, "INSTANT REGRET":77, "TOUGH LUCK":72, "BLOWOUT":70, "LUCKY WIN":69, "BIGGEST REGRET":62};
   for (const story of recap) stories.push({type:label(story.type), text:story.text, score:RECAP_SCORES[story.type] ?? 60});
@@ -1123,9 +1129,9 @@ function interleave(first, second) {
 // Before anyone in the league has scored this week: rivalry history, streaks,
 // big matchups at the top (or bottom) of the standings, and title odds.
 async function readOptional(path) { return readJson(path).catch(() => null); }
-const recordBook = await readOptional("data/current/record-book.json");
-const standingsData = await readOptional("data/current/standings.json");
-const seasonOddsData = await readOptional("data/current/season-odds.json");
+const recordBook = await readOptional(`${DATA}/record-book.json`);
+const standingsData = await readOptional(`${DATA}/standings.json`);
+const seasonOddsData = await readOptional(`${DATA}/season-odds.json`);
 
 function addWeekAheadStories(add) {
   if (currentScores.some(s => Number(s.score) !== 0)) return;
@@ -1175,8 +1181,8 @@ function addWeekAheadStories(add) {
   }
 }
 
-const previousMarquee = await readJson("data/current/marquee.json").catch(() => null);
+const previousMarquee = await readJson(`${DATA}/marquee.json`).catch(() => null);
 const headlines = weekHeadlines() || previousMarquee?.headlines || null;
 const review = await weekInReview(previousMarquee, headlines);
 const marqueeStories = interleave(review.stories, buildMarqueeStories());
-await writeJson("data/current/marquee.json",{week:currentWeek,lastUpdated:new Date().toISOString(),stories:marqueeStories,headlines,review:review.meta});
+await writeJson(`${OUT}/marquee.json`,{week:currentWeek,lastUpdated:new Date().toISOString(),stories:marqueeStories,headlines,review:review.meta});
