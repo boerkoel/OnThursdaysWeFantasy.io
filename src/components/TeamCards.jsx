@@ -63,7 +63,7 @@ function TeamProfile({ team, onClose }) {
             : <span className="position-fit-empty">No obvious complementary trade partner yet.</span>}
         </div>
         {team.profileAnalytics.rosterFit.targets?.length ? <>
-          <div className="trade-section-heading trade-target-heading"><span>🎯</span><div><small>PLAYERS TO TARGET</small><strong>Potential Trade Targets</strong><em>League-wide: players currently riding another team's bench who would have helped your lineup</em></div></div>
+          <div className="trade-section-heading trade-target-heading"><span>🎯</span><div><small>PLAYERS TO TARGET</small><strong>Potential Trade Targets</strong><em>League-wide: players riding another team's bench (benched over half the time) who would have helped your lineup</em></div></div>
           <div className="trade-target-list">
             {team.profileAnalytics.rosterFit.targets.map(p => <div className="trade-target" key={p.teamId + "-" + p.playerId}>
               <div className="trade-target-info">

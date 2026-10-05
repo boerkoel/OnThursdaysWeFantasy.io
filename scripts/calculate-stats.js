@@ -826,6 +826,10 @@ for (const team of teams.values()) {
     if (Number(other.id) === Number(team.id)) continue;
 
     for (const player of benchTargetsByTeam.get(Number(other.id)) || []) {
+      // Only players benched more than half the weeks they've been rostered:
+      // a player usually in the starting lineup is part of that team's plans,
+      // not a realistic target.
+      if (Number(player.startRate) >= 50) continue;
       // Don't recommend a player at a position this team already identifies
       // as a need. A trade target should address a roster strength/need fit,
       // not add another hole at the destination position.
