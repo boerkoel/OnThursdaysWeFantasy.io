@@ -441,6 +441,14 @@ if (winHistory.length > MAX_WIN_HISTORY) {
   winHistory = winHistory.filter((_, i) => i % 2 === 0 || i >= winHistory.length - 100);
 }
 
+// Ticket-odds history (odds of the week's top score) for the ticket race
+// chart: same rules as the win-odds history.
+const raffleSnapshot = { t: winSnapshot.t, p: Object.fromEntries(currentScores.map(s => [s.teamId, s.topScoreProbability])) };
+let raffleHistory = Number(previousScoreboard?.raffleHistory?.week) === currentWeek ? [...(previousScoreboard.raffleHistory.points || [])] : [];
+const lastRaffle = raffleHistory[raffleHistory.length - 1];
+if (!lastRaffle || Object.entries(raffleSnapshot.p).some(([id, p]) => lastRaffle.p?.[id] !== p)) raffleHistory.push(raffleSnapshot);
+if (raffleHistory.length > MAX_WIN_HISTORY) raffleHistory = raffleHistory.filter((_, i) => i % 2 === 0 || i >= raffleHistory.length - 100);
+
 await writeFile("data/current/scoreboard.json", JSON.stringify({
   week: currentWeek,
   lastUpdated: new Date().toISOString(),
@@ -452,6 +460,7 @@ await writeFile("data/current/scoreboard.json", JSON.stringify({
   probabilitySimulations: SIMULATIONS,
   nflGames,
   winHistory: { week: currentWeek, points: winHistory },
+  raffleHistory: { week: currentWeek, points: raffleHistory },
   projectionHistory
 }, null, 2) + "\n");
 

@@ -403,7 +403,9 @@ function App() {
           {matchupIds.filter(id => id !== myMatchupId).map(id => renderMatchup(id))}
         </div>
       </section>
-      <RafflePodium scores={scores} logos={teamLogos} week={scoreboard.week} final={Boolean(currentWeekComplete)} />
+      <RafflePodium scores={scores} logos={teamLogos} week={scoreboard.week} final={Boolean(currentWeekComplete)}
+        history={Number(scoreboard.raffleHistory?.week) === Number(scoreboard.week) ? scoreboard.raffleHistory.points : []}
+        plays={Number(livePlayFeed.week) === Number(scoreboard.week) ? livePlayFeed.plays || [] : []} nflGames={scoreboard.nflGames || []} />
       <section id="scoreboard" className="section">
         <div className="section-heading"><div><span className="section-kicker">MEDIAN SCORING</span><h2>Week {scoreboard.week} Scoreboard</h2></div>
           {displayScores.length ? <ShareButton iconOnly label="Share the scoreboard" filename={`week-${scoreboard.week}-scoreboard`} build={shareScoreboard} /> : null}</div>

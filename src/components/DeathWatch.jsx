@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { formatDay, money } from "../lib/data.js";
 import { ShareButton, TeamLogo } from "./LiveBits.jsx";
 import { TeamLineup } from "./MatchupLineup.jsx";
-import ChopChart from "./ChopChart.jsx";
+import ChopChart, { peakTeams } from "./ChopChart.jsx";
 import Podium from "./Podium.jsx";
 import obituaryData from "../../data/current/obituaries.json";
 import obituariesMarkdown from "../../content/obituaries.md?raw";
@@ -199,9 +199,11 @@ export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
   if (!(guillotine.teams?.length)) return null;
   const toggleLineup = id => setOpenLineups(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
   const atRisk = guillotine.teams.filter(t => t.chopProbability > 0).slice(0, 3);
-  const atRiskIds = new Set(atRisk.map(t => t.teamId));
   const history = Number(guillotine.chopHistory?.week) === Number(guillotine.week) ? guillotine.chopHistory.points : [];
-  const plays = Number(livePlays?.week) === Number(guillotine.week) ? (livePlays.guillotinePlays || []).filter(p => atRiskIds.has(Number(p.teamId))) : [];
+  // The chart follows the week's story: the teams most at risk at any point.
+  const chartTeams = peakTeams(history, guillotine.teams.map(t => ({ ...t, value: t.chopProbability })));
+  const chartIds = new Set(chartTeams.map(t => t.teamId));
+  const plays = Number(livePlays?.week) === Number(guillotine.week) ? (livePlays.guillotinePlays || []).filter(p => chartIds.has(Number(p.teamId))) : [];
   return (
     <section id="death-watch" className="section">
       <div className="section-heading">
@@ -248,7 +250,7 @@ export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
           </div>
         </article>)}
       </div>
-      {atRisk.length ? <ChopChart history={history} teams={atRisk} plays={plays} /> : null}
+      {chartTeams.length ? <ChopChart history={history} teams={chartTeams} plays={plays} title="CHOP ODDS · THIS WEEK'S DANGER ZONE" /> : null}
       {guillotine.chopped?.length ? <p className="median-note">Already chopped: {guillotine.chopped.map(c => `${c.team} (Week ${c.week})`).join(" · ")} · <a href="#rip" onClick={openObituaries}>Rest in peace</a></p> : null}
       <SurvivalOdds teams={guillotine.teams} guillotine={guillotine} />
       <Obituaries guillotine={guillotine} />

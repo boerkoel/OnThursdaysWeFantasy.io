@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { money } from "../lib/data.js";
 
-// Death Watch panel: the chop odds of the most at-risk teams over the week,
+// Odds race panel (Death Watch chop odds, ticket race odds): the odds of the
+// three teams on the podium over the week,
 // one line each, with a 🏈 on each play that moved a team's chop odds 3%+
 // (hover or tap for the play), and those teams' key plays underneath: the
 // 5 most recent, topped up with the week's biggest swings (up to 10).
@@ -18,9 +19,20 @@ export const CHOP_COLORS = ["#ef9a96", "#e6c85c", "#9cc3e6"];
 
 const newestFirst = (a, b) => Date.parse(b.wallclock) - Date.parse(a.wallclock);
 const playTime = play => play.period ? `Q${play.period > 4 ? "OT" : play.period} ${play.clock || ""}`.trim() : "";
-const swingText = play => play.momentum
+const chopSwingText = play => play.momentum
   ? `chop odds ${play.momentum.shift > 0 ? "down" : "up"} ${money(Math.abs(play.momentum.shift))}% (now ${money(play.momentum.chopProbability)}%)`
   : null;
+
+// The teams whose story the chart tells: the n with the highest odds at any
+// point this week (history plus now), so a team that escaped (or locked it
+// up) stays on the chart with the plays that did it.
+export function peakTeams(history, teams, n = 3) {
+  const peak = new Map(teams.map(t => [String(t.teamId), Number(t.value) || 0]));
+  for (const pt of history || []) for (const [id, v] of Object.entries(pt.p || {})) {
+    if (peak.has(id) && Number(v) > peak.get(id)) peak.set(id, Number(v));
+  }
+  return [...teams].sort((a, b) => peak.get(String(b.teamId)) - peak.get(String(a.teamId))).filter(t => peak.get(String(t.teamId)) > 0).slice(0, n);
+}
 
 export function keyChopPlays(plays) {
   const recent = plays.filter(p => p.wallclock && (Math.abs(p.points) >= KEY_POINTS || Math.abs(p.momentum?.shift || 0) >= BIG_SWING) && Date.now() - Date.parse(p.wallclock) <= KEY_PLAY_MAX_AGE_MS)
@@ -33,12 +45,12 @@ export function keyChopPlays(plays) {
   return [...chosen.values()].sort(newestFirst);
 }
 
-export default function ChopChart({ history, teams, plays }) {
+export default function ChopChart({ history, teams, plays, colors = CHOP_COLORS, title = "CHOP ODDS · MOST AT RISK", swingText = chopSwingText, ariaLabel = "Chop odds over the week for the most at-risk teams" }) {
   const [hover, setHover] = useState(null);
   const [activeMarker, setActiveMarker] = useState(null);
   const points = (history || []).map(pt => ({ t: Date.parse(pt.t), p: pt.p || {} })).filter(pt => Number.isFinite(pt.t));
   const ids = teams.map(t => String(t.teamId));
-  const colorOf = Object.fromEntries(ids.map((id, i) => [id, CHOP_COLORS[i]]));
+  const colorOf = Object.fromEntries(ids.map((id, i) => [id, colors[i]]));
   const nameOf = Object.fromEntries(teams.map(t => [String(t.teamId), t.team]));
   const keyPlays = keyChopPlays(plays);
   const enoughHistory = points.length >= 2;
@@ -83,7 +95,7 @@ export default function ChopChart({ history, teams, plays }) {
         <em>{when}</em>
       </div>
       <div className="swing-plot chop-plot">
-        <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} preserveAspectRatio="none" role="img" aria-label="Chop odds over the week for the most at-risk teams"
+        <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} preserveAspectRatio="none" role="img" aria-label={ariaLabel}
           onMouseMove={onMove} onMouseLeave={() => setHover(null)} onTouchStart={onMove} onTouchMove={onMove} onTouchEnd={() => setHover(null)}>
           {[0.25, 0.5, 0.75].map(f => <line key={f} className="swing-midline" x1={PAD} x2={WIDTH - PAD} y1={y(top * f)} y2={y(top * f)} />)}
           {paths.map((d, i) => <path key={ids[i]} d={d} fill="none" stroke={colorOf[ids[i]]} strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />)}
@@ -114,7 +126,7 @@ export default function ChopChart({ history, teams, plays }) {
   }
 
   return <div className="chop-panel">
-    <div className="key-plays-heading"><span>CHOP ODDS · MOST AT RISK</span><em>{enoughHistory ? "HOVER THE LINES OR 🏈" : "CHART STARTS WITH THE NEXT UPDATES"}</em></div>
+    <div className="key-plays-heading"><span>{title}</span><em>{enoughHistory ? "HOVER THE LINES OR 🏈" : "CHART STARTS WITH THE NEXT UPDATES"}</em></div>
     {chart}
     {keyPlays.length ? <div className="key-plays">
       <div className="key-plays-heading"><span>KEY PLAYS</span><em>LATEST + BIGGEST SWINGS</em></div>

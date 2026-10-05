@@ -54,6 +54,37 @@ function momentumByPlay(newPlays, scoresByTeam) {
   return result;
 }
 
+// Ticket-odds swing of a main-league play: the team's odds of the week's top
+// score, treated as normal in its final score with its own spread and a
+// typical team's combined. Positive shift = odds up.
+// Returns play id -> { shift, topScoreProbability }.
+function raffleMomentum(newPlays, scoresByTeam) {
+  const result = new Map();
+  const sds = [...scoresByTeam.values()].map(t => Number(t.projectionSd) || 0).sort((a, b) => a - b);
+  const typicalSd = sds.length ? sds[Math.floor(sds.length / 2)] : 0;
+  const byTeam = new Map();
+  for (const play of newPlays) {
+    if (!play.wallclock || Date.now() - Date.parse(play.wallclock) > MOMENTUM_MAX_AGE_MS) continue;
+    if (!byTeam.has(play.fantasyTeamId)) byTeam.set(play.fantasyTeamId, []);
+    byTeam.get(play.fantasyTeamId).push(play);
+  }
+  for (const [teamId, plays] of byTeam) {
+    const team = scoresByTeam.get(Number(teamId));
+    const odds = Number(team?.topScoreProbability);
+    if (!team || !(odds > 0 && odds < 100)) continue;
+    const sd = Math.max(MIN_MARGIN_SD, Math.hypot(Number(team.projectionSd) || 0, typicalSd));
+    let z = normalQuantile(Math.min(0.9999, Math.max(0.0001, odds / 100)));
+    plays.sort((x, y) => Date.parse(y.wallclock) - Date.parse(x.wallclock));
+    for (const play of plays) {
+      const after = normalCdf(z), before = normalCdf(z - Number(play.points) / sd);
+      z -= Number(play.points) / sd;
+      const shift = Math.round((after - before) * 1000) / 10;
+      if (shift) result.set(play.id, { shift, topScoreProbability: Math.round(after * 1000) / 10 });
+    }
+  }
+  return result;
+}
+
 // Chop-odds swing of a guillotine play: a team's chop odds are treated as
 // normal in its final score, with the spread of its own score and of the
 // chop line (roughly another team's) combined. Positive shift = safer.
@@ -552,18 +583,22 @@ try {
   const previousById = new Map(previousPlays.map(p => [p.id, p]));
   const scoreboard = await readJson("data/current/scoreboard.json", {});
   const scoresByTeam = Number(scoreboard.week) === currentWeek ? new Map((scoreboard.scores || []).map(s => [Number(s.teamId), s])) : new Map();
-  const fresh = momentumByPlay(relevant.filter(p => !previousById.has(p.id)), scoresByTeam);
+  const newPlays = relevant.filter(p => !previousById.has(p.id));
+  const fresh = momentumByPlay(newPlays, scoresByTeam);
+  const freshRaffle = raffleMomentum(newPlays, scoresByTeam);
   const deduped = new Map();
   for (const play of [...relevant, ...previousPlays]) {
     if (deduped.has(play.id)) continue;
-    const momentum = previousById.has(play.id) ? previousById.get(play.id).momentum : fresh.get(play.id);
-    deduped.set(play.id, momentum ? { ...play, momentum } : play);
+    const old = previousById.get(play.id);
+    const momentum = old ? old.momentum : fresh.get(play.id);
+    const raffle = old ? old.raffle : freshRaffle.get(play.id);
+    deduped.set(play.id, { ...play, ...(momentum ? { momentum } : {}), ...(raffle ? { raffle } : {}) });
   }
 
   // The newest 60 plays, plus every play this week that moved a matchup's
-  // odds 3%+ (the football markers on the swing charts).
+  // odds or a team's ticket odds 3%+ (the football markers on the charts).
   const sorted = [...deduped.values()].sort((a, b) => new Date(b.wallclock || 0) - new Date(a.wallclock || 0));
-  const plays = sorted.filter((play, i) => i < 60 || play.momentum?.shift >= 3);
+  const plays = sorted.filter((play, i) => i < 60 || play.momentum?.shift >= 3 || Math.abs(play.raffle?.shift || 0) >= 3);
 
   // Guillotine plays: each new one gets the chop-odds swing it caused, judged
   // like matchup momentum (newest first per team, against this run's odds).
