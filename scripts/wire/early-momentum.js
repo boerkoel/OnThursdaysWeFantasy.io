@@ -1,4 +1,4 @@
-import { DATA, clockNow, currentWeek, fit, listNames, liveScoreboard, liveTeams, money, name, pts, readJson } from "./context.js";
+import { DATA, clockNow, currentWeek, fit, listNames, liveScoreboard, liveTeams, money, name, pct, pts, readJson } from "./context.js";
 
 // League Wire: early edges and the biggest play.
 // ---- Early momentum ---------------------------------------------------------
@@ -28,9 +28,9 @@ export function addEarlyMomentumStories(add, matchupStates) {
       const by = leader && leader.actual > 0 ? ", led by " + shortName(leader) + " (" + pts(leader.actual) + ")" : "";
       const others = movers.slice(1, 3).filter(m => m.team.teamId !== best.opp.teamId);
       add("EARLY EDGE",fit(
-        "⚡ Early edge: " + best.team.team + " went from " + money(best.before) + "% to " + money(best.after) + "% against " + best.opp.team + by + "." + (others.length ? " Also up: " + listNames(others.map(m => m.team.team + " (+" + money(m.after - m.before) + ")")) + "." : ""),
-        "⚡ Early edge: " + best.team.team + " went from " + money(best.before) + "% to " + money(best.after) + "% against " + best.opp.team + by + ".",
-        "⚡ Early edge: " + best.team.team + " is up to " + money(best.after) + "% against " + best.opp.team + by + "."
+        "⚡ Early edge: " + best.team.team + " went from " + pct(best.before) + " to " + pct(best.after) + " against " + best.opp.team + by + "." + (others.length ? " Also up: " + listNames(others.map(m => m.team.team + " (+" + money(m.after - m.before) + ")")) + "." : ""),
+        "⚡ Early edge: " + best.team.team + " went from " + pct(best.before) + " to " + pct(best.after) + " against " + best.opp.team + by + ".",
+        "⚡ Early edge: " + best.team.team + " is up to " + pct(best.after) + " against " + best.opp.team + by + "."
       ),80 + (best.after - best.before) / 10);
     }
   }
@@ -42,8 +42,8 @@ export function addEarlyMomentumStories(add, matchupStates) {
     const team = name(Number(bigPlay.fantasyTeamId));
     const sign = bigPlay.points > 0 ? "+" : "";
     add("BIGGEST PLAY",fit(
-      "💥 Biggest play: " + bigPlay.player + " (" + sign + pts(bigPlay.points) + " for " + team + ") swung the odds " + money(bigPlay.momentum.shift) + "% toward " + bigPlay.momentum.toward + ", now " + money(bigPlay.momentum.winProbability) + "%.",
-      "💥 Biggest play: " + bigPlay.player + " (" + sign + pts(bigPlay.points) + ") swung the odds " + money(bigPlay.momentum.shift) + "% toward " + bigPlay.momentum.toward + "."
+      "💥 Biggest play: " + bigPlay.player + " (" + sign + pts(bigPlay.points) + " for " + team + ") swung the odds " + pct(bigPlay.momentum.shift) + " toward " + bigPlay.momentum.toward + ", now " + pct(bigPlay.momentum.winProbability) + ".",
+      "💥 Biggest play: " + bigPlay.player + " (" + sign + pts(bigPlay.points) + ") swung the odds " + pct(bigPlay.momentum.shift) + " toward " + bigPlay.momentum.toward + "."
     ),84 + bigPlay.momentum.shift / 5);
   }
 }

@@ -1,5 +1,5 @@
 import { normalCdf, normalQuantile } from "../lib/simulation.js";
-import { clockNow, currentScores, currentWeek, fit, guillotineData, liveTeams, money, name, surname } from "./context.js";
+import { clockNow, currentScores, currentWeek, fit, guillotineData, liveTeams, money, name, pct, surname } from "./context.js";
 import { livePlayFeed } from "./early-momentum.js";
 
 // League Wire: mid-game injury alerts.
@@ -34,8 +34,8 @@ export function addInjuryStories(add) {
       const done = 100 * normalCdf(normalQuantile(clamp(odds / 100)) - rest / sd);
       if (odds - done < INJURY_MIN_SWING) continue;
       candidates.push({type:"INJURY ALERT", swing:odds - done, text:fit(
-        "🚑 INJURY ALERT: " + i.player + " " + INJURY_STATUS_TEXT[i.status] + " for " + team.team + ". If he's done, their odds against " + opp.team + " fall from " + money(odds) + "% to " + money(done) + "%.",
-        "🚑 INJURY ALERT: " + who + " " + INJURY_STATUS_TEXT[i.status] + " for " + team.team + " — " + money(odds) + "% → " + money(done) + "% vs " + opp.team + " if he's done."
+        "🚑 INJURY ALERT: " + i.player + " " + INJURY_STATUS_TEXT[i.status] + " for " + team.team + ". If he's done, their odds against " + opp.team + " fall from " + pct(odds) + " to " + pct(done) + ".",
+        "🚑 INJURY ALERT: " + who + " " + INJURY_STATUS_TEXT[i.status] + " for " + team.team + " — " + pct(odds) + " → " + pct(done) + " vs " + opp.team + " if he's done."
       )});
     } else if (Number(guillotineData?.week) === currentWeek) {
       const team = (guillotineData.teams || []).find(t => t.teamId === Number(i.teamId));
@@ -47,8 +47,8 @@ export function addInjuryStories(add) {
       const done = 100 * normalCdf(normalQuantile(clamp(chop / 100)) + player.projectedRest / sd);
       if (done - chop < INJURY_MIN_SWING) continue;
       candidates.push({type:"DEATH WATCH INJURY", swing:done - chop, text:fit(
-        "🚑🪓 " + i.player + " " + INJURY_STATUS_TEXT[i.status] + " for " + team.team + ". If he's done, their chop odds jump from " + money(chop) + "% to " + money(done) + "%.",
-        "🚑🪓 " + who + " " + INJURY_STATUS_TEXT[i.status] + " for " + team.team + ": chop odds " + money(chop) + "% → " + money(done) + "% if he's done."
+        "🚑🪓 " + i.player + " " + INJURY_STATUS_TEXT[i.status] + " for " + team.team + ". If he's done, their chop odds jump from " + pct(chop) + " to " + pct(done) + ".",
+        "🚑🪓 " + who + " " + INJURY_STATUS_TEXT[i.status] + " for " + team.team + ": chop odds " + pct(chop) + " → " + pct(done) + " if he's done."
       )});
     }
   }

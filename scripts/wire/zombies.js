@@ -1,5 +1,5 @@
 import { BENCH_SLOT, IR_SLOT } from "../lib/lineup.js";
-import { OUT, currentWeek, fit, guillotineData, liveTeams, money, name, nflGameByProTeam, nflGames, pickLine, possessive, pts, rosterData } from "./context.js";
+import { OUT, currentWeek, fit, guillotineData, liveTeams, money, name, nflGameByProTeam, nflGames, pct, pickLine, possessive, pts, rosterData } from "./context.js";
 import { kickoffLabel } from "./what-to-watch.js";
 
 // League Wire: zombie starters and lineup alerts.
@@ -73,12 +73,12 @@ export function addZombieStories(add) {
     const player = g.p.name;
     add(g.z.started ? "DEATH WATCH ZOMBIE" : "DEATH WATCH ALERT", g.z.started
       ? pickLine(g.t.team + player, [
-          "🪓🧟 " + g.t.team + " started " + player + " (" + why + ") — a 0.00 in a league where the lowest score gets chopped. " + (g.t.chopProbability <= 0 ? "Survived anyway. Somehow." : g.t.chopProbability >= 100 ? "The guillotine says thanks." : "Chop odds: " + money(g.t.chopProbability) + "%."),
-          "🪓🧟 " + g.t.team + " is playing a man down with " + player + " (" + why + ") in the lineup. " + (g.t.chopProbability <= 0 ? "Lived to tell about it, somehow." : "The guillotine has noticed (" + money(g.t.chopProbability) + "%).")
+          "🪓🧟 " + g.t.team + " started " + player + " (" + why + ") — a 0.00 in a league where the lowest score gets chopped. " + (g.t.chopProbability <= 0 ? "Survived anyway. Somehow." : g.t.chopProbability >= 100 ? "The guillotine says thanks." : "Chop odds: " + pct(g.t.chopProbability) + "."),
+          "🪓🧟 " + g.t.team + " is playing a man down with " + player + " (" + why + ") in the lineup. " + (g.t.chopProbability <= 0 ? "Lived to tell about it, somehow." : "The guillotine has noticed (" + pct(g.t.chopProbability) + ").")
         ])
       : pickLine(g.t.team + player, [
           "🪓🧟 " + g.t.team + " is starting " + player + " (" + why + ") in a league where the lowest score gets chopped. Fix it by " + whenOf(g.z.game) + ", or the guillotine thanks you for your service.",
-          "🪓🧟 Bold move: " + g.t.team + " has " + player + " (" + why + ") in the lineup with " + money(g.t.chopProbability) + "% chop odds. Kickoff's " + whenOf(g.z.game) + "."
+          "🪓🧟 Bold move: " + g.t.team + " has " + player + " (" + why + ") in the lineup with " + pct(g.t.chopProbability) + " chop odds. Kickoff's " + whenOf(g.z.game) + "."
         ]), g.z.started ? 78 : 86);
   }
 }

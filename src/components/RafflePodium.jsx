@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { money } from "../lib/data.js";
+import { money, pct } from "../lib/data.js";
 import { HALF_MEAN_SD, normalCdf, normalQuantile, playerOutlook } from "../../scripts/lib/simulation.js";
 import { TeamLogo } from "./LiveBits.jsx";
 import { TeamLineup } from "./MatchupLineup.jsx";
@@ -15,7 +15,7 @@ const LABELS = ["🥇 TICKET FAVORITE", "🥈 #2 IN THE RACE", "🥉 #3 IN THE R
 const POSITION_IDS = { QB: 1, RB: 2, WR: 3, TE: 4, K: 5, "D/ST": 16 };
 const short = n => /D\/ST/.test(n) ? n : n.split(" ").slice(1).join(" ") || n;
 const ticketSwing = play => play.momentum
-  ? `ticket odds ${play.momentum.shift > 0 ? "up" : "down"} ${money(Math.abs(play.momentum.shift))}% (now ${money(play.momentum.topScoreProbability)}%)`
+  ? `ticket odds ${play.momentum.shift > 0 ? "up" : "down"} ${pct(Math.abs(play.momentum.shift))} (now ${pct(play.momentum.topScoreProbability)})`
   : null;
 
 // Starters still to play, with what they're projected to add and their spread.
@@ -74,7 +74,7 @@ export default function RafflePodium({ scores, logos, week, final, history, play
         logo: <TeamLogo src={logos[s.teamId]} size="md" />,
         name: s.team,
         value: s.topScoreProbability,
-        label: final && i === 0 ? "🎟️ Ticket won" : money(s.topScoreProbability) + "%",
+        label: final && i === 0 ? "🎟️ Ticket won" : pct(s.topScoreProbability),
         sub: `${money(s.score)} pts${final ? "" : ` · proj ${s.projectionAverage != null ? money(s.projectionAverage) : "—"}`}`,
         icon: MEDALS[i]
       }))} />
@@ -84,7 +84,7 @@ export default function RafflePodium({ scores, logos, week, final, history, play
         {details.map(({ s, i, gap, swing, leftLine }) => <article className="award-card" key={s.teamId}>
           <small>{LABELS[i]}</small>
           <strong className="dw-team"><TeamLogo src={logos[s.teamId]} size="md" />{s.team}</strong>
-          <b className="ticket-odds">{final && i === 0 ? "🎟️ Won this week's ticket" : `${money(s.topScoreProbability)}% chance of the ticket`}</b>
+          <b className="ticket-odds">{final && i === 0 ? "🎟️ Won this week's ticket" : `${pct(s.topScoreProbability)} chance of the ticket`}</b>
           <p>{money(s.score)} pts{final ? " · final" : ` · projected ${s.projectionAverage != null ? money(s.projectionAverage) : "—"}`}</p>
           <p className="dw-insight">🏁 {gap}</p>
           {swing ? <p className="dw-insight">🎲 {swing}</p> : null}

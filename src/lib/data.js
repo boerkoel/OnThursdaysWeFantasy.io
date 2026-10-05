@@ -6,6 +6,18 @@ import initialGuillotine from "../../data/current/guillotine.json";
 import initialSeasonOdds from "../../data/current/season-odds.json";
 
 export const money = n => Number(n).toFixed(2);
+// Odds for display: whole numbers, one decimal near the ends (under 10% or
+// over 90%) so 0.4% isn't "0%" and 99.6% doesn't look like a lock; exactly
+// 0% / 100% only when decided.
+export const pct = n => {
+  if (n == null || n === "" || !Number.isFinite(Number(n))) return "—";
+  const v = Number(n);
+  if (v <= 0) return "0%";
+  if (v >= 100) return "100%";
+  if (v < 0.1) return "<0.1%";
+  if (v > 99.9) return ">99.9%";
+  return (v < 10 || v > 90 ? v.toFixed(1).replace(/\.0$/, "") : String(Math.round(v))) + "%";
+};
 
 // NFL weeks run on Eastern time, so a Monday-night game stays on Monday.
 export const formatDay = iso => iso

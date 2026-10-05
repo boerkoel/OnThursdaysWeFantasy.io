@@ -1,5 +1,5 @@
 import { round } from "../lib/simulation.js";
-import { currentScores, fit, isNearMedian, listNames, liveTeams, money, name, playersWithGames, possessive, pts } from "./context.js";
+import { currentScores, fit, isNearMedian, listNames, liveTeams, money, name, pct, playersWithGames, possessive, pts } from "./context.js";
 
 // League Wire: down-to-the-wire storylines.
 // Down-to-the-wire storylines once a matchup comes down to a few players
@@ -30,7 +30,7 @@ export function addPrimetimeStories(add, matchupStates) {
     if (!Number.isFinite(trailerOdds) || trailerOdds <= NO_SIMULATED_WINS) continue;
     const deficit = round(Number(leader.score) - Number(trailer.score));
     const urgency = 92 - Math.min(deficit, 30) / 10;
-    const odds = money(trailerOdds) + "%";
+    const odds = pct(trailerOdds);
 
     if (trailerOdds < LONG_SHOT_ODDS) {
       const chance = "🤞 So you're saying there's a chance… ";
@@ -94,7 +94,7 @@ export function addPrimetimeStories(add, matchupStates) {
     .filter(m => Number.isFinite(m.odds) && m.odds <= 80)
     .sort((a,b) => a.odds - b.odds);
   if (live.length) {
-    const describe = m => m.x.a.team + " vs " + m.x.b.team + " (" + m.fav.team + " " + money(m.odds) + "%)";
+    const describe = m => m.x.a.team + " vs " + m.x.b.team + " (" + m.fav.team + " " + pct(m.odds) + ")";
     add("MATCHUPS THAT MATTER",fit(
       "🏈 Matchups that matter: " + live.map(describe).join(" · ") + ".",
       "🏈 " + live.length + " matchups are still up for grabs, and " + describe(live[0]) + " is the tightest.",
@@ -110,6 +110,6 @@ export function addPrimetimeStories(add, matchupStates) {
     .sort((a,b) => Math.abs(Number(a.s.aboveMedianProbability) - 50) - Math.abs(Number(b.s.aboveMedianProbability) - 50))
     .slice(0, 2);
   for (const {s, left} of medianStakes) {
-    add("MEDIAN STAKES","🎯 MEDIAN STAKES: " + possessive(s.team) + " shot at a median win (" + money(s.aboveMedianProbability) + "%) rides on " + withGames(left) + ".",74);
+    add("MEDIAN STAKES","🎯 MEDIAN STAKES: " + possessive(s.team) + " shot at a median win (" + pct(s.aboveMedianProbability) + ") rides on " + withGames(left) + ".",74);
   }
 }

@@ -8,7 +8,7 @@ import raffle from "../data/current/raffle.json";
 import playoffs from "../data/current/playoffs.json";
 import teamsData from "../data/current/teams.json";
 import weekly from "../data/current/weekly.json";
-import { fetchData, gameState, money, useLiveData } from "./lib/data.js";
+import { fetchData, gameState, money, pct, useLiveData } from "./lib/data.js";
 import { ShareButton, TeamLogo, UpdatedAgo, useChangedScores } from "./components/LiveBits.jsx";
 import LeagueWire from "./components/LeagueWire.jsx";
 import { useRefresh } from "./components/PullToRefresh.jsx";
@@ -38,7 +38,6 @@ const STANDINGS_COLUMNS = [
   { key: "ultimateLoser", label: "Ult. Loser", value: r => r.ultimateLoserOdds, odds: true, tip: "Chance of finishing as the Ultimate Loser (losing all the way through the losers' bracket)" },
   { key: "raffle", label: "Raffle", value: r => r.raffleOdds, odds: true, tip: "Chance of winning the end-of-season raffle" }
 ];
-const pct = n => n == null ? "—" : (n >= 99.995 && n < 100 ? ">99.99" : n > 0 && n < 0.005 ? "<0.01" : money(n)) + "%";
 
 function StandingsTable({ seasonOdds, logos }) {
   const [sortKey, setSortKey] = useState("seed");
@@ -123,7 +122,7 @@ function MatchupTeam({ team, opponent, logo, projected, flashing, dotClass }) {
         <span className={dotClass} aria-hidden="true"></span>{money(projected ? team.projectionAverage : team.score)}
       </strong>
       {projected ? <span className="actual-score-muted">{money(team.score)} ACT</span> : null}
-      <small>PROJ {trend}{team.projectionAverage != null ? money(team.projectionAverage) : "—"}{team.winProbability != null ? <em className="matchup-probability">WIN {money(team.winProbability)}%</em> : null}</small>
+      <small>PROJ {trend}{team.projectionAverage != null ? money(team.projectionAverage) : "—"}{team.winProbability != null ? <em className="matchup-probability">WIN {pct(team.winProbability)}</em> : null}</small>
     </div>
   );
 }
@@ -168,7 +167,7 @@ function App() {
   };
   // "Momentum shift: swung the odds 6.2% toward X (now 58.0%)", for plays that moved the odds at least half a point.
   const momentumLine = play => play.momentum?.shift >= 0.5
-    ? `Momentum shift: swung the odds ${play.momentum.shift.toFixed(1)}% toward ${play.momentum.toward} (now ${play.momentum.winProbability.toFixed(1)}%)` : null;
+    ? `Momentum shift: swung the odds ${pct(play.momentum.shift)} toward ${play.momentum.toward} (now ${pct(play.momentum.winProbability)})` : null;
 
   // Standings, teams, awards, etc. are bundled and only change with the daily
   // ESPN update, so reload the page when that update's timestamp changes.
@@ -234,20 +233,6 @@ function App() {
   const historyAverage = historyScores.length ? historyScores.reduce((sum, score) => sum + score, 0) / historyScores.length : null;
   const historyMedian = historyScores.length ? (historyScores.length % 2 ? historyScores[Math.floor(historyScores.length / 2)] : (historyScores[historyScores.length / 2 - 1] + historyScores[historyScores.length / 2]) / 2) : null;
 
-  // Raffle ticket race (the week's highest score): tag the top three current
-  // scores with their odds of finishing on top.
-  const scoreRank = new Map([...scores].sort((x, y) => Number(y.score) - Number(x.score)).map((s, i) => [s.teamId, i]));
-  const raffleBadge = s => {
-    const rank = scoreRank.get(s.teamId);
-    if (preGame || rank > 2) return null;
-    // Chasers with no chance at the ticket don't get a tag.
-    if (!currentWeekComplete && rank > 0 && Number(s.topScoreProbability) === 0) return null;
-    if (currentWeekComplete) return rank === 0 ? <em className="raffle-badge">🎟️ RAFFLE SPOT</em> : null;
-    const odds = s.topScoreProbability != null ? ` · ${money(s.topScoreProbability)}%` : "";
-    const label = ["CURRENT LEADER", "2ND", "3RD"][rank];
-    return <em className={rank === 0 ? "raffle-badge" : "raffle-badge chaser"} title="Chance of finishing with the week's highest score (a raffle ticket)">🎟️ {label}{odds}</em>;
-  };
-
   // "Near median" comes from the scoreboard data: the teams just above and just
   // below the projected median, plus any with 30-70% odds of finishing above it.
   const NEAR_MEDIAN_MIN = 30;
@@ -276,10 +261,9 @@ function App() {
     const lines = [];
     displayScores.forEach((s, i) => {
       if (i === mid) lines.push({ text: `— projected median ${scoreboard.projectedMedian != null ? money(scoreboard.projectedMedian) : "—"} —`, size: 24, color: "accent", weight: 800, gap: 14 });
-      const pctOf = v => v != null ? Math.round(v) + "%" : "—";
       const text = scoreSort === "wins"
-        ? `${i + 1}. ${s.team} · ${expectedWins(s) != null ? expectedWins(s).toFixed(2) : "—"} exp. wins (H2H ${pctOf(s.winProbability)}, median ${pctOf(s.aboveMedianProbability)})`
-        : `${i + 1}. ${s.team} · ${scoreSort === "projected" ? `${money(s.projectionAverage)} proj (${money(s.score)} now)` : `${money(s.score)} (proj ${s.projectionAverage != null ? money(s.projectionAverage) : "—"})`} · ${pctOf(s.aboveMedianProbability)} above median`;
+        ? `${i + 1}. ${s.team} · ${expectedWins(s) != null ? expectedWins(s).toFixed(2) : "—"} exp. wins (H2H ${pct(s.winProbability)}, median ${pct(s.aboveMedianProbability)})`
+        : `${i + 1}. ${s.team} · ${scoreSort === "projected" ? `${money(s.projectionAverage)} proj (${money(s.score)} now)` : `${money(s.score)} (proj ${s.projectionAverage != null ? money(s.projectionAverage) : "—"})`} · ${pct(s.aboveMedianProbability)} above median`;
       lines.push({ text, size: 25, weight: 700, color: colorFor(s), gap: i === 0 ? 24 : i === mid ? 14 : 6 });
     });
     lines.push({ text: `Sorted by ${sortLabel}.${scoreSort === "wins" ? " Exp. wins = H2H win odds + above-median odds (2 wins available each week)." : ""} Green: likely above the median · Yellow: near it · Red: likely below.`, size: 20, color: "faint", gap: 24 });
@@ -330,7 +314,7 @@ function App() {
               score: money(t.score),
               logo: teamLogos[t.teamId],
               highlight: t.score >= (t === a ? b : a).score,
-              note: `Proj ${t.projectionAverage != null ? money(t.projectionAverage) : "—"}${t.winProbability != null ? ` · ${money(t.winProbability)}% to win` : ""}`
+              note: `Proj ${t.projectionAverage != null ? money(t.projectionAverage) : "—"}${t.winProbability != null ? ` · ${pct(t.winProbability)} to win` : ""}`
             })),
             lines: [
               seriesLine(a.teamId, b.teamId) ? { text: "⚔️ " + seriesLine(a.teamId, b.teamId), size: 28, color: "accent", weight: 800, gap: 36 } : null,
@@ -431,7 +415,7 @@ function App() {
         </div>
         {displayScores.map((s, i) => <React.Fragment key={s.teamId}>
             {i === Math.floor(displayScores.length / 2) && <div className="median-line"><span>PROJECTED MEDIAN {scoreboard.projectedMedian != null ? money(scoreboard.projectedMedian) : "—"}</span></div>}
-            <div className={projectedMedianEdgeTeams.has(s.teamId) ? "score-row median-near" : "score-row"}><span className="rank">{i + 1}</span><span className="score-team"><TeamLogo src={teamLogos[s.teamId]} />{s.team}{projectedMedianEdgeTeams.has(s.teamId) ? <em className="median-near-label">NEAR MEDIAN</em> : null}{raffleBadge(s)}</span><span className="score-opponent">vs {s.opponent}</span><strong className={["score-primary", scoreSort === "projected" ? "projected-score" : "", flashingScores.has(s.teamId) ? "score-flash" : ""].join(" ").trim()}>{scoreSort === "wins" ? (expectedWins(s) != null ? expectedWins(s).toFixed(2) : "—") : money(scoreSort === "projected" ? s.projectionAverage : s.score)}</strong>{scoreSort === "wins" ? <span className="score-projection">H2H {s.winProbability != null ? money(s.winProbability) : "—"}%<em className="score-probability">ABOVE MEDIAN {s.aboveMedianProbability != null ? money(s.aboveMedianProbability) : "—"}%</em></span> : <span className="score-projection">{scoreSort === "projected" ? "ACT " + money(s.score) : "PROJ "}{scoreSort === "projected" ? "" : (s.projectionTrend === "up" ? "↑ " : s.projectionTrend === "down" ? "↓ " : "")}{scoreSort === "projected" ? "" : (s.projectionAverage != null ? money(s.projectionAverage) : "—")}<em className="score-probability">ABOVE MEDIAN {s.aboveMedianProbability != null ? money(s.aboveMedianProbability) : "—"}%</em></span>}</div>
+            <div className={projectedMedianEdgeTeams.has(s.teamId) ? "score-row median-near" : "score-row"}><span className="rank">{i + 1}</span><span className="score-team"><TeamLogo src={teamLogos[s.teamId]} />{s.team}{projectedMedianEdgeTeams.has(s.teamId) ? <em className="median-near-label">NEAR MEDIAN</em> : null}</span><span className="score-opponent">vs {s.opponent}</span><strong className={["score-primary", scoreSort === "projected" ? "projected-score" : "", flashingScores.has(s.teamId) ? "score-flash" : ""].join(" ").trim()}>{scoreSort === "wins" ? (expectedWins(s) != null ? expectedWins(s).toFixed(2) : "—") : money(scoreSort === "projected" ? s.projectionAverage : s.score)}</strong>{scoreSort === "wins" ? <span className="score-projection">H2H {pct(s.winProbability)}<em className="score-probability">ABOVE MEDIAN {pct(s.aboveMedianProbability)}</em></span> : <span className="score-projection">{scoreSort === "projected" ? "ACT " + money(s.score) : "PROJ "}{scoreSort === "projected" ? "" : (s.projectionTrend === "up" ? "↑ " : s.projectionTrend === "down" ? "↓ " : "")}{scoreSort === "projected" ? "" : (s.projectionAverage != null ? money(s.projectionAverage) : "—")}<em className="score-probability">ABOVE MEDIAN {pct(s.aboveMedianProbability)}</em></span>}</div>
           </React.Fragment>)}
         </div>
         <p className="median-note">The projected median is based on ESPN’s projected final scores. Odds of finishing above the median come from simulating the rest of the week, where the league median moves with every team’s result. Highlighted in yellow: the teams projected just above and just below the median, plus any team with a {NEAR_MEDIAN_MIN}–{NEAR_MEDIAN_MAX}% chance.</p>
@@ -553,7 +537,7 @@ function App() {
             <span className="rank">{i + 1}</span>
             <span className="score-team">{t.team}</span>
             <span className="raffle-weeks">{t.winningWeeks?.length ? ("Won Week" + (t.winningWeeks.length > 1 ? "s " : " ") + t.winningWeeks.join(", ")) : "No tickets yet"}</span>
-            <strong>{t.tickets} {t.tickets === 1 ? "ticket" : "tickets"}{totalRaffleTickets > 0 ? <em className="raffle-odds">{((Number(t.tickets) / totalRaffleTickets) * 100).toFixed(1)}% odds</em> : null}</strong>
+            <strong>{t.tickets} {t.tickets === 1 ? "ticket" : "tickets"}{totalRaffleTickets > 0 ? <em className="raffle-odds">{pct((Number(t.tickets) / totalRaffleTickets) * 100)} odds</em> : null}</strong>
           </div>)}
         </div>
       </section>

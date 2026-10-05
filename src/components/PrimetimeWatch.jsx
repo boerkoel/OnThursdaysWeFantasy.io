@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { money } from "../lib/data.js";
+import { money, pct } from "../lib/data.js";
 import { HALF_MEAN_SD, normalCdf, normalQuantile, playerOutlook } from "../../scripts/lib/simulation.js";
 import { ShareButton } from "./LiveBits.jsx";
 import { hasObituary } from "./DeathWatch.jsx";
@@ -22,7 +22,6 @@ const etHour = iso => Number(new Date(iso).toLocaleString("en-US", { hour: "nume
 const etDay = iso => new Date(iso).toLocaleDateString("en-US", { weekday: "short", timeZone: "America/New_York" });
 const SLOT_NAMES = { Thu: "TNF", Sun: "SNF", Mon: "MNF" };
 const lastName = n => /D\/ST/.test(n) ? n : n.split(" ").slice(1).join(" ") || n;
-const pct = p => Math.round(p) + "%";
 
 // The night slot to feature: live night games, else the next night slot.
 function nightSlot(nflGames) {

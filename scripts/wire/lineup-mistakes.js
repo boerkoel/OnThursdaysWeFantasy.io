@@ -1,4 +1,4 @@
-import { fit, money, name, pts } from "./context.js";
+import { fit, money, name, pct, pts } from "./context.js";
 
 // League Wire: start/sit mistakes that cost (or are costing) a matchup.
 // Settled start/sit mistakes that cost (or are costing) a team its matchup.
@@ -28,7 +28,7 @@ export function addLineupMistakeStories(add, matchupStates, regrets) {
       } else if (!teamDone || !oppDone) {
         const winOdds = Number(team.winProbability);
         if (swap.gain >= 5 && winOdds >= 30 && winOdds <= 70) {
-          candidates.push({type:"LINEUP MISTAKE", text:fit(...swapTexts.map(t => "😅 " + team.team + " is sweating out a close one with " + opp.team + " (" + money(winOdds) + "% to win). Starting " + t + " would have helped.")), score:80});
+          candidates.push({type:"LINEUP MISTAKE", text:fit(...swapTexts.map(t => "😅 " + team.team + " is sweating out a close one with " + opp.team + " (" + pct(winOdds) + " to win). Starting " + t + " would have helped.")), score:80});
         }
       }
     }

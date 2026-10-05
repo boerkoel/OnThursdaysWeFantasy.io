@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { money } from "../lib/data.js";
+import { money, pct } from "../lib/data.js";
 import PlayMarkers from "./PlayMarkers.jsx";
 
 // Odds race panel (Death Watch chop odds, ticket race odds): the odds of the
@@ -19,7 +19,7 @@ export const CHOP_COLORS = ["#ef9a96", "#e6c85c", "#9cc3e6"];
 
 const newestFirst = (a, b) => Date.parse(b.wallclock) - Date.parse(a.wallclock);
 const chopSwingText = play => play.momentum
-  ? `chop odds ${play.momentum.shift > 0 ? "down" : "up"} ${money(Math.abs(play.momentum.shift))}% (now ${money(play.momentum.chopProbability)}%)`
+  ? `chop odds ${play.momentum.shift > 0 ? "down" : "up"} ${pct(Math.abs(play.momentum.shift))} (now ${pct(play.momentum.chopProbability)})`
   : null;
 
 // The teams whose story the chart tells: the n with the highest odds at any
@@ -74,7 +74,7 @@ export default function ChopChart({ history, teams, plays, colors = CHOP_COLORS,
 
     chart = <>
       <div className="chop-legend">
-        {ids.map(id => <div key={id}><i style={{ background: colorOf[id] }}></i>{nameOf[id]} <b>{Number.isFinite(Number(shown.p[id])) ? money(shown.p[id]) + "%" : "—"}</b></div>)}
+        {ids.map(id => <div key={id}><i style={{ background: colorOf[id] }}></i>{nameOf[id]} <b>{Number.isFinite(Number(shown.p[id])) ? pct(shown.p[id]) : "—"}</b></div>)}
         <em>{when}</em>
       </div>
       <div className="swing-plot chop-plot">

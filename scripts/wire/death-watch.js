@@ -1,4 +1,4 @@
-import { currentWeek, guillotineData, money, name, playersWithGames, pts, surname } from "./context.js";
+import { currentWeek, guillotineData, money, name, pct, playersWithGames, pts, surname } from "./context.js";
 
 // League Wire: the guillotine Death Watch headline.
 // The guillotine side league's most endangered team this week.
@@ -11,10 +11,10 @@ export function addDeathWatchStory(add) {
   if (first.chopProbability >= 100) {
     add("DEATH WATCH","🪓 DEATH WATCH: the blade has fallen — " + first.team + " is getting chopped from " + guillotineData.leagueName + " with " + pts(first.score) + ".",90);
   } else if (first.survivalNeed && first.playersLeft) {
-    add("DEATH WATCH","🪓 DEATH WATCH: " + first.team + " (" + money(first.chopProbability) + "% chop odds) needs " + pts(first.survivalNeed.points) + " more from " + left(first) + " to pass " + first.survivalNeed.passTeam + " and survive.",86);
+    add("DEATH WATCH","🪓 DEATH WATCH: " + first.team + " (" + pct(first.chopProbability) + " chop odds) needs " + pts(first.survivalNeed.points) + " more from " + left(first) + " to pass " + first.survivalNeed.passTeam + " and survive.",86);
   } else if (second?.survivalNeed && second.playersLeft) {
-    add("DEATH WATCH","🪓 DEATH WATCH: " + first.team + " is on the chopping block (" + money(first.chopProbability) + "%) — unless " + left(second) + " can't find " + pts(second.survivalNeed.points) + " for " + second.team + ".",86);
+    add("DEATH WATCH","🪓 DEATH WATCH: " + first.team + " is on the chopping block (" + pct(first.chopProbability) + ") — unless " + left(second) + " can't find " + pts(second.survivalNeed.points) + " for " + second.team + ".",86);
   } else {
-    add("DEATH WATCH","🪓 DEATH WATCH: " + first.team + " leads the chopping-block odds at " + money(first.chopProbability) + "%" + (second ? ", with " + second.team + " next at " + money(second.chopProbability) + "%" : "") + ".",70);
+    add("DEATH WATCH","🪓 DEATH WATCH: " + first.team + " leads the chopping-block odds at " + pct(first.chopProbability) + (second ? ", with " + second.team + " next at " + pct(second.chopProbability) : "") + ".",70);
   }
 }

@@ -1,4 +1,4 @@
-import { currentScores, currentWeek, currentWeekMatchups, money, name, recordBook, seasonOddsData, standingsData } from "./context.js";
+import { currentScores, currentWeek, currentWeekMatchups, money, name, pct, recordBook, seasonOddsData, standingsData } from "./context.js";
 
 // League Wire: the week ahead (rivalries, streaks, title odds).
 // ---- Week ahead -----------------------------------------------------------
@@ -49,6 +49,6 @@ export function addWeekAheadStories(add) {
   // Title favorite from the season simulation.
   const odds = (seasonOddsData?.teams || []).slice().sort((a, b) => b.titleOdds - a.titleOdds);
   if (odds.length >= 2 && Number(seasonOddsData.week) === currentWeek) {
-    add("TITLE ODDS","🏆 Title odds entering Week " + currentWeek + ": " + odds[0].team + " " + money(odds[0].titleOdds) + "%, " + odds[1].team + " " + money(odds[1].titleOdds) + "%" + (odds[2] ? ", " + odds[2].team + " " + money(odds[2].titleOdds) + "%" : "") + ".",57);
+    add("TITLE ODDS","🏆 Title odds entering Week " + currentWeek + ": " + odds[0].team + " " + pct(odds[0].titleOdds) + ", " + odds[1].team + " " + pct(odds[1].titleOdds) + (odds[2] ? ", " + odds[2].team + " " + pct(odds[2].titleOdds) : "") + ".",57);
   }
 }

@@ -95,6 +95,18 @@ export function recentGameIds() {
 }
 
 export const pts = n => money(n) + " pts";
+// Odds for display: whole numbers, one decimal near the ends (under 10% or
+// over 90%) so 0.4% isn't "0%" and 99.6% doesn't look like a lock; exactly
+// 0% / 100% only when decided.
+export const pct = n => {
+  if (n == null || n === "" || !Number.isFinite(Number(n))) return "—";
+  const v = Number(n);
+  if (v <= 0) return "0%";
+  if (v >= 100) return "100%";
+  if (v < 0.1) return "<0.1%";
+  if (v > 99.9) return ">99.9%";
+  return (v < 10 || v > 90 ? v.toFixed(1).replace(/\.0$/, "") : String(Math.round(v))) + "%";
+};
 // "Ollie Gordon II" -> "Gordon" (suffixes aren't names).
 export const surname = full => String(full).replace(/\s+(Jr\.?|Sr\.?|II|III|IV|V)$/i, "").split(" ").slice(-1)[0];
 export const possessive = team => team + (team.endsWith("s") ? "'" : "'s");

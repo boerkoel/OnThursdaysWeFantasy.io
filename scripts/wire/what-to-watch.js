@@ -1,5 +1,5 @@
 import { playerOutlook, round, swingOdds } from "../lib/simulation.js";
-import { clockNow, currentScores, fit, guillotineData, listNames, liveTeams, money, name, nflGames, possessive, pts } from "./context.js";
+import { clockNow, currentScores, fit, guillotineData, listNames, liveTeams, money, name, nflGames, pct, possessive, pts } from "./context.js";
 import { shortName } from "./early-momentum.js";
 
 // League Wire: what to watch next and the game to watch.
@@ -49,8 +49,8 @@ export function addWhatToWatchStories(add, matchupStates) {
     const mine = name(swing.p.teamId), other = swing.p.teamId === swing.m.x.a.teamId ? swing.m.x.b : swing.m.x.a;
     const odds = Number(currentScores.find(s => s.teamId === swing.p.teamId)?.winProbability);
     add("PLAYER TO WATCH",fit(
-      "🔭 Player to watch: " + swing.p.name + (swing.p.game ? " (" + swing.p.game.name + ")" : "") + ". ESPN projects " + pts(swing.p.projection ?? 0) + ", and " + mine + (Number.isFinite(odds) ? " is " + money(odds) + "%" : " is in a tight one") + " against " + other.team + ".",
-      "🔭 Player to watch: " + shortName(swing.p) + ", with " + mine + (Number.isFinite(odds) ? " at " + money(odds) + "%" : "") + " against " + other.team + "."
+      "🔭 Player to watch: " + swing.p.name + (swing.p.game ? " (" + swing.p.game.name + ")" : "") + ". ESPN projects " + pts(swing.p.projection ?? 0) + ", and " + mine + (Number.isFinite(odds) ? " is " + pct(odds) : " is in a tight one") + " against " + other.team + ".",
+      "🔭 Player to watch: " + shortName(swing.p) + ", with " + mine + (Number.isFinite(odds) ? " at " + pct(odds) : "") + " against " + other.team + "."
     ),70);
   }
 }

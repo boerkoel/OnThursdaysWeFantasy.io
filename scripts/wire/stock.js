@@ -1,5 +1,5 @@
 import { round } from "../lib/simulation.js";
-import { currentScores, currentWeek, name, pickLine, possessive, seasonOddsData } from "./context.js";
+import { currentScores, currentWeek, name, pct, pickLine, possessive, seasonOddsData } from "./context.js";
 
 // League Wire: playoff odds movers.
 // ---- Stock report ------------------------------------------------------------
@@ -15,7 +15,6 @@ export function stockMovers(start, end, names = id => name(Number(id))) {
 export function stockLines(movers, label) {
   const up = movers[0]?.move > 0 ? movers[0] : null;
   const down = movers.at(-1)?.move < 0 ? movers.at(-1) : null;
-  const pct = x => Math.round(x) + "%";
   const upText = up && pickLine("up" + up.team + label, [
     possessive(up.team) + " playoff odds are up from " + pct(up.from) + " to " + pct(up.to) + ". Buy now before it's too late.",
     possessive(up.team) + " playoff odds surged from " + pct(up.from) + " to " + pct(up.to) + ". Analysts are calling it a bubble.",

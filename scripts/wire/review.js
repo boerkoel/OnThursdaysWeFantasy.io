@@ -1,4 +1,4 @@
-import { DATA, clockNow, currentScores, currentWeek, currentWeekMatchups, guillotineData, liveScoreboard, money, pts, readJson, seasonOddsData } from "./context.js";
+import { DATA, clockNow, currentScores, currentWeek, currentWeekMatchups, guillotineData, liveScoreboard, money, pct, pts, readJson, seasonOddsData } from "./context.js";
 import { stockLines, stockMovers } from "./stock.js";
 
 // League Wire: the week in review.
@@ -36,7 +36,7 @@ export function weekHeadlines() {
     if (flips >= 3) wild.push({winner, loser, flips});
   }
   const escape = comebacks.sort((x, y) => x.low - y.low)[0];
-  if (escape) stories.push({type:"GREAT ESCAPE", text:"📈 " + escape.winner.team + " was down to " + money(escape.low) + "% against " + escape.loser.team + " — and won.", score:78});
+  if (escape) stories.push({type:"GREAT ESCAPE", text:"📈 " + escape.winner.team + " was down to " + pct(escape.low) + " against " + escape.loser.team + " — and won.", score:78});
   const wildest = wild.sort((x, y) => y.flips - x.flips)[0];
   if (wildest) stories.push({type:"HEART ATTACK GAME", text:"💓 " + wildest.winner.team + " outlasted " + wildest.loser.team + " after the favorite flipped " + wildest.flips + " times.", score:74});
   return stories.length ? {week:currentWeek, stories} : null;

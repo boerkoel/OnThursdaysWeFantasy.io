@@ -1,5 +1,5 @@
 import { round } from "../lib/simulation.js";
-import { currentWeek, liveScoreboard, money, possessive } from "./context.js";
+import { currentWeek, liveScoreboard, money, pct, possessive } from "./context.js";
 
 // League Wire: win-odds swings (heart attack games, momentum, comebacks).
 export function addSwingStories(add, matchupStates) {
@@ -45,12 +45,12 @@ export function addSwingStories(add, matchupStates) {
     const biggest = swings.sort((a, b) => (b.after - b.before) - (a.after - a.before))[0];
     if (biggest) {
       const minutes = Math.round((Date.parse(latest.t) - Date.parse(earlier.t)) / 60000);
-      add("MOMENTUM SHIFT","⚡ MOMENTUM SHIFT: " + possessive(biggest.team.team) + " win odds against " + biggest.opp.team + " jumped from " + money(biggest.before) + "% to " + money(biggest.after) + "% in the last " + minutes + " minutes.",88 + (biggest.after - biggest.before) / 10);
+      add("MOMENTUM SHIFT","⚡ MOMENTUM SHIFT: " + possessive(biggest.team.team) + " win odds against " + biggest.opp.team + " jumped from " + pct(biggest.before) + " to " + pct(biggest.after) + " in the last " + minutes + " minutes.",88 + (biggest.after - biggest.before) / 10);
     }
   }
 
   const best = comebacks.sort((a, b) => a.low - b.low)[0];
   if (best) {
-    add("COMEBACK","📈 COMEBACK: " + best.team.team + " was down to " + money(best.low) + "% against " + best.opp.team + (best.now >= 100 ? " — and won." : " — now " + money(best.now) + "% to win."),best.now >= 100 ? 94 : 86);
+    add("COMEBACK","📈 COMEBACK: " + best.team.team + " was down to " + pct(best.low) + " against " + best.opp.team + (best.now >= 100 ? " — and won." : " — now " + pct(best.now) + " to win."),best.now >= 100 ? 94 : 86);
   }
 }

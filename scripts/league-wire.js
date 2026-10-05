@@ -1,6 +1,6 @@
 import { round } from "./lib/simulation.js";
 import { settledLineupRegret } from "./lib/lineup.js";
-import { DATA, OUT, STORY_MAX_CHARS, clockNow, currentScores, currentWeek, currentWeekMatchups, fit, isNearMedian, listNames, liveTeams, money, name, nflGames, possessive, previousScoreboard, projectedMedian, pts, readJson, recentGameIds, writeJson } from "./wire/context.js";
+import { DATA, OUT, STORY_MAX_CHARS, clockNow, currentScores, currentWeek, currentWeekMatchups, fit, isNearMedian, listNames, liveTeams, money, name, nflGames, pct, possessive, previousScoreboard, projectedMedian, pts, readJson, recentGameIds, writeJson } from "./wire/context.js";
 import { addDeathWatchStory } from "./wire/death-watch.js";
 import { addEarlyMomentumStories } from "./wire/early-momentum.js";
 import { addInjuryStories } from "./wire/injuries.js";
@@ -112,7 +112,7 @@ function buildMarqueeStories() {
         return p && "nearMedian" in p && !isNearMedian(p);
       });
       if (newlyNear) {
-        add("MEDIAN WATCH","🎯 " + newlyNear.team + " has moved into the median race — " + money(newlyNear.aboveMedianProbability) + "% to finish above it.",84);
+        add("MEDIAN WATCH","🎯 " + newlyNear.team + " has moved into the median race — " + pct(newlyNear.aboveMedianProbability) + " to finish above it.",84);
       }
     }
 
@@ -120,7 +120,7 @@ function buildMarqueeStories() {
       const closest = nearMedian[0];
       add("MEDIAN CLUSTER",fit(
         "🎯 " + nearMedian.length + " teams are in the thick of the median race: " + listNames(nearMedian.map(s => s.team)) + ".",
-        "🎯 " + nearMedian.length + " teams are in the thick of the median race, with " + closest.team + " right on the line (" + money(closest.aboveMedianProbability) + "%)."
+        "🎯 " + nearMedian.length + " teams are in the thick of the median race, with " + closest.team + " right on the line (" + pct(closest.aboveMedianProbability) + ")."
       ),58 + nearMedian.length);
     }
   }

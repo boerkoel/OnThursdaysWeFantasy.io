@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { formatDay, money } from "../lib/data.js";
+import { formatDay, money, pct } from "../lib/data.js";
 import { ShareButton, TeamLogo } from "./LiveBits.jsx";
 import { TeamLineup } from "./MatchupLineup.jsx";
 import ChopChart, { peakTeams } from "./ChopChart.jsx";
@@ -108,7 +108,7 @@ function SurvivalOdds({ teams, guillotine }) {
           title: "Who survives?",
           lines: [
             ...sorted.map((t, i) => ({
-              text: `${i + 1}. ${t.team} · ${money(100 - t.chopProbability)}% to survive`,
+              text: `${i + 1}. ${t.team} · ${pct(100 - t.chopProbability)} to survive`,
               size: sorted.length > 10 ? 26 : 30, weight: 800, gap: i ? 6 : 20,
               color: ZONE_COLORS[zoneOf(t, zone)]
             })),
@@ -125,7 +125,7 @@ function SurvivalOdds({ teams, guillotine }) {
           <span>{money(t.score)}</span>
           <span>{money(t.projected)}</span>
           <span>{t.playersLeft ? t.playersLeft : "final"}</span>
-          <b>{money(100 - t.chopProbability)}%</b>
+          <b>{pct(100 - t.chopProbability)}</b>
         </div>)}
       </div>
     </details>
@@ -216,7 +216,7 @@ export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
         logo: <DwLogo team={t} size="md" />,
         name: t.team,
         value: t.chopProbability,
-        label: t.chopProbability >= 100 ? "Doomed" : money(t.chopProbability) + "%",
+        label: t.chopProbability >= 100 ? "Doomed" : pct(t.chopProbability),
         sub: `${money(t.score)} pts${t.playersLeft ? ` · proj ${money(t.projected)}` : " · final"}`,
         icon: "🪦"
       }))} />
@@ -224,7 +224,7 @@ export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
         {atRisk.map((t, i) => <article className="award-card" key={t.teamId}>
           <small>{i === 0 ? "🪓 ON THE CHOPPING BLOCK" : `#${i + 1} MOST AT RISK`}</small>
           <strong className="dw-team"><DwLogo team={t} size="md" />{t.team}</strong>
-          <b className="chop-odds">{t.chopProbability >= 100 ? "Chop guaranteed" : `${money(t.chopProbability)}% chance of being chopped`}</b>
+          <b className="chop-odds">{t.chopProbability >= 100 ? "Chop guaranteed" : `${pct(t.chopProbability)} chance of being chopped`}</b>
           <p>{money(t.score)} pts{t.playersLeft ? ` · projected ${money(t.projected)}` : " · final"}</p>
           {t.survivalNeed ? <p>Needs {money(t.survivalNeed.points)} more pts to pass {t.survivalNeed.passTeam}</p> : null}
           {gameLine(t) ? <p className="dw-insight">🏟️ {gameLine(t)}</p> : null}
@@ -238,7 +238,7 @@ export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
               kicker: `${guillotine.leagueName} · Week ${guillotine.week} Death Watch`,
               title: `🪓 ${t.team}`,
               lines: [
-                { text: `${money(t.chopProbability)}% chance of being chopped`, size: 48, color: "alert", weight: 800, gap: 40 },
+                { text: `${pct(t.chopProbability)} chance of being chopped`, size: 48, color: "alert", weight: 800, gap: 40 },
                 { text: `${money(t.score)} pts${t.playersLeft ? ` · projected ${money(t.projected)}` : " · final"}`, size: 34 },
                 t.survivalNeed ? { text: `Needs ${money(t.survivalNeed.points)} more pts to pass ${t.survivalNeed.passTeam}`, size: 30, color: "ink" } : null,
                 gameLine(t) ? { text: "🏟️ " + gameLine(t), size: 28, color: "ink", gap: 24 } : null,
