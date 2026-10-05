@@ -30,13 +30,21 @@ function expiresAt(token) {
   }
 }
 
+// Which secrets a session grew from: when the secrets are set again, the
+// stored session is dropped and the new ones take over.
+async function seedId(env) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(env.SPLASH_REFRESH_TOKEN || ""));
+  return [...new Uint8Array(digest)].slice(0, 8).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
 async function loadSession(env) {
+  const seed = await seedId(env);
   const stored = await env.SUBS.get("splash-session", "json");
-  if (stored?.accessToken && stored?.refreshToken) return stored;
+  if (stored?.accessToken && stored?.refreshToken && (!env.SPLASH_REFRESH_TOKEN || stored.seed === seed)) return stored;
   if (env.SPLASH_ACCESS_TOKEN && env.SPLASH_REFRESH_TOKEN) {
     // Developer Tools can show cookie values URL-encoded (%3D...): decode.
     const clean = v => { const t = v.trim(); try { return t.includes("%") ? decodeURIComponent(t) : t; } catch { return t; } };
-    return { accessToken: clean(env.SPLASH_ACCESS_TOKEN), refreshToken: clean(env.SPLASH_REFRESH_TOKEN), seeded: true };
+    return { accessToken: clean(env.SPLASH_ACCESS_TOKEN), refreshToken: clean(env.SPLASH_REFRESH_TOKEN), seed, seeded: true };
   }
   return null;
 }
@@ -60,7 +68,7 @@ async function renew(env, session) {
     const shape = `refresh token: ${session.refreshToken.length} chars, ${session.refreshToken.split(".").length - 1} dots, seeded ${Boolean(session.seeded)}`;
     throw new Error(`Splash session renewal failed (${response.status}; ${response.headers.get("content-type") || "no type"}; server ${response.headers.get("server") || "?"}; ${snippet}; ${shape})`);
   }
-  const next = { accessToken: data.accessToken, refreshToken: data.refreshToken || session.refreshToken, renewedAt: new Date().toISOString() };
+  const next = { accessToken: data.accessToken, refreshToken: data.refreshToken || session.refreshToken, seed: session.seed, renewedAt: new Date().toISOString() };
   await env.SUBS.put("splash-session", JSON.stringify(next));
   return next;
 }
@@ -69,7 +77,7 @@ async function freshSession(env) {
   let session = await loadSession(env);
   if (!session) throw new Error("No Splash session: set the SPLASH_ACCESS_TOKEN and SPLASH_REFRESH_TOKEN secrets.");
   if (expiresAt(session.accessToken) - Date.now() < RENEW_BEFORE_MS) session = await renew(env, session);
-  else if (session.seeded) await env.SUBS.put("splash-session", JSON.stringify({ accessToken: session.accessToken, refreshToken: session.refreshToken }));
+  else if (session.seeded) await env.SUBS.put("splash-session", JSON.stringify({ accessToken: session.accessToken, refreshToken: session.refreshToken, seed: session.seed }));
   return session;
 }
 
