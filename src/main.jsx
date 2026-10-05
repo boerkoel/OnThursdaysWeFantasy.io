@@ -172,18 +172,31 @@ function App() {
 
   // Standings, teams, awards, etc. are bundled and only change with the daily
   // ESPN update, so reload the page when that update's timestamp changes.
+  // New code (a push) is noticed from version.json: in the background the
+  // app reloads quietly; on screen it offers a refresh instead of jumping.
+  const [newVersion, setNewVersion] = useState(false);
+  const reloadKeepingScroll = () => {
+    try { sessionStorage.setItem("preserveScrollY", String(window.scrollY)); } catch {}
+    window.location.reload();
+  };
   useEffect(() => {
     const checkForUpdates = async () => {
       try {
         const latest = await fetchData("metadata.json");
-        if (metadata.fetchedAt && latest.fetchedAt && latest.fetchedAt !== metadata.fetchedAt) {
-          try { sessionStorage.setItem("preserveScrollY", String(window.scrollY)); } catch {}
-          window.location.reload();
+        if (metadata.fetchedAt && latest.fetchedAt && latest.fetchedAt !== metadata.fetchedAt) return reloadKeepingScroll();
+      } catch {}
+      try {
+        const response = await fetch(import.meta.env.BASE_URL + "version.json?ts=" + Date.now(), { cache: "no-store" });
+        const { build, time } = response.ok ? await response.json() : {};
+        if (build && build !== __BUILD_ID__ && Number(time) > Number(__BUILD_TIME__) && !String(__BUILD_ID__).startsWith("dev-")) {
+          if (document.hidden) reloadKeepingScroll();
+          else setNewVersion(true);
         }
       } catch {}
     };
     const timer = setInterval(checkForUpdates, 60000);
-    return () => clearInterval(timer);
+    document.addEventListener("visibilitychange", checkForUpdates);
+    return () => { clearInterval(timer); document.removeEventListener("visibilitychange", checkForUpdates); };
   }, []);
   useEffect(() => {
     const y = sessionStorage.getItem("preserveScrollY");
@@ -636,6 +649,7 @@ function App() {
       </> : null}
 
       <footer>On Thursdays We Fantasy · 2026 · Officially unofficial.</footer>
+      {newVersion ? <button type="button" className="new-version-bar" onClick={reloadKeepingScroll}>✨ New version of the site — tap to refresh</button> : null}
       <BackToTop />
     </main>
   );

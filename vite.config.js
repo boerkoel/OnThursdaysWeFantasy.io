@@ -1,6 +1,16 @@
 import { readFile } from "node:fs/promises";
+import { execSync } from "node:child_process";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+
+// Which code this build is: the commit (live runs rebuild the same commit, so
+// it only changes when code or the daily data is pushed). The page compares
+// it with the published version.json to notice new code.
+// Commit time orders builds, so a live run still deploying the previous
+// commit never looks like an update.
+const BUILD_ID = process.env.GITHUB_SHA || `dev-${Date.now()}`;
+let BUILD_TIME = 0;
+try { BUILD_TIME = Number(execSync("git log -1 --format=%ct", { encoding: "utf8" }).trim()) || 0; } catch {}
 
 // The page polls these files for fresh data between page loads, so they must
 // be published next to the bundle (the rest of data/ is only imported).
@@ -25,6 +35,7 @@ function publishPolledData() {
         seasonOdds: JSON.parse(contents["season-odds.json"])
       };
       this.emitFile({ type: "asset", fileName: "data/current/live.json", source: JSON.stringify(live) });
+      this.emitFile({ type: "asset", fileName: "version.json", source: JSON.stringify({ build: BUILD_ID, time: BUILD_TIME }) });
     }
   };
 }
@@ -32,4 +43,5 @@ function publishPolledData() {
 export default defineConfig({
   base: "/OnThursdaysWeFantasy.io/",
   plugins: [react(), publishPolledData()],
+  define: { __BUILD_ID__: JSON.stringify(BUILD_ID), __BUILD_TIME__: JSON.stringify(BUILD_TIME) },
 });

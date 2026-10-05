@@ -791,3 +791,7 @@ section,details,.odds-block{scroll-margin-top:72px}
 .dw-details{margin-top:16px}
 .dw-details .award-card small:first-child{margin-top:0}
 .ticket-odds{display:block;margin-top:6px;color:#e6c85c;font-size:14px;font-weight:800}
+
+/* Shown when new code has been pushed while the page is open. */
+.new-version-bar{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));z-index:60;transform:translateX(-50%);max-width:calc(100% - 32px);padding:10px 16px;border:1px solid #b8c69b;border-radius:999px;background:#1d2319;color:#dfe9c7;font:inherit;font-size:13px;font-weight:800;box-shadow:0 8px 20px rgba(0,0,0,.5);cursor:pointer;white-space:nowrap}
+@media(min-width:601px){.new-version-bar{bottom:24px}}
