@@ -1,6 +1,6 @@
 import { round } from "./lib/simulation.js";
 import { settledLineupRegret } from "./lib/lineup.js";
-import { DATA, OUT, STORY_MAX_CHARS, currentScores, currentWeek, currentWeekMatchups, fit, isNearMedian, listNames, liveTeams, money, name, possessive, previousScoreboard, projectedMedian, pts, readJson, recentGameIds, writeJson } from "./wire/context.js";
+import { DATA, OUT, STORY_MAX_CHARS, clockNow, currentScores, currentWeek, currentWeekMatchups, fit, isNearMedian, listNames, liveTeams, money, name, nflGames, possessive, previousScoreboard, projectedMedian, pts, readJson, recentGameIds, writeJson } from "./wire/context.js";
 import { addDeathWatchStory } from "./wire/death-watch.js";
 import { addEarlyMomentumStories } from "./wire/early-momentum.js";
 import { addInjuryStories } from "./wire/injuries.js";
@@ -29,9 +29,9 @@ function buildMarqueeStories() {
   const previousProjectedMedian = previousScoreboard?.week === currentWeek
     ? Number(previousScoreboard.projectedMedian ?? previousScoreboard.median)
     : null;
-  const add = (type, text, score) => {
+  const add = (type, text, score, flags = {}) => {
     if (text.length > STORY_MAX_CHARS) console.warn("League Wire: " + type + " runs " + text.length + " chars (budget " + STORY_MAX_CHARS + "): " + text);
-    stories.push({type, text, score:Number.isFinite(score) ? round(score) : 0});
+    stories.push({type, text, score:Number.isFinite(score) ? round(score) : 0, ...flags});
   };
   // Player stories only cover the games being played now (or the most
   // recently finished slot), so Thursday's hero doesn't lead on Sunday night.
@@ -70,7 +70,7 @@ function buildMarqueeStories() {
     const previousProjectedDiff=Number.isFinite(paProj)&&Number.isFinite(pbProj)?paProj-pbProj:null;
     return {m,a,b,diff:Math.abs(Number(a.score)-Number(b.score)),currentDiff:Number(a.score)-Number(b.score),previousDiff:pa&&pb?Number(pa.score)-Number(pb.score):null,projectedDiff,previousProjectedDiff,projectedDiffAbs:Number.isFinite(projectedDiff)?Math.abs(projectedDiff):null};
   }).filter(Boolean);
-  const close=matchupStates.filter(x=>!x.m.completed&&Number.isFinite(x.projectedDiff)&&x.projectedDiffAbs<=8).sort((a,b)=>a.projectedDiffAbs-b.projectedDiffAbs)[0];
+  const close=matchupStates.filter(x=>!x.m.completed&&Number(x.a.winProbability)>1&&Number(x.a.winProbability)<99&&Number.isFinite(x.projectedDiff)&&x.projectedDiffAbs<=8).sort((a,b)=>a.projectedDiffAbs-b.projectedDiffAbs)[0];
   if(close) add("MATCHUP ALERT","⚔️ " + close.a.team + " vs " + close.b.team + " is projected to finish just " + money(close.projectedDiffAbs) + " pts apart.",30-close.projectedDiffAbs);
   const projectionFlip=matchupStates.find(x=>!x.m.completed&&Number.isFinite(x.previousProjectedDiff)&&Number.isFinite(x.projectedDiff)&&((x.previousProjectedDiff>0&&x.projectedDiff<0)||(x.previousProjectedDiff<0&&x.projectedDiff>0)));
   if(projectionFlip){
@@ -147,7 +147,10 @@ function buildMarqueeStories() {
   try { addStockWatchStory(add); } catch (error) { console.warn("League Wire: stock watch failed: " + error.message); }
 
   const biggestLead=matchupStates.filter(x=>!x.m.completed).sort((a,b)=>b.diff-a.diff)[0];
-  if(biggestLead&&biggestLead.diff>=20){const leader=biggestLead.currentDiff>0?biggestLead.a.team:biggestLead.b.team;const trailer=biggestLead.currentDiff>0?biggestLead.b.team:biggestLead.a.team;add("LEAGUE GOSSIP","👀 League gossip: " + leader + " has " + money(biggestLead.diff) + " pts to play with against " + trailer + ".",28);}
+  // Only while the trailing team still has a real chance (decided matchups
+  // aren't worth the space).
+  const trailingOdds=biggestLead?Number((biggestLead.currentDiff>0?biggestLead.b:biggestLead.a).winProbability):0;
+  if(biggestLead&&biggestLead.diff>=20&&trailingOdds>=10){const leader=biggestLead.currentDiff>0?biggestLead.a.team:biggestLead.b.team;const trailer=biggestLead.currentDiff>0?biggestLead.b.team:biggestLead.a.team;add("LEAGUE GOSSIP","👀 League gossip: " + leader + " has " + money(biggestLead.diff) + " pts to play with against " + trailer + ".",28);}
   else if(regret?.bestSwap) add("LEAGUE GOSSIP","👀 League gossip: " + regret.team + " may be wishing they trusted " + regret.bestSwap.benchPlayer.name + " — " + pts(regret.bestSwap.benchPlayer.actual) + " are sitting on the bench.",regret.bestSwap.benchPlayer.actual+5);
   else if(close && Number(close.a.score) + Number(close.b.score) > 0) add("LEAGUE GOSSIP","👀 League gossip: " + close.a.team + " and " + close.b.team + " are separated by " + money(close.diff) + " pts. Somebody's Sunday just got interesting.",26-close.diff);
   return stories.filter((story,i,arr)=>arr.findIndex(x=>x.text===story.text)===i).sort((a,b)=>b.score-a.score);
@@ -161,8 +164,38 @@ await writeJson(`${OUT}/key-plays.json`, {
 });
 
 
+// ---- Curation -----------------------------------------------------------------
+// At most a dozen stories: the 8 most impactful always, and the last 4 slots
+// rotate hourly among the rest so the wire stays fresh without flickering.
+// At most 2 of any one type. Roster stories (injury wards, bold strategies,
+// thin depth, fresh pickups) are pre-game talk: they retire once Sunday's
+// games start, and swap stories then stay only if the swap decides a matchup.
+const WIRE_MAX = 12;
+const WIRE_CORE = 8;
+const PER_TYPE_MAX = 2;
+const ROSTER_TYPES = new Set(["INJURY WARD", "BOLD STRATEGY", "THIN ICE", "FRESH OFF THE WIRE"]);
+const SWAP_TYPES = new Set(["MANAGER MISCUE", "SHREWD SWAP"]);
+function curate(all) {
+  const etDay = iso => new Date(iso).toLocaleDateString("en-US", {weekday:"short", timeZone:"America/New_York"});
+  const sundayStarted = nflGames.some(g => g.kickoff && etDay(g.kickoff) === "Sun" && g.state !== "pre");
+  const perType = new Map();
+  const eligible = [...all].sort((a, b) => b.score - a.score).filter(s => {
+    if (sundayStarted && ROSTER_TYPES.has(s.type)) return false;
+    if (sundayStarted && SWAP_TYPES.has(s.type) && !s.decisive) return false;
+    const base = s.type.replace(/^WEEK \d+ · /, "");
+    perType.set(base, (perType.get(base) || 0) + 1);
+    return perType.get(base) <= PER_TYPE_MAX;
+  }).map(({decisive, ...s}) => s);
+  const core = eligible.slice(0, WIRE_CORE), pool = eligible.slice(WIRE_CORE);
+  // Hour-seeded shuffle of the rest (fixed within the hour).
+  let seed = (currentWeek * 1000003 + Math.floor(clockNow() / 3600000)) >>> 0;
+  const rand = () => (seed = (Math.imul(1664525, seed) + 1013904223) >>> 0) / 4294967296;
+  const flex = pool.map(s => [rand(), s]).sort((a, b) => a[0] - b[0]).slice(0, WIRE_MAX - core.length).map(x => x[1]);
+  return [...core, ...flex].sort((a, b) => b.score - a.score);
+}
+
 const previousMarquee = await readJson(`${DATA}/marquee.json`).catch(() => null);
 const headlines = weekHeadlines() || previousMarquee?.headlines || null;
 const review = await weekInReview(previousMarquee, headlines);
-const marqueeStories = interleave(review.stories, buildMarqueeStories());
+const marqueeStories = curate(interleave(review.stories, buildMarqueeStories()));
 await writeJson(`${OUT}/marquee.json`,{week:currentWeek,lastUpdated:new Date().toISOString(),stories:marqueeStories,headlines,review:review.meta});
