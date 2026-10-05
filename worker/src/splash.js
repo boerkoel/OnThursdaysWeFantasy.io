@@ -34,7 +34,9 @@ async function loadSession(env) {
   const stored = await env.SUBS.get("splash-session", "json");
   if (stored?.accessToken && stored?.refreshToken) return stored;
   if (env.SPLASH_ACCESS_TOKEN && env.SPLASH_REFRESH_TOKEN) {
-    return { accessToken: env.SPLASH_ACCESS_TOKEN.trim(), refreshToken: env.SPLASH_REFRESH_TOKEN.trim(), seeded: true };
+    // Developer Tools can show cookie values URL-encoded (%3D...): decode.
+    const clean = v => { const t = v.trim(); try { return t.includes("%") ? decodeURIComponent(t) : t; } catch { return t; } };
+    return { accessToken: clean(env.SPLASH_ACCESS_TOKEN), refreshToken: clean(env.SPLASH_REFRESH_TOKEN), seeded: true };
   }
   return null;
 }
@@ -54,7 +56,9 @@ async function renew(env, session) {
     // Enough to tell Splash's auth server from a firewall in front of it;
     // anything token-like is redacted.
     const snippet = text.slice(0, 160).replace(/[A-Za-z0-9_\-.]{24,}/g, "[…]");
-    throw new Error(`Splash session renewal failed (${response.status}; ${response.headers.get("content-type") || "no type"}; server ${response.headers.get("server") || "?"}; ${snippet})`);
+    // The refresh token's shape (never its value) helps spot a bad copy.
+    const shape = `refresh token: ${session.refreshToken.length} chars, ${session.refreshToken.split(".").length - 1} dots, seeded ${Boolean(session.seeded)}`;
+    throw new Error(`Splash session renewal failed (${response.status}; ${response.headers.get("content-type") || "no type"}; server ${response.headers.get("server") || "?"}; ${snippet}; ${shape})`);
   }
   const next = { accessToken: data.accessToken, refreshToken: data.refreshToken || session.refreshToken, renewedAt: new Date().toISOString() };
   await env.SUBS.put("splash-session", JSON.stringify(next));
