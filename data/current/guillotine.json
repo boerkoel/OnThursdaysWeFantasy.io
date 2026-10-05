@@ -3,59 +3,132 @@
   "leagueName": "On Mondays Heads Will Roll",
   "draftDate": "2026-09-10T16:00:00.000Z",
   "week": 4,
-  "lastUpdated": "2026-10-04T16:59:03.596Z",
+  "lastUpdated": "2026-10-05T01:11:51.332Z",
   "simulations": 10000,
   "teams": [
+    {
+      "teamId": 3,
+      "team": "Stacey's Smart Team",
+      "abbrev": "SST",
+      "logo": "/OnThursdaysWeFantasy.io/guillotine-logos/team-3.svg",
+      "score": 95.92,
+      "projected": 95.92,
+      "projectionSd": 0,
+      "remaining": [],
+      "lineup": [
+        {
+          "id": 3918298,
+          "name": "J. Allen",
+          "pos": "QB",
+          "proTeamId": 2,
+          "slot": 0,
+          "actual": 24.02,
+          "projection": 28.96,
+          "injury": null
+        },
+        {
+          "id": 4379399,
+          "name": "J. Cook III",
+          "pos": "RB",
+          "proTeamId": 2,
+          "slot": 2,
+          "actual": 17.3,
+          "projection": 19.34,
+          "injury": null
+        },
+        {
+          "id": 4361307,
+          "name": "T. McBride",
+          "pos": "TE",
+          "proTeamId": 22,
+          "slot": 6,
+          "actual": 6.6,
+          "projection": 15.57,
+          "injury": null
+        },
+        {
+          "id": 4701936,
+          "name": "M. Golden",
+          "pos": "WR",
+          "proTeamId": 9,
+          "slot": 4,
+          "actual": 10.7,
+          "projection": 12.15,
+          "injury": null
+        },
+        {
+          "id": 4696981,
+          "name": "C. Skattebo",
+          "pos": "RB",
+          "proTeamId": 19,
+          "slot": 2,
+          "actual": 9.1,
+          "projection": 17.58,
+          "injury": null
+        },
+        {
+          "id": 3953687,
+          "name": "B. Aubrey",
+          "pos": "K",
+          "proTeamId": 6,
+          "slot": 17,
+          "actual": 12,
+          "projection": 9.81,
+          "injury": null
+        },
+        {
+          "id": -16005,
+          "name": "Browns D/ST",
+          "pos": "D/ST",
+          "proTeamId": 5,
+          "slot": 16,
+          "actual": 8.5,
+          "projection": 6.25,
+          "injury": null
+        },
+        {
+          "id": 2976212,
+          "name": "S. Diggs",
+          "pos": "WR",
+          "proTeamId": 28,
+          "slot": 4,
+          "actual": 6.5,
+          "projection": 11.69,
+          "injury": null
+        },
+        {
+          "id": 4385690,
+          "name": "D. Kincaid",
+          "pos": "TE",
+          "proTeamId": 2,
+          "slot": 23,
+          "actual": 1.2,
+          "projection": 9.81,
+          "injury": null
+        }
+      ],
+      "chopProbability": 78.28,
+      "rival": {
+        "teamId": 9,
+        "team": "Mel's Mediocre Mob",
+        "share": 81.63
+      },
+      "playersLeft": 0
+    },
     {
       "teamId": 4,
       "team": "Team Name",
       "abbrev": "TN",
       "logo": "/OnThursdaysWeFantasy.io/guillotine-logos/team-4.svg",
-      "score": 4,
-      "projected": 116.17,
-      "projectionSd": 29,
+      "score": 91.98,
+      "projected": 106.88,
+      "projectionSd": 10.43,
       "remaining": [
         {
           "name": "Amon-Ra St. Brown",
           "game": "DET @ CAR",
-          "actual": 0,
-          "projectedRest": 18.7
-        },
-        {
-          "name": "Derrick Henry",
-          "game": "TEN @ BAL",
-          "actual": 0,
-          "projectedRest": 22.85
-        },
-        {
-          "name": "Lamar Jackson",
-          "game": "TEN @ BAL",
-          "actual": 0,
-          "projectedRest": 27.62
-        },
-        {
-          "name": "Carnell Tate",
-          "game": "TEN @ BAL",
-          "actual": 0,
-          "projectedRest": 11.02
-        },
-        {
-          "name": "Isaiah Likely",
-          "game": "ARI @ NYG",
-          "actual": 0,
-          "projectedRest": 10.83
-        },
-        {
-          "name": "David Montgomery",
-          "game": "DAL @ HOU",
-          "actual": 0,
-          "projectedRest": 14.69
-        },
-        {
-          "name": "Chiefs D/ST",
-          "game": "KC @ LV",
-          "actual": 0,
-          "projectedRest": 6.46
+          "actual": 3.8,
+          "projectedRest": 14.9
         }
       ],
       "lineup": [
@@ -65,7 +138,7 @@
           "pos": "WR",
           "proTeamId": 8,
           "slot": 4,
-          "actual": 0,
+          "actual": 3.8,
           "projection": 18.7,
           "injury": null
         },
@@ -85,7 +158,7 @@
           "pos": "RB",
           "proTeamId": 33,
           "slot": 2,
-          "actual": 0,
+          "actual": 18.4,
           "projection": 22.85,
           "injury": null
         },
@@ -95,9 +168,9 @@
           "pos": "QB",
           "proTeamId": 33,
           "slot": 0,
-          "actual": 0,
-          "projection": 27.62,
-          "injury": null
+          "actual": 23.88,
+          "projection": 27.65,
+          "injury": "Q"
         },
         {
           "id": 4871023,
@@ -105,8 +178,8 @@
           "pos": "WR",
           "proTeamId": 10,
           "slot": 4,
-          "actual": 0,
-          "projection": 11.02,
+          "actual": 20,
+          "projection": 11.03,
           "injury": null
         },
         {
@@ -115,7 +188,7 @@
           "pos": "TE",
           "proTeamId": 19,
           "slot": 6,
-          "actual": 0,
+          "actual": 11.6,
           "projection": 10.83,
           "injury": null
         },
@@ -135,7 +208,7 @@
           "pos": "RB",
           "proTeamId": 34,
           "slot": 2,
-          "actual": 0,
+          "actual": 4.3,
           "projection": 14.69,
           "injury": null
         },
@@ -145,566 +218,65 @@
           "pos": "D/ST",
           "proTeamId": 12,
           "slot": 16,
-          "actual": 0,
+          "actual": 6,
           "projection": 6.46,
           "injury": null
         }
       ],
-      "chopProbability": 25.53,
+      "chopProbability": 17.42,
       "swingPlayer": {
-        "name": "Derrick Henry",
-        "game": "TEN @ BAL",
-        "projectedRest": 22.85,
-        "chopIfAbove": 13.15,
-        "chopIfBelow": 36.08,
-        "bigGame": 34.68,
-        "quietGame": 10.79
+        "name": "Amon-Ra St. Brown",
+        "game": "DET @ CAR",
+        "projectedRest": 14.9,
+        "chopIfAbove": 0,
+        "chopIfBelow": 33.2,
+        "bigGame": 26.97,
+        "quietGame": 10.53
       },
       "gameSwings": [
-        {
-          "game": "TEN @ BAL",
-          "players": [
-            "Derrick Henry",
-            "Lamar Jackson",
-            "Carnell Tate"
-          ],
-          "projectedRest": 61.49,
-          "chopIfAbove": 6.88,
-          "chopIfBelow": 40.4,
-          "bigGame": 78.11,
-          "quietGame": 43.02
-        },
         {
           "game": "DET @ CAR",
           "players": [
             "Amon-Ra St. Brown"
           ],
-          "projectedRest": 18.7,
-          "chopIfAbove": 15.06,
-          "chopIfBelow": 34.79,
-          "bigGame": 29.2,
-          "quietGame": 8.2
-        },
-        {
-          "game": "DAL @ HOU",
-          "players": [
-            "David Montgomery"
-          ],
-          "projectedRest": 14.69,
-          "chopIfAbove": 17.63,
-          "chopIfBelow": 32.66,
-          "bigGame": 22.32,
-          "quietGame": 6.92
+          "projectedRest": 14.9,
+          "chopIfAbove": 0,
+          "chopIfBelow": 33.2,
+          "bigGame": 26.97,
+          "quietGame": 10.53
         }
       ],
-      "swingGame": {
-        "game": "TEN @ BAL",
-        "players": [
-          "Derrick Henry",
-          "Lamar Jackson",
-          "Carnell Tate"
-        ],
-        "projectedRest": 61.49,
-        "chopIfAbove": 6.88,
-        "chopIfBelow": 40.4,
-        "bigGame": 78.11,
-        "quietGame": 43.02
-      },
       "rival": {
         "teamId": 3,
         "team": "Stacey's Smart Team",
-        "share": 18.33
+        "share": 98.79
       },
-      "playersLeft": 7
-    },
-    {
-      "teamId": 6,
-      "team": "Moose Knucklers",
-      "abbrev": "MK",
-      "logo": "/OnThursdaysWeFantasy.io/guillotine-logos/team-6.jpg",
-      "score": 0,
-      "projected": 126.85,
-      "projectionSd": 29.01,
-      "remaining": [
-        {
-          "name": "Brock Bowers",
-          "game": "KC @ LV",
-          "actual": 0,
-          "projectedRest": 14.43
-        },
-        {
-          "name": "Jalen Hurts",
-          "game": "LAR @ PHI",
-          "actual": 0,
-          "projectedRest": 23.85
-        },
-        {
-          "name": "Saquon Barkley",
-          "game": "LAR @ PHI",
-          "actual": 0,
-          "projectedRest": 15.82
-        },
-        {
-          "name": "Rashee Rice",
-          "game": "KC @ LV",
-          "actual": 0,
-          "projectedRest": 13.8
-        },
-        {
-          "name": "CeeDee Lamb",
-          "game": "DAL @ HOU",
-          "actual": 0,
-          "projectedRest": 15.57
-        },
-        {
-          "name": "Garrett Wilson",
-          "game": "NYJ @ CHI",
-          "actual": 0,
-          "projectedRest": 15.15
-        },
-        {
-          "name": "Kyren Williams",
-          "game": "LAR @ PHI",
-          "actual": 0,
-          "projectedRest": 13.9
-        },
-        {
-          "name": "Cameron Dicker",
-          "game": "LAC @ SEA",
-          "actual": 0,
-          "projectedRest": 8.32
-        },
-        {
-          "name": "Rams D/ST",
-          "game": "LAR @ PHI",
-          "actual": 0,
-          "projectedRest": 6.02
-        }
-      ],
-      "lineup": [
-        {
-          "id": 4432665,
-          "name": "B. Bowers",
-          "pos": "TE",
-          "proTeamId": 13,
-          "slot": 6,
-          "actual": 0,
-          "projection": 14.43,
-          "injury": null
-        },
-        {
-          "id": 4040715,
-          "name": "J. Hurts",
-          "pos": "QB",
-          "proTeamId": 21,
-          "slot": 0,
-          "actual": 0,
-          "projection": 23.85,
-          "injury": null
-        },
-        {
-          "id": 3929630,
-          "name": "S. Barkley",
-          "pos": "RB",
-          "proTeamId": 21,
-          "slot": 2,
-          "actual": 0,
-          "projection": 15.82,
-          "injury": null
-        },
-        {
-          "id": 4428331,
-          "name": "R. Rice",
-          "pos": "WR",
-          "proTeamId": 12,
-          "slot": 4,
-          "actual": 0,
-          "projection": 13.8,
-          "injury": null
-        },
-        {
-          "id": 4241389,
-          "name": "C. Lamb",
-          "pos": "WR",
-          "proTeamId": 6,
-          "slot": 4,
-          "actual": 0,
-          "projection": 15.57,
-          "injury": null
-        },
-        {
-          "id": 4569618,
-          "name": "G. Wilson",
-          "pos": "WR",
-          "proTeamId": 20,
-          "slot": 23,
-          "actual": 0,
-          "projection": 15.15,
-          "injury": null
-        },
-        {
-          "id": 4430737,
-          "name": "K. Williams",
-          "pos": "RB",
-          "proTeamId": 14,
-          "slot": 2,
-          "actual": 0,
-          "projection": 13.9,
-          "injury": null
-        },
-        {
-          "id": 4362081,
-          "name": "C. Dicker",
-          "pos": "K",
-          "proTeamId": 24,
-          "slot": 17,
-          "actual": 0,
-          "projection": 8.32,
-          "injury": null
-        },
-        {
-          "id": -16014,
-          "name": "Rams D/ST",
-          "pos": "D/ST",
-          "proTeamId": 14,
-          "slot": 16,
-          "actual": 0,
-          "projection": 6.02,
-          "injury": null
-        }
-      ],
-      "chopProbability": 15.03,
-      "swingPlayer": {
-        "name": "Jalen Hurts",
-        "game": "LAR @ PHI",
-        "projectedRest": 23.85,
-        "chopIfAbove": 7.33,
-        "chopIfBelow": 21.98,
-        "bigGame": 33.5,
-        "quietGame": 13.24
-      },
-      "gameSwings": [
-        {
-          "game": "LAR @ PHI",
-          "players": [
-            "Jalen Hurts",
-            "Saquon Barkley",
-            "Kyren Williams",
-            "Rams D/ST"
-          ],
-          "projectedRest": 59.58,
-          "chopIfAbove": 3.25,
-          "chopIfBelow": 24.49,
-          "bigGame": 74.59,
-          "quietGame": 43.25
-        },
-        {
-          "game": "KC @ LV",
-          "players": [
-            "Brock Bowers",
-            "Rashee Rice"
-          ],
-          "projectedRest": 28.24,
-          "chopIfAbove": 6.3,
-          "chopIfBelow": 22.42,
-          "bigGame": 39.55,
-          "quietGame": 16.96
-        },
-        {
-          "game": "DAL @ HOU",
-          "players": [
-            "CeeDee Lamb"
-          ],
-          "projectedRest": 15.57,
-          "chopIfAbove": 8.63,
-          "chopIfBelow": 20.64,
-          "bigGame": 24.34,
-          "quietGame": 6.85
-        }
-      ],
-      "swingGame": {
-        "game": "LAR @ PHI",
-        "players": [
-          "Jalen Hurts",
-          "Saquon Barkley",
-          "Kyren Williams",
-          "Rams D/ST"
-        ],
-        "projectedRest": 59.58,
-        "chopIfAbove": 3.25,
-        "chopIfBelow": 24.49,
-        "bigGame": 74.59,
-        "quietGame": 43.25
-      },
-      "rival": {
-        "teamId": 4,
-        "team": "Team Name",
-        "share": 25.7
-      },
-      "playersLeft": 9
-    },
-    {
-      "teamId": 3,
-      "team": "Stacey's Smart Team",
-      "abbrev": "SST",
-      "logo": "/OnThursdaysWeFantasy.io/guillotine-logos/team-3.svg",
-      "score": 15,
-      "projected": 128.16,
-      "projectionSd": 28.41,
-      "remaining": [
-        {
-          "name": "Josh Allen",
-          "game": "NE @ BUF",
-          "actual": 0,
-          "projectedRest": 28.94
-        },
-        {
-          "name": "James Cook III",
-          "game": "NE @ BUF",
-          "actual": 0,
-          "projectedRest": 19.34
-        },
-        {
-          "name": "Trey McBride",
-          "game": "ARI @ NYG",
-          "actual": 0,
-          "projectedRest": 15.56
-        },
-        {
-          "name": "Matthew Golden",
-          "game": "GB @ TB",
-          "actual": 0,
-          "projectedRest": 12.13
-        },
-        {
-          "name": "Cam Skattebo",
-          "game": "ARI @ NYG",
-          "actual": 0,
-          "projectedRest": 17.57
-        },
-        {
-          "name": "Brandon Aubrey",
-          "game": "DAL @ HOU",
-          "actual": 0,
-          "projectedRest": 9.81
-        },
-        {
-          "name": "Dalton Kincaid",
-          "game": "NE @ BUF",
-          "actual": 0,
-          "projectedRest": 9.8
-        }
-      ],
-      "lineup": [
-        {
-          "id": 3918298,
-          "name": "J. Allen",
-          "pos": "QB",
-          "proTeamId": 2,
-          "slot": 0,
-          "actual": 0,
-          "projection": 28.94,
-          "injury": null
-        },
-        {
-          "id": 4379399,
-          "name": "J. Cook III",
-          "pos": "RB",
-          "proTeamId": 2,
-          "slot": 2,
-          "actual": 0,
-          "projection": 19.34,
-          "injury": null
-        },
-        {
-          "id": 4361307,
-          "name": "T. McBride",
-          "pos": "TE",
-          "proTeamId": 22,
-          "slot": 6,
-          "actual": 0,
-          "projection": 15.56,
-          "injury": null
-        },
-        {
-          "id": 4701936,
-          "name": "M. Golden",
-          "pos": "WR",
-          "proTeamId": 9,
-          "slot": 4,
-          "actual": 0,
-          "projection": 12.13,
-          "injury": null
-        },
-        {
-          "id": 4696981,
-          "name": "C. Skattebo",
-          "pos": "RB",
-          "proTeamId": 19,
-          "slot": 2,
-          "actual": 0,
-          "projection": 17.57,
-          "injury": null
-        },
-        {
-          "id": 3953687,
-          "name": "B. Aubrey",
-          "pos": "K",
-          "proTeamId": 6,
-          "slot": 17,
-          "actual": 0,
-          "projection": 9.81,
-          "injury": null
-        },
-        {
-          "id": -16005,
-          "name": "Browns D/ST",
-          "pos": "D/ST",
-          "proTeamId": 5,
-          "slot": 16,
-          "actual": 8.5,
-          "projection": 6.17,
-          "injury": null
-        },
-        {
-          "id": 2976212,
-          "name": "S. Diggs",
-          "pos": "WR",
-          "proTeamId": 28,
-          "slot": 4,
-          "actual": 6.5,
-          "projection": 11.69,
-          "injury": null
-        },
-        {
-          "id": 4385690,
-          "name": "D. Kincaid",
-          "pos": "TE",
-          "proTeamId": 2,
-          "slot": 23,
-          "actual": 0,
-          "projection": 9.8,
-          "injury": null
-        }
-      ],
-      "chopProbability": 12.73,
-      "swingPlayer": {
-        "name": "Josh Allen",
-        "game": "NE @ BUF",
-        "projectedRest": 28.94,
-        "chopIfAbove": 4.12,
-        "chopIfBelow": 20.36,
-        "bigGame": 40.47,
-        "quietGame": 16
-      },
-      "gameSwings": [
-        {
-          "game": "NE @ BUF",
-          "players": [
-            "Josh Allen",
-            "James Cook III",
-            "Dalton Kincaid"
-          ],
-          "projectedRest": 58.08,
-          "chopIfAbove": 2.25,
-          "chopIfBelow": 21.11,
-          "bigGame": 74.01,
-          "quietGame": 40.8
-        },
-        {
-          "game": "ARI @ NYG",
-          "players": [
-            "Trey McBride",
-            "Cam Skattebo"
-          ],
-          "projectedRest": 33.13,
-          "chopIfAbove": 4.62,
-          "chopIfBelow": 19.78,
-          "bigGame": 46.15,
-          "quietGame": 20.31
-        },
-        {
-          "game": "GB @ TB",
-          "players": [
-            "Matthew Golden"
-          ],
-          "projectedRest": 12.13,
-          "chopIfAbove": 8.37,
-          "chopIfBelow": 16.54,
-          "bigGame": 18.85,
-          "quietGame": 5.2
-        }
-      ],
-      "swingGame": {
-        "game": "NE @ BUF",
-        "players": [
-          "Josh Allen",
-          "James Cook III",
-          "Dalton Kincaid"
-        ],
-        "projectedRest": 58.08,
-        "chopIfAbove": 2.25,
-        "chopIfBelow": 21.11,
-        "bigGame": 74.01,
-        "quietGame": 40.8
-      },
-      "rival": {
-        "teamId": 4,
-        "team": "Team Name",
-        "share": 24.21
-      },
-      "playersLeft": 7
+      "playersLeft": 1,
+      "survivalNeed": {
+        "points": 3.95,
+        "passTeam": "Stacey's Smart Team"
+      }
     },
     {
       "teamId": 10,
       "team": "Joe's Scary Team",
       "abbrev": "JST",
       "logo": "/OnThursdaysWeFantasy.io/guillotine-logos/team-10.svg",
-      "score": 24.35,
-      "projected": 133.47,
-      "projectionSd": 29.75,
+      "score": 83.47,
+      "projected": 128.54,
+      "projectionSd": 18.7,
       "remaining": [
         {
           "name": "Jahmyr Gibbs",
           "game": "DET @ CAR",
-          "actual": 0,
-          "projectedRest": 27.62
-        },
-        {
-          "name": "Justin Jefferson",
-          "game": "MIA @ MIN",
-          "actual": 0,
-          "projectedRest": 0
-        },
-        {
-          "name": "Ashton Jeanty",
-          "game": "KC @ LV",
-          "actual": 0,
-          "projectedRest": 19.49
-        },
-        {
-          "name": "George Kittle",
-          "game": "DEN @ SF",
-          "actual": 0,
-          "projectedRest": 12.77
-        },
-        {
-          "name": "Eddy Pineiro",
-          "game": "DEN @ SF",
-          "actual": 0,
-          "projectedRest": 9.52
-        },
-        {
-          "name": "George Pickens",
-          "game": "DAL @ HOU",
-          "actual": 0,
-          "projectedRest": 12.75
+          "actual": 4.1,
+          "projectedRest": 23.52
         },
         {
           "name": "Bryce Young",
           "game": "DET @ CAR",
-          "actual": 0,
-          "projectedRest": 26.96
+          "actual": 5.42,
+          "projectedRest": 21.54
         }
       ],
       "lineup": [
@@ -714,7 +286,7 @@
           "pos": "RB",
           "proTeamId": 8,
           "slot": 2,
-          "actual": 0,
+          "actual": 4.1,
           "projection": 27.62,
           "injury": null
         },
@@ -734,7 +306,7 @@
           "pos": "RB",
           "proTeamId": 13,
           "slot": 2,
-          "actual": 0,
+          "actual": 18.6,
           "projection": 19.49,
           "injury": null
         },
@@ -744,7 +316,7 @@
           "pos": "TE",
           "proTeamId": 25,
           "slot": 6,
-          "actual": 0,
+          "actual": 15.5,
           "projection": 12.77,
           "injury": null
         },
@@ -755,7 +327,7 @@
           "proTeamId": 23,
           "slot": 16,
           "actual": 6.25,
-          "projection": 7.26,
+          "projection": 7.5,
           "injury": null
         },
         {
@@ -764,7 +336,7 @@
           "pos": "K",
           "proTeamId": 25,
           "slot": 17,
-          "actual": 0,
+          "actual": 6,
           "projection": 9.52,
           "injury": null
         },
@@ -774,7 +346,7 @@
           "pos": "WR",
           "proTeamId": 6,
           "slot": 4,
-          "actual": 0,
+          "actual": 9.5,
           "projection": 12.75,
           "injury": null
         },
@@ -785,7 +357,7 @@
           "proTeamId": 23,
           "slot": 23,
           "actual": 18.1,
-          "projection": 18.28,
+          "projection": 18.26,
           "injury": null
         },
         {
@@ -794,20 +366,20 @@
           "pos": "QB",
           "proTeamId": 29,
           "slot": 0,
-          "actual": 0,
+          "actual": 5.42,
           "projection": 26.96,
           "injury": null
         }
       ],
-      "chopProbability": 10.36,
+      "chopProbability": 4.31,
       "swingPlayer": {
         "name": "Jahmyr Gibbs",
         "game": "DET @ CAR",
-        "projectedRest": 27.62,
-        "chopIfAbove": 2.95,
-        "chopIfBelow": 16.86,
-        "bigGame": 41.93,
-        "quietGame": 13.1
+        "projectedRest": 23.52,
+        "chopIfAbove": 0,
+        "chopIfBelow": 8.26,
+        "bigGame": 39.89,
+        "quietGame": 15.13
       },
       "gameSwings": [
         {
@@ -816,34 +388,11 @@
             "Jahmyr Gibbs",
             "Bryce Young"
           ],
-          "projectedRest": 54.59,
-          "chopIfAbove": 0.79,
-          "chopIfBelow": 18.01,
-          "bigGame": 72.36,
-          "quietGame": 35.87
-        },
-        {
-          "game": "KC @ LV",
-          "players": [
-            "Ashton Jeanty"
-          ],
-          "projectedRest": 19.49,
-          "chopIfAbove": 4.32,
-          "chopIfBelow": 15.6,
-          "bigGame": 29.66,
-          "quietGame": 9.15
-        },
-        {
-          "game": "DEN @ SF",
-          "players": [
-            "George Kittle",
-            "Eddy Pineiro"
-          ],
-          "projectedRest": 22.29,
-          "chopIfAbove": 5.07,
-          "chopIfBelow": 14.9,
-          "bigGame": 31.39,
-          "quietGame": 13.1
+          "projectedRest": 45.07,
+          "chopIfAbove": 0,
+          "chopIfBelow": 8,
+          "bigGame": 69.54,
+          "quietGame": 38.94
         }
       ],
       "swingGame": {
@@ -852,75 +401,148 @@
           "Jahmyr Gibbs",
           "Bryce Young"
         ],
-        "projectedRest": 54.59,
-        "chopIfAbove": 0.79,
-        "chopIfBelow": 18.01,
-        "bigGame": 72.36,
-        "quietGame": 35.87
+        "projectedRest": 45.07,
+        "chopIfAbove": 0,
+        "chopIfBelow": 8,
+        "bigGame": 69.54,
+        "quietGame": 38.94
       },
       "rival": {
-        "teamId": 4,
-        "team": "Team Name",
-        "share": 25.02
+        "teamId": 3,
+        "team": "Stacey's Smart Team",
+        "share": 88.84
       },
-      "playersLeft": 7
+      "playersLeft": 2,
+      "survivalNeed": {
+        "points": 12.46,
+        "passTeam": "Stacey's Smart Team"
+      }
+    },
+    {
+      "teamId": 9,
+      "team": "Mel's Mediocre Mob",
+      "abbrev": "MMM",
+      "logo": "/OnThursdaysWeFantasy.io/guillotine-logos/team-9.svg",
+      "score": 100.3,
+      "projected": 100.3,
+      "projectionSd": 2.1,
+      "remaining": [
+        {
+          "name": "Jake Bates",
+          "game": "DET @ CAR",
+          "actual": 9,
+          "projectedRest": 0
+        }
+      ],
+      "lineup": [
+        {
+          "id": 4362628,
+          "name": "J. Chase",
+          "pos": "WR",
+          "proTeamId": 4,
+          "slot": 4,
+          "actual": 4.7,
+          "projection": 18.83,
+          "injury": "Q"
+        },
+        {
+          "id": 4242335,
+          "name": "J. Taylor",
+          "pos": "RB",
+          "proTeamId": 11,
+          "slot": 2,
+          "actual": 25.2,
+          "projection": 22.01,
+          "injury": null
+        },
+        {
+          "id": 3916148,
+          "name": "T. Pollard",
+          "pos": "RB",
+          "proTeamId": 10,
+          "slot": 2,
+          "actual": 13.5,
+          "projection": 12.91,
+          "injury": null
+        },
+        {
+          "id": 4723086,
+          "name": "C. Loveland",
+          "pos": "TE",
+          "proTeamId": 3,
+          "slot": 6,
+          "actual": 10.7,
+          "projection": 7.9,
+          "injury": null
+        },
+        {
+          "id": 3139477,
+          "name": "P. Mahomes",
+          "pos": "QB",
+          "proTeamId": 12,
+          "slot": 0,
+          "actual": 22,
+          "projection": 25.23,
+          "injury": null
+        },
+        {
+          "id": 4432620,
+          "name": "P. Washington",
+          "pos": "WR",
+          "proTeamId": 30,
+          "slot": 4,
+          "actual": 1.5,
+          "projection": 14.55,
+          "injury": null
+        },
+        {
+          "id": 4248528,
+          "name": "C. Watson",
+          "pos": "WR",
+          "proTeamId": 9,
+          "slot": 23,
+          "actual": 7.2,
+          "projection": 13.69,
+          "injury": null
+        },
+        {
+          "id": 4689936,
+          "name": "J. Bates",
+          "pos": "K",
+          "proTeamId": 8,
+          "slot": 17,
+          "actual": 9,
+          "projection": 8.97,
+          "injury": null
+        },
+        {
+          "id": -16016,
+          "name": "Vikings D/ST",
+          "pos": "D/ST",
+          "proTeamId": 16,
+          "slot": 16,
+          "actual": 6.5,
+          "projection": 7.84,
+          "injury": null
+        }
+      ],
+      "chopProbability": 0,
+      "playersLeft": 1
     },
     {
       "teamId": 5,
       "team": "Purdy Good",
       "abbrev": "PUR",
       "logo": "/OnThursdaysWeFantasy.io/guillotine-logos/team-5.svg",
-      "score": 0,
-      "projected": 135.49,
-      "projectionSd": 31.06,
+      "score": 103.42,
+      "projected": 127.32,
+      "projectionSd": 12.72,
       "remaining": [
-        {
-          "name": "Christian McCaffrey",
-          "game": "DEN @ SF",
-          "actual": 0,
-          "projectedRest": 20.89
-        },
-        {
-          "name": "Nico Collins",
-          "game": "DAL @ HOU",
-          "actual": 0,
-          "projectedRest": 14.32
-        },
-        {
-          "name": "Davante Adams",
-          "game": "LAR @ PHI",
-          "actual": 0,
-          "projectedRest": 14.86
-        },
-        {
-          "name": "Travis Kelce",
-          "game": "KC @ LV",
-          "actual": 0,
-          "projectedRest": 10.81
-        },
-        {
-          "name": "Texans D/ST",
-          "game": "DAL @ HOU",
-          "actual": 0,
-          "projectedRest": 5.64
-        },
-        {
-          "name": "Brock Purdy",
-          "game": "DEN @ SF",
-          "actual": 0,
-          "projectedRest": 25.46
-        },
-        {
-          "name": "Harrison Mevis",
-          "game": "LAR @ PHI",
-          "actual": 0,
-          "projectedRest": 8.8
-        },
         {
           "name": "Chuba Hubbard",
           "game": "DET @ CAR",
-          "actual": 0,
-          "projectedRest": 17.69
+          "actual": 10.8,
+          "projectedRest": 6.89
         },
         {
           "name": "Chris Olave",
@@ -936,7 +558,7 @@
           "pos": "RB",
           "proTeamId": 25,
           "slot": 2,
-          "actual": 0,
+          "actual": 16.5,
           "projection": 20.89,
           "injury": null
         },
@@ -946,8 +568,8 @@
           "pos": "WR",
           "proTeamId": 34,
           "slot": 4,
-          "actual": 0,
-          "projection": 14.32,
+          "actual": 29.8,
+          "projection": 14.33,
           "injury": null
         },
         {
@@ -956,8 +578,8 @@
           "pos": "WR",
           "proTeamId": 14,
           "slot": 4,
-          "actual": 0,
-          "projection": 14.86,
+          "actual": 6.2,
+          "projection": 14.87,
           "injury": null
         },
         {
@@ -966,7 +588,7 @@
           "pos": "TE",
           "proTeamId": 12,
           "slot": 6,
-          "actual": 0,
+          "actual": 3,
           "projection": 10.81,
           "injury": null
         },
@@ -976,8 +598,8 @@
           "pos": "D/ST",
           "proTeamId": 34,
           "slot": 16,
-          "actual": 0,
-          "projection": 5.64,
+          "actual": 5,
+          "projection": 5.69,
           "injury": null
         },
         {
@@ -986,7 +608,7 @@
           "pos": "QB",
           "proTeamId": 25,
           "slot": 0,
-          "actual": 0,
+          "actual": 25.12,
           "projection": 25.46,
           "injury": null
         },
@@ -996,7 +618,7 @@
           "pos": "K",
           "proTeamId": 14,
           "slot": 17,
-          "actual": 0,
+          "actual": 7,
           "projection": 8.8,
           "injury": null
         },
@@ -1006,7 +628,7 @@
           "pos": "RB",
           "proTeamId": 29,
           "slot": 2,
-          "actual": 0,
+          "actual": 10.8,
           "projection": 17.69,
           "injury": null
         },
@@ -1021,87 +643,18 @@
           "injury": null
         }
       ],
-      "chopProbability": 10.09,
-      "swingPlayer": {
-        "name": "Christian McCaffrey",
-        "game": "DEN @ SF",
-        "projectedRest": 20.89,
-        "chopIfAbove": 4.1,
-        "chopIfBelow": 15.29,
-        "bigGame": 31.81,
-        "quietGame": 9.7
-      },
-      "gameSwings": [
-        {
-          "game": "DEN @ SF",
-          "players": [
-            "Christian McCaffrey",
-            "Brock Purdy"
-          ],
-          "projectedRest": 46.35,
-          "chopIfAbove": 1.99,
-          "chopIfBelow": 16.74,
-          "bigGame": 60.91,
-          "quietGame": 30.17
-        },
-        {
-          "game": "LAR @ PHI",
-          "players": [
-            "Davante Adams",
-            "Harrison Mevis"
-          ],
-          "projectedRest": 23.66,
-          "chopIfAbove": 4.7,
-          "chopIfBelow": 14.6,
-          "bigGame": 33.16,
-          "quietGame": 14.02
-        },
-        {
-          "game": "ATL @ NO",
-          "players": [
-            "Chris Olave"
-          ],
-          "projectedRest": 17.01,
-          "chopIfAbove": 5.05,
-          "chopIfBelow": 14.43,
-          "bigGame": 26.57,
-          "quietGame": 7.57
-        }
-      ],
-      "swingGame": {
-        "game": "DEN @ SF",
-        "players": [
-          "Christian McCaffrey",
-          "Brock Purdy"
-        ],
-        "projectedRest": 46.35,
-        "chopIfAbove": 1.99,
-        "chopIfBelow": 16.74,
-        "bigGame": 60.91,
-        "quietGame": 30.17
-      },
-      "rival": {
-        "teamId": 4,
-        "team": "Team Name",
-        "share": 24.31
-      },
-      "playersLeft": 9
+      "chopProbability": 0,
+      "playersLeft": 2
     },
     {
       "teamId": 7,
       "team": "Uriel's Upbeat Team",
       "abbrev": "UUT",
       "logo": "/OnThursdaysWeFantasy.io/guillotine-logos/team-7.svg",
-      "score": 0,
-      "projected": 136.72,
-      "projectionSd": 31.57,
+      "score": 102.67,
+      "projected": 131.97,
+      "projectionSd": 15.59,
       "remaining": [
-        {
-          "name": "Jaxon Smith-Njigba",
-          "game": "LAC @ SEA",
-          "actual": 0,
-          "projectedRest": 20.62
-        },
         {
           "name": "Bijan Robinson",
           "game": "ATL @ NO",
@@ -1109,46 +662,10 @@
           "projectedRest": 22.76
         },
         {
-          "name": "Jaylen Waddle",
-          "game": "DEN @ SF",
-          "actual": 0,
-          "projectedRest": 10.95
-        },
-        {
-          "name": "D'Andre Swift",
-          "game": "NYJ @ CHI",
-          "actual": 0,
-          "projectedRest": 15.77
-        },
-        {
           "name": "Sam LaPorta",
           "game": "DET @ CAR",
-          "actual": 0,
-          "projectedRest": 10.13
-        },
-        {
-          "name": "Broncos D/ST",
-          "game": "DEN @ SF",
-          "actual": 0,
-          "projectedRest": 4.22
-        },
-        {
-          "name": "Ka'imi Fairbairn",
-          "game": "DAL @ HOU",
-          "actual": 0,
-          "projectedRest": 10.18
-        },
-        {
-          "name": "Chase Brown",
-          "game": "JAX @ CIN",
-          "actual": 0,
-          "projectedRest": 16.88
-        },
-        {
-          "name": "Joe Burrow",
-          "game": "JAX @ CIN",
-          "actual": 0,
-          "projectedRest": 25.19
+          "actual": 3.6,
+          "projectedRest": 6.53
         }
       ],
       "lineup": [
@@ -1158,8 +675,8 @@
           "pos": "WR",
           "proTeamId": 26,
           "slot": 4,
-          "actual": 0,
-          "projection": 20.62,
+          "actual": 11.6,
+          "projection": 20.63,
           "injury": null
         },
         {
@@ -1178,7 +695,7 @@
           "pos": "WR",
           "proTeamId": 7,
           "slot": 4,
-          "actual": 0,
+          "actual": 12.5,
           "projection": 10.95,
           "injury": null
         },
@@ -1188,8 +705,8 @@
           "pos": "RB",
           "proTeamId": 3,
           "slot": 23,
-          "actual": 0,
-          "projection": 15.77,
+          "actual": 7.9,
+          "projection": 15.78,
           "injury": null
         },
         {
@@ -1198,7 +715,7 @@
           "pos": "TE",
           "proTeamId": 8,
           "slot": 6,
-          "actual": 0,
+          "actual": 3.6,
           "projection": 10.13,
           "injury": null
         },
@@ -1208,7 +725,7 @@
           "pos": "D/ST",
           "proTeamId": 7,
           "slot": 16,
-          "actual": 0,
+          "actual": 1.25,
           "projection": 4.22,
           "injury": null
         },
@@ -1218,7 +735,7 @@
           "pos": "K",
           "proTeamId": 34,
           "slot": 17,
-          "actual": 0,
+          "actual": 16,
           "projection": 10.18,
           "injury": null
         },
@@ -1228,8 +745,8 @@
           "pos": "RB",
           "proTeamId": 4,
           "slot": 2,
-          "actual": 0,
-          "projection": 16.88,
+          "actual": 14.6,
+          "projection": 16.89,
           "injury": null
         },
         {
@@ -1238,120 +755,132 @@
           "pos": "QB",
           "proTeamId": 4,
           "slot": 0,
-          "actual": 0,
-          "projection": 25.19,
+          "actual": 35.22,
+          "projection": 25.21,
           "injury": null
         }
       ],
-      "chopProbability": 9.89,
-      "swingPlayer": {
-        "name": "Bijan Robinson",
-        "game": "ATL @ NO",
-        "projectedRest": 22.76,
-        "chopIfAbove": 3.92,
-        "chopIfBelow": 15.1,
-        "bigGame": 34.57,
-        "quietGame": 10.62
-      },
-      "gameSwings": [
+      "chopProbability": 0,
+      "playersLeft": 2
+    },
+    {
+      "teamId": 6,
+      "team": "Moose Knucklers",
+      "abbrev": "MK",
+      "logo": "/OnThursdaysWeFantasy.io/guillotine-logos/team-6.jpg",
+      "score": 136.07,
+      "projected": 136.07,
+      "projectionSd": 0,
+      "remaining": [],
+      "lineup": [
         {
-          "game": "JAX @ CIN",
-          "players": [
-            "Chase Brown",
-            "Joe Burrow"
-          ],
-          "projectedRest": 42.08,
-          "chopIfAbove": 3.04,
-          "chopIfBelow": 15.79,
-          "bigGame": 54.92,
-          "quietGame": 27.62
+          "id": 4432665,
+          "name": "B. Bowers",
+          "pos": "TE",
+          "proTeamId": 13,
+          "slot": 6,
+          "actual": 20.1,
+          "projection": 14.43,
+          "injury": null
         },
         {
-          "game": "ATL @ NO",
-          "players": [
-            "Bijan Robinson"
-          ],
-          "projectedRest": 22.76,
-          "chopIfAbove": 3.92,
-          "chopIfBelow": 15.1,
-          "bigGame": 34.57,
-          "quietGame": 10.62
+          "id": 4040715,
+          "name": "J. Hurts",
+          "pos": "QB",
+          "proTeamId": 21,
+          "slot": 0,
+          "actual": 16.52,
+          "projection": 23.87,
+          "injury": null
         },
         {
-          "game": "LAC @ SEA",
-          "players": [
-            "Jaxon Smith-Njigba"
-          ],
-          "projectedRest": 20.62,
-          "chopIfAbove": 4.17,
-          "chopIfBelow": 14.96,
-          "bigGame": 32.01,
-          "quietGame": 9.39
+          "id": 3929630,
+          "name": "S. Barkley",
+          "pos": "RB",
+          "proTeamId": 21,
+          "slot": 2,
+          "actual": 1.5,
+          "projection": 15.82,
+          "injury": "Q"
+        },
+        {
+          "id": 4428331,
+          "name": "R. Rice",
+          "pos": "WR",
+          "proTeamId": 12,
+          "slot": 4,
+          "actual": 0,
+          "projection": 13.8,
+          "injury": "Q"
+        },
+        {
+          "id": 4241389,
+          "name": "C. Lamb",
+          "pos": "WR",
+          "proTeamId": 6,
+          "slot": 4,
+          "actual": 38.3,
+          "projection": 15.58,
+          "injury": null
+        },
+        {
+          "id": 4569618,
+          "name": "G. Wilson",
+          "pos": "WR",
+          "proTeamId": 20,
+          "slot": 23,
+          "actual": 4.7,
+          "projection": 15.15,
+          "injury": null
+        },
+        {
+          "id": 4430737,
+          "name": "K. Williams",
+          "pos": "RB",
+          "proTeamId": 14,
+          "slot": 2,
+          "actual": 36.2,
+          "projection": 13.9,
+          "injury": null
+        },
+        {
+          "id": 4362081,
+          "name": "C. Dicker",
+          "pos": "K",
+          "proTeamId": 24,
+          "slot": 17,
+          "actual": 12,
+          "projection": 8.32,
+          "injury": null
+        },
+        {
+          "id": -16014,
+          "name": "Rams D/ST",
+          "pos": "D/ST",
+          "proTeamId": 14,
+          "slot": 16,
+          "actual": 6.75,
+          "projection": 5.92,
+          "injury": null
         }
       ],
-      "swingGame": {
-        "game": "JAX @ CIN",
-        "players": [
-          "Chase Brown",
-          "Joe Burrow"
-        ],
-        "projectedRest": 42.08,
-        "chopIfAbove": 3.04,
-        "chopIfBelow": 15.79,
-        "bigGame": 54.92,
-        "quietGame": 27.62
-      },
-      "rival": {
-        "teamId": 4,
-        "team": "Team Name",
-        "share": 22.98
-      },
-      "playersLeft": 9
+      "chopProbability": 0,
+      "playersLeft": 0
     },
     {
       "teamId": 8,
       "team": "In My Fantasy Era",
       "abbrev": "TAY",
       "logo": "/OnThursdaysWeFantasy.io/guillotine-logos/team-8.jpg",
-      "score": 7.6,
-      "projected": 138.32,
-      "projectionSd": 31.08,
+      "score": 117.05,
+      "projected": 164.92,
+      "projectionSd": 17.42,
       "remaining": [
-        {
-          "name": "Kenneth Walker III",
-          "game": "KC @ LV",
-          "actual": 0,
-          "projectedRest": 22.03
-        },
-        {
-          "name": "Javonte Williams",
-          "game": "DAL @ HOU",
-          "actual": 0,
-          "projectedRest": 15.62
-        },
         {
           "name": "Tetairoa McMillan",
           "game": "DET @ CAR",
-          "actual": 0,
-          "projectedRest": 15.15
-        },
-        {
-          "name": "Seahawks D/ST",
-          "game": "LAC @ SEA",
-          "actual": 0,
-          "projectedRest": 7.34
-        },
-        {
-          "name": "Aaron Jones Sr.",
-          "game": "MIA @ MIN",
-          "actual": 0,
-          "projectedRest": 19.59
-        },
-        {
-          "name": "Jason Myers",
-          "game": "LAC @ SEA",
-          "actual": 0,
-          "projectedRest": 10.05
+          "actual": 8.2,
+          "projectedRest": 6.95
         },
         {
           "name": "Drake London",
@@ -1373,7 +902,7 @@
           "pos": "RB",
           "proTeamId": 12,
           "slot": 2,
-          "actual": 0,
+          "actual": 33.4,
           "projection": 22.03,
           "injury": null
         },
@@ -1383,8 +912,8 @@
           "pos": "RB",
           "proTeamId": 6,
           "slot": 2,
-          "actual": 0,
-          "projection": 15.62,
+          "actual": 31.8,
+          "projection": 15.63,
           "injury": null
         },
         {
@@ -1393,7 +922,7 @@
           "pos": "WR",
           "proTeamId": 29,
           "slot": 4,
-          "actual": 0,
+          "actual": 8.2,
           "projection": 15.15,
           "injury": null
         },
@@ -1413,8 +942,8 @@
           "pos": "D/ST",
           "proTeamId": 26,
           "slot": 16,
-          "actual": 0,
-          "projection": 7.34,
+          "actual": 11.75,
+          "projection": 7.3,
           "injury": null
         },
         {
@@ -1423,7 +952,7 @@
           "pos": "RB",
           "proTeamId": 16,
           "slot": 23,
-          "actual": 0,
+          "actual": 18.3,
           "projection": 19.59,
           "injury": null
         },
@@ -1433,7 +962,7 @@
           "pos": "K",
           "proTeamId": 26,
           "slot": 17,
-          "actual": 0,
+          "actual": 6,
           "projection": 10.05,
           "injury": null
         },
@@ -1458,285 +987,8 @@
           "injury": null
         }
       ],
-      "chopProbability": 8.83,
-      "swingPlayer": {
-        "name": "Kenneth Walker III",
-        "game": "KC @ LV",
-        "projectedRest": 22.03,
-        "chopIfAbove": 3.33,
-        "chopIfBelow": 13.65,
-        "bigGame": 33.41,
-        "quietGame": 10.33
-      },
-      "gameSwings": [
-        {
-          "game": "ATL @ NO",
-          "players": [
-            "Drake London",
-            "Tyler Shough"
-          ],
-          "projectedRest": 40.92,
-          "chopIfAbove": 2.42,
-          "chopIfBelow": 14.13,
-          "bigGame": 54.04,
-          "quietGame": 26.82
-        },
-        {
-          "game": "KC @ LV",
-          "players": [
-            "Kenneth Walker III"
-          ],
-          "projectedRest": 22.03,
-          "chopIfAbove": 3.33,
-          "chopIfBelow": 13.65,
-          "bigGame": 33.41,
-          "quietGame": 10.33
-        },
-        {
-          "game": "MIA @ MIN",
-          "players": [
-            "Aaron Jones Sr."
-          ],
-          "projectedRest": 19.59,
-          "chopIfAbove": 4.11,
-          "chopIfBelow": 12.95,
-          "bigGame": 29.71,
-          "quietGame": 9.25
-        }
-      ],
-      "swingGame": {
-        "game": "ATL @ NO",
-        "players": [
-          "Drake London",
-          "Tyler Shough"
-        ],
-        "projectedRest": 40.92,
-        "chopIfAbove": 2.42,
-        "chopIfBelow": 14.13,
-        "bigGame": 54.04,
-        "quietGame": 26.82
-      },
-      "rival": {
-        "teamId": 4,
-        "team": "Team Name",
-        "share": 22
-      },
-      "playersLeft": 8
-    },
-    {
-      "teamId": 9,
-      "team": "Mel's Mediocre Mob",
-      "abbrev": "MMM",
-      "logo": "/OnThursdaysWeFantasy.io/guillotine-logos/team-9.svg",
-      "score": 25.2,
-      "projected": 135.07,
-      "projectionSd": 27.1,
-      "remaining": [
-        {
-          "name": "Ja'Marr Chase",
-          "game": "JAX @ CIN",
-          "actual": 0,
-          "projectedRest": 18.82
-        },
-        {
-          "name": "Tony Pollard",
-          "game": "TEN @ BAL",
-          "actual": 0,
-          "projectedRest": 12.91
-        },
-        {
-          "name": "Colston Loveland",
-          "game": "NYJ @ CHI",
-          "actual": 0,
-          "projectedRest": 7.89
-        },
-        {
-          "name": "Patrick Mahomes",
-          "game": "KC @ LV",
-          "actual": 0,
-          "projectedRest": 25.23
-        },
-        {
-          "name": "Parker Washington",
-          "game": "JAX @ CIN",
-          "actual": 0,
-          "projectedRest": 14.55
-        },
-        {
-          "name": "Christian Watson",
-          "game": "GB @ TB",
-          "actual": 0,
-          "projectedRest": 13.68
-        },
-        {
-          "name": "Jake Bates",
-          "game": "DET @ CAR",
-          "actual": 0,
-          "projectedRest": 8.97
-        },
-        {
-          "name": "Vikings D/ST",
-          "game": "MIA @ MIN",
-          "actual": 0,
-          "projectedRest": 7.84
-        }
-      ],
-      "lineup": [
-        {
-          "id": 4362628,
-          "name": "J. Chase",
-          "pos": "WR",
-          "proTeamId": 4,
-          "slot": 4,
-          "actual": 0,
-          "projection": 18.82,
-          "injury": null
-        },
-        {
-          "id": 4242335,
-          "name": "J. Taylor",
-          "pos": "RB",
-          "proTeamId": 11,
-          "slot": 2,
-          "actual": 25.2,
-          "projection": 22,
-          "injury": null
-        },
-        {
-          "id": 3916148,
-          "name": "T. Pollard",
-          "pos": "RB",
-          "proTeamId": 10,
-          "slot": 2,
-          "actual": 0,
-          "projection": 12.91,
-          "injury": null
-        },
-        {
-          "id": 4723086,
-          "name": "C. Loveland",
-          "pos": "TE",
-          "proTeamId": 3,
-          "slot": 6,
-          "actual": 0,
-          "projection": 7.89,
-          "injury": null
-        },
-        {
-          "id": 3139477,
-          "name": "P. Mahomes",
-          "pos": "QB",
-          "proTeamId": 12,
-          "slot": 0,
-          "actual": 0,
-          "projection": 25.23,
-          "injury": null
-        },
-        {
-          "id": 4432620,
-          "name": "P. Washington",
-          "pos": "WR",
-          "proTeamId": 30,
-          "slot": 4,
-          "actual": 0,
-          "projection": 14.55,
-          "injury": null
-        },
-        {
-          "id": 4248528,
-          "name": "C. Watson",
-          "pos": "WR",
-          "proTeamId": 9,
-          "slot": 23,
-          "actual": 0,
-          "projection": 13.68,
-          "injury": null
-        },
-        {
-          "id": 4689936,
-          "name": "J. Bates",
-          "pos": "K",
-          "proTeamId": 8,
-          "slot": 17,
-          "actual": 0,
-          "projection": 8.97,
-          "injury": null
-        },
-        {
-          "id": -16016,
-          "name": "Vikings D/ST",
-          "pos": "D/ST",
-          "proTeamId": 16,
-          "slot": 16,
-          "actual": 0,
-          "projection": 7.84,
-          "injury": null
-        }
-      ],
-      "chopProbability": 7.61,
-      "swingPlayer": {
-        "name": "Patrick Mahomes",
-        "game": "KC @ LV",
-        "projectedRest": 25.23,
-        "chopIfAbove": 2.69,
-        "chopIfBelow": 12.05,
-        "bigGame": 35.25,
-        "quietGame": 13.94
-      },
-      "gameSwings": [
-        {
-          "game": "JAX @ CIN",
-          "players": [
-            "Ja'Marr Chase",
-            "Parker Washington"
-          ],
-          "projectedRest": 33.37,
-          "chopIfAbove": 2.04,
-          "chopIfBelow": 12.27,
-          "bigGame": 46.23,
-          "quietGame": 20.21
-        },
-        {
-          "game": "KC @ LV",
-          "players": [
-            "Patrick Mahomes"
-          ],
-          "projectedRest": 25.23,
-          "chopIfAbove": 2.69,
-          "chopIfBelow": 12.05,
-          "bigGame": 35.25,
-          "quietGame": 13.94
-        },
-        {
-          "game": "GB @ TB",
-          "players": [
-            "Christian Watson"
-          ],
-          "projectedRest": 13.68,
-          "chopIfAbove": 3.96,
-          "chopIfBelow": 10.88,
-          "bigGame": 21.55,
-          "quietGame": 5.97
-        }
-      ],
-      "swingGame": {
-        "game": "JAX @ CIN",
-        "players": [
-          "Ja'Marr Chase",
-          "Parker Washington"
-        ],
-        "projectedRest": 33.37,
-        "chopIfAbove": 2.04,
-        "chopIfBelow": 12.27,
-        "bigGame": 46.23,
-        "quietGame": 20.21
-      },
-      "rival": {
-        "teamId": 4,
-        "team": "Team Name",
-        "share": 23.29
-      },
-      "playersLeft": 8
+      "chopProbability": 0,
+      "playersLeft": 3
     }
   ],
   "chopped": [
@@ -1898,6 +1150,942 @@
           "8": 8.83,
           "9": 7.61,
           "10": 10.36
+        }
+      },
+      {
+        "t": "2026-10-04T17:04:06.167Z",
+        "p": {
+          "3": 12.75,
+          "4": 25.75,
+          "5": 9.96,
+          "6": 14.63,
+          "7": 9.77,
+          "8": 9.24,
+          "9": 8.37,
+          "10": 9.6
+        }
+      },
+      {
+        "t": "2026-10-04T17:04:57.939Z",
+        "p": {
+          "3": 13.05,
+          "4": 25.99,
+          "5": 9.56,
+          "6": 14.66,
+          "7": 10.6,
+          "8": 8.64,
+          "9": 7.37,
+          "10": 10.2
+        }
+      },
+      {
+        "t": "2026-10-04T17:06:33.042Z",
+        "p": {
+          "3": 13.24,
+          "4": 25.6,
+          "5": 9.82,
+          "6": 14.55,
+          "7": 10.39,
+          "8": 8.87,
+          "9": 7.78,
+          "10": 9.82
+        }
+      },
+      {
+        "t": "2026-10-04T17:07:23.154Z",
+        "p": {
+          "3": 13.2,
+          "4": 25.77,
+          "5": 9.39,
+          "6": 14.39,
+          "7": 9.86,
+          "8": 9,
+          "9": 7.84,
+          "10": 10.62
+        }
+      },
+      {
+        "t": "2026-10-04T17:08:08.822Z",
+        "p": {
+          "3": 12.57,
+          "4": 25.13,
+          "5": 9.96,
+          "6": 14.65,
+          "7": 10.59,
+          "8": 9.33,
+          "9": 7.58,
+          "10": 10.26
+        }
+      },
+      {
+        "t": "2026-10-04T17:17:41.125Z",
+        "p": {
+          "3": 13.04,
+          "4": 24.3,
+          "5": 9.66,
+          "6": 14.64,
+          "7": 9.89,
+          "8": 9.24,
+          "9": 8.03,
+          "10": 11.28
+        }
+      },
+      {
+        "t": "2026-10-04T17:25:41.095Z",
+        "p": {
+          "3": 12.45,
+          "4": 25.06,
+          "5": 9.5,
+          "6": 15.12,
+          "7": 10.32,
+          "8": 9.48,
+          "9": 7.06,
+          "10": 11.08
+        }
+      },
+      {
+        "t": "2026-10-04T17:26:27.162Z",
+        "p": {
+          "3": 12.24,
+          "4": 24.84,
+          "5": 9.55,
+          "6": 14.36,
+          "7": 10.03,
+          "8": 9.59,
+          "9": 7.72,
+          "10": 11.75
+        }
+      },
+      {
+        "t": "2026-10-04T17:33:18.893Z",
+        "p": {
+          "3": 10.79,
+          "4": 24.26,
+          "5": 9.51,
+          "6": 15.52,
+          "7": 10.17,
+          "8": 9.77,
+          "9": 8.03,
+          "10": 12.03
+        }
+      },
+      {
+        "t": "2026-10-04T17:37:19.122Z",
+        "p": {
+          "3": 9.76,
+          "4": 25.36,
+          "5": 9.48,
+          "6": 14.93,
+          "7": 9.49,
+          "8": 10.42,
+          "9": 8.11,
+          "10": 12.52
+        }
+      },
+      {
+        "t": "2026-10-04T17:38:44.384Z",
+        "p": {
+          "3": 9.72,
+          "4": 26.02,
+          "5": 9.88,
+          "6": 15.11,
+          "7": 9.19,
+          "8": 10.36,
+          "9": 7.59,
+          "10": 12.2
+        }
+      },
+      {
+        "t": "2026-10-04T17:46:03.393Z",
+        "p": {
+          "3": 9.73,
+          "4": 23.67,
+          "5": 10.75,
+          "6": 14.9,
+          "7": 10.16,
+          "8": 11.27,
+          "9": 7.13,
+          "10": 12.47
+        }
+      },
+      {
+        "t": "2026-10-04T17:49:17.897Z",
+        "p": {
+          "3": 9.85,
+          "4": 24.71,
+          "5": 10.23,
+          "6": 14.77,
+          "7": 9.37,
+          "8": 10.79,
+          "9": 7.39,
+          "10": 12.97
+        }
+      },
+      {
+        "t": "2026-10-04T17:52:23.531Z",
+        "p": {
+          "3": 10.01,
+          "4": 23.89,
+          "5": 9.77,
+          "6": 14.69,
+          "7": 9.4,
+          "8": 11.08,
+          "9": 7.6,
+          "10": 13.64
+        }
+      },
+      {
+        "t": "2026-10-04T17:53:08.392Z",
+        "p": {
+          "3": 10.09,
+          "4": 24.02,
+          "5": 10.54,
+          "6": 14.34,
+          "7": 9.36,
+          "8": 10.96,
+          "9": 7.72,
+          "10": 13.05
+        }
+      },
+      {
+        "t": "2026-10-04T18:00:02.795Z",
+        "p": {
+          "3": 10.22,
+          "4": 23.86,
+          "5": 10.83,
+          "6": 14.61,
+          "7": 9.59,
+          "8": 10.67,
+          "9": 7.14,
+          "10": 13.16
+        }
+      },
+      {
+        "t": "2026-10-04T18:00:46.402Z",
+        "p": {
+          "3": 10.04,
+          "4": 23.94,
+          "5": 10.48,
+          "6": 14.57,
+          "7": 9.37,
+          "8": 11.38,
+          "9": 7.26,
+          "10": 13.04
+        }
+      },
+      {
+        "t": "2026-10-04T18:06:22.987Z",
+        "p": {
+          "3": 9.07,
+          "4": 23.03,
+          "5": 10.65,
+          "6": 14.48,
+          "7": 9.85,
+          "8": 11.69,
+          "9": 7.45,
+          "10": 13.86
+        }
+      },
+      {
+        "t": "2026-10-04T18:08:36.067Z",
+        "p": {
+          "3": 9.08,
+          "4": 22.62,
+          "5": 11.28,
+          "6": 14.07,
+          "7": 9.98,
+          "8": 11.19,
+          "9": 7.48,
+          "10": 14.38
+        }
+      },
+      {
+        "t": "2026-10-04T18:10:53.312Z",
+        "p": {
+          "3": 9.1,
+          "4": 23.3,
+          "5": 11.2,
+          "6": 13.72,
+          "7": 9.88,
+          "8": 11.48,
+          "9": 7.79,
+          "10": 13.61
+        }
+      },
+      {
+        "t": "2026-10-04T18:13:13.667Z",
+        "p": {
+          "3": 7.74,
+          "4": 24.3,
+          "5": 9.08,
+          "6": 13.25,
+          "7": 10.08,
+          "8": 12,
+          "9": 8.18,
+          "10": 15.45
+        }
+      },
+      {
+        "t": "2026-10-04T18:22:47.302Z",
+        "p": {
+          "3": 7.49,
+          "4": 24.36,
+          "5": 8.65,
+          "6": 13.74,
+          "7": 10.32,
+          "8": 12.18,
+          "9": 8.85,
+          "10": 14.49
+        }
+      },
+      {
+        "t": "2026-10-04T18:23:29.784Z",
+        "p": {
+          "3": 7.94,
+          "4": 24.08,
+          "5": 7.89,
+          "6": 13.26,
+          "7": 10.68,
+          "8": 12.85,
+          "9": 7.86,
+          "10": 15.52
+        }
+      },
+      {
+        "t": "2026-10-04T18:24:12.564Z",
+        "p": {
+          "3": 7.45,
+          "4": 24.54,
+          "5": 7.89,
+          "6": 13.91,
+          "7": 10.34,
+          "8": 11.91,
+          "9": 8.08,
+          "10": 15.96
+        }
+      },
+      {
+        "t": "2026-10-04T18:26:27.917Z",
+        "p": {
+          "3": 7.23,
+          "4": 23.92,
+          "5": 8.13,
+          "6": 13.7,
+          "7": 10.14,
+          "8": 11.99,
+          "9": 8.74,
+          "10": 16.23
+        }
+      },
+      {
+        "t": "2026-10-04T18:27:53.067Z",
+        "p": {
+          "3": 7.86,
+          "4": 24.78,
+          "5": 8.05,
+          "6": 13.51,
+          "7": 7.81,
+          "8": 13.34,
+          "9": 8.49,
+          "10": 16.24
+        }
+      },
+      {
+        "t": "2026-10-04T18:28:36.638Z",
+        "p": {
+          "3": 7.59,
+          "4": 24.72,
+          "5": 8.25,
+          "6": 14.49,
+          "7": 7.76,
+          "8": 12.58,
+          "9": 8.43,
+          "10": 16.26
+        }
+      },
+      {
+        "t": "2026-10-04T18:29:20.533Z",
+        "p": {
+          "3": 6.77,
+          "4": 26.17,
+          "5": 7.9,
+          "6": 14.77,
+          "7": 7.55,
+          "8": 12.71,
+          "9": 8.86,
+          "10": 15.34
+        }
+      },
+      {
+        "t": "2026-10-04T18:30:03.419Z",
+        "p": {
+          "3": 7.13,
+          "4": 24.78,
+          "5": 8.56,
+          "6": 14.37,
+          "7": 6.86,
+          "8": 13.07,
+          "9": 8.85,
+          "10": 16.46
+        }
+      },
+      {
+        "t": "2026-10-04T18:41:01.707Z",
+        "p": {
+          "3": 7.29,
+          "4": 25.64,
+          "5": 8.2,
+          "6": 13.45,
+          "7": 7.42,
+          "8": 13.19,
+          "9": 8.31,
+          "10": 16.57
+        }
+      },
+      {
+        "t": "2026-10-04T18:43:52.902Z",
+        "p": {
+          "3": 7.17,
+          "4": 25.15,
+          "5": 8.5,
+          "6": 13.18,
+          "7": 7.62,
+          "8": 13.1,
+          "9": 9.09,
+          "10": 16.26
+        }
+      },
+      {
+        "t": "2026-10-04T18:45:28.234Z",
+        "p": {
+          "3": 7.38,
+          "4": 25.69,
+          "5": 8.34,
+          "6": 13.87,
+          "7": 6.68,
+          "8": 12.71,
+          "9": 8.71,
+          "10": 16.69
+        }
+      },
+      {
+        "t": "2026-10-04T18:46:24.641Z",
+        "p": {
+          "3": 7.51,
+          "4": 26.34,
+          "5": 8.33,
+          "6": 14.18,
+          "7": 6.88,
+          "8": 11.98,
+          "9": 8.87,
+          "10": 15.98
+        }
+      },
+      {
+        "t": "2026-10-04T18:47:08.296Z",
+        "p": {
+          "3": 6.98,
+          "4": 25.93,
+          "5": 8.69,
+          "6": 13.65,
+          "7": 7.26,
+          "8": 12.11,
+          "9": 8.84,
+          "10": 16.61
+        }
+      },
+      {
+        "t": "2026-10-04T18:47:49.911Z",
+        "p": {
+          "3": 7.71,
+          "4": 26.29,
+          "5": 8.61,
+          "6": 13.33,
+          "7": 7.03,
+          "8": 11.81,
+          "9": 8.26,
+          "10": 17.03
+        }
+      },
+      {
+        "t": "2026-10-04T18:48:33.873Z",
+        "p": {
+          "3": 7.5,
+          "4": 25.94,
+          "5": 8.45,
+          "6": 13.6,
+          "7": 6.91,
+          "8": 11.92,
+          "9": 9.09,
+          "10": 16.66
+        }
+      },
+      {
+        "t": "2026-10-04T18:49:20.898Z",
+        "p": {
+          "3": 7.43,
+          "4": 25.77,
+          "5": 9.39,
+          "6": 13.81,
+          "7": 6.73,
+          "8": 12.28,
+          "9": 8.42,
+          "10": 16.24
+        }
+      },
+      {
+        "t": "2026-10-04T18:50:04.834Z",
+        "p": {
+          "3": 7.3,
+          "4": 25.71,
+          "5": 8.83,
+          "6": 14.1,
+          "7": 6.68,
+          "8": 11.55,
+          "9": 9.26,
+          "10": 16.64
+        }
+      },
+      {
+        "t": "2026-10-04T18:51:31.647Z",
+        "p": {
+          "3": 7.09,
+          "4": 26.18,
+          "5": 8.65,
+          "6": 14.2,
+          "7": 7.06,
+          "8": 11.69,
+          "9": 8.99,
+          "10": 16.21
+        }
+      },
+      {
+        "t": "2026-10-04T18:55:26.074Z",
+        "p": {
+          "3": 7.69,
+          "4": 27.37,
+          "5": 4.88,
+          "6": 14.03,
+          "7": 6.33,
+          "8": 13.05,
+          "9": 9.36,
+          "10": 17.36
+        }
+      },
+      {
+        "t": "2026-10-04T19:02:18.780Z",
+        "p": {
+          "3": 8.79,
+          "4": 23.9,
+          "5": 4.88,
+          "6": 15.34,
+          "7": 7.26,
+          "8": 13.18,
+          "9": 9.89,
+          "10": 16.84
+        }
+      },
+      {
+        "t": "2026-10-04T19:03:03.919Z",
+        "p": {
+          "3": 8.1,
+          "4": 23.79,
+          "5": 5.23,
+          "6": 15.49,
+          "7": 6.99,
+          "8": 13.69,
+          "9": 10.1,
+          "10": 16.69
+        }
+      },
+      {
+        "t": "2026-10-04T19:07:32.495Z",
+        "p": {
+          "3": 8.45,
+          "4": 24.53,
+          "5": 5.93,
+          "6": 16.46,
+          "7": 7.43,
+          "8": 8.99,
+          "9": 10.57,
+          "10": 17.72
+        }
+      },
+      {
+        "t": "2026-10-04T19:08:15.742Z",
+        "p": {
+          "3": 8.32,
+          "4": 25.3,
+          "5": 5.98,
+          "6": 15.97,
+          "7": 7.82,
+          "8": 8.86,
+          "9": 10.1,
+          "10": 17.72
+        }
+      },
+      {
+        "t": "2026-10-04T19:15:54.345Z",
+        "p": {
+          "3": 8.3,
+          "4": 24.29,
+          "5": 5.94,
+          "6": 16.89,
+          "7": 6.81,
+          "8": 9.53,
+          "9": 10.89,
+          "10": 17.43
+        }
+      },
+      {
+        "t": "2026-10-04T19:19:48.151Z",
+        "p": {
+          "3": 9.58,
+          "4": 25.92,
+          "5": 6.17,
+          "6": 12.68,
+          "7": 7.41,
+          "8": 9,
+          "9": 10.59,
+          "10": 18.72
+        }
+      },
+      {
+        "t": "2026-10-04T19:20:35.601Z",
+        "p": {
+          "3": 9.66,
+          "4": 25.92,
+          "5": 7.21,
+          "6": 12.06,
+          "7": 7.17,
+          "8": 9.25,
+          "9": 10.24,
+          "10": 18.56
+        }
+      },
+      {
+        "t": "2026-10-04T19:28:27.401Z",
+        "p": {
+          "3": 10.04,
+          "4": 28.85,
+          "5": 7.67,
+          "6": 7.16,
+          "7": 8.04,
+          "8": 6.53,
+          "9": 11.31,
+          "10": 20.47
+        }
+      },
+      {
+        "t": "2026-10-04T19:30:41.397Z",
+        "p": {
+          "3": 8.88,
+          "4": 29.75,
+          "5": 7.39,
+          "6": 6.59,
+          "7": 8.74,
+          "8": 6.48,
+          "9": 11.9,
+          "10": 20.34
+        }
+      },
+      {
+        "t": "2026-10-04T19:33:48.964Z",
+        "p": {
+          "3": 8.72,
+          "4": 28.25,
+          "5": 8.22,
+          "6": 6.68,
+          "7": 8.83,
+          "8": 6.64,
+          "9": 11.63,
+          "10": 21.1
+        }
+      },
+      {
+        "t": "2026-10-04T19:34:36.412Z",
+        "p": {
+          "3": 8.83,
+          "4": 28.97,
+          "5": 7.85,
+          "6": 6.4,
+          "7": 8.53,
+          "8": 6.97,
+          "9": 11.57,
+          "10": 20.95
+        }
+      },
+      {
+        "t": "2026-10-04T19:36:02.792Z",
+        "p": {
+          "3": 8.41,
+          "4": 29.66,
+          "5": 8.15,
+          "6": 6.77,
+          "7": 8.42,
+          "8": 6.63,
+          "9": 11.76,
+          "10": 20.27
+        }
+      },
+      {
+        "t": "2026-10-04T19:38:22.363Z",
+        "p": {
+          "3": 8.58,
+          "4": 29.34,
+          "5": 8.02,
+          "6": 6.32,
+          "7": 8.4,
+          "8": 6.69,
+          "9": 11.75,
+          "10": 20.97
+        }
+      },
+      {
+        "t": "2026-10-04T19:39:51.198Z",
+        "p": {
+          "3": 8.3,
+          "4": 29.37,
+          "5": 7.97,
+          "6": 6.17,
+          "7": 8.3,
+          "8": 6.93,
+          "9": 11.91,
+          "10": 21.12
+        }
+      },
+      {
+        "t": "2026-10-04T19:40:37.651Z",
+        "p": {
+          "3": 8.06,
+          "4": 29.5,
+          "5": 8.25,
+          "6": 6.55,
+          "7": 8.7,
+          "8": 6.78,
+          "9": 11.49,
+          "10": 20.74
+        }
+      },
+      {
+        "t": "2026-10-04T19:41:31.329Z",
+        "p": {
+          "3": 9.04,
+          "4": 28.59,
+          "5": 8.14,
+          "6": 6.42,
+          "7": 8.96,
+          "8": 6.97,
+          "9": 11.57,
+          "10": 20.38
+        }
+      },
+      {
+        "t": "2026-10-04T19:42:23.697Z",
+        "p": {
+          "3": 9.17,
+          "4": 28.36,
+          "5": 8.19,
+          "6": 6.41,
+          "7": 9.12,
+          "8": 6.82,
+          "9": 10.9,
+          "10": 21.1
+        }
+      },
+      {
+        "t": "2026-10-04T19:43:07.817Z",
+        "p": {
+          "3": 8.97,
+          "4": 27.87,
+          "5": 8.5,
+          "6": 6.71,
+          "7": 8.91,
+          "8": 6.74,
+          "9": 10.84,
+          "10": 21.53
+        }
+      },
+      {
+        "t": "2026-10-04T19:52:54.530Z",
+        "p": {
+          "3": 9,
+          "4": 29.51,
+          "5": 7.62,
+          "6": 3.13,
+          "7": 9.59,
+          "8": 7.75,
+          "9": 10.66,
+          "10": 22.81
+        }
+      },
+      {
+        "t": "2026-10-04T19:54:15.801Z",
+        "p": {
+          "3": 9.13,
+          "4": 31.54,
+          "5": 7.98,
+          "6": 2.82,
+          "7": 6.27,
+          "8": 7.96,
+          "9": 10.6,
+          "10": 23.77
+        }
+      },
+      {
+        "t": "2026-10-04T20:02:00.376Z",
+        "p": {
+          "3": 9.03,
+          "4": 23.33,
+          "5": 6.75,
+          "6": 4.96,
+          "7": 9.48,
+          "8": 6.99,
+          "9": 16.32,
+          "10": 23.22
+        }
+      },
+      {
+        "t": "2026-10-04T20:05:37.442Z",
+        "p": {
+          "3": 9.77,
+          "4": 18.47,
+          "5": 8.16,
+          "6": 3.81,
+          "7": 11.58,
+          "8": 7.11,
+          "9": 16.63,
+          "10": 24.55
+        }
+      },
+      {
+        "t": "2026-10-04T20:07:51.428Z",
+        "p": {
+          "3": 8.73,
+          "4": 18.73,
+          "5": 8.64,
+          "6": 1.55,
+          "7": 11.46,
+          "8": 8.03,
+          "9": 18.16,
+          "10": 24.78
+        }
+      },
+      {
+        "t": "2026-10-04T20:10:00.756Z",
+        "p": {
+          "3": 6.47,
+          "4": 33.47,
+          "5": 6.69,
+          "6": 0.89,
+          "7": 8.35,
+          "8": 6.26,
+          "9": 15.76,
+          "10": 22.18
+        }
+      },
+      {
+        "t": "2026-10-04T20:10:55.413Z",
+        "p": {
+          "3": 6.29,
+          "4": 32.86,
+          "5": 6.43,
+          "6": 1.08,
+          "7": 7.81,
+          "8": 7.36,
+          "9": 16.78,
+          "10": 21.46
+        }
+      },
+      {
+        "t": "2026-10-04T20:11:41.928Z",
+        "p": {
+          "3": 6.79,
+          "4": 34.34,
+          "5": 6.18,
+          "6": 0.31,
+          "7": 6.66,
+          "8": 6.93,
+          "9": 16.37,
+          "10": 22.49
+        }
+      },
+      {
+        "t": "2026-10-04T20:23:48.418Z",
+        "p": {
+          "3": 37.53,
+          "4": 16.57,
+          "5": 4.13,
+          "6": 0,
+          "7": 1.27,
+          "8": 2.12,
+          "9": 27.99,
+          "10": 10.44
+        }
+      },
+      {
+        "t": "2026-10-04T20:33:38.278Z",
+        "p": {
+          "3": 39.02,
+          "4": 17.53,
+          "5": 3.57,
+          "6": 0,
+          "7": 1.08,
+          "8": 1.73,
+          "9": 26.87,
+          "10": 10.25
+        }
+      },
+      {
+        "t": "2026-10-04T20:42:58.795Z",
+        "p": {
+          "3": 39.62,
+          "4": 17.66,
+          "5": 3.08,
+          "6": 0,
+          "7": 1.06,
+          "8": 1.47,
+          "9": 27,
+          "10": 10.16
+        }
+      },
+      {
+        "t": "2026-10-04T20:46:03.186Z",
+        "p": {
+          "3": 40.09,
+          "4": 17.4,
+          "5": 3.25,
+          "6": 0,
+          "7": 1.15,
+          "8": 1.21,
+          "9": 26.55,
+          "10": 10.4
+        }
+      },
+      {
+        "t": "2026-10-04T20:50:37.950Z",
+        "p": {
+          "3": 41.45,
+          "4": 17.56,
+          "5": 3.15,
+          "6": 0,
+          "7": 1.07,
+          "8": 1.36,
+          "9": 24.37,
+          "10": 11.1
+        }
+      },
+      {
+        "t": "2026-10-05T01:11:51.332Z",
+        "p": {
+          "3": 78.28,
+          "4": 17.42,
+          "5": 0,
+          "6": 0,
+          "7": 0,
+          "8": 0,
+          "9": 0,
+          "10": 4.31
         }
       }
     ]
