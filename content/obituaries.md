@@ -53,6 +53,8 @@ She was chopped by a team without a name yet.
 
 Josh Allen did his part, but Cook couldn’t cook. Skattebo took the wrong road, McBride never found his groove, and even Golden couldn’t strike gold.
 
+Stacey didn’t even have the decency to wait for Monday Night Football. No, she sealed her own fate during the afternoon slate—an early death wish in every sense of the word.
+
 Meanwhile, the executioner fielded Terry McLaurin—a literal zombie starter—and STILL managed to survive.
 
 That’s right: Stacey’s season was ended by a team so devoid of identity it doesn’t even have a name.
@@ -64,5 +66,9 @@ A zombie starter.
 And somehow… Stacey is the one being buried.
 
 May she rest in peace—and may her roster rest in waivers.
+
+
+
+
 
 
