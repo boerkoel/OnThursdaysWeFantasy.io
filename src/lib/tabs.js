@@ -13,14 +13,14 @@ export const TABS = [
 ];
 // Sections within each tab, for the phone section strip (ids on the page).
 export const TAB_SECTIONS = {
-  live: [["my-team", "My team"], ["notifications", "Alerts"], ["primetime", "Tonight"], ["scores", "Scores"], ["ticket-race", "Ticket race"], ["scoreboard", "Median"]],
+  live: [["my-team", "My team"], ["primetime", "Tonight"], ["scores", "Scores"], ["ticket-race", "Ticket race"], ["scoreboard", "Median"]],
   standings: [["standings-odds", "Standings"], ["playoffs", "Playoffs"], ["ultimate-loser", "Ultimate Loser"], ["raffle", "Raffle"]],
   "death-watch": [["death-watch", "At risk"], ["survival", "Survival odds"], ["rip", "RIP"]],
   league: [["history", "History"], ["awards", "Awards"], ["record-book", "Record Book"], ["rivalries", "Rivalries"]],
   teams: []
 };
 export const SECTION_TAB = {
-  scores: "live", primetime: "live", "ticket-race": "live", scoreboard: "live", notifications: "live", "my-team": "live",
+  scores: "live", primetime: "live", "ticket-race": "live", scoreboard: "live", "my-team": "live",
   "standings-odds": "standings", playoffs: "standings", "ultimate-loser": "standings", raffle: "standings",
   rip: "death-watch", survival: "death-watch",
   history: "league", awards: "league", "record-book": "league", rivalries: "league"

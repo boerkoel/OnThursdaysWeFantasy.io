@@ -18,6 +18,7 @@ import SwingChart, { tippingPoint } from "./components/SwingChart.jsx";
 import MatchupLineup from "./components/MatchupLineup.jsx";
 import RafflePodium from "./components/RafflePodium.jsx";
 import PrimetimeWatch from "./components/PrimetimeWatch.jsx";
+import Sheet from "./components/Sheet.jsx";
 import RecordBook from "./components/RecordBook.jsx";
 import Notifications, { useFollowedTeams } from "./components/Notifications.jsx";
 import { seriesLine } from "./lib/recordBook.js";
@@ -277,58 +278,65 @@ function App() {
     return { kicker: `Week ${scoreboard.week} · ${status === "FINAL" ? "Final" : "As of " + asOf}`, title: "Median scoreboard", lines };
   };
 
-  // One live matchup card. The odds panel (series, swing chart, share, key
-  // plays) and the lineups each have their own toggle. The odds panel starts
-  // open on the pinned "my team" card, on matchups with a followed team, and
-  // on wider screens; toggled holds the matchups flipped from how they start.
+  // Matchups: a compact row each (yours first, then teams you follow). Tap a
+  // row for the detail sheet, which shows either the odds & plays or the
+  // lineups (the choice sticks) and swipes through every matchup.
   const followedTeams = useFollowedTeams();
-  const [wideScreen] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 601px)").matches);
-  const [toggledMatchups, setToggledMatchups] = useState(() => new Set());
-  const toggleIn = setter => id => setter(prev => {
-    const next = new Set(prev);
-    next.has(id) ? next.delete(id) : next.add(id);
-    return next;
-  });
-  const toggleMatchup = toggleIn(setToggledMatchups);
-  // Lineups are long, so every card (pinned ones too) starts with them closed.
-  const [openLineups, setOpenLineups] = useState(() => new Set());
-  const toggleLineup = toggleIn(setOpenLineups);
-  const renderMatchup = (matchupId, featured = false) => {
-    const pair = scores.filter(s => s.matchupId === matchupId);
-    const a = pair[0], b = pair[1];
-    if (!a || !b) return null;
-    const followed = followedTeams.includes(Number(a.teamId)) || followedTeams.includes(Number(b.teamId));
-    const expanded = (featured || followed || wideScreen) !== toggledMatchups.has(matchupId);
-    const lineupOpen = openLineups.has(matchupId);
+  const [openMatchup, setOpenMatchup] = useState(null);
+  const [detailView, setDetailView] = useState("odds");
+  const pairOf = matchupId => { const pair = scores.filter(s => s.matchupId === matchupId); return pair.length === 2 ? pair : null; };
+  const isFollowed = matchupId => Boolean(pairOf(matchupId)?.some(t => followedTeams.includes(Number(t.teamId))));
+  const orderedMatchups = [...matchupIds].sort((x, y) => (y === myMatchupId) - (x === myMatchupId) || isFollowed(y) - isFollowed(x));
+  const renderMatchupRow = (matchupId, mine = false) => {
+    const pair = pairOf(matchupId);
+    if (!pair) return null;
+    const [a, b] = pair;
+    const side = (t, o) => <div className={"mr-team" + (Number(t.score) >= Number(o.score) ? " winning" : "")}>
+      <span className="mr-name"><TeamLogo src={teamLogos[t.teamId]} />{t.team}</span>
+      <em className="mr-odds">{t.winProbability != null ? pct(t.winProbability) : ""}</em>
+      <strong className={["mr-score", flashingScores.has(t.teamId) ? "score-flash" : ""].join(" ").trim()}><span className={medianDotClass(t)} aria-hidden="true"></span>{money(t.score)}</strong>
+    </div>;
+    return <button type="button" key={matchupId} className={["matchup-row", mine ? "mine" : "", !mine && isFollowed(matchupId) ? "followed" : ""].join(" ").trim()}
+      onClick={() => setOpenMatchup(matchupId)} aria-label={`${a.team} vs ${b.team}: open the matchup`}>
+      {side(a, b)}{side(b, a)}
+      <span className="mr-open" aria-hidden="true">›</span>
+    </button>;
+  };
+  const renderMatchupDetail = matchupId => {
+    const pair = pairOf(matchupId);
+    if (!pair) return null;
+    const [a, b] = pair;
     const keyPlays = keyPlaysFor(matchupId);
-    return <article className={["matchup", featured ? "featured" : "", expanded ? "expanded" : ""].join(" ").trim()} key={matchupId}>
-      <MatchupTeam team={a} opponent={b} logo={teamLogos[a.teamId]} projected={scoreSort === "projected"} flashing={flashingScores.has(a.teamId)} dotClass={medianDotClass(a)} />
-      <div className="versus">vs</div>
-      <MatchupTeam team={b} opponent={a} logo={teamLogos[b.teamId]} projected={scoreSort === "projected"} flashing={flashingScores.has(b.teamId)} dotClass={medianDotClass(b)} />
-      <div className="matchup-toggles">
-        <button type="button" className="matchup-toggle" aria-expanded={expanded} onClick={() => toggleMatchup(matchupId)}>{expanded ? "Hide odds ▴" : "Odds & key plays ▾"}</button>
-        {a.lineup && b.lineup ? <button type="button" className="lineup-toggle" aria-expanded={lineupOpen} onClick={() => toggleLineup(matchupId)}>{lineupOpen ? "Hide lineups ▴" : "Lineups ▾"}</button> : null}
+    const hasLineups = Boolean(a.lineup && b.lineup);
+    const view = detailView === "lineup" && hasLineups ? "lineup" : "odds";
+    return <>
+      <div className="matchup sheet-head">
+        <MatchupTeam team={a} opponent={b} logo={teamLogos[a.teamId]} projected={false} flashing={flashingScores.has(a.teamId)} dotClass={medianDotClass(a)} />
+        <div className="versus">vs</div>
+        <MatchupTeam team={b} opponent={a} logo={teamLogos[b.teamId]} projected={false} flashing={flashingScores.has(b.teamId)} dotClass={medianDotClass(b)} />
       </div>
-      <div className="matchup-details">
+      <div className="sheet-tabs" role="tablist">
+        <button type="button" role="tab" aria-selected={view === "odds"} className={view === "odds" ? "active" : ""} onClick={() => setDetailView("odds")}>Odds & plays</button>
+        {hasLineups ? <button type="button" role="tab" aria-selected={view === "lineup"} className={view === "lineup" ? "active" : ""} onClick={() => setDetailView("lineup")}>Lineups</button> : null}
+        <ShareButton iconOnly section="scores" label="Share this matchup" filename={`week-${scoreboard.week}-${a.team}-vs-${b.team}`.replace(/[^\w-]+/g, "-")} build={() => ({
+          kicker: `Week ${scoreboard.week} · ${status === "FINAL" ? "Final" : status === "LIVE" ? "Live" : "Matchup"}`,
+          teams: [a, b].map(t => ({
+            name: t.team,
+            score: money(t.score),
+            logo: teamLogos[t.teamId],
+            highlight: t.score >= (t === a ? b : a).score,
+            note: `Proj ${t.projectionAverage != null ? money(t.projectionAverage) : "—"}${t.winProbability != null ? ` · ${pct(t.winProbability)} to win` : ""}`
+          })),
+          lines: [
+            seriesLine(a.teamId, b.teamId) ? { text: "⚔️ " + seriesLine(a.teamId, b.teamId), size: 28, color: "accent", weight: 800, gap: 36 } : null,
+            ...keyPlays.slice(0, 2).map((play, i) => ({ text: `${play.points > 0 ? "+" : ""}${money(play.points)} · ${play.player} ${play.text}${momentumLine(play) ? ` ⚡ ${momentumLine(play)}` : ""}`, size: 26, gap: i ? 8 : 30 }))
+          ].filter(Boolean)
+        })} />
+      </div>
+      {view === "lineup" ? <MatchupLineup a={a} b={b} nflGames={scoreboard.nflGames || []} /> : <div className="sheet-details">
         {seriesLine(a.teamId, b.teamId) ? <p className="rivalry-line">⚔️ {seriesLine(a.teamId, b.teamId)}</p> : null}
         <SwingChart points={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} teamId={a.teamId} teamName={a.team} opponentName={b.team}
-          plays={keyPlays.filter(p => p.momentum?.shift >= BIG_SWING)} />
-        <div className="card-actions">
-          <ShareButton section="scores" filename={`week-${scoreboard.week}-${a.team}-vs-${b.team}`.replace(/[^\w-]+/g, "-")} build={() => ({
-            kicker: `Week ${scoreboard.week} · ${status === "FINAL" ? "Final" : status === "LIVE" ? "Live" : "Matchup"}`,
-            teams: [a, b].map(t => ({
-              name: t.team,
-              score: money(t.score),
-              logo: teamLogos[t.teamId],
-              highlight: t.score >= (t === a ? b : a).score,
-              note: `Proj ${t.projectionAverage != null ? money(t.projectionAverage) : "—"}${t.winProbability != null ? ` · ${pct(t.winProbability)} to win` : ""}`
-            })),
-            lines: [
-              seriesLine(a.teamId, b.teamId) ? { text: "⚔️ " + seriesLine(a.teamId, b.teamId), size: 28, color: "accent", weight: 800, gap: 36 } : null,
-              ...keyPlays.slice(0, 2).map((play, i) => ({ text: `${play.points > 0 ? "+" : ""}${money(play.points)} · ${play.player} ${play.text}${momentumLine(play) ? ` ⚡ ${momentumLine(play)}` : ""}`, size: 26, gap: i ? 8 : 30 }))
-            ].filter(Boolean)
-          })} />
-        </div>
+          plays={keyPlays.filter(p => p.momentum?.shift >= BIG_SWING)} crossings />
         {keyPlays.length ? (
           <div className="key-plays" aria-label="Key plays">
             <div className="key-plays-heading"><span>KEY PLAYS</span><em>LATEST + BIGGEST SWINGS</em></div>
@@ -341,11 +349,15 @@ function App() {
               ))}
             </div>
           </div>
-        ) : null}
-      </div>
-      {lineupOpen ? <MatchupLineup a={a} b={b} nflGames={scoreboard.nflGames || []} /> : null}
-    </article>;
+        ) : <p className="median-note">No key plays yet: they show up once games are underway.</p>}
+      </div>}
+    </>;
   };
+  const sheetIndex = openMatchup != null ? orderedMatchups.indexOf(openMatchup) : -1;
+  const stepMatchup = delta => setOpenMatchup(orderedMatchups[(sheetIndex + delta + orderedMatchups.length) % orderedMatchups.length]);
+
+  // Notification settings live in a sheet behind the header's bell.
+  const [notifyOpen, setNotifyOpen] = useState(false);
 
   // "My team": pinned at the top of Live with the key odds and the matchup card.
   const renderMyTeam = () => {
@@ -369,7 +381,7 @@ function App() {
           {chip("PLAYOFFS", odds?.playoffOdds)}
           {chip("TITLE", odds?.titleOdds)}
         </div>
-        <div className="matchups single">{renderMatchup(myMatchupId, true)}</div>
+        <div className="matchup-list">{renderMatchupRow(myMatchupId, true)}</div>
       </section>
     );
   };
@@ -383,6 +395,7 @@ function App() {
           <h1>On Thursdays We Fantasy</h1>
           <p className="subtitle">The Officially Unofficial League Record Book</p>
         </div>
+        <button type="button" className="header-bell" onClick={() => setNotifyOpen(true)} aria-label="Notification settings" title="Notifications">🔔</button>
       </header>
       <TabBar tab={tab} onSelect={goToTab} />
       <SectionNav tab={tab} />
@@ -399,12 +412,11 @@ function App() {
       </section>
       <LeagueWire stories={live.marquee.stories || []} status={status} week={live.marquee.week ?? scoreboard.week} />
       {renderMyTeam()}
-      <Notifications teams={teamsData.teams || []} />
       <PrimetimeWatch scores={scores} nflGames={scoreboard.nflGames || []} guillotine={Number(guillotine.week) === Number(scoreboard.week) ? guillotine : null} logos={teamLogos} week={scoreboard.week} />
       <section id="scores" className="section">
         <div className="section-heading"><div><span className="section-kicker">RIGHT NOW</span><h2>Week {scoreboard.week} Scores</h2></div><button type="button" className={status === "LIVE" ? "live-pill is-live" : "live-pill"} onClick={refresher.run} title="Refresh now">● {status} ↻</button></div>
-        <div className="matchups">
-          {matchupIds.filter(id => id !== myMatchupId).map(id => renderMatchup(id))}
+        <div className="matchup-list">
+          {orderedMatchups.filter(id => id !== myMatchupId).map(id => renderMatchupRow(id))}
         </div>
       </section>
       <RafflePodium scores={scores} logos={teamLogos} week={scoreboard.week} final={Boolean(currentWeekComplete)}
@@ -658,6 +670,9 @@ function App() {
 
       <footer>On Thursdays We Fantasy · 2026 · Officially unofficial.</footer>
       {newVersion ? <button type="button" className="new-version-bar" onClick={reloadKeepingScroll}>✨ New version of the site — tap to refresh</button> : null}
+      {sheetIndex >= 0 ? <Sheet title={`Week ${scoreboard.week} matchup`} position={`${sheetIndex + 1} of ${orderedMatchups.length}`}
+        onClose={() => setOpenMatchup(null)} onPrev={() => stepMatchup(-1)} onNext={() => stepMatchup(1)}>{renderMatchupDetail(openMatchup)}</Sheet> : null}
+      {notifyOpen ? <Sheet title="Notifications" onClose={() => setNotifyOpen(false)}><Notifications teams={teamsData.teams || []} asPanel /></Sheet> : null}
       <BackToTop />
     </main>
   );

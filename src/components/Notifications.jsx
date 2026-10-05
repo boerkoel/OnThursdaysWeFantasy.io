@@ -42,7 +42,7 @@ export function useFollowedTeams() {
   return teams;
 }
 
-export default function Notifications({ teams }) {
+export default function Notifications({ teams, asPanel = false }) {
   const [prefs, setPrefs] = useState(loadPrefs);
   const [subscription, setSubscription] = useState(null);
   const [status, setStatus] = useState("");
@@ -114,6 +114,7 @@ export default function Notifications({ teams }) {
     </>;
   }
 
+  if (asPanel) return <div className="notify-panel">{body}</div>;
   return (
     <details className="collapsible" id="notifications">
       <summary>🔔 Notifications <span>{subscription ? "ON" : "OFF"}</span></summary>
