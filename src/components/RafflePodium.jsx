@@ -29,6 +29,9 @@ function playersLeft(team, nflGames) {
 
 export default function RafflePodium({ scores, logos, week, final, history, plays = [], nflGames = [] }) {
   const [openLineups, setOpenLineups] = useState(() => new Set());
+  // The podium always shows; the cards and chart start collapsed (the Live
+  // tab is long on game days).
+  const [showDetails, setShowDetails] = useState(false);
   const top = [...scores]
     .filter(s => s.topScoreProbability != null)
     .sort((a, b) => Number(b.topScoreProbability) - Number(a.topScoreProbability) || Number(b.score) - Number(a.score))
@@ -75,6 +78,8 @@ export default function RafflePodium({ scores, logos, week, final, history, play
         sub: `${money(s.score)} pts${final ? "" : ` · proj ${s.projectionAverage != null ? money(s.projectionAverage) : "—"}`}`,
         icon: MEDALS[i]
       }))} />
+      <button type="button" className="section-toggle" aria-expanded={showDetails} onClick={() => setShowDetails(v => !v)}>{showDetails ? "Hide race details ▴" : "Race details ▾"}</button>
+      {showDetails ? <>
       <div className="award-grid dw-details">
         {details.map(({ s, i, gap, swing, leftLine }) => <article className="award-card" key={s.teamId}>
           <small>{LABELS[i]}</small>
@@ -89,6 +94,7 @@ export default function RafflePodium({ scores, logos, week, final, history, play
         </article>)}
       </div>
       <ChopChart history={history} teams={chartTeams} plays={racePlays} title="TICKET ODDS · THIS WEEK'S CONTENDERS" swingText={ticketSwing} colors={MEDAL_COLORS} ariaLabel="Ticket odds over the week for the top three teams" />
+      </> : null}
     </section>
   );
 }

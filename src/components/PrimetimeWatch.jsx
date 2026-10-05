@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { money } from "../lib/data.js";
 import { HALF_MEAN_SD, normalCdf, normalQuantile, playerOutlook } from "../../scripts/lib/simulation.js";
 import { ShareButton } from "./LiveBits.jsx";
@@ -151,6 +151,8 @@ const openRip = () => setTimeout(() => { const d = document.getElementById("rip"
 const SECTIONS = [["h2h", "⚔️ Head to head"], ["median", "🎯 Median races"], ["raffle", "🎟️ Ticket race"], ["death", "🪓 Death Watch"]];
 
 export default function PrimetimeWatch({ scores, nflGames, guillotine, logos, week }) {
+  // Starts collapsed to a one-line summary; the share image is always full.
+  const [open, setOpen] = useState(false);
   const st = primetimeStories({ scores, nflGames, guillotine });
   if (!st) return null;
   const text = lines(st);
@@ -169,7 +171,16 @@ export default function PrimetimeWatch({ scores, nflGames, guillotine, logos, we
         <div><span className="section-kicker">{st.games} · {when}</span><h2>{st.label} What to Watch</h2></div>
         <ShareButton iconOnly label={`Share the ${st.label} What to Watch`} filename={`week-${week}-${st.label.toLowerCase()}-what-to-watch`} build={share} />
       </div>
-      <div className="primetime-grid">
+      <div className="primetime-summary">
+        <span>{[
+          text.h2h.length && `${text.h2h.length} ${text.h2h.length === 1 ? "matchup" : "matchups"}`,
+          text.median.length && `${text.median.length} median ${text.median.length === 1 ? "race" : "races"}`,
+          text.raffle.length && (st.raffleLocked ? "ticket clinched" : "ticket race"),
+          text.death.length && (st.doomed ? "Death Watch decided" : "Death Watch")
+        ].filter(Boolean).join(" · ")}</span>
+        <button type="button" className="section-toggle" aria-expanded={open} onClick={() => setOpen(v => !v)}>{open ? "Hide ▴" : "Show ▾"}</button>
+      </div>
+      {open ? <div className="primetime-grid">
         {SECTIONS.map(([key, title]) => text[key].length ? <div className="primetime-card" key={key}>
           <h3>{title}</h3>
           {text[key].map((item, i) => <div className="primetime-item" key={i}>
@@ -178,7 +189,7 @@ export default function PrimetimeWatch({ scores, nflGames, guillotine, logos, we
             {item.rip ? <a className="primetime-rip" href="#rip" onClick={openRip}>🪦 Read the obituary</a> : null}
           </div>)}
         </div> : null)}
-      </div>
+      </div> : null}
     </section>
   );
 }
