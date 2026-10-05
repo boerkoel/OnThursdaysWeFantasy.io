@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { money } from "../lib/data.js";
+import PlayMarkers from "./PlayMarkers.jsx";
 
 // Odds race panel (Death Watch chop odds, ticket race odds): the odds of the
 // three teams on the podium over the week,
@@ -9,7 +10,6 @@ import { money } from "../lib/data.js";
 const WIDTH = 300;
 const HEIGHT = 90;
 const PAD = 6;
-const CLUSTER_X = 14;
 const BIG_SWING = 3;
 const KEY_POINTS = 4;
 const KEY_PLAYS_RECENT = 5;
@@ -18,7 +18,6 @@ const KEY_PLAY_MAX_AGE_MS = 5 * 60 * 60 * 1000;
 export const CHOP_COLORS = ["#ef9a96", "#e6c85c", "#9cc3e6"];
 
 const newestFirst = (a, b) => Date.parse(b.wallclock) - Date.parse(a.wallclock);
-const playTime = play => play.period ? `Q${play.period > 4 ? "OT" : play.period} ${play.clock || ""}`.trim() : "";
 const chopSwingText = play => play.momentum
   ? `chop odds ${play.momentum.shift > 0 ? "down" : "up"} ${money(Math.abs(play.momentum.shift))}% (now ${money(play.momentum.chopProbability)}%)`
   : null;
@@ -47,7 +46,6 @@ export function keyChopPlays(plays) {
 
 export default function ChopChart({ history, teams, plays, colors = CHOP_COLORS, title = "CHOP ODDS · MOST AT RISK", swingText = chopSwingText, ariaLabel = "Chop odds over the week for the most at-risk teams" }) {
   const [hover, setHover] = useState(null);
-  const [activeMarker, setActiveMarker] = useState(null);
   const points = (history || []).map(pt => ({ t: Date.parse(pt.t), p: pt.p || {} })).filter(pt => Number.isFinite(pt.t));
   const ids = teams.map(t => String(t.teamId));
   const colorOf = Object.fromEntries(ids.map((id, i) => [id, colors[i]]));
@@ -65,21 +63,6 @@ export default function ChopChart({ history, teams, plays, colors = CHOP_COLORS,
     const paths = ids.map(id => points.filter(pt => Number.isFinite(Number(pt.p[id])))
       .map((pt, i) => `${i ? "L" : "M"}${x(pt.t).toFixed(1)},${y(Number(pt.p[id])).toFixed(1)}`).join(" "));
 
-    // Big swings on the chart, clustered when too close to tell apart.
-    const markers = [];
-    for (const play of plays.filter(p => p.wallclock && Math.abs(p.momentum?.shift || 0) >= BIG_SWING).sort((a, b) => Date.parse(a.wallclock) - Date.parse(b.wallclock))) {
-      const t = Math.min(end, Math.max(t0, Date.parse(play.wallclock)));
-      const group = markers[markers.length - 1];
-      if (group && x(t) - group.firstX <= CLUSTER_X) group.plays.push(play);
-      else markers.push({ firstX: x(t), plays: [play] });
-    }
-    for (const m of markers) {
-      m.plays.sort((a, b) => Math.abs(b.momentum.shift) - Math.abs(a.momentum.shift));
-      const lead = m.plays[0];
-      m.t = Math.min(end, Math.max(t0, Date.parse(lead.wallclock)));
-      m.p = valueAt(String(lead.teamId), m.t);
-    }
-    const active = activeMarker != null ? markers[activeMarker] : null;
     const shown = hover ?? points[points.length - 1];
     const onMove = event => {
       const box = event.currentTarget.getBoundingClientRect();
@@ -102,25 +85,9 @@ export default function ChopChart({ history, teams, plays, colors = CHOP_COLORS,
           {hover ? <line className="swing-crosshair" x1={x(hover.t)} x2={x(hover.t)} y1={PAD} y2={HEIGHT - PAD} vectorEffect="non-scaling-stroke" /> : null}
         </svg>
         <i className="chop-axis top">{top}%</i><i className="chop-axis bottom">0%</i>
-        {markers.map((m, i) => (
-          <button type="button" key={m.plays[0].id} className={"swing-play-marker" + (i === activeMarker ? " active" : "")}
-            style={{ left: `${(x(m.t) / WIDTH) * 100}%`, top: `${(y(m.p) / HEIGHT) * 100}%`, boxShadow: `0 0 0 1px ${colorOf[String(m.plays[0].teamId)]}` }}
-            aria-label={`Key play: ${m.plays[0].player}, ${swingText(m.plays[0])}`}
-            onMouseEnter={() => setActiveMarker(i)} onMouseLeave={() => setActiveMarker(null)}
-            onClick={event => { event.stopPropagation(); setActiveMarker(i === activeMarker ? null : i); }}>🏈</button>
-        ))}
-        {active ? (
-          <div className="swing-play-tip" style={{ left: `${Math.min(80, Math.max(20, (x(active.t) / WIDTH) * 100))}%` }} role="tooltip">
-            {active.plays.slice(0, 3).map(play => (
-              <div key={play.id} className="swing-play-tip-row">
-                <div><b className={play.points < 0 ? "negative" : ""}>{play.points > 0 ? "+" : ""}{money(play.points)}</b> {play.player} <small>{nameOf[String(play.teamId)]} · {playTime(play)}</small></div>
-                <p>{play.text}</p>
-                <em>⚡ {swingText(play)}</em>
-              </div>
-            ))}
-            {active.plays.length > 3 ? <small className="swing-play-more">+{active.plays.length - 3} more</small> : null}
-          </div>
-        ) : null}
+        <PlayMarkers plays={plays.filter(p => Math.abs(p.momentum?.shift || 0) >= BIG_SWING)} t0={t0} end={end} width={WIDTH} height={HEIGHT}
+          x={x} y={y} valueAt={(play, t) => valueAt(String(play.teamId), t)} swingText={swingText}
+          ringColor={play => colorOf[String(play.teamId)]} subtitle={play => nameOf[String(play.teamId)]} />
       </div>
     </>;
   }

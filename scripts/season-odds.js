@@ -211,10 +211,9 @@ const teams = teamIds.map(id => {
 // end (saved when the week rolls over).
 const snapshotOf = list => Object.fromEntries(list.map(t => [String(t.teamId), { playoffOdds: t.playoffOdds, titleOdds: t.titleOdds, ultimateLoserOdds: t.ultimateLoserOdds }]));
 const previousOdds = await readFile("data/current/season-odds.json", "utf8").then(JSON.parse).catch(() => null);
-const baseline = await readFile("data/current/season-odds-baseline.json", "utf8").then(JSON.parse).catch(() => null);
 let weekStart, lastWeek = previousOdds?.lastWeek || null;
 if (previousOdds && Number(previousOdds.week) === currentWeek) {
-  weekStart = previousOdds.weekStart || (Number(baseline?.week) === currentWeek ? baseline.odds : snapshotOf(teams));
+  weekStart = previousOdds.weekStart || snapshotOf(teams);
 } else {
   if (previousOdds?.teams?.length && previousOdds.weekStart) {
     lastWeek = { week: Number(previousOdds.week), start: previousOdds.weekStart, end: snapshotOf(previousOdds.teams) };
