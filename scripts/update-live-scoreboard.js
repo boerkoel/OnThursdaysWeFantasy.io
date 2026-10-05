@@ -359,8 +359,11 @@ const NEAR_MEDIAN_MAX = 70;
 const projectionOf = s => Number(s.projectionAverage ?? s.score);
 const justBelow = currentScores.filter(s => projectionOf(s) <= projectedMedian).sort((a, b) => projectionOf(b) - projectionOf(a))[0];
 const justAbove = currentScores.filter(s => projectionOf(s) >= projectedMedian && s !== justBelow).sort((a, b) => projectionOf(a) - projectionOf(b))[0];
+// The two teams projected closest to the median are flagged, unless the
+// team's side of the median is already locked (exactly 0% or 100%).
+const medianLocked = score => score.aboveMedianProbability <= 0 || score.aboveMedianProbability >= 100;
 for (const score of currentScores) {
-  score.nearMedian = score === justBelow || score === justAbove ||
+  score.nearMedian = ((score === justBelow || score === justAbove) && !medianLocked(score)) ||
     (score.aboveMedianProbability >= NEAR_MEDIAN_MIN && score.aboveMedianProbability <= NEAR_MEDIAN_MAX);
 }
 

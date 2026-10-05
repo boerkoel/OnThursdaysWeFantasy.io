@@ -16,6 +16,7 @@ import TeamCards from "./components/TeamCards.jsx";
 import { DeathWatch } from "./components/DeathWatch.jsx";
 import SwingChart from "./components/SwingChart.jsx";
 import MatchupLineup from "./components/MatchupLineup.jsx";
+import RafflePodium from "./components/RafflePodium.jsx";
 import RecordBook from "./components/RecordBook.jsx";
 import Notifications, { useFollowedTeams } from "./components/Notifications.jsx";
 import { seriesLine } from "./lib/recordBook.js";
@@ -400,6 +401,7 @@ function App() {
           {matchupIds.filter(id => id !== myMatchupId).map(id => renderMatchup(id))}
         </div>
       </section>
+      <RafflePodium scores={scores} logos={teamLogos} week={scoreboard.week} final={Boolean(currentWeekComplete)} />
       <section id="scoreboard" className="section">
         <div className="section-heading"><div><span className="section-kicker">MEDIAN SCORING</span><h2>Week {scoreboard.week} Scoreboard</h2></div>
           {displayScores.length ? <ShareButton iconOnly label="Share the scoreboard" filename={`week-${scoreboard.week}-scoreboard`} build={shareScoreboard} /> : null}</div>

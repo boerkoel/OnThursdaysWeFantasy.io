@@ -130,24 +130,34 @@ function SurvivalOdds({ teams, guillotine }) {
 
 // Obituaries for chopped teams, one at a time; collapsed by default. All
 // cards share one grid cell so the box keeps the height of the longest one.
+// A team whose chop is already guaranteed (exactly 100%) joins early, first,
+// but only once its handwritten obituary is in content/obituaries.md.
 function Obituaries({ guillotine }) {
-  const chopped = guillotine.chopped || [];
   const [index, setIndex] = useState(0);
+  const past = guillotine.chopped || [];
+  const doomed = (guillotine.teams || [])
+    .filter(t => t.chopProbability >= 100 && handwrittenObituaries.has(t.team.trim().toLowerCase()) && !past.some(c => c.teamId === t.teamId))
+    .map(t => ({ teamId: t.teamId, team: t.team, logo: t.logo, week: guillotine.week, finalScore: t.score, playersLeft: t.playersLeft, doomed: true }));
+  const chopped = [...doomed, ...past];
   if (!chopped.length) return null;
+  const dates = c => `${formatDay(guillotine.draftDate)} — ${c.doomed ? "any minute now" : formatDay(c.diedOn)}`;
+  const cause = c => c.doomed
+    ? `Chop guaranteed in Week ${c.week} with ${money(c.finalScore)} pts${c.playersLeft ? ` and ${c.playersLeft} still to play` : ""}. Nothing left can save it.`
+    : `Chopped in Week ${c.week} with ${money(c.finalScore)} pts${c.survivedBy ? `, ${money(c.margin)} short of ${c.survivedBy.team}` : ""}.`;
   const active = index % chopped.length;
   const step = delta => setIndex((active + delta + chopped.length) % chopped.length);
   return (
     <details className="collapsible" id="rip">
-      <summary>Rest in peace <span>{chopped.length} chopped</span></summary>
+      <summary>Rest in peace <span>{past.length} chopped{doomed.length ? ` · ${doomed.length} doomed` : ""}</span></summary>
       <div className="obit-carousel">
         <div className="obit-stack">
           {chopped.map((c, i) => {
             const obituary = obituaryFor(c);
             return <article className={i === active ? "obit-card active" : "obit-card"} aria-hidden={i !== active} key={c.teamId}>
               <span className="obit-icon">🪦</span>
-              <small>{formatDay(guillotine.draftDate)} — {formatDay(c.diedOn)}</small>
+              <small>{dates(c)}</small>
               <strong className="dw-team"><DwLogo team={c} size="md" />{c.team}</strong>
-              <p className="rip-cause">Chopped in Week {c.week} with {money(c.finalScore)} pts{c.survivedBy ? `, ${money(c.margin)} short of ${c.survivedBy.team}` : ""}.</p>
+              <p className="rip-cause">{cause(c)}</p>
               {obituary
                 ? obituary.split(/\n\s*\n/).map((paragraph, p) => <p className="rip-obituary" key={p}>{paragraph.replace(/\s*\n\s*/g, " ")}</p>)
                 : <p className="rip-obituary">Obituary pending.</p>}
@@ -156,8 +166,8 @@ function Obituaries({ guillotine }) {
                   kicker: `Rest in peace · ${guillotine.leagueName}`,
                   title: `🪦 ${c.team}`,
                   lines: [
-                    { text: `${formatDay(guillotine.draftDate)} — ${formatDay(c.diedOn)}`, size: 30, color: "accent", weight: 800, gap: 30 },
-                    { text: `Chopped in Week ${c.week} with ${money(c.finalScore)} pts${c.survivedBy ? `, ${money(c.margin)} short of ${c.survivedBy.team}` : ""}.`, size: 30, color: "ink" },
+                    { text: dates(c), size: 30, color: "accent", weight: 800, gap: 30 },
+                    { text: cause(c), size: 30, color: "ink" },
                     { text: obituary || "Obituary pending.", size: obituary && obituary.length > 700 ? 24 : 27, gap: 30 }
                   ]
                 })} />

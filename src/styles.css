@@ -757,3 +757,17 @@ section,details,.odds-block{scroll-margin-top:72px}
 .chop-axis.top{top:0}.chop-axis.bottom{bottom:0}
 .chop-team-dot{display:inline-block;width:7px;height:7px;margin:0 4px 0 2px;border-radius:50%;vertical-align:middle}
 .chop-panel .key-plays{margin-top:10px}
+
+/* Ticket race podium: 2nd | 1st | 3rd, steps of different heights. */
+.podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:end;gap:8px;max-width:640px;margin:0 auto}
+.podium-spot{display:flex;flex-direction:column;align-items:stretch;min-width:0}
+.podium-team{display:flex;flex-direction:column;align-items:center;gap:3px;padding:0 4px 8px;text-align:center;min-width:0}
+.podium-team .inline-team-logo{width:40px;height:40px}
+.podium-team b{max-width:100%;font-size:13px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.podium-team em{font-style:normal;font-weight:900;font-size:20px;color:#dfe9c7;font-variant-numeric:tabular-nums}
+.podium-team small{color:#8f978c;font-size:10px;font-weight:700}
+.podium-step{display:flex;justify-content:center;align-items:flex-start;padding-top:8px;border:1px solid #3b4134;border-bottom:0;border-radius:12px 12px 0 0;background:linear-gradient(#262b20,#171a15);font-size:24px}
+.podium-spot.first .podium-step{height:96px;border-color:#b8c69b;background:linear-gradient(#3a4430,#1b1f17)}
+.podium-spot.second .podium-step{height:66px}
+.podium-spot.third .podium-step{height:46px}
+.podium-spot.first .podium-team em{font-size:24px;color:#f7f7f2}
