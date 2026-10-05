@@ -865,7 +865,6 @@ for (const team of teams.values()) {
         );
         if (!game) continue;
 
-        const actual = game.homeTeamId === Number(team.id) ? game.homeScore : game.awayScore;
         const opponent = game.homeTeamId === Number(team.id) ? game.awayScore : game.homeScore;
 
         const weekScores = completed
@@ -879,8 +878,10 @@ for (const team of teams.values()) {
             : (weekScores[weekScores.length/2-1] + weekScores[weekScores.length/2]) / 2)
           : null;
 
-        if (hypotheticalOptimal.optimalPoints > opponent && actual <= opponent) h2hWinsAdded += 1;
-        if (Number.isFinite(median) && hypotheticalOptimal.optimalPoints > median && actual <= median) medianWinsAdded += 1;
+        // Wins added compare optimal lineups before and after (not the lineup
+        // the team happened to start), so start/sit mistakes don't count.
+        if (hypotheticalOptimal.optimalPoints > opponent && baseOptimal.optimalPoints <= opponent) h2hWinsAdded += 1;
+        if (Number.isFinite(median) && hypotheticalOptimal.optimalPoints > median && baseOptimal.optimalPoints <= median) medianWinsAdded += 1;
       }
 
       // The Trade Desk should only show targets that meet the same 5-point
@@ -926,7 +927,6 @@ for (const team of teams.values()) {
             );
             if (!game) continue;
 
-            const actual = game.homeTeamId === Number(other.id) ? game.homeScore : game.awayScore;
             const opponent = game.homeTeamId === Number(other.id) ? game.awayScore : game.homeScore;
             const weekScores = completed
               .filter(m => m.week === week)
@@ -939,8 +939,8 @@ for (const team of teams.values()) {
                 : (weekScores[weekScores.length/2-1] + weekScores[weekScores.length/2]) / 2)
               : null;
 
-            if (hypotheticalOptimal.optimalPoints > opponent && actual <= opponent) reciprocalH2hWins += 1;
-            if (Number.isFinite(median) && hypotheticalOptimal.optimalPoints > median && actual <= median) reciprocalMedianWins += 1;
+            if (hypotheticalOptimal.optimalPoints > opponent && baseOptimal.optimalPoints <= opponent) reciprocalH2hWins += 1;
+            if (Number.isFinite(median) && hypotheticalOptimal.optimalPoints > median && baseOptimal.optimalPoints <= median) reciprocalMedianWins += 1;
           }
 
           const reciprocalWins = reciprocalH2hWins + reciprocalMedianWins;

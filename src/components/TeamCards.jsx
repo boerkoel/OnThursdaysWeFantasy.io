@@ -74,7 +74,7 @@ function TeamProfile({ team, onClose }) {
               <div className="trade-target-impact">
                 <b>+{money(p.boost)} pts</b>
                 <em>Optimal lineup improvement</em>
-                <em>{(p.winsAdded ?? 0)} total wins added ({p.h2hWinsAdded ?? 0} H2H + {p.medianWinsAdded ?? 0} median)</em>{p.mutualTrade ? <em className="trade-mutual">↔ {p.mutualTrade.player} has been on your bench {p.mutualTrade.startRate != null ? Math.round(100 - p.mutualTrade.startRate) : 0}% of the time and would improve their optimal lineup by {money(p.mutualTrade.boost)} pts and {p.mutualTrade.winsAdded ?? 0} wins</em> : null}
+                <em>{(p.winsAdded ?? 0)} more {Number(p.winsAdded ?? 0) === 1 ? "win" : "wins"} in your optimal lineups ({p.h2hWinsAdded ?? 0} H2H + {p.medianWinsAdded ?? 0} median)</em>{p.mutualTrade ? <em className="trade-mutual">↔ {p.mutualTrade.player} has been on your bench {p.mutualTrade.startRate != null ? Math.round(100 - p.mutualTrade.startRate) : 0}% of the time and would improve their optimal lineup by {money(p.mutualTrade.boost)} pts and {p.mutualTrade.winsAdded ?? 0} wins</em> : null}
               </div>
             </div>)}
           </div>
@@ -89,8 +89,8 @@ function TeamProfile({ team, onClose }) {
               </div>
               <div className="trade-target-impact">
                 <b>Your historical optimal lineup: +{money(t.yourBoost)} pts</b>
-                <em>With {t.getPlayer} in your lineup all season, you would have gained {t.yourWinsAdded} wins ({t.yourH2hWinsAdded} H2H + {t.yourMedianWinsAdded} median)</em>
-                <em>{t.otherTeam}: +{money(t.theirBoost)} historical optimal-lineup pts · {t.theirWinsAdded} wins ({t.theirH2hWinsAdded} H2H + {t.theirMedianWinsAdded} median)</em>
+                <em>Swapping {t.givePlayer} for {t.getPlayer} would have led to {t.yourWinsAdded} more {Number(t.yourWinsAdded) === 1 ? "win" : "wins"} in your optimal lineups ({t.yourH2hWinsAdded} H2H + {t.yourMedianWinsAdded} median)</em>
+                <em>{t.otherTeam}: +{money(t.theirBoost)} optimal-lineup pts and {t.theirWinsAdded} more {Number(t.theirWinsAdded) === 1 ? "win" : "wins"} in their optimal lineups ({t.theirH2hWinsAdded} H2H + {t.theirMedianWinsAdded} median)</em>
               </div>
             </div>)}
           </div>
