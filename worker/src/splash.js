@@ -96,12 +96,16 @@ export async function splashGet(env, path) {
 // ---- Probe ----------------------------------------------------------------------
 // The SHAPE of each response only (field names, types, list sizes, lowercase
 // status words): never names, teams or picks. Cached for 10 minutes.
-const ENUM = /^[a-z][a-z_]{1,24}$/;
-function shape(value, depth = 0) {
-  if (depth > 6) return "…";
-  if (Array.isArray(value)) return value.length ? [`list(${value.length})`, shape(value[0], depth + 1)] : "list(0)";
-  if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, shape(v, depth + 1)]));
-  if (typeof value === "string") return ENUM.test(value) ? `str:${value}` : `str(${value.length})`;
+// Status words are shown only under status-like keys (a lowercase string
+// elsewhere could be a username).
+const ENUM = /^[a-z][a-z_]{1,24}$/i;
+const ENUM_KEY = /(status|result|state|type|view|outcome|role|sport|league)$/i;
+function shape(value, depth = 0, key = "") {
+  if (depth > 7) return "…";
+  if (value === null) return "null";
+  if (Array.isArray(value)) return value.length ? [`list(${value.length})`, shape(value[0], depth + 1, key)] : "list(0)";
+  if (typeof value === "object") return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, shape(v, depth + 1, k)]));
+  if (typeof value === "string") return ENUM_KEY.test(key) && ENUM.test(value) ? `str:${value}` : `str(${value.length})`;
   return typeof value;
 }
 
@@ -113,11 +117,11 @@ export async function splashProbe(env) {
     const contest = await splashGet(env, `/contests/${CONTEST}`);
     const c = contest.body?.data?.contest || {};
     result.viewer = { status: contest.status, role: c.viewerRole || null, isEntrant: Boolean(c.viewerContestUserId), myEntries: contest.body?.data?.entries?.user ?? null };
+    result.routes["/contests"] = { status: contest.status, shape: shape(contest.body) };
     for (const route of [
-      `/team-survivor/standings/summary?contestId=${CONTEST}`,
-      `/team-survivor/standings?contestId=${CONTEST}&limit=5&offset=0`,
+      `/team-survivor/standings?contestId=${CONTEST}&limit=3`,
       `/team-survivor/statistics/overall?contestId=${CONTEST}`,
-      `/team-survivor/availability?contestId=${CONTEST}&limit=5`
+      `/team-survivor/availability/report?contestId=${CONTEST}`
     ]) {
       const { status, body } = await splashGet(env, route);
       result.routes[route.split("?")[0]] = status >= 400 ? { status, error: body?.error, message: body?.message } : { status, shape: shape(body) };
