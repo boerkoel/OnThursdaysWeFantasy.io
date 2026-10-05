@@ -937,3 +937,35 @@ section,details,.odds-block{scroll-margin-top:72px}
 .sv-chip.empty{width:30px;height:26px;border-style:dashed}
 .sv-divider{margin:18px 0 10px;color:#ef9a96;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
 @media(max-width:800px){.sv-dist-row{grid-template-columns:minmax(0,104px) 1fr 38px 22px;gap:8px}}
+.sv-ledger{border:1px solid #30332d;border-radius:16px;overflow:hidden}
+.sv-ledger-row{display:grid;grid-template-columns:minmax(0,1.4fr) 78px 92px 104px 52px;gap:10px;align-items:center;padding:10px 14px;border-bottom:1px solid #242620;font-size:13px}
+.sv-ledger-row:last-child{border-bottom:0}
+.sv-ledger-row.head{color:#8b8e86;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding-top:8px;padding-bottom:8px}
+.sv-ledger-row.out{opacity:.6}
+.sv-ledger-row small{color:#8b8e86;font-size:11px}
+.sv-ledger-row>span:not(:first-child),.sv-ledger-row>b:not(:first-child){text-align:right}
+.sv-ledger-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
+.sv-ledger-alive{display:flex;align-items:center;justify-content:flex-end;gap:6px}
+.sv-dots{display:inline-flex;gap:2px}.sv-dots i{width:6px;height:6px;border-radius:50%}
+.sv-dots i.alive{background:#72b96a}.sv-dots i.out{background:#d96b67}
+.sv-ledger-roi.up{color:#9fd196}.sv-ledger-roi.down{color:#ef9a96}
+@media(max-width:800px){
+  .sv-ledger-row{grid-template-columns:minmax(0,1fr) 34px 46px 46px 44px;gap:6px;padding:10px 12px}
+  .sv-ledger-row small{display:none}
+  .sv-dots{display:none}
+  .sv-ledger-alive{gap:0}
+}
+.sv-teams{display:grid;grid-template-columns:repeat(2,1fr);gap:4px 18px;border:1px solid #30332d;border-radius:16px;padding:8px 14px}
+.sv-team{display:grid;grid-template-columns:22px 38px 1fr 24px;gap:8px;align-items:center;padding:4px 0;font-size:13px}
+.sv-team img{width:22px;height:22px;object-fit:contain}
+.sv-team-name{font-weight:750}
+.sv-team b{text-align:right}
+.sv-team .sv-dist-bar i{background:#72b96a}
+.sv-team.gone{opacity:.4}
+@media(max-width:800px){.sv-teams{gap:2px 14px;padding:8px 12px}.sv-team{grid-template-columns:20px 34px 1fr 20px;gap:6px}.sv-team img{width:20px;height:20px}}
+.sv-highlights{margin-top:18px;display:grid;gap:8px}
+.sv-highlights .section-kicker{margin:0}
+.sv-highlight{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid #30332d;border-radius:12px;background:#ffffff06}
+.sv-highlight>span{font-size:18px;line-height:1.2}
+.sv-highlight p{margin:0;color:#c7c9c1;font-size:13px;line-height:1.4}
+.sv-highlight b{color:#f7f7f2}

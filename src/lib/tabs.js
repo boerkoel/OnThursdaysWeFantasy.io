@@ -19,14 +19,14 @@ export const TAB_SECTIONS = {
   "death-watch": [["death-watch", "At risk"], ["survival", "Survival odds"], ["rip", "RIP"]],
   league: [["history", "History"], ["awards", "Awards"], ["record-book", "Record Book"], ["rivalries", "Rivalries"]],
   teams: [],
-  survivor: [["survivor", "Pool"], ["survivor-picks", "Picks"], ["survivor-standings", "Entries"]]
+  survivor: [["survivor", "Pool"], ["survivor-picks", "Picks"], ["survivor-managers", "Managers"], ["survivor-teams", "Teams left"], ["survivor-standings", "Entries"]]
 };
 export const SECTION_TAB = {
   scores: "live", primetime: "live", "ticket-race": "live", scoreboard: "live", "my-team": "live",
   "standings-odds": "standings", playoffs: "standings", "ultimate-loser": "standings", raffle: "standings",
   rip: "death-watch", survival: "death-watch",
   history: "league", awards: "league", "record-book": "league", rivalries: "league",
-  "survivor-picks": "survivor", "survivor-standings": "survivor"
+  "survivor-picks": "survivor", "survivor-managers": "survivor", "survivor-teams": "survivor", "survivor-standings": "survivor"
 };
 const isTab = id => TABS.some(t => t.id === id);
 const tabFor = hash => {

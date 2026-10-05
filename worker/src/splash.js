@@ -140,7 +140,7 @@ export async function splashProbe(env) {
 // Picks are hidden until kickoff on Splash, but the commissioner's session
 // can see them early: a pick is published only once it's graded or its game
 // has started (ESPN), and never for a week that hasn't started.
-//   { contest: { name, totalEntries, alive, eliminated, currentWeek, updatedAt },
+//   { contest: { name, totalEntries, alive, eliminated, currentWeek, entryFee, prizePool, updatedAt },
 //     weeks: [{ week, locked, final, hidden, picks: [{ team, count, result }] }],
 //     entries: [{ id, user, entry, alive, eliminatedWeek, picks: { [week]: { team, result } } }] }
 const FEED_MAX_AGE_MS = 2 * 60 * 1000;
@@ -238,7 +238,8 @@ async function buildSurvivorFeed(env) {
   const c = contest.body?.data?.contest || {};
   const alive = entries.filter(e => e.alive).length;
   return {
-    contest: { name: c.name || "Survivor", totalEntries: c.totalEntries || entries.length, alive, eliminated: entries.length - alive, currentWeek, updatedAt: new Date().toISOString() },
+    contest: { name: c.name || "Survivor", totalEntries: c.totalEntries || entries.length, alive, eliminated: entries.length - alive, currentWeek,
+      entryFee: Number(c.entryFeeDollars) || null, prizePool: Number(c.prizePoolDollars) || null, updatedAt: new Date().toISOString() },
     weeks,
     entries
   };
