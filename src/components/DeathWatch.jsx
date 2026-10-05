@@ -3,6 +3,7 @@ import { formatDay, money } from "../lib/data.js";
 import { ShareButton, TeamLogo } from "./LiveBits.jsx";
 import { TeamLineup } from "./MatchupLineup.jsx";
 import ChopChart from "./ChopChart.jsx";
+import Podium from "./Podium.jsx";
 import obituaryData from "../../data/current/obituaries.json";
 import obituariesMarkdown from "../../content/obituaries.md?raw";
 
@@ -27,6 +28,9 @@ function DwLogo({ team, size = "sm" }) {
   const initials = team.team.split(/\s+/).filter(w => /[A-Za-z0-9]/.test(w)).slice(0, 2).map(w => w.match(/[A-Za-z0-9]/)[0]).join("").toUpperCase();
   return <span className={`inline-team-logo ${size} logo-initials`} aria-hidden="true">{initials}</span>;
 }
+
+// Whether content/obituaries.md has a written obituary for this team.
+export const hasObituary = team => handwrittenObituaries.has(String(team || "").trim().toLowerCase());
 
 const obituaryFor = chop => handwrittenObituaries.get(chop.team.trim().toLowerCase()) ||
   (obituaryData.obituaries || []).find(o => o.teamId === chop.teamId && o.week === chop.week)?.text;
@@ -205,12 +209,20 @@ export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
         <span className="record-count">{guillotine.teams.length} TEAMS ALIVE</span>
       </div>
       <p className="raffle-intro">Our guillotine side league: the lowest score each week gets chopped. Chop odds come from {Number(guillotine.simulations || 0).toLocaleString()} simulations of the rest of the week.</p>
-      <div className="award-grid">
+      <Podium variant="tomb" ariaLabel="Most likely to be chopped" items={atRisk.map(t => ({
+        key: t.teamId,
+        logo: <DwLogo team={t} size="md" />,
+        name: t.team,
+        value: t.chopProbability,
+        label: t.chopProbability >= 100 ? "Doomed" : money(t.chopProbability) + "%",
+        sub: `${money(t.score)} pts${t.playersLeft ? ` · proj ${money(t.projected)}` : " · final"}`,
+        icon: "🪦"
+      }))} />
+      <div className="award-grid dw-details">
         {atRisk.map((t, i) => <article className="award-card" key={t.teamId}>
-          <span>{i === 0 ? "🪓" : "😰"}</span>
-          <small>{i === 0 ? "ON THE CHOPPING BLOCK" : `#${i + 1} MOST AT RISK`}</small>
+          <small>{i === 0 ? "🪓 ON THE CHOPPING BLOCK" : `#${i + 1} MOST AT RISK`}</small>
           <strong className="dw-team"><DwLogo team={t} size="md" />{t.team}</strong>
-          <b className="chop-odds">{money(t.chopProbability)}% chance of being chopped</b>
+          <b className="chop-odds">{t.chopProbability >= 100 ? "Chop guaranteed" : `${money(t.chopProbability)}% chance of being chopped`}</b>
           <p>{money(t.score)} pts{t.playersLeft ? ` · projected ${money(t.projected)}` : " · final"}</p>
           {t.survivalNeed ? <p>Needs {money(t.survivalNeed.points)} more pts to pass {t.survivalNeed.passTeam}</p> : null}
           {gameLine(t) ? <p className="dw-insight">🏟️ {gameLine(t)}</p> : null}
