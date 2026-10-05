@@ -44,10 +44,15 @@ async function renew(env, session) {
     headers: { ...APP_HEADERS, "Content-Type": "application/json" },
     body: JSON.stringify({ refreshToken: session.refreshToken, accessToken: session.accessToken })
   });
-  const body = await response.json().catch(() => null);
+  const text = await response.text();
+  let body = null;
+  try { body = JSON.parse(text); } catch {}
   const data = body?.data || body || {};
   if (!response.ok || !data.accessToken) {
-    throw new Error(`Splash session renewal failed (${response.status}${body?.message ? ": " + body.message : ""})`);
+    // Enough to tell Splash's auth server from a firewall in front of it;
+    // anything token-like is redacted.
+    const snippet = text.slice(0, 160).replace(/[A-Za-z0-9_\-.]{24,}/g, "[…]");
+    throw new Error(`Splash session renewal failed (${response.status}; ${response.headers.get("content-type") || "no type"}; server ${response.headers.get("server") || "?"}; ${snippet})`);
   }
   const next = { accessToken: data.accessToken, refreshToken: data.refreshToken || session.refreshToken, renewedAt: new Date().toISOString() };
   await env.SUBS.put("splash-session", JSON.stringify(next));
