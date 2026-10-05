@@ -14,7 +14,7 @@ import LeagueWire from "./components/LeagueWire.jsx";
 import { useRefresh } from "./components/PullToRefresh.jsx";
 import TeamCards from "./components/TeamCards.jsx";
 import { DeathWatch } from "./components/DeathWatch.jsx";
-import SwingChart from "./components/SwingChart.jsx";
+import SwingChart, { tippingPoint } from "./components/SwingChart.jsx";
 import MatchupLineup from "./components/MatchupLineup.jsx";
 import RafflePodium from "./components/RafflePodium.jsx";
 import PrimetimeWatch from "./components/PrimetimeWatch.jsx";
@@ -227,6 +227,13 @@ function App() {
   const completedHistoryWeeks = weekly.weeks || [];
   const [historyWeek, setHistoryWeek] = useState(completedHistoryWeeks.length ? completedHistoryWeeks[completedHistoryWeeks.length - 1].week : null);
   const history = completedHistoryWeeks.find(w => w.week === historyWeek);
+  // Week archive (odds history and swing plays) for the recaps: loaded the
+  // first time the League tab opens.
+  const [weekArchive, setWeekArchive] = useState(null);
+  useEffect(() => {
+    if (tab !== "league" || weekArchive) return;
+    fetchData("week-archive.json").then(setWeekArchive).catch(() => setWeekArchive({ weeks: {} }));
+  }, [tab, weekArchive]);
   const historyTeamNames = Object.fromEntries((teamsData.teams || []).map(t => [t.id, t.name.trim()]));
   const historyMatchups = history?.matchups || [];
   const historyScores = historyMatchups.flatMap(m => [Number(m.homeScore || 0), Number(m.awayScore || 0)]).sort((a, b) => a - b);
@@ -590,6 +597,19 @@ function App() {
                   <span className="history-team-name"><TeamLogo src={teamLogos[m.awayTeamId]} />{historyTeamNames[m.awayTeamId] || "Unknown team"}</span>
                   <div className="history-score-block"><strong className={`history-score ${awayMedianClass}`}>{money(m.awayScore)}</strong><em className="median-badge">{awayMedianClass === "above-median" ? "ABOVE MEDIAN" : awayMedianClass === "below-median" ? "BELOW MEDIAN" : "AT MEDIAN"}</em>{awayWon ? <em className="winner-badge">WINNER</em> : null}</div>
                 </div>
+                {(() => {
+                  // The week's odds chart (from the week archive), with 💥 at
+                  // each lead change and the tipping point.
+                  const arch = weekArchive?.weeks?.[history.week];
+                  if (!arch?.winHistory?.length) return null;
+                  const plays = (arch.plays || []).filter(p => Number(p.matchupId) === Number(m.id));
+                  const winnerId = homeWon ? m.homeTeamId : awayWon ? m.awayTeamId : null;
+                  const tip = winnerId != null ? tippingPoint(arch.winHistory, winnerId, historyTeamNames[winnerId], plays) : null;
+                  return <>
+                    <SwingChart points={arch.winHistory} teamId={m.homeTeamId} teamName={historyTeamNames[m.homeTeamId]} opponentName={historyTeamNames[m.awayTeamId]} plays={plays} crossings />
+                    {tip ? <p className="tipping-point"><b>🎯 TIPPING POINT</b> {tip}</p> : null}
+                  </>;
+                })()}
                 {(history.regrets || []).filter(r => r.matchupId === m.id).map(r => <p className="instant-regret" key={r.teamId}>
                   <b>🤦 INSTANT REGRET</b> {r.team} would have {r.flips.includes("win") && r.flips.includes("median") ? "won and cleared the median" : r.flips.includes("win") ? "won" : "cleared the median"} starting {r.benchPlayer} ({money(r.benchPoints)}) over {r.starter} ({money(r.starterPoints)}).
                 </p>)}

@@ -789,3 +789,8 @@ section,details,.odds-block{scroll-margin-top:72px}
 
 /* Phones: full team names (wrapping to a second line) instead of cut-offs. */
 @media(max-width:800px){.score-row .score-team{white-space:normal;line-height:1.2;overflow:visible}}
+
+/* Recap charts: 💥 where the odds line crosses 50%, and the tipping point. */
+.swing-bang{position:absolute;z-index:1;margin:-9px 0 0 -8px;font-size:13px;line-height:1;cursor:default;filter:drop-shadow(0 0 2px #10110f)}
+.tipping-point{grid-column:1 / -1;margin:2px 0 0;color:#d0d3cb;font-size:11px;line-height:1.45}
+.tipping-point b{color:#e6c85c;font-size:9px;letter-spacing:.08em;margin-right:4px}

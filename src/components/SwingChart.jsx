@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import PlayMarkers from "./PlayMarkers.jsx";
+import PlayMarkers, { playTime } from "./PlayMarkers.jsx";
 import { pct } from "../lib/data.js";
 
 // Win-odds swing chart for one matchup: team A's chance of winning over the
@@ -12,7 +12,26 @@ const WIDTH = 300;
 const HEIGHT = 56;
 const PAD = 5;
 
-export default function SwingChart({ points, teamId, teamName, opponentName, plays = [] }) {
+// The recap's tipping point for a finished matchup: the play that put the
+// winner ahead in the odds for good (the last time their line crossed 50%),
+// or, if they were favored all week, the biggest swing their way.
+export function tippingPoint(points, winnerId, winnerName, plays = []) {
+  const series = (points || []).map(pt => ({ t: Date.parse(pt.t), p: Number(pt.p?.[winnerId]) })).filter(pt => Number.isFinite(pt.t) && Number.isFinite(pt.p));
+  if (series.length < 2) return null;
+  const theirs = plays.filter(p => Number(p.momentum?.towardTeamId) === Number(winnerId) && p.wallclock);
+  const biggest = [...theirs].sort((a, b) => b.momentum.shift - a.momentum.shift)[0];
+  let cross = -1;
+  for (let i = 1; i < series.length; i++) if (series[i - 1].p < 50 && series[i].p >= 50) cross = i;
+  const describe = p => `${p.player} (${p.points > 0 ? "+" : ""}${Number(p.points).toFixed(2)}${p.period ? ", " + playTime(p) : ""})`;
+  if (cross < 0) {
+    return biggest ? `Wire to wire: ${winnerName} was favored all week. Biggest swing: ${describe(biggest)} moved it ${pct(biggest.momentum.shift)} their way.` : null;
+  }
+  const t = series[cross].t;
+  const play = theirs.filter(p => Date.parse(p.wallclock) <= t + 5 * 60 * 1000).sort((a, b) => Date.parse(b.wallclock) - Date.parse(a.wallclock))[0] || biggest;
+  return play ? `${describe(play)} put ${winnerName} ahead in the odds for good, a ${pct(play.momentum.shift)} swing.` : null;
+}
+
+export default function SwingChart({ points, teamId, teamName, opponentName, plays = [], crossings = false }) {
   const [hover, setHover] = useState(null);
   const series = (points || [])
     .map(pt => ({ t: Date.parse(pt.t), p: Number(pt.p?.[teamId]) }))
@@ -53,6 +72,15 @@ export default function SwingChart({ points, teamId, teamName, opponentName, pla
         </svg>
         {/* Marker outside the stretched SVG so it stays round. */}
         <span className="swing-dot" style={{ left: `${(x(shown) / WIDTH) * 100}%`, top: `${(y(shown) / HEIGHT) * 100}%` }} />
+        {crossings ? series.slice(1).map((pt, i) => {
+          // 💥 wherever the line crosses 50%: the other team took over.
+          const prev = series[i];
+          if (!((prev.p < 50 && pt.p > 50) || (prev.p > 50 && pt.p < 50))) return null;
+          const t = prev.t + (50 - prev.p) / (pt.p - prev.p) * (pt.t - prev.t);
+          const who = pt.p > 50 ? teamName : opponentName;
+          return <span key={"bang-" + i} className="swing-bang" style={{ left: `${(x({ t }) / WIDTH) * 100}%`, top: "50%" }}
+            title={`${who} took over (${new Date(t).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" })})`}>💥</span>;
+        }) : null}
         <PlayMarkers plays={plays} t0={t0} end={last.t} width={WIDTH} height={HEIGHT}
           x={t => x({ t })} y={p => y({ p })} valueAt={(play, t) => (series.find(pt => pt.t >= t) || last).p}
           swingText={play => `${pct(play.momentum.shift)} toward ${play.momentum.toward} (now ${pct(play.momentum.winProbability)})`} />

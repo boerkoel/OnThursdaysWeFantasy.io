@@ -449,6 +449,22 @@ const lastRaffle = raffleHistory[raffleHistory.length - 1];
 if (!lastRaffle || Object.entries(raffleSnapshot.p).some(([id, p]) => lastRaffle.p?.[id] !== p)) raffleHistory.push(raffleSnapshot);
 if (raffleHistory.length > MAX_WIN_HISTORY) raffleHistory = raffleHistory.filter((_, i) => i % 2 === 0 || i >= raffleHistory.length - 100);
 
+// Week archive for the League tab's recaps: each week's win-odds history
+// (thinned) and the plays that swung odds 3%+, refreshed every run and left
+// alone once the week rolls over. The plays come from the previous run's
+// live-plays.json (this script runs before fetch-live-plays.js).
+const MAX_ARCHIVE_POINTS = 200;
+const thin = points => points.length <= MAX_ARCHIVE_POINTS ? points
+  : points.filter((_, i) => i === points.length - 1 || i % Math.ceil(points.length / MAX_ARCHIVE_POINTS) === 0);
+const archive = await readFile("data/current/week-archive.json", "utf8").then(JSON.parse).catch(() => ({ weeks: {} }));
+const archivedPlays = await readFile("data/current/live-plays.json", "utf8").then(JSON.parse).catch(() => null);
+const swingPlays = Number(archivedPlays?.week) === currentWeek
+  ? (archivedPlays.plays || []).filter(p => p.momentum?.shift >= 3).map(({ id, matchupId, fantasyTeamId, player, points, text, period, clock, wallclock, momentum }) =>
+      ({ id, matchupId, fantasyTeamId, player, points, text, period, clock, wallclock, momentum }))
+  : archive.weeks?.[currentWeek]?.plays || [];
+archive.weeks = { ...(archive.weeks || {}), [currentWeek]: { winHistory: thin(winHistory), plays: swingPlays } };
+await writeFile("data/current/week-archive.json", JSON.stringify({ updatedAt: new Date().toISOString(), weeks: archive.weeks }) + "\n");
+
 await writeFile("data/current/scoreboard.json", JSON.stringify({
   week: currentWeek,
   lastUpdated: new Date().toISOString(),

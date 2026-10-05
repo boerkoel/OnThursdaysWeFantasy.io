@@ -51,6 +51,8 @@ function publishSharePages() {
 // The page polls these files for fresh data between page loads, so they must
 // be published next to the bundle (the rest of data/ is only imported).
 const POLLED_DATA_FILES = ["scoreboard.json", "marquee.json", "live-plays.json", "metadata.json", "guillotine.json", "season-odds.json"];
+// Published next to the bundle but not part of live.json (loaded on demand).
+const ON_DEMAND_DATA_FILES = ["week-archive.json"];
 
 // The page polls live.json (everything that changes during games, in one
 // request); the individual files are what restore-live-state.js reads back.
@@ -71,6 +73,10 @@ function publishPolledData() {
         seasonOdds: JSON.parse(contents["season-odds.json"])
       };
       this.emitFile({ type: "asset", fileName: "data/current/live.json", source: JSON.stringify(live) });
+      for (const file of ON_DEMAND_DATA_FILES) {
+        const source = await readFile(`data/current/${file}`, "utf8").catch(() => null);
+        if (source) this.emitFile({ type: "asset", fileName: `data/current/${file}`, source });
+      }
       this.emitFile({ type: "asset", fileName: "version.json", source: JSON.stringify({ build: BUILD_ID, time: BUILD_TIME }) });
     }
   };
