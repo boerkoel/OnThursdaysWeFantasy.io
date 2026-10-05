@@ -422,7 +422,7 @@ function App() {
         </div>
         {displayScores.map((s, i) => <React.Fragment key={s.teamId}>
             {i === Math.floor(displayScores.length / 2) && <div className="median-line"><span>PROJECTED MEDIAN {scoreboard.projectedMedian != null ? money(scoreboard.projectedMedian) : "—"}</span></div>}
-            <div className={projectedMedianEdgeTeams.has(s.teamId) ? "score-row median-near" : "score-row"}><span className="rank">{i + 1}</span><span className="score-team"><TeamLogo src={teamLogos[s.teamId]} />{s.team}{projectedMedianEdgeTeams.has(s.teamId) ? <em className="median-near-label">NEAR MEDIAN</em> : null}</span><span className="score-opponent">vs {s.opponent}</span><strong className={["score-primary", scoreSort === "projected" ? "projected-score" : "", flashingScores.has(s.teamId) ? "score-flash" : ""].join(" ").trim()}>{scoreSort === "wins" ? (expectedWins(s) != null ? expectedWins(s).toFixed(2) : "—") : money(scoreSort === "projected" ? s.projectionAverage : s.score)}</strong>{scoreSort === "wins" ? <span className="score-projection">H2H {pct(s.winProbability)}<em className="score-probability">ABOVE MEDIAN {pct(s.aboveMedianProbability)}</em></span> : <span className="score-projection">{scoreSort === "projected" ? "ACT " + money(s.score) : "PROJ "}{scoreSort === "projected" ? "" : (s.projectionTrend === "up" ? "↑ " : s.projectionTrend === "down" ? "↓ " : "")}{scoreSort === "projected" ? "" : (s.projectionAverage != null ? money(s.projectionAverage) : "—")}<em className="score-probability">ABOVE MEDIAN {pct(s.aboveMedianProbability)}</em></span>}</div>
+            <div className={"score-row " + (projectedMedianEdgeTeams.has(s.teamId) ? "median-near" : Number(s.aboveMedianProbability) > 50 ? "median-above" : s.aboveMedianProbability != null ? "median-below" : "")}><span className="rank">{i + 1}</span><span className="score-team"><TeamLogo src={teamLogos[s.teamId]} />{s.team}{projectedMedianEdgeTeams.has(s.teamId) ? <em className="median-near-label">NEAR MEDIAN</em> : null}</span><span className="score-opponent">vs {s.opponent}</span><strong className={["score-primary", scoreSort === "projected" ? "projected-score" : "", flashingScores.has(s.teamId) ? "score-flash" : ""].join(" ").trim()}>{scoreSort === "wins" ? (expectedWins(s) != null ? expectedWins(s).toFixed(2) : "—") : money(scoreSort === "projected" ? s.projectionAverage : s.score)}</strong>{scoreSort === "wins" ? <span className="score-projection">H2H {pct(s.winProbability)}<em className="score-probability">ABOVE MEDIAN {pct(s.aboveMedianProbability)}</em></span> : <span className="score-projection">{scoreSort === "projected" ? "ACT " + money(s.score) : "PROJ "}{scoreSort === "projected" ? "" : (s.projectionTrend === "up" ? "↑ " : s.projectionTrend === "down" ? "↓ " : "")}{scoreSort === "projected" ? "" : (s.projectionAverage != null ? money(s.projectionAverage) : "—")}<em className="score-probability">ABOVE MEDIAN {pct(s.aboveMedianProbability)}</em></span>}</div>
           </React.Fragment>)}
         </div>
         <p className="median-note">The projected median is based on ESPN’s projected final scores. Odds of finishing above the median come from simulating the rest of the week, where the league median moves with every team’s result. Highlighted in yellow: the teams projected just above and just below the median, plus any team with a {NEAR_MEDIAN_MIN}–{NEAR_MEDIAN_MAX}% chance.</p>
@@ -490,6 +490,9 @@ function App() {
           <span className="record-count">WEEKS 16–18 · 8 TEAMS</span>
         </div>
         <p className="playoff-intro">Three weeks. Eight-team single elimination. The lower-scoring team advances, and teams are reseeded after the quarterfinals (dashed lines). The six regular-season non-playoff teams are seeded 1–6, followed by the lower-ranked Week 15 playoff loser at #7 and the higher-ranked Week 15 playoff loser at #8.</p>
+        {/* Mostly placeholders early in the season: collapsed until Week 12. */}
+        <details className="collapsible ul-details" open={Number(scoreboard.week) >= 12}>
+        <summary>Show the bracket <span>SEEDS AS OF WEEK {scoreboard.week}</span></summary>
         <div className="bracket">
           <div className="bracket-round reseed-next">
             <div className="bracket-round-title">WEEK 16 · QUARTERFINALS</div>
@@ -532,6 +535,7 @@ function App() {
             <span>{s.pointsFor != null ? money(s.pointsFor) + " PF" : "TBD"}</span>
           </div>)}
         </div>
+        </details>
       </section>
       <section className="section" id="raffle">
         <div className="section-heading">

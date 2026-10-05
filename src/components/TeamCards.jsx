@@ -160,7 +160,8 @@ function TeamProfile({ team, onClose }) {
 
 // Columns match the .team-card-grid breakpoints in styles.css, so the open
 // profile can sit directly beneath the row that holds its card.
-const COLUMN_BREAKPOINTS = [[520, 1], [800, 2], [1000, 3]];
+// Two compact cards per row on phones (must match the .team-card-grid CSS).
+const COLUMN_BREAKPOINTS = [[800, 2], [1000, 3]];
 function columnsFor(width) {
   return COLUMN_BREAKPOINTS.find(([max]) => width <= max)?.[1] ?? 4;
 }

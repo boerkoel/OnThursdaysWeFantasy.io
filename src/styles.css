@@ -64,7 +64,7 @@
 .profile-empty{color:#8b8e86;font-size:12px}
 @media(max-width:1000px){.team-card-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:800px){.team-card-grid{grid-template-columns:repeat(2,1fr)}.profile-metrics{grid-template-columns:repeat(2,1fr)}.profile-metrics div:nth-child(2){border-right:0}.profile-metrics div:nth-child(-n+2){border-bottom:1px solid #292c27}.profile-header{padding:18px}.profile-identity h3{font-size:22px}.profile-history{padding:18px}}
-@media(max-width:520px){.team-card-grid{grid-template-columns:1fr}.profile-week{grid-template-columns:42px 1fr auto}.profile-week div{display:block}.profile-week div span{display:block;margin-top:2px}.profile-logo-wrap{width:68px;height:68px}.profile-logo{width:54px;height:54px}}
+@media(max-width:520px){.team-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.profile-week{grid-template-columns:42px 1fr auto}.profile-week div{display:block}.profile-week div span{display:block;margin-top:2px}.profile-logo-wrap{width:68px;height:68px}.profile-logo{width:54px;height:54px}}
 
 .score-projection{color:#8b8e86;font-size:10px;font-weight:800;letter-spacing:.06em;white-space:nowrap}
 .matchup .team small{display:block;margin-top:4px;color:#b8c69b;font-size:10px;font-weight:800;letter-spacing:.08em}
@@ -165,6 +165,9 @@
   box-shadow:inset 3px 0 0 #e6c85c;
   background:#e6c85c0d;
 }
+/* Safely above (green) or below (red) the median, in the same style. */
+.score-row.median-above{box-shadow:inset 3px 0 0 #72b96a;background:#72b96a0b}
+.score-row.median-below{box-shadow:inset 3px 0 0 #d96b67;background:#d96b670b}
 .median-near-label{
   display:inline-block;
   margin-left:7px;
@@ -820,3 +823,24 @@ section,details,.odds-block{scroll-margin-top:72px}
 /* Survival table header: tighter tracking so the column labels don't touch. */
 .survival-row.survival-header span,.survival-row.survival-header b{letter-spacing:.02em}
 @media(max-width:600px){.survival-row.survival-header{font-size:10px}}
+
+/* Phones: compact team cards (two per row) and award tiles (two per row). */
+@media(max-width:600px){
+  .team-card-grid{gap:8px}
+  .team-card .card-top{padding:10px 12px 0}
+  .team-card .card-season{display:none}
+  .team-card .card-logo-wrap{height:60px;padding:6px}
+  .team-card .team-logo{width:46px;height:46px}
+  .team-card h3{min-height:0;margin:0 12px 4px;font-size:13px}
+  .team-card .card-record{margin:0 12px;font-size:11px}
+  .team-card .card-stats{margin:10px 12px 0;padding-top:8px}
+  .team-card .card-stats strong{font-size:11px}
+  .team-card .card-footer{margin-top:10px;padding:8px 12px}
+  #awards .award-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  #awards .award-card{min-height:0;padding:12px}
+  #awards .award-card>span{font-size:18px}
+  #awards .award-card small{margin-top:6px;font-size:10px}
+  #awards .award-card strong{margin-top:4px;font-size:13px;line-height:1.2}
+  #awards .award-card p{font-size:11px;line-height:1.35}
+}
+.ul-details>summary{margin:4px 0 12px}
