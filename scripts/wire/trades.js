@@ -1,4 +1,4 @@
-import { DATA, fit, listNames, pickLine, possessive, readJson } from "./context.js";
+import { DATA, fit, listNames, pickLine, possessive, readJson, surname } from "./context.js";
 
 // League Wire: TRADE THAT NEEDS TO HAPPEN (the swap where both sides gain the
 // most) and up to two more TRADE IDEAs, from the win-win trades
@@ -20,7 +20,10 @@ export function rankedWinWinTrades() {
 }
 
 function story(t, lead) {
-  const give = listNames(playersIn(t)), get = listNames(gettingIn(t));
+  // Multi-player trades name players by surname so the teams still fit.
+  const multi = playersIn(t).length + gettingIn(t).length > 2;
+  const label = list => listNames(multi ? list.map(surname) : list);
+  const give = label(playersIn(t)), get = label(gettingIn(t));
   const wins = n => `${n} more win${n === 1 ? "" : "s"}`;
   const both = t.yourWinsAdded === t.theirWinsAdded
     ? `${wins(t.yourWinsAdded)} each`
