@@ -11,6 +11,20 @@ const NEWS_FRESH_MS = 12 * 60 * 60 * 1000;
 const BIG_NEWS = /\b(out|ruled|injur|torn|tear|IR|surgery|questionable|doubtful|inactive|suspend|traded|trade|released|waived|benched|starting|start)\b/i;
 const POSITIONS = { 1: "QB", 2: "RB", 3: "WR", 4: "TE", 5: "K", 16: "D/ST" };
 
+// Fresh headlines (published in the last 12 hours, not in the future).
+export const freshNews = () => (newsData?.items || [])
+  .filter(n => clockNow() - Date.parse(n.published) <= NEWS_FRESH_MS && clockNow() >= Date.parse(n.published));
+
+// Starters ({s: team score, p: starter}) whose status flipped to OUT since the
+// last update, before their game kicked off.
+export function newlyRuledOut() {
+  if (Number(previousScoreboard?.week) !== currentWeek) return [];
+  const before = new Map((previousScoreboard.scores || []).flatMap(s => (s.lineup?.starters || []).map(p => [s.teamId + ":" + p.id, p.injury])));
+  return currentScores.flatMap(s => (s.lineup?.starters || []).map(p => ({ s, p })))
+    .filter(({ s, p }) => p.injury === "O" && before.has(s.teamId + ":" + p.id) && before.get(s.teamId + ":" + p.id) !== "O")
+    .filter(({ p }) => nflGameByProTeam.get(Number(p.proTeamId))?.state === "pre");
+}
+
 export function addNewsStories(add) {
   // Who rosters whom.
   const rostered = new Map();
@@ -23,8 +37,7 @@ export function addNewsStories(add) {
     }
   }
 
-  const news = (newsData?.items || [])
-    .filter(n => clockNow() - Date.parse(n.published) <= NEWS_FRESH_MS && clockNow() >= Date.parse(n.published))
+  const news = freshNews()
     .flatMap(n => n.players.filter(p => rostered.has(p.id)).map(p => ({ n, p, r: rostered.get(p.id) })))
     .map(x => ({ ...x, weight: (x.r.starter ? 2 : 1) + (BIG_NEWS.test(x.n.headline) ? 2 : 0) }))
     .sort((a, b) => b.weight - a.weight || Date.parse(b.n.published) - Date.parse(a.n.published))[0];
@@ -41,11 +54,7 @@ export function addNewsStories(add) {
   }
 
   // RULED OUT: a starter newly OUT since the last update, game not started.
-  if (Number(previousScoreboard?.week) !== currentWeek) return;
-  const before = new Map((previousScoreboard.scores || []).flatMap(s => (s.lineup?.starters || []).map(p => [s.teamId + ":" + p.id, p.injury])));
-  const ruledOut = currentScores.flatMap(s => (s.lineup?.starters || []).map(p => ({ s, p })))
-    .filter(({ s, p }) => p.injury === "O" && before.has(s.teamId + ":" + p.id) && before.get(s.teamId + ":" + p.id) !== "O")
-    .filter(({ p }) => nflGameByProTeam.get(Number(p.proTeamId))?.state === "pre")[0];
+  const ruledOut = newlyRuledOut()[0];
   if (ruledOut) {
     const { s, p } = ruledOut;
     const game = nflGameByProTeam.get(Number(p.proTeamId));

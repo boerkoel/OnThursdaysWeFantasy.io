@@ -152,6 +152,7 @@ function App() {
   const KEY_PLAY_MAX_AGE_MS = 5 * 60 * 60 * 1000;
   const KEY_PLAYS_RECENT = 5;
   const KEY_PLAYS_MAX = 10;
+  const KEY_NEWS_MAX = 3;
   const BIG_SWING = 3;
   const newestFirst = (a, b) => Date.parse(b.wallclock) - Date.parse(a.wallclock);
   const keyPlaysFor = matchupId => {
@@ -166,8 +167,17 @@ function App() {
       if (chosen.size >= KEY_PLAYS_MAX) break;
       chosen.set(p.id, p);
     }
-    return [...chosen.values()].sort(newestFirst);
+    // Pregame news (📰 headlines and late scratches about this matchup's
+    // starters), the newest few, kept by the League Wire in marquee.json.
+    const news = (Number(live.marquee?.week) === Number(scoreboard.week) ? live.marquee.pregameNews || [] : [])
+      .filter(n => Number(n.matchupId) === Number(matchupId) && n.wallclock)
+      .sort(newestFirst)
+      .slice(0, KEY_NEWS_MAX);
+    return [...chosen.values(), ...news].sort(newestFirst);
   };
+  // A key play's line: news has no points (📰 instead) and a headline already names the player.
+  const playLabel = play => play.news ? "📰" : `${play.points > 0 ? "+" : ""}${money(play.points)}`;
+  const playText = play => play.news === "headline" ? play.text : `${play.player} ${play.text}`;
   // "Momentum shift: swung the odds 6.2% toward X (now 58.0%)", for plays that moved the odds at least half a point.
   const momentumLine = play => play.momentum?.shift >= 0.5
     ? `Momentum shift: swung the odds ${pct(play.momentum.shift)} toward ${play.momentum.toward} (now ${pct(play.momentum.winProbability)})` : null;
@@ -331,7 +341,7 @@ function App() {
           })),
           lines: [
             seriesLine(a.teamId, b.teamId) ? { text: "⚔️ " + seriesLine(a.teamId, b.teamId), size: 28, color: "accent", weight: 800, gap: 36 } : null,
-            ...keyPlays.slice(0, 2).map((play, i) => ({ text: `${play.points > 0 ? "+" : ""}${money(play.points)} · ${play.player} ${play.text}${momentumLine(play) ? ` ⚡ ${momentumLine(play)}` : ""}`, size: 26, gap: i ? 8 : 30 }))
+            ...keyPlays.slice(0, 2).map((play, i) => ({ text: `${playLabel(play)} · ${playText(play)}${momentumLine(play) ? ` ⚡ ${momentumLine(play)}` : ""}`, size: 26, gap: i ? 8 : 30 }))
           ].filter(Boolean)
         })} />
       </div>
@@ -345,8 +355,8 @@ function App() {
             <div className="key-play-list">
               {keyPlays.map(play => (
                 <div className="key-play" key={play.id}>
-                  <strong className={play.points < 0 ? "negative" : ""}>{play.points > 0 ? "+" : ""}{money(play.points)}</strong>
-                  <span><b>{play.player}</b> {play.text}{momentumLine(play) ? <em className="key-play-momentum">⚡ {momentumLine(play)}</em> : null}</span>
+                  <strong className={play.points < 0 ? "negative" : ""}>{playLabel(play)}</strong>
+                  <span>{play.news === "headline" ? play.text : <><b>{play.player}</b> {play.text}</>}{momentumLine(play) ? <em className="key-play-momentum">⚡ {momentumLine(play)}</em> : null}</span>
                 </div>
               ))}
             </div>

@@ -5,7 +5,7 @@ import { addByeStories } from "./wire/byes.js";
 import { addDeathWatchStory } from "./wire/death-watch.js";
 import { addEarlyMomentumStories } from "./wire/early-momentum.js";
 import { addInjuryStories } from "./wire/injuries.js";
-import { buildKeyPlays } from "./wire/key-plays.js";
+import { buildKeyPlays, pregameNewsPlays } from "./wire/key-plays.js";
 import { addLineupMistakeStories } from "./wire/lineup-mistakes.js";
 import { addNewsStories } from "./wire/news.js";
 import { addObituaryStory } from "./wire/obits.js";
@@ -168,7 +168,9 @@ async function buildMarqueeStories() {
   return stories.filter((story,i,arr)=>arr.findIndex(x=>x.text===story.text)===i).sort((a,b)=>b.score-a.score);
 }
 
-const keyPlays = await buildKeyPlays();
+let pregameNews = [];
+try { pregameNews = await pregameNewsPlays(); } catch (error) { console.warn("League Wire: pregame news failed: " + error.message); }
+const keyPlays = await buildKeyPlays(pregameNews);
 await writeJson(`${OUT}/key-plays.json`, {
   week: currentWeek,
   updatedAt: new Date().toISOString(),
@@ -227,4 +229,4 @@ const previousMarquee = await readJson(`${DATA}/marquee.json`).catch(() => null)
 const headlines = weekHeadlines() || previousMarquee?.headlines || null;
 const review = await weekInReview(previousMarquee, headlines);
 const marqueeStories = curate(interleave(review.stories, await buildMarqueeStories()));
-await writeJson(`${OUT}/marquee.json`,{week:currentWeek,lastUpdated:new Date().toISOString(),stories:marqueeStories,headlines,review:review.meta});
+await writeJson(`${OUT}/marquee.json`,{week:currentWeek,lastUpdated:new Date().toISOString(),stories:marqueeStories,headlines,review:review.meta,pregameNews});
