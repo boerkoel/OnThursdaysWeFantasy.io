@@ -141,6 +141,12 @@ jobs:
           ESPN_SWID: ${{ secrets.ESPN_SWID }}
         run: node scripts/fetch-drops.js
 
+      # Breaking NFL headlines about players (League Wire NEWS).
+      - name: Fetch player news
+        if: steps.gate.outputs.update == 'true'
+        continue-on-error: true
+        run: node scripts/fetch-news.js
+
       # Story test snapshot (manual runs only): the League Wire's inputs, saved
       # just before it runs; its output is added right after.
       - name: Capture League Wire inputs

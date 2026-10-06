@@ -7,6 +7,7 @@ import { addEarlyMomentumStories } from "./wire/early-momentum.js";
 import { addInjuryStories } from "./wire/injuries.js";
 import { buildKeyPlays } from "./wire/key-plays.js";
 import { addLineupMistakeStories } from "./wire/lineup-mistakes.js";
+import { addNewsStories } from "./wire/news.js";
 import { addObituaryStory } from "./wire/obits.js";
 import { addPickupStories } from "./wire/pickups.js";
 import { addLongTermRegretStory } from "./wire/regrets.js";
@@ -152,6 +153,7 @@ async function buildMarqueeStories() {
   try { addInjuryStories(add); } catch (error) { console.warn("League Wire: injury stories failed: " + error.message); }
   try { addMiscueStory(add); } catch (error) { console.warn("League Wire: manager miscue failed: " + error.message); }
   try { addShrewdSwapStory(add); } catch (error) { console.warn("League Wire: shrewd swap failed: " + error.message); }
+  try { addNewsStories(add); } catch (error) { console.warn("League Wire: news stories failed: " + error.message); }
   try { addByeStories(add); } catch (error) { console.warn("League Wire: bye stories failed: " + error.message); }
   try { addZombieStories(add); } catch (error) { console.warn("League Wire: zombie starters failed: " + error.message); }
   try { addStockWatchStory(add); } catch (error) { console.warn("League Wire: stock watch failed: " + error.message); }

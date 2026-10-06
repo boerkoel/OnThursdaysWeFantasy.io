@@ -80,6 +80,11 @@ jobs:
           ESPN_SWID: ${{ secrets.ESPN_SWID }}
         run: node scripts/fetch-drops.js
 
+      # Breaking NFL headlines about players (League Wire NEWS).
+      - name: Fetch player news
+        continue-on-error: true
+        run: node scripts/fetch-news.js
+
       # After the stats, so the week-in-review stories read the new weekly recap.
       - name: Update League Wire
         env:
