@@ -85,6 +85,13 @@ jobs:
         continue-on-error: true
         run: node scripts/fetch-news.js
 
+      # Sleeper's depth charts, practice reports and trending adds (League
+      # Wire RULED OUT, PRACTICE REPORT, TRENDING). The players file is
+      # fetched at most once a day, as Sleeper asks.
+      - name: Fetch Sleeper players and trending
+        continue-on-error: true
+        run: node scripts/fetch-sleeper.js
+
       # After the stats, so the week-in-review stories read the new weekly recap.
       - name: Update League Wire
         env:

@@ -15,6 +15,7 @@ import { addPrimetimeStories } from "./wire/primetime.js";
 import { addRaffleStories } from "./wire/raffle.js";
 import { interleave, weekHeadlines, weekInReview } from "./wire/review.js";
 import { addRosterStories } from "./wire/roster.js";
+import { addPracticeReportStory, addTrendingStory } from "./wire/sleeper.js";
 import { addStockWatchStory } from "./wire/stock.js";
 import { addMiscueStory, addShrewdSwapStory } from "./wire/swaps.js";
 import { addSwingStories } from "./wire/swings.js";
@@ -154,6 +155,8 @@ async function buildMarqueeStories() {
   try { addMiscueStory(add); } catch (error) { console.warn("League Wire: manager miscue failed: " + error.message); }
   try { addShrewdSwapStory(add); } catch (error) { console.warn("League Wire: shrewd swap failed: " + error.message); }
   try { addNewsStories(add); } catch (error) { console.warn("League Wire: news stories failed: " + error.message); }
+  try { addPracticeReportStory(add); } catch (error) { console.warn("League Wire: practice report failed: " + error.message); }
+  try { addTrendingStory(add); } catch (error) { console.warn("League Wire: trending story failed: " + error.message); }
   try { addByeStories(add); } catch (error) { console.warn("League Wire: bye stories failed: " + error.message); }
   try { addZombieStories(add); } catch (error) { console.warn("League Wire: zombie starters failed: " + error.message); }
   try { addStockWatchStory(add); } catch (error) { console.warn("League Wire: stock watch failed: " + error.message); }
@@ -184,12 +187,13 @@ await writeJson(`${OUT}/key-plays.json`, {
 // At most 2 of any one type. Roster stories (injury wards, bold strategies,
 // thin depth, fresh pickups) are pre-game talk: they retire once Sunday's
 // games start, and swap stories then stay only if the swap decides a matchup.
-// Waiver and trade stories count as roster talk too.
+// Waiver, trade, practice report and trending stories count as roster talk too.
 const WIRE_MAX = 12;
 const WIRE_CORE = 8;
 const PER_TYPE_MAX = 2;
 const ROSTER_TYPES = new Set(["INJURY WARD", "BOLD STRATEGY", "THIN ICE", "FRESH OFF THE WIRE",
-  "WAIVER WIRE", "WAIVER TUG-OF-WAR", "SHOPPING SPREE", "TRADE THAT SHOULD HAVE HAPPENED", "RETRO TRADE", "BYE BYE BYE", "DEATH WATCH BYE", "LONG-TERM REGRET"]);
+  "WAIVER WIRE", "WAIVER TUG-OF-WAR", "SHOPPING SPREE", "TRADE THAT SHOULD HAVE HAPPENED", "RETRO TRADE", "BYE BYE BYE", "DEATH WATCH BYE", "LONG-TERM REGRET",
+  "PRACTICE REPORT", "TRENDING"]);
 const SWAP_TYPES = new Set(["MANAGER MISCUE", "SHREWD SWAP"]);
 // Projection-driven matchup stories wait until Wednesday 11 AM ET, after
 // waivers clear and managers set their lineups (Jim: early-week flips are

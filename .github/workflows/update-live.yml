@@ -147,6 +147,14 @@ jobs:
         continue-on-error: true
         run: node scripts/fetch-news.js
 
+      # Sleeper's trending adds; the players file comes from the daily update.
+      - name: Fetch Sleeper trending
+        if: steps.gate.outputs.update == 'true'
+        continue-on-error: true
+        env:
+          SLEEPER_TRENDING_ONLY: "true"
+        run: node scripts/fetch-sleeper.js
+
       # Story test snapshot (manual runs only): the League Wire's inputs, saved
       # just before it runs; its output is added right after.
       - name: Capture League Wire inputs

@@ -20,6 +20,17 @@ export const guillotineData = await readJson(`${DATA}/guillotine.json`).catch(()
 export const liveScoringData = await readJson(`${DATA}/mLiveScoring.json`);
 export const boxscoreData = await readJson(`${DATA}/mBoxscore.json`);
 export const rosterData = await readJson(`${DATA}/mRoster.json`).catch(() => ({ teams: [] }));
+// Sleeper's depth charts, practice reports and trending adds (fetch-sleeper.js).
+export const sleeperData = await readJson(`${DATA}/sleeper.json`).catch(() => null);
+
+// Who rosters whom: player id -> { teamId, slot, starter, player (ESPN's) }.
+export const rosterByPlayer = new Map();
+for (const t of rosterData.teams || []) {
+  for (const e of t.roster?.entries || []) {
+    const slot = Number(e.lineupSlotId);
+    if (e.playerPoolEntry?.player) rosterByPlayer.set(Number(e.playerId), { teamId: Number(t.id), slot, starter: slot !== BENCH_SLOT && slot !== IR_SLOT, player: e.playerPoolEntry.player });
+  }
+}
 
 export const teamNames = new Map((teamData.teams || []).map(t => [t.id, (t.name || "").trim()]));
 export const name = id => teamNames.get(id) || "Team " + id;

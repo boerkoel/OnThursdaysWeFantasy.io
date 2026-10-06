@@ -1,5 +1,6 @@
 import { BENCH_SLOT, IR_SLOT } from "../lib/lineup.js";
 import { DATA, clockNow, currentScores, fit, name, nflGameByProTeam, pickLine, possessive, previousScoreboard, readJson, rosterData, currentWeek } from "./context.js";
+import { backupLine } from "./sleeper.js";
 import { kickoffLabel } from "./what-to-watch.js";
 
 // League Wire: NEWS (a fresh breaking headline about a player rostered in the
@@ -58,7 +59,13 @@ export function addNewsStories(add) {
   if (ruledOut) {
     const { s, p } = ruledOut;
     const game = nflGameByProTeam.get(Number(p.proTeamId));
+    // Where his backup is (Sleeper's depth chart), when known.
+    const backup = backupLine(p.id, s.teamId);
     add("RULED OUT", fit(
+      ...(backup ? [
+        `🚨 RULED OUT: ${p.name} won't play, and he's in ${possessive(s.team)} lineup. ${backup}. Kickoff's ${kickoffLabel(game.kickoff)}.`,
+        `🚨 RULED OUT: ${p.name} is out, and he starts for ${s.team}. ${backup}.`
+      ] : []),
       `🚨 RULED OUT: ${p.name} won't play, and he's in ${possessive(s.team)} starting lineup. Kickoff's ${kickoffLabel(game.kickoff)}. Clock's ticking.`,
       `🚨 RULED OUT: ${p.name} is out, and he's in ${possessive(s.team)} starting lineup.`
     ), 95);
