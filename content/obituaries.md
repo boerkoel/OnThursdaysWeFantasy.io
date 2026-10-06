@@ -49,7 +49,7 @@ There once was a manager, Mette,
 Whose roster was limp as spaghetti.   
 With Diggs looking ill   
 And Kincaid standing still,   
-She got chopped by a no-name. How petty!
+She got chopped, and the league threw confetti.
 
 Josh Allen did his part, but Cook couldn’t cook. Skattebo took the wrong road, McBride never found his groove, and even Golden couldn’t strike gold.
 
