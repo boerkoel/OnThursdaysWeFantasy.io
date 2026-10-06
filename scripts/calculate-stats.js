@@ -641,7 +641,9 @@ function starterEligible(entry, slotId) {
   return eligibleSlots.includes(Number(slotId));
 }
 
-function lineupEfficiency(weeklyTeam, actualPointsOverride = null, excludedPlayerId = null) {
+// allowEmpty: a slot nobody can fill scores 0 (used for trades, where giving
+// away your only TE leaves a hole) instead of making the lineup impossible.
+function lineupEfficiency(weeklyTeam, actualPointsOverride = null, excludedPlayerId = null, allowEmpty = false) {
   const entries = (weeklyTeam?.roster?.entries || []).filter(e => Number(e.lineupSlotId) !== 21 && Number(e.playerId) !== Number(excludedPlayerId));
   const starterSlots = [];
   const lineupSlotCounts = settings.settings?.rosterSettings?.lineupSlotCounts || {};
@@ -667,7 +669,7 @@ function lineupEfficiency(weeklyTeam, actualPointsOverride = null, excludedPlaye
 
   const memo = new Map();
   const solve = (index, remaining) => {
-    if (index >= entries.length) return remaining.every(x => x === 0) ? 0 : -Infinity;
+    if (index >= entries.length) return allowEmpty || remaining.every(x => x === 0) ? 0 : -Infinity;
     const key = index + "|" + remaining.join(",");
     if (memo.has(key)) return memo.get(key);
 
@@ -1002,25 +1004,128 @@ for (const team of teams.values()) {
   currentRosterPlayersByTeam.set(Number(team.id), players);
 }
 
-function swapOptimalImpact(teamId, outgoingPlayerId, incomingEntryByWeek) {
+// A team's optimal lineup in a past week, before any trade (reused by every
+// trade that team is part of).
+const baseOptimalCache = new Map();
+function baseOptimalFor(week, teamId, roster) {
+  const key = week + "|" + teamId;
+  if (!baseOptimalCache.has(key)) baseOptimalCache.set(key, lineupEfficiency(roster));
+  return baseOptimalCache.get(key);
+}
+
+// Each team's weak spots per week: the starters a newcomer could bump, by
+// position. An incoming RB can only displace an RB-slot starter or a FLEX
+// starter (a better RB pushes the displaced one into FLEX, never into a WR
+// slot); likewise WR and TE. QB, K and D/ST only their own slot. A trade can
+// only help a team if its incoming players outscore distinct bumpable
+// starters, so trades that can't are skipped before the full lineup solve.
+// (Assumes one position per player, true for this league's slots.)
+const FLEX_SLOT = 23;
+const SLOT_OF = {QB:0, RB:2, WR:4, TE:6, DST:16, K:17};
+const weakSpotCache = new Map();
+function weakSpots(week, teamId) {
+  const key = week + "|" + teamId;
+  if (weakSpotCache.has(key)) return weakSpotCache.get(key);
+  const counts = settings.settings?.rosterSettings?.lineupSlotCounts || {};
+  const n = slot => Number(counts[slot] || 0);
+  const byPos = {};
+  for (const e of weeklyRosterForTeam(week, teamId)?.roster?.entries || []) {
+    if (Number(e.lineupSlotId) === 21) continue;
+    const pos = positionNames[Number(e.playerPoolEntry?.player?.defaultPositionId)];
+    if (pos) (byPos[pos] ||= []).push(Number(e.playerPoolEntry?.appliedStatTotal) || 0);
+  }
+  for (const list of Object.values(byPos)) list.sort((a, b) => b - a);
+  // Bumpable starters, labelled so two incoming players can't bump the same
+  // one (an empty slot counts as a 0-point starter). FLEX labels are shared.
+  const starters = (pos, slot, from, label) => {
+    const picked = from.slice(0, n(slot));
+    while (picked.length < n(slot)) picked.push(0);
+    return picked.map((score, i) => ({tag:label + i, score}));
+  };
+  const flexFrom = ["RB", "WR", "TE"].flatMap(pos => (byPos[pos] || []).slice(n(SLOT_OF[pos]))).sort((a, b) => b - a);
+  const flex = starters("FLEX", FLEX_SLOT, flexFrom, "FLEX");
+  const spots = {};
+  for (const [pos, slot] of Object.entries(SLOT_OF)) {
+    const own = starters(pos, slot, byPos[pos] || [], pos);
+    spots[pos] = ["RB", "WR", "TE"].includes(pos) ? [...own, ...flex] : own;
+  }
+  weakSpotCache.set(key, spots);
+  return spots;
+}
+// The most incoming players could add in a week: each bumps a distinct
+// starter it can displace (best assignment; packages have at most 2).
+function weekGainCap(spots, entries) {
+  const players = entries.map(e => ({pos:positionNames[Number(e.playerPoolEntry?.player?.defaultPositionId)], points:Number(e.playerPoolEntry?.appliedStatTotal) || 0}));
+  const best = (i, taken) => {
+    if (i >= players.length) return 0;
+    const {pos, points} = players[i];
+    let top = best(i + 1, taken);                       // this one doesn't start
+    if (!spots[pos]) return Math.max(top, Math.max(0, points) + best(i + 1, taken));
+    for (const {tag, score} of spots[pos]) {
+      if (taken.has(tag) || points <= score) continue;
+      taken.add(tag);
+      top = Math.max(top, points - score + best(i + 1, taken));
+      taken.delete(tag);
+    }
+    return top;
+  };
+  return best(0, new Set());
+}
+
+// Could this trade possibly pass the "helps" test for this team? Each week
+// it can add at most weekGainCap (losing the outgoing players only costs), so
+// if even that can't flip a game or the median, or reach the points-per-week
+// bar, it can't help. Exact: it only skips trades the full solve would reject.
+let tradesScreenedOut = 0;
+function mightHelp(teamId, outgoingPlayerIds, incomingEntriesByWeek) {
+  const outgoingIds = new Set(outgoingPlayerIds.map(Number));
+  let weeks = 0, boostCap = 0, canFlip = false;
+  for (const [week, entries] of incomingEntriesByWeek) {
+    const roster = weeklyRosterForTeam(week, teamId);
+    if (!roster?.roster?.entries || roster.roster.entries.filter(e => outgoingIds.has(Number(e.playerId))).length !== outgoingIds.size) continue;
+    const baseOptimal = baseOptimalFor(week, teamId, roster);
+    if (!baseOptimal) continue;                         // the full solve skips these weeks too
+    weeks++;
+    const cap = weekGainCap(weakSpots(week, teamId), entries);
+    if (cap <= 0) continue;
+    boostCap += cap;
+    const base = Number(baseOptimal.optimalPoints);
+    const game = completed.find(m => m.week === week && (m.homeTeamId === Number(teamId) || m.awayTeamId === Number(teamId)));
+    const opponent = game ? Number(game.homeTeamId === Number(teamId) ? game.awayScore : game.homeScore) : NaN;
+    const median = Number(weeklyMedianByWeek.get(week));
+    for (const target of [opponent, median]) {
+      if (Number.isFinite(target) && base <= target && base + cap >= target) canFlip = true;
+    }
+  }
+  return weeks > 0 && ((canFlip && boostCap > 0) || boostCap >= WIN_WIN_MIN_POINTS_PER_WEEK * weeks);
+}
+
+// What a trade would have done for one team over the weeks played: its
+// optimal lineup with the outgoing players removed and the incoming ones
+// added, against the same week's opponent and median. Weeks where any of the
+// players wasn't rostered are skipped.
+function packageOptimalImpact(teamId, outgoingPlayerIds, incomingEntriesByWeek) {
   let boost = 0;
   let h2hWinsAdded = 0;
   let medianWinsAdded = 0;
   let weeksEvaluated = 0;
+  const outgoingIds = new Set(outgoingPlayerIds.map(Number));
 
   for (const week of completedWeeks) {
     const roster = weeklyRosterForTeam(week, teamId);
     if (!roster?.roster?.entries) continue;
 
-    const outgoing = roster.roster.entries.find(e => Number(e.playerId) === Number(outgoingPlayerId));
-    const incoming = incomingEntryByWeek.get(week);
-    if (!outgoing || !incoming) continue;
+    const incoming = incomingEntriesByWeek.get(week);
+    if (!incoming || roster.roster.entries.filter(e => outgoingIds.has(Number(e.playerId))).length !== outgoingIds.size) continue;
 
-    const baseOptimal = lineupEfficiency(roster);
+    const baseOptimal = baseOptimalFor(week, teamId, roster);
     const swappedEntries = roster.roster.entries
-      .filter(e => Number(e.playerId) !== Number(outgoingPlayerId))
-      .concat([{...incoming, lineupSlotId:20}]);
-    const swappedOptimal = lineupEfficiency({id:Number(teamId),roster:{entries:swappedEntries}});
+      .filter(e => !outgoingIds.has(Number(e.playerId)))
+      .concat(incoming.map(entry => ({...entry, lineupSlotId:20})));
+    // A slot only goes empty (0 points) when nobody left can fill it; a
+    // lineup can't choose to leave one empty to dodge a negative score.
+    const swappedTeam = {id:Number(teamId),roster:{entries:swappedEntries}};
+    const swappedOptimal = lineupEfficiency(swappedTeam) || lineupEfficiency(swappedTeam, null, null, true);
     if (!baseOptimal || !swappedOptimal) continue;
 
     const improvement = Number(swappedOptimal.optimalPoints) - Number(baseOptimal.optimalPoints);
@@ -1055,6 +1160,18 @@ function swapOptimalImpact(teamId, outgoingPlayerId, incomingEntryByWeek) {
     weeksEvaluated
   };
 }
+
+function swapOptimalImpact(teamId, outgoingPlayerId, incomingEntryByWeek) {
+  const incoming = new Map([...incomingEntryByWeek].map(([week, entry]) => [week, [entry]]));
+  return packageOptimalImpact(teamId, [outgoingPlayerId], incoming);
+}
+
+// One-sided 1-for-1 swaps (one team gains, the other doesn't, by at most a
+// win) seed the 2-for-1 and 2-for-2 search below.
+const tradeSeeds = [];
+const helpsTeam = impact =>
+  (impact.winsAdded >= 1 && impact.boost > 0) ||
+  (impact.winsAdded >= 0 && impact.boost >= WIN_WIN_MIN_POINTS_PER_WEEK * impact.weeksEvaluated);
 
 {
   const teamIdsForTrades = [...teams.keys()].map(Number);
@@ -1095,6 +1212,9 @@ function swapOptimalImpact(teamId, outgoingPlayerId, incomingEntryByWeek) {
           }
           if (!incomingForA.size) continue;
   
+          // Neither side could pass the "helps" test: no lineup solve needed.
+          if (!mightHelp(teamAId, [playerA.playerId], new Map([...incomingForA].map(([w, e]) => [w, [e]]))) &&
+              !mightHelp(teamBId, [playerB.playerId], new Map([...incomingForB].map(([w, e]) => [w, [e]])))) { tradesScreenedOut++; continue; }
           const impactA = swapOptimalImpact(teamAId, playerA.playerId, incomingForA);
           const impactB = swapOptimalImpact(teamBId, playerB.playerId, incomingForB);
           if (!impactA.weeksEvaluated || !impactB.weeksEvaluated) continue;
@@ -1106,6 +1226,10 @@ function swapOptimalImpact(teamId, outgoingPlayerId, incomingEntryByWeek) {
             (impact.winsAdded >= 0 && impact.boost >= WIN_WIN_MIN_POINTS_PER_WEEK * impact.weeksEvaluated);
           const meaningfulA = helps(impactA);
           const meaningfulB = helps(impactB);
+          if (meaningfulA !== meaningfulB && Math.min(impactA.winsAdded, impactB.winsAdded) >= -1) {
+            const winner = meaningfulA ? impactA : impactB;
+            tradeSeeds.push({teamAId, teamBId, playerA, playerB, helpsA:meaningfulA, gain:winner.winsAdded + winner.boost / 1000});
+          }
           if (!meaningfulA || !meaningfulB) continue;
   
           trades.push({
@@ -1170,6 +1294,95 @@ function swapOptimalImpact(teamId, outgoingPlayerId, incomingEntryByWeek) {
   console.log(`calculate-stats: win-win trade simulations completed in ${Date.now() - tradesStartedAt} ms`);
 }
 
+// ---- 2-for-1 and 2-for-2 win-win trades --------------------------------------
+// Built from the one-sided seeds above, per pair of teams (A, B):
+//   2-for-2: a swap A gains from plus one B gains from, so each side's gain
+//            makes up for the other swap;
+//   2-for-1: the side that gains adds a sweetener the other side gains from.
+// Kept only if both teams' optimal lineups gain (same test as 1-for-1) and the
+// two sides' rest-of-season values are within 30% of each other.
+const MULTI_SEEDS_PER_SIDE = 6;
+const MULTI_PER_PAIR = 2;
+const multiTradesByTeam = new Map([...teams.keys()].map(teamId => [Number(teamId), []]));
+{
+  const multiStartedAt = Date.now();
+  let packagesEvaluated = 0;
+  const entriesByWeek = (teamId, playerIds) => {
+    const out = new Map();
+    for (const week of completedWeeks) {
+      const entries = playerIds.map(id => weeklyRosterForTeam(week, teamId)?.roster?.entries?.find(e => Number(e.playerId) === Number(id)));
+      if (entries.every(Boolean)) out.set(week, entries);
+    }
+    return out;
+  };
+  const rosValue = players => players.reduce((sum, p) => sum + 200 / (Number(p.rosRank) + 20), 0);
+  const balanced = (give, get) => { const r = rosValue(give) / rosValue(get); return r >= 0.7 && r <= 1 / 0.7; };
+  const side = players => ({
+    PlayerId:players.map(p => p.playerId).join("+"),
+    Player:players.map(p => p.player).join(" + "),
+    Position:players.map(p => p.position).filter(Boolean).join("/") || null,
+    RosRank:players.map(p => p.rosRank).join(" + #"),
+    Players:players.map(p => p.player)
+  });
+  const pairs = new Map();
+  for (const seed of tradeSeeds) {
+    const key = seed.teamAId + "|" + seed.teamBId;
+    if (!pairs.has(key)) pairs.set(key, []);
+    pairs.get(key).push(seed);
+  }
+  for (const seeds of pairs.values()) {
+    const {teamAId, teamBId} = seeds[0];
+    const top = list => list.sort((a, b) => b.gain - a.gain).slice(0, MULTI_SEEDS_PER_SIDE);
+    const helpA = top(seeds.filter(s => s.helpsA)), helpB = top(seeds.filter(s => !s.helpsA));
+    const packages = new Map();
+    const offer = (give, get) => {
+      const ids = p => p.map(x => x.playerId);
+      if (new Set(ids(give)).size !== give.length || new Set(ids(get)).size !== get.length) return;
+      const key = ids(give).sort().join("+") + ">" + ids(get).sort().join("+");
+      if (!packages.has(key) && balanced(give, get)) packages.set(key, {give, get});
+    };
+    for (const a of helpA) for (const b of helpB) {
+      offer([a.playerA, b.playerA], [a.playerB, b.playerB]);   // 2-for-2
+      offer([a.playerA, b.playerA], [a.playerB]);              // A sweetens
+      offer([b.playerA], [b.playerB, a.playerB]);              // B sweetens
+    }
+    const found = [];
+    for (const {give, get} of packages.values()) {
+      const toA = entriesByWeek(teamBId, get.map(p => p.playerId)), toB = entriesByWeek(teamAId, give.map(p => p.playerId));
+      // Both sides have to gain, so both have to clear a weak spot.
+      if (!mightHelp(teamAId, give.map(p => p.playerId), toA) || !mightHelp(teamBId, get.map(p => p.playerId), toB)) { tradesScreenedOut++; continue; }
+      packagesEvaluated++;
+      const impactA = packageOptimalImpact(teamAId, give.map(p => p.playerId), toA);
+      const impactB = packageOptimalImpact(teamBId, get.map(p => p.playerId), toB);
+      if (!impactA.weeksEvaluated || !impactB.weeksEvaluated || !helpsTeam(impactA) || !helpsTeam(impactB)) continue;
+      found.push({give, get, impactA, impactB});
+    }
+    found.sort((x, y) =>
+      Math.min(y.impactA.winsAdded, y.impactB.winsAdded) - Math.min(x.impactA.winsAdded, x.impactB.winsAdded) ||
+      (y.impactA.boost + y.impactB.boost) - (x.impactA.boost + x.impactB.boost));
+    for (const {give, get, impactA, impactB} of found.slice(0, MULTI_PER_PAIR)) {
+      const record = (teamId, otherId, mine, theirs, my, other, perspective) => {
+        const g = side(mine), r = side(theirs);
+        return {
+          kind:`${mine.length}-for-${theirs.length}`,
+          otherTeamId:otherId, otherTeam:teams.get(otherId)?.name || `Team ${otherId}`,
+          givePlayerId:g.PlayerId, givePlayer:g.Player, givePosition:g.Position, giveRosRank:g.RosRank, givePlayers:g.Players,
+          getPlayerId:r.PlayerId, getPlayer:r.Player, getPosition:r.Position, getRosRank:r.RosRank, getPlayers:r.Players,
+          yourBoost:my.boost, yourH2hWinsAdded:my.h2hWinsAdded, yourMedianWinsAdded:my.medianWinsAdded, yourWinsAdded:my.winsAdded,
+          theirBoost:other.boost, theirH2hWinsAdded:other.h2hWinsAdded, theirMedianWinsAdded:other.medianWinsAdded, theirWinsAdded:other.winsAdded,
+          weeksEvaluated:Math.min(my.weeksEvaluated, other.weeksEvaluated),
+          perspective
+        };
+      };
+      multiTradesByTeam.get(teamAId).push(record(teamAId, teamBId, give, get, impactA, impactB, "A"));
+      multiTradesByTeam.get(teamBId).push(record(teamBId, teamAId, get, give, impactB, impactA, "B"));
+    }
+  }
+  console.log(`calculate-stats: ${tradesScreenedOut} trades skipped by the weak-spot screen`);
+  console.log(`calculate-stats: ${tradeSeeds.length} one-sided seeds, ${packagesEvaluated} multi-player packages evaluated in ${Date.now() - multiStartedAt} ms; ` +
+    `${[...multiTradesByTeam.values()].flat().filter(t => t.perspective === "A").length} win-win`);
+}
+
 
 for (const teamId of teams.keys()) {
   const unique = new Map();
@@ -1177,12 +1390,16 @@ for (const teamId of teams.keys()) {
     const key = [trade.otherTeamId, trade.givePlayerId, trade.getPlayerId].join("|");
     if (!unique.has(key)) unique.set(key, trade);
   }
+  // Up to three 1-for-1 trades, plus the best multi-player one.
+  const multi = (multiTradesByTeam.get(Number(teamId)) || []).sort((a,b) =>
+    Math.min(b.yourWinsAdded,b.theirWinsAdded) - Math.min(a.yourWinsAdded,a.theirWinsAdded) ||
+    (b.yourBoost+b.theirBoost) - (a.yourBoost+a.theirBoost)).slice(0,1);
   winWinTradesByTeam.set(Number(teamId), [...unique.values()]
     .sort((a,b) =>
       Math.max(b.yourWinsAdded,b.theirWinsAdded) - Math.max(a.yourWinsAdded,a.theirWinsAdded) ||
       (b.yourBoost+b.theirBoost) - (a.yourBoost+a.theirBoost)
     )
-    .slice(0,3));
+    .slice(0,3).concat(multi));
 }
 
 // Waiver targets: current free agents who would have added wins. Compares the
