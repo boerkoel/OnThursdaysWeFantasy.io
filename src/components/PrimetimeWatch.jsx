@@ -3,6 +3,7 @@ import { money, pct } from "../lib/data.js";
 import { HALF_MEAN_SD, normalCdf, normalQuantile, playerOutlook } from "../../scripts/lib/simulation.js";
 import { ShareButton } from "./LiveBits.jsx";
 import { hasObituary } from "./DeathWatch.jsx";
+import { TEAM_NAMES, useSurvivorFeed } from "./SurvivorTab.jsx";
 
 // TNF / SNF / MNF What to Watch: every storyline the night game(s) can still
 // swing, as one shareable panel. Shown while a night game (7 PM ET or later)
@@ -10,6 +11,8 @@ import { hasObituary } from "./DeathWatch.jsx";
 // - Head-to-head: TNF ranks matchups by how much is up for grabs; SNF/MNF
 //   list every undecided matchup with someone playing tonight.
 // - Median, ticket race and Death Watch: undecided teams with players tonight.
+// - Survivor pool: how many entries are left, who rode tonight's teams (picks
+//   show only once the game kicks off) and who has the most entries left.
 // Big night / quiet night odds use the same normal approximation as the
 // server's swing stories: each side's players add about 0.8 SD of their
 // points in a big game and lose it in a quiet one.
@@ -115,9 +118,68 @@ export function primetimeStories({ scores, nflGames, guillotine }) {
   return { label, games, slot, matchups, median, raffle, death, leader, raffleLocked, doomed };
 }
 
+// Survivor pool lines for tonight. Picks come from the survivor feed, which
+// only carries picks that locked at kickoff, so before kickoff the panel
+// just says they're coming.
+const nflAbbrev = a => ({ WSH: "WAS", JAC: "JAX", LA: "LAR" }[String(a || "").toUpperCase()] || String(a || "").toUpperCase());
+export function survivorStory(feed, slot, week) {
+  const c = feed?.contest;
+  if (!c || !c.totalEntries) return null;
+  const entries = feed.entries || [];
+  const items = [];
+  const total = Number(c.totalEntries);
+  items.push({ head: `${c.alive} of ${total} entries still standing (${pct(c.alive / total * 100)})`, detail: [] });
+
+  // This week's most popular picks so far (locked ones), and how they're faring.
+  const wk = (feed.weeks || []).find(w => Number(w.week) === week && w.locked);
+  if (wk?.picks?.length) {
+    const mark = r => r === "won" ? "✓" : r === "lost" ? "✗" : "⏳";
+    const top = [...wk.picks].sort((a, b) => b.count - a.count).slice(0, 3);
+    const locked = wk.picks.reduce((sum, p) => sum + p.count, 0);
+    const decided = wk.picks.filter(p => p.result !== "pending");
+    const won = decided.filter(p => p.result === "won").reduce((sum, p) => sum + p.count, 0);
+    const lost = decided.filter(p => p.result === "lost").reduce((sum, p) => sum + p.count, 0);
+    items.push({
+      head: `Week ${week} top picks: ${top.map(p => `${p.team} ${p.count} ${mark(p.result)}`).join(" · ")}`,
+      detail: [`${locked} picks locked so far${won + lost ? `; ${won} survived, ${lost} knocked out (${pct(won / (won + lost) * 100)} survival)` : ""}${wk.hidden ? ` · ${wk.hidden} still hidden` : ""}.`]
+    });
+  }
+
+  for (const g of slot) {
+    const teams = (g.teams || []).map(t => nflAbbrev(t.abbrev));
+    if (teams.length < 2) continue;
+    const name = t => TEAM_NAMES[t] || t;
+    if (g.state === "pre") {
+      items.push({ head: `${teams.join(" vs ")}: picks revealed at kickoff`, detail: ["Who rode which side stays hidden until the game starts."] });
+      continue;
+    }
+    const sides = teams.map(t => {
+      const on = entries.filter(e => e.picks?.[week]?.team === t);
+      const users = new Map();
+      for (const e of on) users.set(e.user, (users.get(e.user) || 0) + 1);
+      return { t, on, who: [...users].map(([u, n]) => n > 1 ? `${u} ×${n}` : u).join(", "), result: on[0]?.picks?.[week]?.result };
+    });
+    const riding = sides.reduce((sum, x) => sum + x.on.length, 0);
+    if (!riding) { items.push({ head: `${teams.join(" vs ")}: nobody's survival rides on this one`, detail: [] }); continue; }
+    items.push({
+      head: `${riding} ${riding === 1 ? "entry rides" : "entries ride"} on ${g.name || teams.join(" vs ")}`,
+      detail: sides.filter(x => x.on.length).map(x => `${name(x.t)} (${x.on.length}${x.result === "won" ? " ✓ survived" : x.result === "lost" ? " ✗ out" : ""}): ${x.who}`)
+    });
+  }
+
+  const byUser = new Map();
+  for (const e of entries) if (e.alive) byUser.set(e.user, (byUser.get(e.user) || 0) + 1);
+  const ranked = [...byUser].sort((a, b) => b[1] - a[1]);
+  if (ranked.length) {
+    const top = ranked.filter(([, n]) => n === ranked[0][1]).map(([u]) => u);
+    items.push({ head: `Most entries left: ${top.join(", ")} (${ranked[0][1]})`, detail: [] });
+  }
+  return items;
+}
+
 // Plain-text lines for the panel and the share card.
 function lines(st) {
-  const out = { h2h: [], median: [], raffle: [], death: [] };
+  const out = { h2h: [], median: [], raffle: [], death: [], survivor: st.survivor || [] };
   for (const m of st.matchups) {
     const head = `${m.fav.team} ${pct(m.fav.winProbability)} vs ${m.dog.team} (${money(m.fav.score)}–${money(m.dog.score)})`;
     const detail = m.needs ? [m.needs] : m.sides.map(({ team, s, odds }) =>
@@ -147,13 +209,19 @@ function lines(st) {
 // RIP lives on the Death Watch tab: the hash switches tabs, then open it.
 const openRip = () => setTimeout(() => { const d = document.getElementById("rip"); if (d) { d.open = true; d.scrollIntoView({ behavior: "smooth" }); } }, 150);
 
-const SECTIONS = [["h2h", "⚔️ Head to head"], ["median", "🎯 Median races"], ["raffle", "🎟️ Ticket race"], ["death", "🪓 Death Watch"]];
+const SECTIONS = [["h2h", "⚔️ Head to head"], ["median", "🎯 Median races"], ["raffle", "🎟️ Ticket race"], ["death", "🪓 Death Watch"], ["survivor", "🛡️ Survivor pool"]];
 
 export default function PrimetimeWatch({ scores, nflGames, guillotine, logos, week }) {
   // Starts collapsed to a one-line summary; the share image is always full.
   const [open, setOpen] = useState(false);
-  const st = primetimeStories({ scores, nflGames, guillotine });
-  if (!st) return null;
+  const { feed } = useSurvivorFeed();
+  const base = primetimeStories({ scores, nflGames, guillotine });
+  const slot = base?.slot || nightSlot(nflGames || []);
+  const survivor = slot.length ? survivorStory(feed, slot, Number(week)) : null;
+  if (!base && !survivor) return null;
+  const st = base || { label: SLOT_NAMES[etDay(slot[0].kickoff)] || "Primetime", games: slot.map(g => g.name).join(" & "), slot,
+    matchups: [], median: [], raffle: [], death: [] };
+  st.survivor = survivor;
   const text = lines(st);
   const when = st.slot[0].state === "in" ? "live now" : new Date(st.slot[0].kickoff).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });
   const share = () => ({
@@ -175,7 +243,8 @@ export default function PrimetimeWatch({ scores, nflGames, guillotine, logos, we
           text.h2h.length && `${text.h2h.length} ${text.h2h.length === 1 ? "matchup" : "matchups"}`,
           text.median.length && `${text.median.length} median ${text.median.length === 1 ? "race" : "races"}`,
           text.raffle.length && (st.raffleLocked ? "ticket clinched" : "ticket race"),
-          text.death.length && (st.doomed ? "Death Watch decided" : "Death Watch")
+          text.death.length && (st.doomed ? "Death Watch decided" : "Death Watch"),
+          text.survivor.length && "survivor pool"
         ].filter(Boolean).join(" · ")}</span>
         <button type="button" className="section-toggle" aria-expanded={open} onClick={() => setOpen(v => !v)}>{open ? "Hide ▴" : "Show ▾"}</button>
       </div>

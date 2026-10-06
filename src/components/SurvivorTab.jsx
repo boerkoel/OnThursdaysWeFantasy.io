@@ -13,7 +13,7 @@ const POLL_MS = 2 * 60 * 1000;
 // The league's buy-in, used when Splash doesn't carry the fee (collected off-platform).
 const ENTRY_FEE = 5;
 const dollars = n => `${n < 0 ? "−" : ""}$${Math.abs(n).toFixed(Math.abs(n) % 1 ? 2 : 0)}`;
-const TEAM_NAMES = {
+export const TEAM_NAMES = {
   ARI: "Cardinals", ATL: "Falcons", BAL: "Ravens", BUF: "Bills", CAR: "Panthers", CHI: "Bears", CIN: "Bengals", CLE: "Browns",
   DAL: "Cowboys", DEN: "Broncos", DET: "Lions", GB: "Packers", HOU: "Texans", IND: "Colts", JAX: "Jaguars", KC: "Chiefs",
   LAC: "Chargers", LAR: "Rams", LV: "Raiders", MIA: "Dolphins", MIN: "Vikings", NE: "Patriots", NO: "Saints", NYG: "Giants",
@@ -22,7 +22,7 @@ const TEAM_NAMES = {
 // ESPN's logo CDN (WAS is "wsh" there).
 const logo = team => `https://a.espncdn.com/i/teamlogos/nfl/500/${team === "WAS" ? "wsh" : String(team).toLowerCase()}.png`;
 
-function useSurvivorFeed() {
+export function useSurvivorFeed() {
   const [feed, setFeed] = useState(() => (typeof window !== "undefined" && window.__SURVIVOR_MOCK__) || null);
   const [failed, setFailed] = useState(false);
   useEffect(() => {
