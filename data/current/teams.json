@@ -76,8 +76,8 @@
           "points": null,
           "draftPick": 82,
           "round": 7,
-          "rosRank": 24,
-          "valueGap": 58
+          "rosRank": 25,
+          "valueGap": 57
         },
         "worstDraftValue": {
           "playerId": 3925357,
@@ -85,8 +85,8 @@
           "points": null,
           "draftPick": 130,
           "round": 11,
-          "rosRank": 241,
-          "valueGap": -111
+          "rosRank": 246,
+          "valueGap": -116
         },
         "boomMachine": {
           "playerId": 4689114,
@@ -104,8 +104,8 @@
           "player": "Caleb Douglas",
           "round": 15,
           "draftPick": 178,
-          "rosRank": 140,
-          "valueGap": 38,
+          "rosRank": 143,
+          "valueGap": 35,
           "points": null
         },
         "boomBust": {
@@ -293,12 +293,38 @@
         },
         "winWinTrades": [
           {
+            "otherTeamId": 3,
+            "otherTeam": "Kyle Tucker",
+            "givePlayerId": 4432620,
+            "givePlayer": "Parker Washington",
+            "givePosition": "WR",
+            "giveRosRank": 25,
+            "getPlayerId": 4685382,
+            "getPlayer": "Omarion Hampton",
+            "getPosition": "RB",
+            "getRosRank": 39,
+            "yourBoost": 7.3,
+            "yourH2hWinsAdded": 0,
+            "yourMedianWinsAdded": 1,
+            "yourWinsAdded": 1,
+            "theirBoost": 7.4,
+            "theirH2hWinsAdded": 1,
+            "theirMedianWinsAdded": 1,
+            "theirWinsAdded": 2,
+            "weeksEvaluated": 4,
+            "basis": {
+              "window": "season",
+              "lineup": "projected"
+            },
+            "perspective": "A"
+          },
+          {
             "otherTeamId": 2,
             "otherTeam": "TDsMaGee",
             "givePlayerId": 4242355,
             "givePlayer": "Jake Ferguson",
             "givePosition": "TE",
-            "giveRosRank": 130,
+            "giveRosRank": 132,
             "getPlayerId": 4568490,
             "getPlayer": "RJ Harvey",
             "getPosition": "RB",
@@ -312,6 +338,10 @@
             "theirMedianWinsAdded": 1,
             "theirWinsAdded": 1,
             "weeksEvaluated": 4,
+            "basis": {
+              "window": "season",
+              "lineup": "optimal"
+            },
             "perspective": "A"
           },
           {
@@ -321,7 +351,7 @@
             "givePlayerId": "4432620+4361307",
             "givePlayer": "Parker Washington + Trey McBride",
             "givePosition": "WR/TE",
-            "giveRosRank": "24 + #30",
+            "giveRosRank": "25 + #32",
             "givePlayers": [
               "Parker Washington",
               "Trey McBride"
@@ -329,7 +359,7 @@
             "getPlayerId": "4362238+4259545",
             "getPlayer": "Chase Brown + D'Andre Swift",
             "getPosition": "RB/RB",
-            "getRosRank": "13 + #29",
+            "getRosRank": "13 + #30",
             "getPlayers": [
               "Chase Brown",
               "D'Andre Swift"
@@ -343,6 +373,10 @@
             "theirMedianWinsAdded": 1,
             "theirWinsAdded": 2,
             "weeksEvaluated": 4,
+            "basis": {
+              "window": "season",
+              "lineup": "optimal"
+            },
             "perspective": "A"
           }
         ],
@@ -540,8 +574,8 @@
           "points": null,
           "draftPick": 108,
           "round": 9,
-          "rosRank": 83,
-          "valueGap": 25
+          "rosRank": 88,
+          "valueGap": 20
         },
         "worstDraftValue": {
           "playerId": 4574716,
@@ -549,8 +583,8 @@
           "points": null,
           "draftPick": 133,
           "round": 12,
-          "rosRank": 232,
-          "valueGap": -99
+          "rosRank": 234,
+          "valueGap": -101
         },
         "boomMachine": {
           "playerId": 4685472,
@@ -568,8 +602,8 @@
           "player": "Wan'Dale Robinson",
           "round": 9,
           "draftPick": 108,
-          "rosRank": 83,
-          "valueGap": 25,
+          "rosRank": 88,
+          "valueGap": 20,
           "points": null
         },
         "boomBust": {
@@ -762,7 +796,7 @@
             "getPlayerId": 4242355,
             "getPlayer": "Jake Ferguson",
             "getPosition": "TE",
-            "getRosRank": 130,
+            "getRosRank": 132,
             "yourBoost": 13.4,
             "yourH2hWinsAdded": 0,
             "yourMedianWinsAdded": 1,
@@ -772,7 +806,46 @@
             "theirMedianWinsAdded": 1,
             "theirWinsAdded": 1,
             "weeksEvaluated": 4,
+            "basis": {
+              "window": "season",
+              "lineup": "optimal"
+            },
             "perspective": "B"
+          },
+          {
+            "kind": "2-for-2",
+            "otherTeamId": 6,
+            "otherTeam": "Claremont In Yo Stace!",
+            "givePlayerId": "4569587+4430737",
+            "givePlayer": "Wan'Dale Robinson + Kyren Williams",
+            "givePosition": "WR/RB",
+            "giveRosRank": "88 + #33",
+            "givePlayers": [
+              "Wan'Dale Robinson",
+              "Kyren Williams"
+            ],
+            "getPlayerId": "4430027+4426502",
+            "getPlayer": "Sam LaPorta + Drake London",
+            "getPosition": "TE/WR",
+            "getRosRank": "85 + #17",
+            "getPlayers": [
+              "Sam LaPorta",
+              "Drake London"
+            ],
+            "yourBoost": 2.9,
+            "yourH2hWinsAdded": 1,
+            "yourMedianWinsAdded": 1,
+            "yourWinsAdded": 2,
+            "theirBoost": 14.2,
+            "theirH2hWinsAdded": 1,
+            "theirMedianWinsAdded": 1,
+            "theirWinsAdded": 2,
+            "weeksEvaluated": 4,
+            "basis": {
+              "window": "season",
+              "lineup": "projected"
+            },
+            "perspective": "A"
           }
         ],
         "longTermRegrets": [
@@ -940,8 +1013,8 @@
           "points": null,
           "draftPick": 77,
           "round": 7,
-          "rosRank": 176,
-          "valueGap": -99
+          "rosRank": 194,
+          "valueGap": -117
         },
         "boomMachine": {
           "playerId": 4430878,
@@ -1205,12 +1278,38 @@
         },
         "winWinTrades": [
           {
+            "otherTeamId": 1,
+            "otherTeam": "Ramosverse",
+            "givePlayerId": 4685382,
+            "givePlayer": "Omarion Hampton",
+            "givePosition": "RB",
+            "giveRosRank": 39,
+            "getPlayerId": 4432620,
+            "getPlayer": "Parker Washington",
+            "getPosition": "WR",
+            "getRosRank": 25,
+            "yourBoost": 7.4,
+            "yourH2hWinsAdded": 1,
+            "yourMedianWinsAdded": 1,
+            "yourWinsAdded": 2,
+            "theirBoost": 7.3,
+            "theirH2hWinsAdded": 0,
+            "theirMedianWinsAdded": 1,
+            "theirWinsAdded": 1,
+            "weeksEvaluated": 4,
+            "basis": {
+              "window": "season",
+              "lineup": "projected"
+            },
+            "perspective": "B"
+          },
+          {
             "otherTeamId": 4,
             "otherTeam": "Kirbo Crushers",
             "givePlayerId": 4685382,
             "givePlayer": "Omarion Hampton",
             "givePosition": "RB",
-            "giveRosRank": 38,
+            "giveRosRank": 39,
             "getPlayerId": 4612826,
             "getPlayer": "Ladd McConkey",
             "getPosition": "WR",
@@ -1224,6 +1323,10 @@
             "theirMedianWinsAdded": 0,
             "theirWinsAdded": 1,
             "weeksEvaluated": 4,
+            "basis": {
+              "window": "season",
+              "lineup": "optimal"
+            },
             "perspective": "A"
           },
           {
@@ -1236,7 +1339,7 @@
             "getPlayerId": 3915511,
             "getPlayer": "Joe Burrow",
             "getPosition": "QB",
-            "getRosRank": 49,
+            "getRosRank": 54,
             "yourBoost": 1.92,
             "yourH2hWinsAdded": 1,
             "yourMedianWinsAdded": 0,
@@ -1246,37 +1349,45 @@
             "theirMedianWinsAdded": 1,
             "theirWinsAdded": 1,
             "weeksEvaluated": 4,
+            "basis": {
+              "window": "season",
+              "lineup": "optimal"
+            },
             "perspective": "A"
           },
           {
             "kind": "2-for-2",
             "otherTeamId": 12,
             "otherTeam": "Beautiful Dark Twisted Fantasy",
-            "givePlayerId": "4685382+4882093",
-            "givePlayer": "Omarion Hampton + Bhayshul Tuten",
-            "givePosition": "RB/RB",
-            "giveRosRank": "38 + #50",
+            "givePlayerId": "4432710+4428331",
+            "givePlayer": "TreVeyon Henderson + Rashee Rice",
+            "givePosition": "RB/WR",
+            "giveRosRank": "71 + #41",
             "givePlayers": [
-              "Omarion Hampton",
-              "Bhayshul Tuten"
+              "TreVeyon Henderson",
+              "Rashee Rice"
             ],
-            "getPlayerId": "4595348+3915511",
-            "getPlayer": "Malik Nabers + Joe Burrow",
-            "getPosition": "WR/QB",
-            "getRosRank": "25 + #49",
+            "getPlayerId": "3915511+3929630",
+            "getPlayer": "Joe Burrow + Saquon Barkley",
+            "getPosition": "QB/RB",
+            "getRosRank": "54 + #23",
             "getPlayers": [
-              "Malik Nabers",
-              "Joe Burrow"
+              "Joe Burrow",
+              "Saquon Barkley"
             ],
-            "yourBoost": 9.32,
+            "yourBoost": 11.22,
             "yourH2hWinsAdded": 1,
             "yourMedianWinsAdded": 0,
             "yourWinsAdded": 1,
-            "theirBoost": 6.6,
+            "theirBoost": 12.8,
             "theirH2hWinsAdded": 1,
-            "theirMedianWinsAdded": 0,
-            "theirWinsAdded": 1,
+            "theirMedianWinsAdded": 1,
+            "theirWinsAdded": 2,
             "weeksEvaluated": 4,
+            "basis": {
+              "window": "season",
+              "lineup": "optimal"
+            },
             "perspective": "A"
           }
         ],
@@ -1459,8 +1570,8 @@
           "points": null,
           "draftPick": 83,
           "round": 7,
-          "rosRank": 145,
-          "valueGap": -62
+          "rosRank": 146,
+          "valueGap": -63
         },
         "boomMachine": {
           "playerId": 4241389,
@@ -1606,15 +1717,15 @@
               "needsMatch": []
             },
             {
-              "playerId": 4036133,
-              "player": "T.J. Hockenson",
-              "position": "TE",
-              "startRate": 25,
-              "rosteredWeeks": 4,
-              "startedWeeks": 1,
-              "boost": 25.2,
-              "teamId": 1,
-              "team": "Ramosverse",
+              "playerId": 4241474,
+              "player": "Brian Robinson Jr.",
+              "position": "RB",
+              "startRate": 0,
+              "rosteredWeeks": 1,
+              "startedWeeks": 0,
+              "boost": 19.4,
+              "teamId": 9,
+              "team": "The Mahomies",
               "h2hWinsAdded": 0,
               "medianWinsAdded": 0,
               "winsAdded": 0,
@@ -1623,23 +1734,19 @@
                 "player": "Khalil Shakir",
                 "position": "WR",
                 "startRate": 25,
-                "boost": 5.6,
+                "boost": 7.7,
                 "h2hWinsAdded": 0,
                 "medianWinsAdded": 0,
                 "winsAdded": 0
               },
               "otherNeeds": [
                 {
-                  "position": "RB",
-                  "percent": -32.56
-                },
-                {
-                  "position": "QB",
-                  "percent": -30.29
+                  "position": "DST",
+                  "percent": -44.68
                 },
                 {
                   "position": "WR",
-                  "percent": -21.86
+                  "percent": -25.62
                 }
               ],
               "needsMatch": []
@@ -1657,7 +1764,7 @@
             "getPlayerId": 4685382,
             "getPlayer": "Omarion Hampton",
             "getPosition": "RB",
-            "getRosRank": 38,
+            "getRosRank": 39,
             "yourBoost": 1.8,
             "yourH2hWinsAdded": 1,
             "yourMedianWinsAdded": 0,
@@ -1667,7 +1774,98 @@
             "theirMedianWinsAdded": 1,
             "theirWinsAdded": 2,
             "weeksEvaluated": 4,
+            "basis": {
+              "window": "season",
+              "lineup": "optimal"
+            },
             "perspective": "B"
+          },
+          {
+            "otherTeamId": 12,
+            "otherTeam": "Beautiful Dark Twisted Fantasy",
+            "givePlayerId": 4612826,
+            "givePlayer": "Ladd McConkey",
+            "givePosition": "WR",
+            "giveRosRank": 47,
+            "getPlayerId": 3915511,
+            "getPlayer": "Joe Burrow",
+            "getPosition": "QB",
+            "getRosRank": 54,
+            "yourBoost": 7.1,
+            "yourH2hWinsAdded": 1,
+            "yourMedianWinsAdded": 0,
+            "yourWinsAdded": 1,
+            "theirBoost": 27.44,
+            "theirH2hWinsAdded": 0,
+            "theirMedianWinsAdded": 0,
+            "theirWinsAdded": 0,
+            "weeksEvaluated": 4,
+            "basis": {
+              "window": "season",
+              "lineup": "projected"
+            },
+            "perspective": "A"
+          },
+          {
+            "otherTeamId": 12,
+            "otherTeam": "Beautiful Dark Twisted Fantasy",
+            "givePlayerId": 4688813,
+            "givePlayer": "Josh Downs",
+            "givePosition": "WR",
+            "giveRosRank": 63,
+            "getPlayerId": 3915511,
+            "getPlayer": "Joe Burrow",
+            "getPosition": "QB",
+            "getRosRank": 54,
+            "yourBoost": 7.5,
+            "yourH2hWinsAdded": 1,
+            "yourMedianWinsAdded": 0,
+            "yourWinsAdded": 1,
+            "theirBoost": 22.64,
+            "theirH2hWinsAdded": 0,
+            "theirMedianWinsAdded": 0,
+            "theirWinsAdded": 0,
+            "weeksEvaluated": 4,
+            "basis": {
+              "window": "season",
+              "lineup": "projected"
+            },
+            "perspective": "A"
+          },
+          {
+            "kind": "2-for-2",
+            "otherTeamId": 7,
+            "otherTeam": "Ruffing the Passer",
+            "givePlayerId": "4239996+5083076",
+            "givePlayer": "Travis Etienne Jr. + Harold Fannin Jr.",
+            "givePosition": "RB/TE",
+            "giveRosRank": "81 + #99",
+            "givePlayers": [
+              "Travis Etienne Jr.",
+              "Harold Fannin Jr."
+            ],
+            "getPlayerId": "3040151+4038941",
+            "getPlayer": "George Kittle + Justin Herbert",
+            "getPosition": "TE/QB",
+            "getRosRank": "87 + #116",
+            "getPlayers": [
+              "George Kittle",
+              "Justin Herbert"
+            ],
+            "yourBoost": 7,
+            "yourH2hWinsAdded": 1,
+            "yourMedianWinsAdded": 1,
+            "yourWinsAdded": 2,
+            "theirBoost": 1.54,
+            "theirH2hWinsAdded": 1,
+            "theirMedianWinsAdded": 1,
+            "theirWinsAdded": 2,
+            "weeksEvaluated": 4,
+            "basis": {
+              "window": "season",
+              "lineup": "projected"
+            },
+            "perspective": "A"
           }
         ],
         "longTermRegrets": [
@@ -1988,45 +2186,6 @@
           "partners": [],
           "targets": [
             {
-              "playerId": 4036133,
-              "player": "T.J. Hockenson",
-              "position": "TE",
-              "startRate": 25,
-              "rosteredWeeks": 4,
-              "startedWeeks": 1,
-              "boost": 28.8,
-              "teamId": 1,
-              "team": "Ramosverse",
-              "h2hWinsAdded": 0,
-              "medianWinsAdded": 1,
-              "winsAdded": 1,
-              "mutualTrade": {
-                "playerId": 3916148,
-                "player": "Tony Pollard",
-                "position": "RB",
-                "startRate": 25,
-                "boost": 21.9,
-                "h2hWinsAdded": 0,
-                "medianWinsAdded": 1,
-                "winsAdded": 1
-              },
-              "otherNeeds": [
-                {
-                  "position": "RB",
-                  "percent": -32.56
-                },
-                {
-                  "position": "QB",
-                  "percent": -30.29
-                },
-                {
-                  "position": "WR",
-                  "percent": -21.86
-                }
-              ],
-              "needsMatch": []
-            },
-            {
               "playerId": 4361741,
               "player": "Brock Purdy",
               "position": "QB",
@@ -2091,6 +2250,37 @@
                 }
               ],
               "needsMatch": []
+            },
+            {
+              "playerId": 4430539,
+              "player": "Brenton Strange",
+              "position": "TE",
+              "startRate": 0,
+              "rosteredWeeks": 4,
+              "startedWeeks": 0,
+              "boost": 17.5,
+              "teamId": 6,
+              "team": "Claremont In Yo Stace!",
+              "h2hWinsAdded": 0,
+              "medianWinsAdded": 1,
+              "winsAdded": 1,
+              "mutualTrade": {
+                "playerId": 4695883,
+                "player": "Jalen Coker",
+                "position": "WR",
+                "startRate": 50,
+                "boost": 29,
+                "h2hWinsAdded": 0,
+                "medianWinsAdded": 1,
+                "winsAdded": 1
+              },
+              "otherNeeds": [
+                {
+                  "position": "RB",
+                  "percent": -18.59
+                }
+              ],
+              "needsMatch": []
             }
           ]
         },
@@ -2102,7 +2292,7 @@
             "givePlayerId": "4362238+4259545",
             "givePlayer": "Chase Brown + D'Andre Swift",
             "givePosition": "RB/RB",
-            "giveRosRank": "13 + #29",
+            "giveRosRank": "13 + #30",
             "givePlayers": [
               "Chase Brown",
               "D'Andre Swift"
@@ -2110,7 +2300,7 @@
             "getPlayerId": "4432620+4361307",
             "getPlayer": "Parker Washington + Trey McBride",
             "getPosition": "WR/TE",
-            "getRosRank": "24 + #30",
+            "getRosRank": "25 + #32",
             "getPlayers": [
               "Parker Washington",
               "Trey McBride"
@@ -2124,6 +2314,10 @@
             "theirMedianWinsAdded": 1,
             "theirWinsAdded": 1,
             "weeksEvaluated": 4,
+            "basis": {
+              "window": "season",
+              "lineup": "optimal"
+            },
             "perspective": "B"
           }
         ],
@@ -2297,8 +2491,8 @@
           "points": null,
           "draftPick": 165,
           "round": 14,
-          "rosRank": 128,
-          "valueGap": 37
+          "rosRank": 127,
+          "valueGap": 38
         },
         "worstDraftValue": {
           "playerId": 2971573,
@@ -2325,8 +2519,8 @@
           "player": "Brenton Strange",
           "round": 14,
           "draftPick": 165,
-          "rosRank": 128,
-          "valueGap": 37,
+          "rosRank": 127,
+          "valueGap": 38,
           "points": null
         },
         "boomBust": {
@@ -2411,47 +2605,6 @@
           "partners": [],
           "targets": [
             {
-              "playerId": 4036133,
-              "player": "T.J. Hockenson",
-              "position": "TE",
-              "startRate": 25,
-              "rosteredWeeks": 4,
-              "startedWeeks": 1,
-              "boost": 17,
-              "teamId": 1,
-              "team": "Ramosverse",
-              "h2hWinsAdded": 0,
-              "medianWinsAdded": 0,
-              "winsAdded": 0,
-              "mutualTrade": {
-                "playerId": 4428718,
-                "player": "Tre Tucker",
-                "position": "WR",
-                "startRate": 0,
-                "boost": 15.7,
-                "h2hWinsAdded": 0,
-                "medianWinsAdded": 0,
-                "winsAdded": 0
-              },
-              "otherNeeds": [
-                {
-                  "position": "RB",
-                  "percent": -32.56
-                },
-                {
-                  "position": "QB",
-                  "percent": -30.29
-                },
-                {
-                  "position": "WR",
-                  "percent": -21.86
-                }
-              ],
-              "needsMatch": [
-                "QB"
-              ]
-            },
-            {
               "playerId": 4242355,
               "player": "Jake Ferguson",
               "position": "TE",
@@ -2528,10 +2681,87 @@
               "needsMatch": [
                 "QB"
               ]
+            },
+            {
+              "playerId": 4426338,
+              "player": "Bo Nix",
+              "position": "QB",
+              "startRate": 25,
+              "rosteredWeeks": 4,
+              "startedWeeks": 1,
+              "boost": 6.68,
+              "teamId": 1,
+              "team": "Ramosverse",
+              "h2hWinsAdded": 0,
+              "medianWinsAdded": 0,
+              "winsAdded": 0,
+              "mutualTrade": {
+                "playerId": 4430539,
+                "player": "Brenton Strange",
+                "position": "TE",
+                "startRate": 0,
+                "boost": 8.9,
+                "h2hWinsAdded": 0,
+                "medianWinsAdded": 1,
+                "winsAdded": 1
+              },
+              "otherNeeds": [
+                {
+                  "position": "RB",
+                  "percent": -32.56
+                },
+                {
+                  "position": "QB",
+                  "percent": -30.29
+                },
+                {
+                  "position": "WR",
+                  "percent": -21.86
+                }
+              ],
+              "needsMatch": [
+                "QB"
+              ]
             }
           ]
         },
-        "winWinTrades": [],
+        "winWinTrades": [
+          {
+            "kind": "2-for-2",
+            "otherTeamId": 7,
+            "otherTeam": "Ruffing the Passer",
+            "givePlayerId": "4430027+4430539",
+            "givePlayer": "Sam LaPorta + Brenton Strange",
+            "givePosition": "TE/TE",
+            "giveRosRank": "85 + #127",
+            "givePlayers": [
+              "Sam LaPorta",
+              "Brenton Strange"
+            ],
+            "getPlayerId": "4871023+4038941",
+            "getPlayer": "Carnell Tate + Justin Herbert",
+            "getPosition": "WR/QB",
+            "getRosRank": "69 + #116",
+            "getPlayers": [
+              "Carnell Tate",
+              "Justin Herbert"
+            ],
+            "yourBoost": 6.5,
+            "yourH2hWinsAdded": 1,
+            "yourMedianWinsAdded": 1,
+            "yourWinsAdded": 2,
+            "theirBoost": 21.64,
+            "theirH2hWinsAdded": 0,
+            "theirMedianWinsAdded": 2,
+            "theirWinsAdded": 2,
+            "weeksEvaluated": 4,
+            "basis": {
+              "window": "season",
+              "lineup": "projected"
+            },
+            "perspective": "A"
+          }
+        ],
         "longTermRegrets": [],
         "waiverTargets": [],
         "trend": {
@@ -2642,8 +2872,8 @@
           "points": null,
           "draftPick": 30,
           "round": 3,
-          "rosRank": 147,
-          "valueGap": -117
+          "rosRank": 148,
+          "valueGap": -118
         },
         "boomMachine": {
           "playerId": 4374302,
@@ -2859,7 +3089,43 @@
             }
           ]
         },
-        "winWinTrades": [],
+        "winWinTrades": [
+          {
+            "kind": "2-for-2",
+            "otherTeamId": 6,
+            "otherTeam": "Claremont In Yo Stace!",
+            "givePlayerId": "4871023+4038941",
+            "givePlayer": "Carnell Tate + Justin Herbert",
+            "givePosition": "WR/QB",
+            "giveRosRank": "69 + #116",
+            "givePlayers": [
+              "Carnell Tate",
+              "Justin Herbert"
+            ],
+            "getPlayerId": "4430027+4430539",
+            "getPlayer": "Sam LaPorta + Brenton Strange",
+            "getPosition": "TE/TE",
+            "getRosRank": "85 + #127",
+            "getPlayers": [
+              "Sam LaPorta",
+              "Brenton Strange"
+            ],
+            "yourBoost": 21.64,
+            "yourH2hWinsAdded": 0,
+            "yourMedianWinsAdded": 2,
+            "yourWinsAdded": 2,
+            "theirBoost": 6.5,
+            "theirH2hWinsAdded": 1,
+            "theirMedianWinsAdded": 1,
+            "theirWinsAdded": 2,
+            "weeksEvaluated": 4,
+            "basis": {
+              "window": "season",
+              "lineup": "projected"
+            },
+            "perspective": "B"
+          }
+        ],
         "longTermRegrets": [
           {
             "playerId": 15818,
@@ -2976,8 +3242,8 @@
           "points": null,
           "draftPick": 160,
           "round": 14,
-          "rosRank": 108,
-          "valueGap": 52
+          "rosRank": 109,
+          "valueGap": 51
         },
         "worstDraftValue": {
           "playerId": 4362081,
@@ -2985,8 +3251,8 @@
           "points": null,
           "draftPick": 129,
           "round": 11,
-          "rosRank": 224,
-          "valueGap": -95
+          "rosRank": 222,
+          "valueGap": -93
         },
         "boomMachine": {
           "playerId": 4890973,
@@ -3004,8 +3270,8 @@
           "player": "Juwan Johnson",
           "round": 14,
           "draftPick": 160,
-          "rosRank": 108,
-          "valueGap": 52,
+          "rosRank": 109,
+          "valueGap": 51,
           "points": null
         },
         "boomBust": {
@@ -3250,7 +3516,43 @@
             }
           ]
         },
-        "winWinTrades": [],
+        "winWinTrades": [
+          {
+            "kind": "2-for-2",
+            "otherTeamId": 2,
+            "otherTeam": "TDsMaGee",
+            "givePlayerId": "4431459+3054850",
+            "givePlayer": "Tyler Warren + Alvin Kamara",
+            "givePosition": "TE/RB",
+            "giveRosRank": "74 + #181",
+            "givePlayers": [
+              "Tyler Warren",
+              "Alvin Kamara"
+            ],
+            "getPlayerId": "4569587+2576925",
+            "getPlayer": "Wan'Dale Robinson + Darren Waller",
+            "getPosition": "WR/TE",
+            "getRosRank": "88 + #163",
+            "getPlayers": [
+              "Wan'Dale Robinson",
+              "Darren Waller"
+            ],
+            "yourBoost": 9,
+            "yourH2hWinsAdded": 0,
+            "yourMedianWinsAdded": 0,
+            "yourWinsAdded": 0,
+            "theirBoost": 6,
+            "theirH2hWinsAdded": 0,
+            "theirMedianWinsAdded": 0,
+            "theirWinsAdded": 0,
+            "weeksEvaluated": 1,
+            "basis": {
+              "window": "season",
+              "lineup": "projected"
+            },
+            "perspective": "B"
+          }
+        ],
         "longTermRegrets": [],
         "waiverTargets": [
           {
@@ -3394,8 +3696,8 @@
           "points": null,
           "draftPick": 123,
           "round": 11,
-          "rosRank": 250,
-          "valueGap": -127
+          "rosRank": 254,
+          "valueGap": -131
         },
         "boomMachine": {
           "playerId": 4361579,
@@ -3621,15 +3923,15 @@
               ]
             },
             {
-              "playerId": 4036133,
-              "player": "T.J. Hockenson",
-              "position": "TE",
-              "startRate": 25,
+              "playerId": 4361741,
+              "player": "Brock Purdy",
+              "position": "QB",
+              "startRate": 0,
               "rosteredWeeks": 4,
-              "startedWeeks": 1,
-              "boost": 29,
-              "teamId": 1,
-              "team": "Ramosverse",
+              "startedWeeks": 0,
+              "boost": 17.96,
+              "teamId": 10,
+              "team": "Gibb it to Me Baby",
               "h2hWinsAdded": 0,
               "medianWinsAdded": 0,
               "winsAdded": 0,
@@ -3638,30 +3940,58 @@
                 "player": "Brian Robinson Jr.",
                 "position": "RB",
                 "startRate": 0,
-                "boost": 22.7,
-                "h2hWinsAdded": 0,
-                "medianWinsAdded": 1,
+                "boost": 8.5,
+                "h2hWinsAdded": 1,
+                "medianWinsAdded": 0,
                 "winsAdded": 1
               },
               "otherNeeds": [
                 {
-                  "position": "RB",
-                  "percent": -32.56
-                },
-                {
-                  "position": "QB",
-                  "percent": -30.29
-                },
-                {
-                  "position": "WR",
-                  "percent": -21.86
+                  "position": "DST",
+                  "percent": -44.68
                 }
               ],
               "needsMatch": []
             }
           ]
         },
-        "winWinTrades": [],
+        "winWinTrades": [
+          {
+            "kind": "2-for-2",
+            "otherTeamId": 12,
+            "otherTeam": "Beautiful Dark Twisted Fantasy",
+            "givePlayerId": "4362628+4701936",
+            "givePlayer": "Ja'Marr Chase + Matthew Golden",
+            "givePosition": "WR/WR",
+            "giveRosRank": "2 + #60",
+            "givePlayers": [
+              "Ja'Marr Chase",
+              "Matthew Golden"
+            ],
+            "getPlayerId": "3117251+3915511",
+            "getPlayer": "Christian McCaffrey + Joe Burrow",
+            "getPosition": "RB/QB",
+            "getRosRank": "8 + #54",
+            "getPlayers": [
+              "Christian McCaffrey",
+              "Joe Burrow"
+            ],
+            "yourBoost": 1.2,
+            "yourH2hWinsAdded": 0,
+            "yourMedianWinsAdded": 1,
+            "yourWinsAdded": 1,
+            "theirBoost": 26.64,
+            "theirH2hWinsAdded": 0,
+            "theirMedianWinsAdded": 0,
+            "theirWinsAdded": 0,
+            "weeksEvaluated": 4,
+            "basis": {
+              "window": "season",
+              "lineup": "projected"
+            },
+            "perspective": "A"
+          }
+        ],
         "longTermRegrets": [
           {
             "playerId": 4241474,
@@ -3807,8 +4137,8 @@
           "points": null,
           "draftPick": 145,
           "round": 13,
-          "rosRank": 35,
-          "valueGap": 110
+          "rosRank": 28,
+          "valueGap": 117
         },
         "worstDraftValue": {
           "playerId": 4361529,
@@ -3816,8 +4146,8 @@
           "points": null,
           "draftPick": 144,
           "round": 12,
-          "rosRank": 352,
-          "valueGap": -208
+          "rosRank": 368,
+          "valueGap": -224
         },
         "boomMachine": {
           "playerId": 4429795,
@@ -3835,8 +4165,8 @@
           "player": "Brock Purdy",
           "round": 13,
           "draftPick": 145,
-          "rosRank": 35,
-          "valueGap": 110,
+          "rosRank": 28,
+          "valueGap": 117,
           "points": null
         },
         "boomBust": {
@@ -4033,48 +4363,6 @@
               ]
             },
             {
-              "playerId": 4036133,
-              "player": "T.J. Hockenson",
-              "position": "TE",
-              "startRate": 25,
-              "rosteredWeeks": 4,
-              "startedWeeks": 1,
-              "boost": 17.9,
-              "teamId": 1,
-              "team": "Ramosverse",
-              "h2hWinsAdded": 1,
-              "medianWinsAdded": 0,
-              "winsAdded": 1,
-              "mutualTrade": {
-                "playerId": 4361741,
-                "player": "Brock Purdy",
-                "position": "QB",
-                "startRate": 0,
-                "boost": 21.5,
-                "h2hWinsAdded": 0,
-                "medianWinsAdded": 0,
-                "winsAdded": 0
-              },
-              "otherNeeds": [
-                {
-                  "position": "RB",
-                  "percent": -32.56
-                },
-                {
-                  "position": "QB",
-                  "percent": -30.29
-                },
-                {
-                  "position": "WR",
-                  "percent": -21.86
-                }
-              ],
-              "needsMatch": [
-                "QB",
-                "WR"
-              ]
-            },
-            {
               "playerId": 4697815,
               "player": "Rachaad White",
               "position": "RB",
@@ -4115,10 +4403,88 @@
                 "TE",
                 "WR"
               ]
+            },
+            {
+              "playerId": 4429059,
+              "player": "Woody Marks",
+              "position": "RB",
+              "startRate": 0,
+              "rosteredWeeks": 4,
+              "startedWeeks": 0,
+              "boost": 6.9,
+              "teamId": 12,
+              "team": "Beautiful Dark Twisted Fantasy",
+              "h2hWinsAdded": 0,
+              "medianWinsAdded": 0,
+              "winsAdded": 0,
+              "mutualTrade": {
+                "playerId": 2976212,
+                "player": "Stefon Diggs",
+                "position": "WR",
+                "startRate": 50,
+                "boost": 16,
+                "h2hWinsAdded": 0,
+                "medianWinsAdded": 0,
+                "winsAdded": 0
+              },
+              "otherNeeds": [
+                {
+                  "position": "TE",
+                  "percent": -46.24
+                },
+                {
+                  "position": "WR",
+                  "percent": -42.83
+                },
+                {
+                  "position": "RB",
+                  "percent": -27.42
+                }
+              ],
+              "needsMatch": [
+                "TE",
+                "WR"
+              ]
             }
           ]
         },
-        "winWinTrades": [],
+        "winWinTrades": [
+          {
+            "kind": "2-for-2",
+            "otherTeamId": 11,
+            "otherTeam": "Brock You Like a Hurricane",
+            "givePlayerId": "4258173+4361741",
+            "givePlayer": "Nico Collins + Brock Purdy",
+            "givePosition": "WR/QB",
+            "giveRosRank": "20 + #28",
+            "givePlayers": [
+              "Nico Collins",
+              "Brock Purdy"
+            ],
+            "getPlayerId": "4567048+4372016",
+            "getPlayer": "Kenneth Walker III + Jaylen Waddle",
+            "getPosition": "RB/WR",
+            "getRosRank": "5 + #36",
+            "getPlayers": [
+              "Kenneth Walker III",
+              "Jaylen Waddle"
+            ],
+            "yourBoost": 34.64,
+            "yourH2hWinsAdded": 0,
+            "yourMedianWinsAdded": 0,
+            "yourWinsAdded": 0,
+            "theirBoost": 0.46,
+            "theirH2hWinsAdded": 0,
+            "theirMedianWinsAdded": 1,
+            "theirWinsAdded": 1,
+            "weeksEvaluated": 4,
+            "basis": {
+              "window": "season",
+              "lineup": "projected"
+            },
+            "perspective": "A"
+          }
+        ],
         "longTermRegrets": [
           {
             "playerId": 4361741,
@@ -4305,8 +4671,8 @@
           "points": null,
           "draftPick": 95,
           "round": 8,
-          "rosRank": 45,
-          "valueGap": 50
+          "rosRank": 46,
+          "valueGap": 49
         },
         "worstDraftValue": {
           "playerId": 4710714,
@@ -4314,8 +4680,8 @@
           "points": null,
           "draftPick": 143,
           "round": 12,
-          "rosRank": 159,
-          "valueGap": -16
+          "rosRank": 151,
+          "valueGap": -8
         },
         "boomMachine": {
           "playerId": 4430807,
@@ -4333,8 +4699,8 @@
           "player": "Trevor Lawrence",
           "round": 8,
           "draftPick": 95,
-          "rosRank": 45,
-          "valueGap": 50,
+          "rosRank": 46,
+          "valueGap": 49,
           "points": null
         },
         "boomBust": {
@@ -4527,7 +4893,95 @@
             }
           ]
         },
-        "winWinTrades": [],
+        "winWinTrades": [
+          {
+            "otherTeamId": 12,
+            "otherTeam": "Beautiful Dark Twisted Fantasy",
+            "givePlayerId": 4372016,
+            "givePlayer": "Jaylen Waddle",
+            "givePosition": "WR",
+            "giveRosRank": 36,
+            "getPlayerId": 3915511,
+            "getPlayer": "Joe Burrow",
+            "getPosition": "QB",
+            "getRosRank": 54,
+            "yourBoost": 7.18,
+            "yourH2hWinsAdded": 0,
+            "yourMedianWinsAdded": 1,
+            "yourWinsAdded": 1,
+            "theirBoost": 36.04,
+            "theirH2hWinsAdded": 0,
+            "theirMedianWinsAdded": 0,
+            "theirWinsAdded": 0,
+            "weeksEvaluated": 4,
+            "basis": {
+              "window": "season",
+              "lineup": "projected"
+            },
+            "perspective": "A"
+          },
+          {
+            "otherTeamId": 12,
+            "otherTeam": "Beautiful Dark Twisted Fantasy",
+            "givePlayerId": 4685278,
+            "givePlayer": "Luther Burden III",
+            "givePosition": "WR",
+            "giveRosRank": 48,
+            "getPlayerId": 3915511,
+            "getPlayer": "Joe Burrow",
+            "getPosition": "QB",
+            "getRosRank": 54,
+            "yourBoost": 5.18,
+            "yourH2hWinsAdded": 0,
+            "yourMedianWinsAdded": 1,
+            "yourWinsAdded": 1,
+            "theirBoost": 38.04,
+            "theirH2hWinsAdded": 0,
+            "theirMedianWinsAdded": 0,
+            "theirWinsAdded": 0,
+            "weeksEvaluated": 4,
+            "basis": {
+              "window": "season",
+              "lineup": "projected"
+            },
+            "perspective": "A"
+          },
+          {
+            "kind": "2-for-2",
+            "otherTeamId": 1,
+            "otherTeam": "Ramosverse",
+            "givePlayerId": "4432665+4248528",
+            "givePlayer": "Brock Bowers + Christian Watson",
+            "givePosition": "TE/WR",
+            "giveRosRank": "29 + #37",
+            "givePlayers": [
+              "Brock Bowers",
+              "Christian Watson"
+            ],
+            "getPlayerId": "4427366+4361307",
+            "getPlayer": "Breece Hall + Trey McBride",
+            "getPosition": "RB/TE",
+            "getRosRank": "40 + #32",
+            "getPlayers": [
+              "Breece Hall",
+              "Trey McBride"
+            ],
+            "yourBoost": 0.8,
+            "yourH2hWinsAdded": 0,
+            "yourMedianWinsAdded": 1,
+            "yourWinsAdded": 1,
+            "theirBoost": 12.3,
+            "theirH2hWinsAdded": 0,
+            "theirMedianWinsAdded": 1,
+            "theirWinsAdded": 1,
+            "weeksEvaluated": 4,
+            "basis": {
+              "window": "season",
+              "lineup": "projected"
+            },
+            "perspective": "B"
+          }
+        ],
         "longTermRegrets": [],
         "waiverTargets": [],
         "trend": {
@@ -4629,8 +5083,8 @@
           "points": null,
           "draftPick": 151,
           "round": 13,
-          "rosRank": 91,
-          "valueGap": 60
+          "rosRank": 94,
+          "valueGap": 57
         },
         "worstDraftValue": {
           "playerId": 4430834,
@@ -4638,8 +5092,8 @@
           "points": null,
           "draftPick": 162,
           "round": 14,
-          "rosRank": 243,
-          "valueGap": -81
+          "rosRank": 245,
+          "valueGap": -83
         },
         "boomMachine": {
           "playerId": 4595348,
@@ -4657,8 +5111,8 @@
           "player": "Tyler Shough",
           "round": 13,
           "draftPick": 151,
-          "rosRank": 91,
-          "valueGap": 60,
+          "rosRank": 94,
+          "valueGap": 57,
           "points": null
         },
         "boomBust": {
@@ -4845,56 +5299,116 @@
         },
         "winWinTrades": [
           {
-            "otherTeamId": 3,
-            "otherTeam": "Kyle Tucker",
+            "otherTeamId": 11,
+            "otherTeam": "Brock You Like a Hurricane",
             "givePlayerId": 3915511,
             "givePlayer": "Joe Burrow",
             "givePosition": "QB",
-            "giveRosRank": 49,
-            "getPlayerId": 4596448,
-            "getPlayer": "Bucky Irving",
-            "getPosition": "RB",
-            "getRosRank": 44,
-            "yourBoost": 15.2,
+            "giveRosRank": 54,
+            "getPlayerId": 4372016,
+            "getPlayer": "Jaylen Waddle",
+            "getPosition": "WR",
+            "getRosRank": 36,
+            "yourBoost": 36.04,
             "yourH2hWinsAdded": 0,
-            "yourMedianWinsAdded": 1,
-            "yourWinsAdded": 1,
-            "theirBoost": 1.92,
+            "yourMedianWinsAdded": 0,
+            "yourWinsAdded": 0,
+            "theirBoost": 7.18,
+            "theirH2hWinsAdded": 0,
+            "theirMedianWinsAdded": 1,
+            "theirWinsAdded": 1,
+            "weeksEvaluated": 4,
+            "basis": {
+              "window": "season",
+              "lineup": "projected"
+            },
+            "perspective": "B"
+          },
+          {
+            "otherTeamId": 11,
+            "otherTeam": "Brock You Like a Hurricane",
+            "givePlayerId": 3915511,
+            "givePlayer": "Joe Burrow",
+            "givePosition": "QB",
+            "giveRosRank": 54,
+            "getPlayerId": 4685278,
+            "getPlayer": "Luther Burden III",
+            "getPosition": "WR",
+            "getRosRank": 48,
+            "yourBoost": 38.04,
+            "yourH2hWinsAdded": 0,
+            "yourMedianWinsAdded": 0,
+            "yourWinsAdded": 0,
+            "theirBoost": 5.18,
+            "theirH2hWinsAdded": 0,
+            "theirMedianWinsAdded": 1,
+            "theirWinsAdded": 1,
+            "weeksEvaluated": 4,
+            "basis": {
+              "window": "season",
+              "lineup": "projected"
+            },
+            "perspective": "B"
+          },
+          {
+            "otherTeamId": 4,
+            "otherTeam": "Kirbo Crushers",
+            "givePlayerId": 3915511,
+            "givePlayer": "Joe Burrow",
+            "givePosition": "QB",
+            "giveRosRank": 54,
+            "getPlayerId": 4612826,
+            "getPlayer": "Ladd McConkey",
+            "getPosition": "WR",
+            "getRosRank": 47,
+            "yourBoost": 27.44,
+            "yourH2hWinsAdded": 0,
+            "yourMedianWinsAdded": 0,
+            "yourWinsAdded": 0,
+            "theirBoost": 7.1,
             "theirH2hWinsAdded": 1,
             "theirMedianWinsAdded": 0,
             "theirWinsAdded": 1,
             "weeksEvaluated": 4,
+            "basis": {
+              "window": "season",
+              "lineup": "projected"
+            },
             "perspective": "B"
           },
           {
             "kind": "2-for-2",
             "otherTeamId": 3,
             "otherTeam": "Kyle Tucker",
-            "givePlayerId": "4595348+3915511",
-            "givePlayer": "Malik Nabers + Joe Burrow",
-            "givePosition": "WR/QB",
-            "giveRosRank": "25 + #49",
+            "givePlayerId": "3915511+3929630",
+            "givePlayer": "Joe Burrow + Saquon Barkley",
+            "givePosition": "QB/RB",
+            "giveRosRank": "54 + #23",
             "givePlayers": [
-              "Malik Nabers",
-              "Joe Burrow"
+              "Joe Burrow",
+              "Saquon Barkley"
             ],
-            "getPlayerId": "4685382+4882093",
-            "getPlayer": "Omarion Hampton + Bhayshul Tuten",
-            "getPosition": "RB/RB",
-            "getRosRank": "38 + #50",
+            "getPlayerId": "4432710+4428331",
+            "getPlayer": "TreVeyon Henderson + Rashee Rice",
+            "getPosition": "RB/WR",
+            "getRosRank": "71 + #41",
             "getPlayers": [
-              "Omarion Hampton",
-              "Bhayshul Tuten"
+              "TreVeyon Henderson",
+              "Rashee Rice"
             ],
-            "yourBoost": 6.6,
+            "yourBoost": 12.8,
             "yourH2hWinsAdded": 1,
-            "yourMedianWinsAdded": 0,
-            "yourWinsAdded": 1,
-            "theirBoost": 9.32,
+            "yourMedianWinsAdded": 1,
+            "yourWinsAdded": 2,
+            "theirBoost": 11.22,
             "theirH2hWinsAdded": 1,
             "theirMedianWinsAdded": 0,
             "theirWinsAdded": 1,
             "weeksEvaluated": 4,
+            "basis": {
+              "window": "season",
+              "lineup": "optimal"
+            },
             "perspective": "B"
           }
         ],
