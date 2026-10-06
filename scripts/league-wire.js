@@ -6,6 +6,7 @@ import { addEarlyMomentumStories } from "./wire/early-momentum.js";
 import { addInjuryStories } from "./wire/injuries.js";
 import { buildKeyPlays } from "./wire/key-plays.js";
 import { addLineupMistakeStories } from "./wire/lineup-mistakes.js";
+import { addObituaryStory } from "./wire/obits.js";
 import { addPickupStories } from "./wire/pickups.js";
 import { addPrimetimeStories } from "./wire/primetime.js";
 import { addRaffleStories } from "./wire/raffle.js";
@@ -14,6 +15,8 @@ import { addRosterStories } from "./wire/roster.js";
 import { addStockWatchStory } from "./wire/stock.js";
 import { addMiscueStory, addShrewdSwapStory } from "./wire/swaps.js";
 import { addSwingStories } from "./wire/swings.js";
+import { addTradeStory } from "./wire/trades.js";
+import { addWaiverStories } from "./wire/waivers.js";
 import { addWeekAheadStories } from "./wire/week-ahead.js";
 import { addGameToWatchStory, addWhatToWatchStories } from "./wire/what-to-watch.js";
 import { addZombieStories } from "./wire/zombies.js";
@@ -23,7 +26,7 @@ import { addZombieStories } from "./wire/zombies.js";
 // in the daily update. Only needs the current week's data. The stories live
 // in scripts/wire/ (one file per family); scripts/test-wire.js replays a
 // captured snapshot to check them.
-function buildMarqueeStories() {
+async function buildMarqueeStories() {
   const stories = [];
   const previousScores = new Map((previousScoreboard?.week === currentWeek ? (previousScoreboard.scores || []) : []).map(s => [s.teamId, s]));
   const previousProjectedMedian = previousScoreboard?.week === currentWeek
@@ -130,7 +133,10 @@ function buildMarqueeStories() {
   if(falling) add("STOCK FALLING","📉 Stock falling: " + possessive(falling.team) + " ESPN projection is trending down.",20);
   addLineupMistakeStories(add, matchupStates, regrets);
   addDeathWatchStory(add);
+  try { addWaiverStories(add); } catch (error) { console.warn("League Wire: waiver stories failed: " + error.message); }
   addPickupStories(add);
+  try { addTradeStory(add); } catch (error) { console.warn("League Wire: trade story failed: " + error.message); }
+  try { await addObituaryStory(add); } catch (error) { console.warn("League Wire: obituary story failed: " + error.message); }
   try { addRosterStories(add); } catch (error) { console.warn("League Wire: roster stories failed: " + error.message); }
   addSwingStories(add, matchupStates);
   addRaffleStories(add, previousScores);
@@ -170,10 +176,12 @@ await writeJson(`${OUT}/key-plays.json`, {
 // At most 2 of any one type. Roster stories (injury wards, bold strategies,
 // thin depth, fresh pickups) are pre-game talk: they retire once Sunday's
 // games start, and swap stories then stay only if the swap decides a matchup.
+// Waiver and trade stories count as roster talk too.
 const WIRE_MAX = 12;
 const WIRE_CORE = 8;
 const PER_TYPE_MAX = 2;
-const ROSTER_TYPES = new Set(["INJURY WARD", "BOLD STRATEGY", "THIN ICE", "FRESH OFF THE WIRE"]);
+const ROSTER_TYPES = new Set(["INJURY WARD", "BOLD STRATEGY", "THIN ICE", "FRESH OFF THE WIRE",
+  "WAIVER WIRE", "WAIVER TUG-OF-WAR", "SHOPPING SPREE", "TRADE THAT NEEDS TO HAPPEN"]);
 const SWAP_TYPES = new Set(["MANAGER MISCUE", "SHREWD SWAP"]);
 function curate(all) {
   const etDay = iso => new Date(iso).toLocaleDateString("en-US", {weekday:"short", timeZone:"America/New_York"});
@@ -197,5 +205,5 @@ function curate(all) {
 const previousMarquee = await readJson(`${DATA}/marquee.json`).catch(() => null);
 const headlines = weekHeadlines() || previousMarquee?.headlines || null;
 const review = await weekInReview(previousMarquee, headlines);
-const marqueeStories = curate(interleave(review.stories, buildMarqueeStories()));
+const marqueeStories = curate(interleave(review.stories, await buildMarqueeStories()));
 await writeJson(`${OUT}/marquee.json`,{week:currentWeek,lastUpdated:new Date().toISOString(),stories:marqueeStories,headlines,review:review.meta});

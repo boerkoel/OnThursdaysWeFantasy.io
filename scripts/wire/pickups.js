@@ -2,6 +2,7 @@ import { round } from "../lib/simulation.js";
 import { BENCH_SLOT } from "../lib/lineup.js";
 import { clockNow, currentWeek, fit, listNames, name, nflGameByProTeam, pts, rosterData } from "./context.js";
 import { shrewdSwaps } from "./swaps.js";
+import { waiverPlayers } from "./waivers.js";
 
 // League Wire: waiver-wire pickups (HOT PICKUP, FRESH OFF THE WIRE).
 // Waiver-wire news: players added in the last week. Hot pickups when they're
@@ -35,7 +36,7 @@ export function addPickupStories(add) {
   if (hot) {
     add("HOT PICKUP","🛒 HOT PICKUP: " + hot.team + " grabbed " + hot.name + " (" + hot.position + ") off the wire on " + day(hot.addedOn) + ", and it's paying off — " + pts(hot.points) + " this week" + (hot.bench ? " (from the bench!)" : "") + ".",30 + hot.points);
   }
-  const fresh = pickups.filter(p => !p.played && p !== hot).sort((a, b) => b.addedOn - a.addedOn).slice(0, 3);
+  const fresh = pickups.filter(p => !p.played && p !== hot && !waiverPlayers.has(p.name)).sort((a, b) => b.addedOn - a.addedOn).slice(0, 3);
   if (fresh.length) {
     const describe = p => p.team + " added " + p.name + " (" + p.position + (p.projection != null ? ", projected " + pts(p.projection) : "") + ")";
     const versions = fresh.map((_, i) => {

@@ -4,6 +4,10 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "15 8 * * *"
+    # Wednesday mornings again, after the weekly waiver run, for the League
+    # Wire's waiver stories (ESPN's processing hour is approximate, so twice).
+    - cron: "30 13 * * 3"
+    - cron: "30 17 * * 3"
 
 permissions:
   contents: write
