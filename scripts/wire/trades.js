@@ -1,7 +1,7 @@
 import { DATA, fit, listNames, pickLine, possessive, readJson, surname } from "./context.js";
 
-// League Wire: TRADE THAT NEEDS TO HAPPEN (the swap where both sides gain the
-// most) and up to two more TRADE IDEAs, from the win-win trades
+// League Wire: TRADE THAT SHOULD HAVE HAPPENED (the swap where both sides would have gained the
+// most) and up to two more RETRO TRADEs, from the retroactive win-win trades
 // calculate-stats.js finds (each team's lineups before vs after, optimal or projection-set, over
 // the weeks played). No player appears in two stories.
 const teamsData = await readJson(`${DATA}/teams.json`).catch(() => null);
@@ -22,24 +22,26 @@ export function rankedWinWinTrades() {
 const inLineups = t => (t.basis?.lineup === "projected" ? "projection-set lineups" : "optimal lineups") +
   (t.basis?.window && t.basis.window !== "season" ? ` over the ${t.basis.window}` : "");
 
+// Always framed as hindsight: "if they had swapped back in Week N", never
+// a promise that the trade will work out from here.
 function story(t, lead) {
   // Multi-player trades name players by surname so the teams still fit.
   const multi = playersIn(t).length + gettingIn(t).length > 2;
   const label = list => listNames(multi ? list.map(surname) : list);
   const give = label(playersIn(t)), get = label(gettingIn(t));
-  const wins = n => `${n} more win${n === 1 ? "" : "s"}`;
-  const both = t.yourWinsAdded === t.theirWinsAdded
-    ? `${wins(t.yourWinsAdded)} each`
-    : `${wins(t.yourWinsAdded)} for ${t.team}, ${wins(t.theirWinsAdded)} for ${t.otherTeam}`;
-  const short = t.yourWinsAdded === t.theirWinsAdded ? `+${t.yourWinsAdded} win${t.yourWinsAdded === 1 ? "" : "s"} each`
-    : `+${t.yourWinsAdded} for ${t.team}, +${t.theirWinsAdded} for ${t.otherTeam}`;
+  const when = t.fromWeek ? `back in Week ${t.fromWeek}` : "earlier this season";
+  const gains = t.yourWinsAdded === t.theirWinsAdded
+    ? `+${t.yourWinsAdded} win${t.yourWinsAdded === 1 ? "" : "s"} each`
+    : `+${t.yourWinsAdded} and +${t.theirWinsAdded} wins`;
+  const where = inLineups(t);
   return fit(
-    `${lead}: ${possessive(t.team)} ${give} for ${possessive(t.otherTeam)} ${get}. Swapping them would have led to ${both} in their ${inLineups(t)}.`,
-    `${lead}: ${possessive(t.team)} ${give} for ${possessive(t.otherTeam)} ${get}. ${inLineups(t)[0].toUpperCase() + inLineups(t).slice(1)} say ${short}.`,
-    `${lead}: ${possessive(t.team)} ${give} for ${possessive(t.otherTeam)} ${get}. Win-win: +${t.yourWinsAdded} and +${t.theirWinsAdded} wins in ${inLineups(t)}.`,
-    `${lead}: ${possessive(t.team)} ${give} for ${possessive(t.otherTeam)} ${get}. A win-win in ${inLineups(t)}.`,
-    `${lead}: ${give} for ${get} (${t.team} ↔ ${t.otherTeam}). ${inLineups(t)[0].toUpperCase() + inLineups(t).slice(1)}: ${short}.`,
-    `${lead}: ${give} ↔ ${get}, a win-win in ${inLineups(t)}.`
+    `${lead}: If ${t.team} and ${t.otherTeam} had swapped ${give} for ${get} ${when}, both would be ahead: ${gains} in ${where}. Hindsight only!`,
+    `${lead}: If ${t.team} and ${t.otherTeam} had swapped ${give} for ${get} ${when}, both would be ahead: ${gains} in ${where}.`,
+    `${lead}: If ${t.team} and ${t.otherTeam} had swapped ${give} for ${get} ${when}, both would be ahead (${gains}).`,
+    `${lead}: Had ${t.team} and ${t.otherTeam} swapped ${give} for ${get} ${when}, both would be ahead (${gains}).`,
+    `${lead}: If ${t.team} and ${t.otherTeam} had swapped ${give} for ${get} ${when}, both would be ahead.`,
+    `${lead}: ${give} for ${get} ${when} would have helped both ${t.team} and ${t.otherTeam}.`,
+    `${lead}: ${give} ↔ ${get} ${when} would have helped both sides.`
   );
 }
 
@@ -56,9 +58,9 @@ export function addTradeStory(add) {
   picks.forEach((t, i) => {
     const key = "trade:" + [...playersIn(t), ...gettingIn(t)].join("+");
     if (i === 0) {
-      add("TRADE THAT NEEDS TO HAPPEN", story(t, pickLine(key, ["🤝 TRADE THAT NEEDS TO HAPPEN", "🤝 Somebody pick up the phone", "🤝 The trade machine has spoken"])), 72);
+      add("TRADE THAT SHOULD HAVE HAPPENED", story(t, pickLine(key, ["🔁 Trade that should have happened", "🕰️ Coulda-shoulda swap", "🔁 In hindsight"])), 72);
     } else {
-      add("TRADE IDEA", story(t, pickLine(key, ["💡 Trade idea", "📞 Call your trade partner", "🔁 Swap shop"])), 40 - i);
+      add("RETRO TRADE", story(t, pickLine(key, ["🕰️ Hindsight swap", "🔁 Retro trade", "🤔 What could have been"])), 40 - i);
     }
   });
 }

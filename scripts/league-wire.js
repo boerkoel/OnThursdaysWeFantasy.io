@@ -185,7 +185,7 @@ const WIRE_MAX = 12;
 const WIRE_CORE = 8;
 const PER_TYPE_MAX = 2;
 const ROSTER_TYPES = new Set(["INJURY WARD", "BOLD STRATEGY", "THIN ICE", "FRESH OFF THE WIRE",
-  "WAIVER WIRE", "WAIVER TUG-OF-WAR", "SHOPPING SPREE", "TRADE THAT NEEDS TO HAPPEN", "TRADE IDEA", "BYE BYE BYE", "DEATH WATCH BYE", "LONG-TERM REGRET"]);
+  "WAIVER WIRE", "WAIVER TUG-OF-WAR", "SHOPPING SPREE", "TRADE THAT SHOULD HAVE HAPPENED", "RETRO TRADE", "BYE BYE BYE", "DEATH WATCH BYE", "LONG-TERM REGRET"]);
 const SWAP_TYPES = new Set(["MANAGER MISCUE", "SHREWD SWAP"]);
 // Projection-driven matchup stories wait until Wednesday 11 AM ET, after
 // waivers clear and managers set their lineups (Jim: early-week flips are

@@ -81,7 +81,7 @@ function TeamProfile({ team, onClose }) {
           </div>
         </> : null}
         {team.profileAnalytics.winWinTrades?.length ? <>
-          <div className="trade-section-heading trade-target-heading"><span>🤝</span><div><small>WIN-WIN TRADES</small><strong>Trades That Help Both Teams</strong><em>Replayed over the weeks played, with optimal lineups or lineups set by ESPN projections, over the season or the last 4 weeks · each side gains a win, or 5+ pts per week without losing one</em></div></div>
+          <div className="trade-section-heading trade-target-heading"><span>🤝</span><div><small>RETRO WIN-WIN TRADES</small><strong>Trades That Should Have Happened</strong><em>In hindsight: replaying the weeks played with optimal lineups or lineups set by ESPN projections, over the season or the last 4 weeks · each side gains a win, or 5+ pts per week without losing one. Not a promise about what happens next.</em></div></div>
           <div className="trade-target-list">
             {team.profileAnalytics.winWinTrades.map((t, i) => <div className="trade-target win-win-trade" key={t.otherTeamId + "-" + t.givePlayerId + "-" + t.getPlayerId + "-" + i}>
               <div className="trade-target-info">
@@ -90,7 +90,7 @@ function TeamProfile({ team, onClose }) {
               </div>
               <div className="trade-target-impact">
                 <b>{t.kind ? `${t.kind} · ` : ""}{basisTag(t.basis)}: +{money(t.yourBoost)} pts</b>
-                <em>Swapping {t.givePlayer} for {t.getPlayer} would have led to {t.yourWinsAdded} more {Number(t.yourWinsAdded) === 1 ? "win" : "wins"} in {basisLineup(t.basis, "your")}{basisWindow(t.basis)} ({t.yourH2hWinsAdded} H2H + {t.yourMedianWinsAdded} median)</em>
+                <em>Had you swapped {t.givePlayer} for {t.getPlayer} {t.fromWeek ? `back in Week ${t.fromWeek}` : "earlier this season"}, it would have led to {t.yourWinsAdded} more {Number(t.yourWinsAdded) === 1 ? "win" : "wins"} in {basisLineup(t.basis, "your")}{basisWindow(t.basis)} ({t.yourH2hWinsAdded} H2H + {t.yourMedianWinsAdded} median)</em>
                 <em>{t.otherTeam}: +{money(t.theirBoost)} pts and {t.theirWinsAdded} more {Number(t.theirWinsAdded) === 1 ? "win" : "wins"} in {basisLineup(t.basis)} ({t.theirH2hWinsAdded} H2H + {t.theirMedianWinsAdded} median)</em>
               </div>
             </div>)}

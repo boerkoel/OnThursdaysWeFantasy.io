@@ -1239,17 +1239,18 @@ function tradeWeeks(teamId, outgoingPlayerIds, incomingEntriesByWeek, withOptima
 // One view's totals: points added, and head-to-head and median wins added.
 function tally(rows, view) {
   const wins = (target, points) => points > target ? 1 : points === target ? 0.5 : 0;
-  let boost = 0, h2h = 0, median = 0, weeksEvaluated = 0;
+  let boost = 0, h2h = 0, median = 0, weeksEvaluated = 0, fromWeek = null;
   for (const r of rows) {
     if (view.window === "recent" && !recentWeekSet.has(r.week)) continue;
     const before = r[view.lineup + "Before"], after = r[view.lineup + "After"];
     if (!Number.isFinite(before) || !Number.isFinite(after)) continue;
     weeksEvaluated++;
+    if (fromWeek === null || r.week < fromWeek) fromWeek = r.week;
     boost += after - before;
     if (Number.isFinite(r.opponent)) h2h += wins(r.opponent, after) - wins(r.opponent, before);
     if (Number.isFinite(r.median)) median += wins(r.median, after) - wins(r.median, before);
   }
-  return {boost:round(boost), h2hWinsAdded:round(h2h), medianWinsAdded:round(median), winsAdded:round(h2h + median), weeksEvaluated};
+  return {boost:round(boost), h2hWinsAdded:round(h2h), medianWinsAdded:round(median), winsAdded:round(h2h + median), weeksEvaluated, fromWeek};
 }
 
 // Judge a trade from both sides: the best view where both teams gain (if
@@ -1352,6 +1353,8 @@ const helpsTeam = impact =>
             theirMedianWinsAdded:impactB.medianWinsAdded,
             theirWinsAdded:impactB.winsAdded,
             weeksEvaluated:Math.min(impactA.weeksEvaluated, impactB.weeksEvaluated),
+            // The retroactive swap's starting week (both sides counted from here).
+            fromWeek:Math.max(impactA.fromWeek, impactB.fromWeek),
             basis:viewLabel(best.view)
           });
         }
@@ -1474,6 +1477,7 @@ const multiTradesByTeam = new Map([...teams.keys()].map(teamId => [Number(teamId
           yourBoost:my.boost, yourH2hWinsAdded:my.h2hWinsAdded, yourMedianWinsAdded:my.medianWinsAdded, yourWinsAdded:my.winsAdded,
           theirBoost:other.boost, theirH2hWinsAdded:other.h2hWinsAdded, theirMedianWinsAdded:other.medianWinsAdded, theirWinsAdded:other.winsAdded,
           weeksEvaluated:Math.min(my.weeksEvaluated, other.weeksEvaluated),
+          fromWeek:Math.max(my.fromWeek, other.fromWeek),
           basis,
           perspective
         };
