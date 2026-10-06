@@ -186,7 +186,9 @@ export default function SurvivorTab() {
       <div className="section-heading"><div><span className="section-kicker">THE PORTFOLIOS</span><h2>Managers</h2></div>
         <span className="record-count">{dollars(pot)} POT · {dollars(perAlive)} / LIVE ENTRY</span></div>
       <div className="sv-ledger">
-        <div className="sv-ledger-row head"><span>Manager</span><span>Alive</span><span>Won</span><span>Value</span><span>ROI</span></div>
+        <div className="sv-ledger-row head"><span>Manager</span><span>Alive</span><span>Won</span>
+          <span title={`Expected value = (manager's entries remaining ÷ all entries remaining) × the ${dollars(pot)} pot`}>Exp. value ⓘ</span>
+          <span title="Expected ROI = (expected value − buy-ins) ÷ buy-ins">Exp. ROI ⓘ</span></div>
         {ledger.map(m => <div className={"sv-ledger-row" + (m.alive ? "" : " out")} key={m.user}>
           <b className="sv-ledger-name">{m.user}</b>
           <span className="sv-ledger-alive"><b>{m.alive}</b>/{m.entries.length}
@@ -196,7 +198,7 @@ export default function SurvivorTab() {
           <b className={"sv-ledger-roi " + (m.roi > 0.5 ? "up" : m.roi < -0.5 ? "down" : "")}>{m.roi > 0 ? "+" : m.roi < 0 ? "−" : ""}{Math.abs(m.roi).toFixed(0)}%</b>
         </div>)}
       </div>
-      <p className="median-note">Value: each live entry's equal share of the {dollars(pot)} pot ({dollars(fee)} × {total} entries); ROI against the buy-ins. Picks won counts graded picks across all entries.</p>
+      <p className="median-note">Expected value = (manager's entries remaining ÷ all {c.alive} entries remaining) × the {dollars(pot)} pot ({dollars(fee)} × {total} entries). Expected ROI = (expected value − buy-ins) ÷ buy-ins. Every live entry counts equally; picks won counts graded picks across all entries.</p>
     </section>
 
     <section id="survivor-teams" className="section">
