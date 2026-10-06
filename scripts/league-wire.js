@@ -185,11 +185,26 @@ const PER_TYPE_MAX = 2;
 const ROSTER_TYPES = new Set(["INJURY WARD", "BOLD STRATEGY", "THIN ICE", "FRESH OFF THE WIRE",
   "WAIVER WIRE", "WAIVER TUG-OF-WAR", "SHOPPING SPREE", "TRADE THAT NEEDS TO HAPPEN", "TRADE IDEA", "BYE BYE BYE", "DEATH WATCH BYE"]);
 const SWAP_TYPES = new Set(["MANAGER MISCUE", "SHREWD SWAP"]);
+// Projection-driven matchup stories wait until Wednesday 11 AM ET, after
+// waivers clear and managers set their lineups (Jim: early-week flips are
+// just noise from unset rosters).
+const MATCHUP_TYPES = new Set(["MEDIAN FLIP", "PROJECTION FLIP", "PROJECTION TIGHTENING", "MATCHUP ALERT", "MATCHUP FLIP",
+  "MEDIAN CLUSTER", "MEDIAN WATCH", "STOCK RISING", "STOCK FALLING", "LEAGUE GOSSIP", "RAFFLE WATCH", "RAFFLE FLIP"]);
+const MATCHUPS_FROM_HOUR_WED = 11;
+function lineupsStillSettling() {
+  if (nflGames.some(g => g.state && g.state !== "pre")) return false;
+  const now = new Date(clockNow());
+  const day = now.toLocaleDateString("en-US", {weekday:"short", timeZone:"America/New_York"});
+  const hour = Number(now.toLocaleString("en-US", {hour:"numeric", hour12:false, timeZone:"America/New_York"})) % 24;
+  return day === "Tue" || (day === "Wed" && hour < MATCHUPS_FROM_HOUR_WED);
+}
 function curate(all) {
   const etDay = iso => new Date(iso).toLocaleDateString("en-US", {weekday:"short", timeZone:"America/New_York"});
   const sundayStarted = nflGames.some(g => g.kickoff && etDay(g.kickoff) === "Sun" && g.state !== "pre");
+  const settling = lineupsStillSettling();
   const perType = new Map();
   const eligible = [...all].sort((a, b) => b.score - a.score).filter(s => {
+    if (settling && MATCHUP_TYPES.has(s.type)) return false;
     if (sundayStarted && ROSTER_TYPES.has(s.type)) return false;
     if (sundayStarted && SWAP_TYPES.has(s.type) && !s.decisive) return false;
     const base = s.type.replace(/^WEEK \d+ · /, "");
