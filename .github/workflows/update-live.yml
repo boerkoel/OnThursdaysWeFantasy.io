@@ -168,6 +168,35 @@ jobs:
           path: wire-snapshot/
           retention-days: 30
 
+      # The app reads live data from the notification service, so most runs
+      # stop here: no site build or Pages deploy (~45 s saved per update).
+      - name: Publish live data to the notification service
+        id: publish
+        if: steps.gate.outputs.update == 'true'
+        env:
+          LIVE_PUBLISH_TOKEN: ${{ secrets.LIVE_PUBLISH_TOKEN }}
+        run: node scripts/publish-live.js
+
+      # GitHub Pages stays a fallback: redeploy it when publishing failed, or
+      # when its copy is over 20 minutes old.
+      - name: Decide whether to redeploy GitHub Pages
+        id: pages
+        if: steps.gate.outputs.update == 'true'
+        env:
+          PUBLISHED: ${{ steps.publish.outputs.published }}
+        run: |
+          node -e '
+            const published = process.env.PUBLISHED === "true";
+            fetch("https://boerkoel.github.io/OnThursdaysWeFantasy.io/data/current/live.json?ts=" + Date.now())
+              .then(r => r.ok ? r.json() : null).catch(() => null)
+              .then(live => {
+                const age = (Date.now() - Date.parse(live?.scoreboard?.lastUpdated || 0)) / 60000;
+                const deploy = !published || !(age < 20);
+                console.log(`Pages copy is ${Math.round(age)} min old; ${deploy ? "redeploying" : "no deploy needed"}.`);
+                require("fs").appendFileSync(process.env.GITHUB_OUTPUT, `deploy=${deploy}\n`);
+              });
+          '
+
       # One annotation per run with each live file's timestamp, so a stale
       # file (e.g. a continue-on-error step that failed) shows on the run page.
       - name: Report live data freshness
@@ -190,15 +219,15 @@ jobs:
           '
 
       - name: Install dependencies
-        if: steps.gate.outputs.update == 'true'
+        if: steps.gate.outputs.update == 'true' && steps.pages.outputs.deploy == 'true'
         run: npm ci
 
       - name: Build site
-        if: steps.gate.outputs.update == 'true'
+        if: steps.gate.outputs.update == 'true' && steps.pages.outputs.deploy == 'true'
         run: npm run build
 
       - name: Upload Pages artifact
-        if: steps.gate.outputs.update == 'true'
+        if: steps.gate.outputs.update == 'true' && steps.pages.outputs.deploy == 'true'
         uses: actions/upload-pages-artifact@v4
         with:
           name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
@@ -206,7 +235,7 @@ jobs:
 
       - name: Deploy to GitHub Pages
         id: deployment
-        if: steps.gate.outputs.update == 'true'
+        if: steps.gate.outputs.update == 'true' && steps.pages.outputs.deploy == 'true'
         uses: actions/deploy-pages@v4
         with:
           artifact_name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
@@ -222,7 +251,7 @@ jobs:
         run: |
           MAX_IDLE=19800  # 5.5 hours, inside the job timeout
           if [ "$ACTIVE" = "true" ]; then
-            DELAY=15      # plus ~75 seconds of work and deploy = ~1.5 minute cadence
+            DELAY=15      # plus ~30 seconds of work (and a Pages deploy now and then) = ~45 second cadence
           elif [ -z "$ACTIVE" ]; then
             DELAY=300     # window check failed; try again soon
           elif [ -n "$NEXT_WINDOW_IN" ] && [ "$NEXT_WINDOW_IN" -lt "$MAX_IDLE" ]; then

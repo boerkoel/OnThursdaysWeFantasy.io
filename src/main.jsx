@@ -8,7 +8,7 @@ import raffle from "../data/current/raffle.json";
 import playoffs from "../data/current/playoffs.json";
 import teamsData from "../data/current/teams.json";
 import weekly from "../data/current/weekly.json";
-import { fetchData, gameState, money, pct, useLiveData } from "./lib/data.js";
+import { fetchData, fetchWeekArchive, gameState, money, pct, useLiveData } from "./lib/data.js";
 import { ShareButton, TeamLogo, UpdatedAgo, useChangedScores } from "./components/LiveBits.jsx";
 import LeagueWire from "./components/LeagueWire.jsx";
 import { useRefresh } from "./components/PullToRefresh.jsx";
@@ -235,7 +235,7 @@ function App() {
   const [weekArchive, setWeekArchive] = useState(null);
   useEffect(() => {
     if (tab !== "league" || weekArchive) return;
-    fetchData("week-archive.json").then(setWeekArchive).catch(() => setWeekArchive({ weeks: {} }));
+    fetchWeekArchive().then(setWeekArchive).catch(() => setWeekArchive({ weeks: {} }));
   }, [tab, weekArchive]);
   const historyTeamNames = Object.fromEntries((teamsData.teams || []).map(t => [t.id, t.name.trim()]));
   const historyMatchups = history?.matchups || [];

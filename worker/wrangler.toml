@@ -14,3 +14,12 @@ crons = ["*/2 * * * *"]
 [[kv_namespaces]]
 binding = "SUBS"
 id = "KV_NAMESPACE_ID"
+
+# Live data published by the live update runs (see src/live.js).
+[[durable_objects.bindings]]
+name = "LIVE"
+class_name = "LiveStore"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["LiveStore"]

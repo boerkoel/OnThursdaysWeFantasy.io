@@ -120,6 +120,13 @@ jobs:
           if [ -z "$SPLASH_REFRESH_TOKEN" ]; then echo "::warning::SPLASH_REFRESH_TOKEN is not set; the survivor feed is off."; exit 0; fi
           printf %s "$SPLASH_ACCESS_TOKEN" | tr -d '[:space:]' | npx --yes wrangler@4 secret put SPLASH_ACCESS_TOKEN
           printf %s "$SPLASH_REFRESH_TOKEN" | tr -d '[:space:]' | npx --yes wrangler@4 secret put SPLASH_REFRESH_TOKEN
+      # Shared with update-live.yml, which publishes the live data with it.
+      - name: Give the service its live-publishing token
+        env:
+          LIVE_PUBLISH_TOKEN: ${{ secrets.LIVE_PUBLISH_TOKEN }}
+        run: |
+          if [ -z "$LIVE_PUBLISH_TOKEN" ]; then echo "::warning::LIVE_PUBLISH_TOKEN is not set; live runs keep deploying to GitHub Pages."; exit 0; fi
+          printf %s "$LIVE_PUBLISH_TOKEN" | tr -d '[:space:]' | npx --yes wrangler@4 secret put LIVE_PUBLISH_TOKEN
       - name: Check the service responds
         run: |
           sleep 10

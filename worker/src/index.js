@@ -4,7 +4,9 @@
 //   what they want to follow; /unsubscribe; /test sends a test alert;
 //   /refresh starts the GitHub live-update workflow if the published data is
 //   stale (pull-to-refresh in the app).
-// - scheduled (every 2 minutes): reads the site's published live.json, finds
+// - /live: the live data itself, published by each live update run (POST)
+//   and polled by the app (GET); see live.js.
+// - scheduled (every 2 minutes): reads the latest live data, finds
 //   what's new since last time (lead changes, new favorites, finals, League
 //   Wire highlights, Death Watch changes) and pushes it to matching phones.
 //
@@ -14,6 +16,9 @@
 // Secret GITHUB_TOKEN: a token allowed to run the repo's Actions workflows.
 import { generateVapidKeys, sendPush } from "./webpush.js";
 import { splashProbe, survivorFeed } from "./splash.js";
+import { LiveStore, publishLive, readLive, serveLive } from "./live.js";
+
+export { LiveStore };
 
 const SITE = "https://boerkoel.github.io/OnThursdaysWeFantasy.io/";
 const REPO = "boerkoel/OnThursdaysWeFantasy.io";
@@ -74,7 +79,7 @@ function cleanPrefs(prefs = {}) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const origin = request.headers.get("Origin") || "";
     const { pathname } = new URL(request.url);
     // CORS preflight: a 204 must not carry a body.
@@ -84,6 +89,11 @@ export default {
         return json({ publicKey: (await vapidKeys(env)).publicKey }, 200, origin);
       }
       if (request.method === "GET" && pathname === "/health") return json({ ok: true }, 200, origin);
+      if (request.method === "GET" && (pathname === "/live" || pathname === "/live/week-archive")) return serveLive(request, env, ctx, corsHeaders(origin));
+      if (request.method === "POST" && pathname === "/live") {
+        const { status, body } = await publishLive(request, env);
+        return json(body, status, origin);
+      }
       // Survivor contest (Splash): response shapes only, for building the feed.
       if (request.method === "GET" && pathname === "/splash/probe") return json(await splashProbe(env), 200, origin);
       // The Survivor tab's feed: standings and picks that have locked.
@@ -126,14 +136,24 @@ export default {
   }
 };
 
+// The newest live data: the copy published to this service, or the one on
+// GitHub Pages if that's newer (or the service has none).
+async function latestLive(env) {
+  const [mine, pages] = await Promise.all([
+    readLive(env).catch(() => null),
+    fetch(`${SITE}data/current/live.json?ts=${Date.now()}`, { cf: { cacheTtl: 0 } }).then(r => r.ok ? r.json() : null).catch(() => null)
+  ]);
+  const time = live => Date.parse(live?.scoreboard?.lastUpdated || "") || 0;
+  return time(mine) >= time(pages) ? mine || pages : pages;
+}
+
 // ---- Pull-to-refresh -----------------------------------------------------------
 
 // Starts update-live.yml (a manual run, which also takes over the chain of
 // scheduled runs) unless the data is fresh or a run was just started.
 // reason: "fresh" | "pending" | "started" | "unavailable".
 async function requestLiveUpdate(env) {
-  const response = await fetch(`${SITE}data/current/live.json?ts=${Date.now()}`, { cf: { cacheTtl: 0 } });
-  const lastUpdated = response.ok ? (await response.json()).scoreboard?.lastUpdated || null : null;
+  const lastUpdated = (await latestLive(env))?.scoreboard?.lastUpdated || null;
   const now = Date.now();
   if (lastUpdated && now - Date.parse(lastUpdated) < REFRESH_STALE_MS) return { started: false, reason: "fresh", lastUpdated };
   const requestedAt = Number(await env.SUBS.get("refresh-requested")) || 0;
@@ -266,9 +286,8 @@ function wants(prefs, topic) {
 }
 
 async function checkForAlerts(env) {
-  const response = await fetch(`${SITE}data/current/live.json?ts=${Date.now()}`, { cf: { cacheTtl: 0 } });
-  if (!response.ok) return;
-  const live = await response.json();
+  const live = await latestLive(env);
+  if (!live) return;
   const state = await env.SUBS.get("state", "json");
   const updated = [live.scoreboard?.lastUpdated, live.marquee?.lastUpdated, live.guillotine?.lastUpdated].join("|");
   if (state && state.updated === updated) return; // nothing new published
