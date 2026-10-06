@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "currentWeek": 4,
+  "currentWeek": 5,
   "weeks": [
     {
       "week": 1,
@@ -447,6 +447,151 @@
         "winnerScore": 188.98,
         "loserScore": 133.96,
         "margin": 55.02
+      }
+    },
+    {
+      "week": 4,
+      "recap": [
+        {
+          "type": "HIGH SCORE",
+          "text": "🔥 TDsMaGee dropped 184.64 points — the week's highest score."
+        },
+        {
+          "type": "CLOSEST MATCHUP",
+          "text": "⚔️ 49er Faith-Fool edged The Mahomies by just 4.60 points."
+        },
+        {
+          "type": "INSTANT REGRET",
+          "text": "🤦 Kirbo Crushers would have won and finished above the median by starting Khalil Shakir (13.20) over Ladd McConkey (0.00)."
+        },
+        {
+          "type": "BIGGEST REGRET",
+          "text": "🪑 Mr. Action Jackson left 29.00 points on the bench with Kyle Monangai."
+        },
+        {
+          "type": "TOUGH LUCK",
+          "text": "😬 Gibb it to Me Baby scored 176.38 and still took the L."
+        },
+        {
+          "type": "BLOWOUT",
+          "text": "💥 Mr. Action Jackson beat Ramosverse 159.18-88.56 (70.62 points)."
+        }
+      ],
+      "regrets": [
+        {
+          "teamId": 4,
+          "team": "Kirbo Crushers",
+          "matchupId": 20,
+          "benchPlayer": "Khalil Shakir",
+          "benchPoints": 13.2,
+          "starter": "Ladd McConkey",
+          "starterPoints": 0,
+          "gain": 13.2,
+          "flips": [
+            "win",
+            "median"
+          ]
+        },
+        {
+          "teamId": 9,
+          "team": "The Mahomies",
+          "matchupId": 24,
+          "benchPlayer": "Brian Robinson Jr.",
+          "benchPoints": 25.7,
+          "starter": "Kalif Raymond",
+          "starterPoints": 2.6,
+          "gain": 23.1,
+          "flips": [
+            "win"
+          ]
+        }
+      ],
+      "matchups": [
+        {
+          "id": 19,
+          "week": 4,
+          "homeTeamId": 12,
+          "awayTeamId": 3,
+          "homeScore": 122.46,
+          "awayScore": 93.48,
+          "margin": 28.97999999999999,
+          "winner": "HOME",
+          "completed": true
+        },
+        {
+          "id": 20,
+          "week": 4,
+          "homeTeamId": 4,
+          "awayTeamId": 6,
+          "homeScore": 127.02,
+          "awayScore": 132.12,
+          "margin": 5.1000000000000085,
+          "winner": "AWAY",
+          "completed": true
+        },
+        {
+          "id": 21,
+          "week": 4,
+          "homeTeamId": 7,
+          "awayTeamId": 11,
+          "homeScore": 131.34,
+          "awayScore": 171.58,
+          "margin": 40.24000000000001,
+          "winner": "AWAY",
+          "completed": true
+        },
+        {
+          "id": 22,
+          "week": 4,
+          "homeTeamId": 1,
+          "awayTeamId": 8,
+          "homeScore": 88.56,
+          "awayScore": 159.18,
+          "margin": 70.62,
+          "winner": "AWAY",
+          "completed": true
+        },
+        {
+          "id": 23,
+          "week": 4,
+          "homeTeamId": 10,
+          "awayTeamId": 2,
+          "homeScore": 176.38,
+          "awayScore": 184.64,
+          "margin": 8.259999999999991,
+          "winner": "AWAY",
+          "completed": true
+        },
+        {
+          "id": 24,
+          "week": 4,
+          "homeTeamId": 5,
+          "awayTeamId": 9,
+          "homeScore": 110.7,
+          "awayScore": 106.1,
+          "margin": 4.6000000000000085,
+          "winner": "HOME",
+          "completed": true
+        }
+      ],
+      "highestScore": {
+        "week": 4,
+        "teamId": 2,
+        "team": "TDsMaGee",
+        "opponentId": 10,
+        "opponent": "Gibb it to Me Baby",
+        "score": 184.64,
+        "result": "W"
+      },
+      "largestBlowout": {
+        "week": 4,
+        "winnerTeamId": 8,
+        "winner": "Mr. Action Jackson",
+        "loserTeamId": 1,
+        "loser": "Ramosverse",
+        "winnerScore": 159.18,
+        "loserScore": 88.56,
+        "margin": 70.62
       }
     }
   ]

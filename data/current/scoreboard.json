@@ -1,303 +1,806 @@
 {
-  "week": 4,
-  "lastUpdated": "2026-10-05T17:06:48.430Z",
+  "week": 5,
+  "lastUpdated": "2026-10-06T12:58:53.659Z",
   "scores": [
     {
-      "teamId": 2,
-      "opponentId": 10,
-      "score": 168.7,
-      "opponentScore": 155.77999999999997,
-      "matchupId": 23,
-      "team": "TDsMaGee",
-      "opponent": "Gibb it to Me Baby",
-      "logo": "https://g.espncdn.com/lm-static/logo-packs/ffl/SmackTalk-LeoEspinosa/Boom-10.svg",
+      "teamId": 4,
+      "opponentId": 12,
+      "score": 0,
+      "opponentScore": 0,
+      "matchupId": 25,
+      "team": "Kirbo Crushers",
+      "opponent": "Beautiful Dark Twisted Fantasy",
+      "logo": "https://mystique-api.fantasy.espn.com/apis/v1/domains/lm/images/8ee3dcb0-8150-11f0-8306-0b32d1884cc7",
       "projection": {
-        "espn": 187.57
+        "espn": 123.79
       },
-      "projectionAverage": 187.57,
+      "projectionAverage": 123.79,
       "projectionTrend": null,
       "status": "LIVE",
       "lineup": {
         "starters": [
           {
-            "id": 4379399,
-            "name": "J. Cook III",
-            "pos": "RB",
-            "proTeamId": 2,
-            "slot": 2,
-            "actual": 16.3,
-            "projection": 17.82,
-            "injury": null
-          },
-          {
-            "id": 4685472,
-            "name": "T. McMillan",
+            "id": 4241389,
+            "name": "C. Lamb",
             "pos": "WR",
-            "proTeamId": 29,
+            "proTeamId": 6,
             "slot": 4,
-            "actual": 46.2,
-            "projection": 16.12,
+            "actual": 0,
+            "projection": 19.49,
             "injury": null
           },
           {
-            "id": 4430737,
-            "name": "K. Williams",
+            "id": 3043078,
+            "name": "D. Henry",
             "pos": "RB",
-            "proTeamId": 14,
-            "slot": 2,
-            "actual": 37.7,
-            "projection": 13.23,
-            "injury": null
-          },
-          {
-            "id": 4360761,
-            "name": "M. Wilson",
-            "pos": "WR",
-            "proTeamId": 22,
-            "slot": 4,
-            "actual": 16.5,
-            "projection": 13.54,
-            "injury": null
-          },
-          {
-            "id": 4569587,
-            "name": "W. Robinson",
-            "pos": "WR",
-            "proTeamId": 10,
-            "slot": 23,
-            "actual": 11,
-            "projection": 9.26,
-            "injury": null
-          },
-          {
-            "id": -16033,
-            "name": "Ravens D/ST",
-            "pos": "D/ST",
             "proTeamId": 33,
-            "slot": 16,
-            "actual": 7,
-            "projection": 6.59,
+            "slot": 2,
+            "actual": 0,
+            "projection": 18.8,
             "injury": null
           },
           {
-            "id": 4574716,
-            "name": "H. Mevis",
-            "pos": "K",
-            "proTeamId": 14,
-            "slot": 17,
-            "actual": 6,
-            "projection": 8.54,
-            "injury": null
+            "id": 4612826,
+            "name": "L. McConkey",
+            "pos": "WR",
+            "proTeamId": 24,
+            "slot": 23,
+            "actual": 0,
+            "projection": 10.61,
+            "injury": "Q"
           },
           {
-            "id": 4360689,
-            "name": "T. Shough",
+            "id": 4040715,
+            "name": "J. Hurts",
             "pos": "QB",
-            "proTeamId": 18,
+            "proTeamId": 21,
             "slot": 0,
             "actual": 0,
-            "projection": 18.87,
+            "projection": 16.14,
             "injury": null
           },
           {
-            "id": 5083315,
-            "name": "K. Sadiq",
+            "id": 5083076,
+            "name": "H. Fannin Jr.",
             "pos": "TE",
-            "proTeamId": 20,
-            "slot": 6,
-            "actual": 0,
-            "projection": 9.93,
-            "injury": null
-          },
-          {
-            "id": 4887558,
-            "name": "E. Wilson",
-            "pos": "RB",
-            "proTeamId": 26,
-            "slot": 23,
-            "actual": 28,
-            "projection": 11.72,
-            "injury": null
-          }
-        ],
-        "regretBench": [
-          {
-            "id": 4568490,
-            "name": "R. Harvey",
-            "pos": "RB",
-            "proTeamId": 7,
-            "slot": 20,
-            "actual": 19.3,
-            "projection": 10.15,
-            "injury": null
-          },
-          {
-            "id": 2576925,
-            "name": "D. Waller",
-            "pos": "TE",
-            "proTeamId": 29,
-            "slot": 20,
-            "actual": 6.6,
-            "projection": 10.17,
-            "injury": null
-          }
-        ],
-        "pointsLeft": 14.9
-      },
-      "projectionSd": 9.74,
-      "startersLeft": 1,
-      "aboveMedianProbability": 100,
-      "topScoreProbability": 72.77,
-      "belowMedianProbability": 0,
-      "medianDistanceSd": 6,
-      "closeToMedian": false,
-      "nearMedian": false,
-      "winProbability": 78.66
-    },
-    {
-      "teamId": 10,
-      "opponentId": 2,
-      "score": 155.77999999999997,
-      "opponentScore": 168.7,
-      "matchupId": 23,
-      "team": "Gibb it to Me Baby",
-      "opponent": "TDsMaGee",
-      "logo": "https://mystique-api.fantasy.espn.com/apis/v1/domains/lm/images/a17151a0-a1ca-11f1-9afc-5feb43d211a1",
-      "projection": {
-        "espn": 174.36
-      },
-      "projectionAverage": 174.36,
-      "projectionTrend": null,
-      "status": "LIVE",
-      "lineup": {
-        "starters": [
-          {
-            "id": 4429795,
-            "name": "J. Gibbs",
-            "pos": "RB",
-            "proTeamId": 8,
-            "slot": 2,
-            "actual": 17.7,
-            "projection": 26.67,
-            "injury": null
-          },
-          {
-            "id": 4258173,
-            "name": "N. Collins",
-            "pos": "WR",
-            "proTeamId": 34,
-            "slot": 4,
-            "actual": 31.8,
-            "projection": 15.52,
-            "injury": null
-          },
-          {
-            "id": 4361370,
-            "name": "C. Olave",
-            "pos": "WR",
-            "proTeamId": 18,
-            "slot": 4,
-            "actual": 0,
-            "projection": 18.58,
-            "injury": null
-          },
-          {
-            "id": 4685702,
-            "name": "Q. Judkins",
-            "pos": "RB",
             "proTeamId": 5,
-            "slot": 23,
-            "actual": 21.6,
-            "projection": 12.68,
-            "injury": null
-          },
-          {
-            "id": 4426388,
-            "name": "J. Williams",
-            "pos": "WR",
-            "proTeamId": 8,
-            "slot": 23,
-            "actual": 17.2,
-            "projection": 10.46,
-            "injury": null
-          },
-          {
-            "id": 4569173,
-            "name": "R. Stevenson",
-            "pos": "RB",
-            "proTeamId": 17,
-            "slot": 2,
-            "actual": 18.4,
-            "projection": 11.68,
-            "injury": null
-          },
-          {
-            "id": 3046779,
-            "name": "J. Goff",
-            "pos": "QB",
-            "proTeamId": 8,
-            "slot": 0,
-            "actual": 22.48,
-            "projection": 17.61,
-            "injury": null
-          },
-          {
-            "id": 4361050,
-            "name": "I. Likely",
-            "pos": "TE",
-            "proTeamId": 19,
             "slot": 6,
-            "actual": 13.6,
-            "projection": 11.85,
+            "actual": 0,
+            "projection": 11.92,
             "injury": null
           },
           {
-            "id": 4697745,
-            "name": "T. Loop",
+            "id": 3916433,
+            "name": "J. Meyers",
+            "pos": "WR",
+            "proTeamId": 30,
+            "slot": 23,
+            "actual": 0,
+            "projection": 10.77,
+            "injury": null
+          },
+          {
+            "id": 4688813,
+            "name": "J. Downs",
+            "pos": "WR",
+            "proTeamId": 11,
+            "slot": 4,
+            "actual": 0,
+            "projection": 12.2,
+            "injury": null
+          },
+          {
+            "id": 4689936,
+            "name": "J. Bates",
             "pos": "K",
-            "proTeamId": 33,
+            "proTeamId": 8,
             "slot": 17,
-            "actual": 8,
-            "projection": 9.3,
+            "actual": 0,
+            "projection": 9.13,
             "injury": null
           },
           {
-            "id": -16025,
-            "name": "49ers D/ST",
+            "id": 4371733,
+            "name": "K. Gainwell",
+            "pos": "RB",
+            "proTeamId": 27,
+            "slot": 2,
+            "actual": 0,
+            "projection": 7.43,
+            "injury": null
+          },
+          {
+            "id": -16030,
+            "name": "Jaguars D/ST",
             "pos": "D/ST",
-            "proTeamId": 25,
+            "proTeamId": 30,
             "slot": 16,
-            "actual": 5,
-            "projection": 5.9,
+            "actual": 0,
+            "projection": 7.29,
             "injury": null
           }
         ],
         "regretBench": [],
         "pointsLeft": 0
       },
-      "projectionSd": 12.53,
-      "startersLeft": 1,
-      "aboveMedianProbability": 100,
-      "topScoreProbability": 19.62,
-      "belowMedianProbability": 0,
-      "medianDistanceSd": 3.61,
+      "projectionSd": 27.38,
+      "startersLeft": 10,
+      "aboveMedianProbability": 58.76,
+      "topScoreProbability": 7.91,
+      "belowMedianProbability": 41.24,
+      "medianDistanceSd": 0.22,
+      "closeToMedian": true,
+      "nearMedian": true,
+      "winProbability": 68.55
+    },
+    {
+      "teamId": 12,
+      "opponentId": 4,
+      "score": 0,
+      "opponentScore": 0,
+      "matchupId": 25,
+      "team": "Beautiful Dark Twisted Fantasy",
+      "opponent": "Kirbo Crushers",
+      "logo": "https://g.espncdn.com/lm-static/logo-packs/core/OldTimeMickeyAndFriends/Football_Mickey.svg",
+      "projection": {
+        "espn": 104.94
+      },
+      "projectionAverage": 104.94,
+      "projectionTrend": null,
+      "status": "LIVE",
+      "lineup": {
+        "starters": [
+          {
+            "id": 3117251,
+            "name": "C. McCaffrey",
+            "pos": "RB",
+            "proTeamId": 25,
+            "slot": 2,
+            "actual": 0,
+            "projection": 18.95,
+            "injury": null
+          },
+          {
+            "id": 3929630,
+            "name": "S. Barkley",
+            "pos": "RB",
+            "proTeamId": 21,
+            "slot": 2,
+            "actual": 0,
+            "projection": 0,
+            "injury": "Q"
+          },
+          {
+            "id": 4595348,
+            "name": "M. Nabers",
+            "pos": "WR",
+            "proTeamId": 19,
+            "slot": 4,
+            "actual": 0,
+            "projection": 13.76,
+            "injury": null
+          },
+          {
+            "id": 4567750,
+            "name": "E. Egbuka",
+            "pos": "WR",
+            "proTeamId": 27,
+            "slot": 4,
+            "actual": 0,
+            "projection": 10.17,
+            "injury": null
+          },
+          {
+            "id": 4723086,
+            "name": "C. Loveland",
+            "pos": "TE",
+            "proTeamId": 3,
+            "slot": 6,
+            "actual": 0,
+            "projection": 9.65,
+            "injury": null
+          },
+          {
+            "id": 3915511,
+            "name": "J. Burrow",
+            "pos": "QB",
+            "proTeamId": 4,
+            "slot": 0,
+            "actual": 0,
+            "projection": 20.45,
+            "injury": null
+          },
+          {
+            "id": -16026,
+            "name": "Seahawks D/ST",
+            "pos": "D/ST",
+            "proTeamId": 26,
+            "slot": 16,
+            "actual": 0,
+            "projection": 3.8,
+            "injury": null
+          },
+          {
+            "id": 17427,
+            "name": "C. Santos",
+            "pos": "K",
+            "proTeamId": 3,
+            "slot": 17,
+            "actual": 0,
+            "projection": 8.48,
+            "injury": null
+          },
+          {
+            "id": 4361411,
+            "name": "P. Freiermuth",
+            "pos": "TE",
+            "proTeamId": 23,
+            "slot": 23,
+            "actual": 0,
+            "projection": 8.49,
+            "injury": null
+          },
+          {
+            "id": 4429205,
+            "name": "J. Addison",
+            "pos": "WR",
+            "proTeamId": 16,
+            "slot": 23,
+            "actual": 0,
+            "projection": 11.19,
+            "injury": null
+          }
+        ],
+        "regretBench": [],
+        "pointsLeft": 0
+      },
+      "projectionSd": 24.45,
+      "startersLeft": 10,
+      "aboveMedianProbability": 31.13,
+      "topScoreProbability": 1.64,
+      "belowMedianProbability": 68.87,
+      "medianDistanceSd": -0.52,
+      "closeToMedian": false,
+      "nearMedian": true,
+      "winProbability": 31.45
+    },
+    {
+      "teamId": 3,
+      "opponentId": 7,
+      "score": 0,
+      "opponentScore": 0,
+      "matchupId": 26,
+      "team": "Kyle Tucker",
+      "opponent": "Ruffing the Passer",
+      "logo": "https://i.pinimg.com/280x280_RS/3a/d0/a9/3ad0a90c0e668da81c4e76e3fa51fbd0.jpg",
+      "projection": {
+        "espn": 119.09
+      },
+      "projectionAverage": 119.09,
+      "projectionTrend": null,
+      "status": "LIVE",
+      "lineup": {
+        "starters": [
+          {
+            "id": 4430878,
+            "name": "J. Smith-Njigba",
+            "pos": "WR",
+            "proTeamId": 26,
+            "slot": 4,
+            "actual": 0,
+            "projection": 20.93,
+            "injury": null
+          },
+          {
+            "id": 4685382,
+            "name": "O. Hampton",
+            "pos": "RB",
+            "proTeamId": 24,
+            "slot": 2,
+            "actual": 0,
+            "projection": 11.76,
+            "injury": null
+          },
+          {
+            "id": 4428331,
+            "name": "R. Rice",
+            "pos": "WR",
+            "proTeamId": 12,
+            "slot": 4,
+            "actual": 0,
+            "projection": 0,
+            "injury": "Q"
+          },
+          {
+            "id": 4882093,
+            "name": "B. Tuten",
+            "pos": "RB",
+            "proTeamId": 30,
+            "slot": 2,
+            "actual": 0,
+            "projection": 14.18,
+            "injury": null
+          },
+          {
+            "id": 4596448,
+            "name": "B. Irving",
+            "pos": "RB",
+            "proTeamId": 27,
+            "slot": 23,
+            "actual": 0,
+            "projection": 15.68,
+            "injury": null
+          },
+          {
+            "id": 4432710,
+            "name": "T. Henderson",
+            "pos": "RB",
+            "proTeamId": 17,
+            "slot": 23,
+            "actual": 0,
+            "projection": 10.67,
+            "injury": null
+          },
+          {
+            "id": 4572680,
+            "name": "T. Kraft",
+            "pos": "TE",
+            "proTeamId": 9,
+            "slot": 6,
+            "actual": 0,
+            "projection": 10.55,
+            "injury": null
+          },
+          {
+            "id": 3953687,
+            "name": "B. Aubrey",
+            "pos": "K",
+            "proTeamId": 6,
+            "slot": 17,
+            "actual": 0,
+            "projection": 10.81,
+            "injury": null
+          },
+          {
+            "id": 12483,
+            "name": "M. Stafford",
+            "pos": "QB",
+            "proTeamId": 14,
+            "slot": 0,
+            "actual": 0,
+            "projection": 18.55,
+            "injury": null
+          },
+          {
+            "id": -16005,
+            "name": "Browns D/ST",
+            "pos": "D/ST",
+            "proTeamId": 5,
+            "slot": 16,
+            "actual": 0,
+            "projection": 5.97,
+            "injury": null
+          }
+        ],
+        "regretBench": [],
+        "pointsLeft": 0
+      },
+      "projectionSd": 27.02,
+      "startersLeft": 9,
+      "aboveMedianProbability": 51.52,
+      "topScoreProbability": 5.6,
+      "belowMedianProbability": 48.48,
+      "medianDistanceSd": 0.05,
+      "closeToMedian": true,
+      "nearMedian": true,
+      "winProbability": 78.04
+    },
+    {
+      "teamId": 7,
+      "opponentId": 3,
+      "score": 0,
+      "opponentScore": 0,
+      "matchupId": 26,
+      "team": "Ruffing the Passer",
+      "opponent": "Kyle Tucker",
+      "logo": "https://mystique-api.fantasy.espn.com/apis/v1/domains/lm/images/7659cbc0-a1cd-11f1-9afc-5feb43d211a1",
+      "projection": {
+        "espn": 89
+      },
+      "projectionAverage": 89,
+      "projectionTrend": null,
+      "status": "LIVE",
+      "lineup": {
+        "starters": [
+          {
+            "id": 4374302,
+            "name": "A. St. Brown",
+            "pos": "WR",
+            "proTeamId": 8,
+            "slot": 4,
+            "actual": 0,
+            "projection": 20.36,
+            "injury": null
+          },
+          {
+            "id": 4431299,
+            "name": "R. Odunze",
+            "pos": "WR",
+            "proTeamId": 3,
+            "slot": 23,
+            "actual": 0,
+            "projection": 10.92,
+            "injury": null
+          },
+          {
+            "id": 4035538,
+            "name": "D. Montgomery",
+            "pos": "RB",
+            "proTeamId": 34,
+            "slot": 2,
+            "actual": 0,
+            "projection": 12.03,
+            "injury": null
+          },
+          {
+            "id": 4871023,
+            "name": "C. Tate",
+            "pos": "WR",
+            "proTeamId": 10,
+            "slot": 23,
+            "actual": 0,
+            "projection": 13.76,
+            "injury": null
+          },
+          {
+            "id": 3040151,
+            "name": "G. Kittle",
+            "pos": "TE",
+            "proTeamId": 25,
+            "slot": 6,
+            "actual": 0,
+            "projection": 13.86,
+            "injury": null
+          },
+          {
+            "id": 4241416,
+            "name": "C. Hubbard",
+            "pos": "RB",
+            "proTeamId": 29,
+            "slot": 2,
+            "actual": 0,
+            "projection": 0,
+            "injury": null
+          },
+          {
+            "id": 2473037,
+            "name": "J. Myers",
+            "pos": "K",
+            "proTeamId": 26,
+            "slot": 17,
+            "actual": 0,
+            "projection": 8.81,
+            "injury": null
+          },
+          {
+            "id": -16012,
+            "name": "Chiefs D/ST",
+            "pos": "D/ST",
+            "proTeamId": 12,
+            "slot": 16,
+            "actual": 0,
+            "projection": 0,
+            "injury": null
+          },
+          {
+            "id": 2576980,
+            "name": "M. Mariota",
+            "pos": "QB",
+            "proTeamId": 28,
+            "slot": 0,
+            "actual": 0,
+            "projection": 0,
+            "injury": "D"
+          },
+          {
+            "id": 4431492,
+            "name": "R. Wilson",
+            "pos": "WR",
+            "proTeamId": 23,
+            "slot": 4,
+            "actual": 0,
+            "projection": 9.26,
+            "injury": null
+          }
+        ],
+        "regretBench": [],
+        "pointsLeft": 0
+      },
+      "projectionSd": 23.68,
+      "startersLeft": 8,
+      "aboveMedianProbability": 13.06,
+      "topScoreProbability": 0.29,
+      "belowMedianProbability": 86.94,
+      "medianDistanceSd": -1.21,
       "closeToMedian": false,
       "nearMedian": false,
-      "winProbability": 21.34
+      "winProbability": 21.96
+    },
+    {
+      "teamId": 6,
+      "opponentId": 1,
+      "score": 0,
+      "opponentScore": 0,
+      "matchupId": 27,
+      "team": "Claremont In Yo Stace!",
+      "opponent": "Ramosverse",
+      "logo": "https://g.espncdn.com/lm-static/logo-packs/core/BobsBurgers/Bob_OnModel.svg",
+      "projection": {
+        "espn": 131.53
+      },
+      "projectionAverage": 131.53,
+      "projectionTrend": null,
+      "status": "LIVE",
+      "lineup": {
+        "starters": [
+          {
+            "id": 3918298,
+            "name": "J. Allen",
+            "pos": "QB",
+            "proTeamId": 2,
+            "slot": 0,
+            "actual": 0,
+            "projection": 20.18,
+            "injury": null
+          },
+          {
+            "id": 4426502,
+            "name": "D. London",
+            "pos": "WR",
+            "proTeamId": 1,
+            "slot": 4,
+            "actual": 0,
+            "projection": 16.99,
+            "injury": null
+          },
+          {
+            "id": 4426354,
+            "name": "G. Pickens",
+            "pos": "WR",
+            "proTeamId": 6,
+            "slot": 4,
+            "actual": 0,
+            "projection": 13.39,
+            "injury": null
+          },
+          {
+            "id": 4696981,
+            "name": "C. Skattebo",
+            "pos": "RB",
+            "proTeamId": 19,
+            "slot": 2,
+            "actual": 0,
+            "projection": 13.43,
+            "injury": null
+          },
+          {
+            "id": 16800,
+            "name": "D. Adams",
+            "pos": "WR",
+            "proTeamId": 14,
+            "slot": 23,
+            "actual": 0,
+            "projection": 15.77,
+            "injury": null
+          },
+          {
+            "id": 4430027,
+            "name": "S. LaPorta",
+            "pos": "TE",
+            "proTeamId": 8,
+            "slot": 6,
+            "actual": 0,
+            "projection": 13.2,
+            "injury": null
+          },
+          {
+            "id": 4569987,
+            "name": "J. Warren",
+            "pos": "RB",
+            "proTeamId": 23,
+            "slot": 2,
+            "actual": 0,
+            "projection": 14.69,
+            "injury": null
+          },
+          {
+            "id": 3116365,
+            "name": "M. Andrews",
+            "pos": "TE",
+            "proTeamId": 33,
+            "slot": 23,
+            "actual": 0,
+            "projection": 10.44,
+            "injury": null
+          },
+          {
+            "id": -16014,
+            "name": "Rams D/ST",
+            "pos": "D/ST",
+            "proTeamId": 14,
+            "slot": 16,
+            "actual": 0,
+            "projection": 4.44,
+            "injury": null
+          },
+          {
+            "id": 2971573,
+            "name": "K. Fairbairn",
+            "pos": "K",
+            "proTeamId": 34,
+            "slot": 17,
+            "actual": 0,
+            "projection": 9,
+            "injury": null
+          }
+        ],
+        "regretBench": [],
+        "pointsLeft": 0
+      },
+      "projectionSd": 28.26,
+      "startersLeft": 10,
+      "aboveMedianProbability": 68.88,
+      "topScoreProbability": 13.21,
+      "belowMedianProbability": 31.12,
+      "medianDistanceSd": 0.49,
+      "closeToMedian": true,
+      "nearMedian": true,
+      "winProbability": 71.82
+    },
+    {
+      "teamId": 1,
+      "opponentId": 6,
+      "score": 0,
+      "opponentScore": 0,
+      "matchupId": 27,
+      "team": "Ramosverse",
+      "opponent": "Claremont In Yo Stace!",
+      "logo": "https://g.espncdn.com/lm-static/logo-packs/ffl/SmackTalk-LeoEspinosa/u_mad_bro-09.svg",
+      "projection": {
+        "espn": 109.01
+      },
+      "projectionAverage": 109.01,
+      "projectionTrend": null,
+      "status": "LIVE",
+      "lineup": {
+        "starters": [
+          {
+            "id": 4361307,
+            "name": "T. McBride",
+            "pos": "TE",
+            "proTeamId": 22,
+            "slot": 6,
+            "actual": 0,
+            "projection": 18.94,
+            "injury": null
+          },
+          {
+            "id": 4426338,
+            "name": "B. Nix",
+            "pos": "QB",
+            "proTeamId": 7,
+            "slot": 0,
+            "actual": 0,
+            "projection": 16.44,
+            "injury": null
+          },
+          {
+            "id": 4432620,
+            "name": "P. Washington",
+            "pos": "WR",
+            "proTeamId": 30,
+            "slot": 4,
+            "actual": 0,
+            "projection": 14.31,
+            "injury": null
+          },
+          {
+            "id": 3126486,
+            "name": "D. Samuel Sr.",
+            "pos": "WR",
+            "proTeamId": 25,
+            "slot": 23,
+            "actual": 0,
+            "projection": 11.17,
+            "injury": null
+          },
+          {
+            "id": -16023,
+            "name": "Steelers D/ST",
+            "pos": "D/ST",
+            "proTeamId": 23,
+            "slot": 16,
+            "actual": 0,
+            "projection": 6.91,
+            "injury": null
+          },
+          {
+            "id": 3150744,
+            "name": "C. McLaughlin",
+            "pos": "K",
+            "proTeamId": 27,
+            "slot": 17,
+            "actual": 0,
+            "projection": 8,
+            "injury": null
+          },
+          {
+            "id": 4686422,
+            "name": "X. Hutchinson",
+            "pos": "WR",
+            "proTeamId": 34,
+            "slot": 23,
+            "actual": 0,
+            "projection": 8.23,
+            "injury": null
+          },
+          {
+            "id": 4711533,
+            "name": "O. Gordon II",
+            "pos": "RB",
+            "proTeamId": 15,
+            "slot": 2,
+            "actual": 0,
+            "projection": 11.15,
+            "injury": null
+          },
+          {
+            "id": 2991662,
+            "name": "M. Hollins",
+            "pos": "WR",
+            "proTeamId": 17,
+            "slot": 4,
+            "actual": 0,
+            "projection": 8.53,
+            "injury": "Q"
+          },
+          {
+            "id": 4241457,
+            "name": "N. Harris",
+            "pos": "RB",
+            "proTeamId": 19,
+            "slot": 2,
+            "actual": 0,
+            "projection": 5.33,
+            "injury": null
+          }
+        ],
+        "regretBench": [],
+        "pointsLeft": 0
+      },
+      "projectionSd": 24.65,
+      "startersLeft": 10,
+      "aboveMedianProbability": 36.95,
+      "topScoreProbability": 2.36,
+      "belowMedianProbability": 63.05,
+      "medianDistanceSd": -0.35,
+      "closeToMedian": true,
+      "nearMedian": true,
+      "winProbability": 28.18
     },
     {
       "teamId": 11,
-      "opponentId": 7,
-      "score": 142.88,
-      "opponentScore": 131.34,
-      "matchupId": 21,
+      "opponentId": 10,
+      "score": 0,
+      "opponentScore": 0,
+      "matchupId": 28,
       "team": "Brock You Like a Hurricane",
-      "opponent": "Ruffing the Passer",
+      "opponent": "Gibb it to Me Baby",
       "logo": "https://mystique-api.fantasy.espn.com/apis/v1/domains/lm/images/add1ddb0-a2f7-11f1-8ef0-19c1af2548f8",
       "projection": {
-        "espn": 164.74
+        "espn": 116.43
       },
-      "projectionAverage": 164.74,
+      "projectionAverage": 116.43,
       "projectionTrend": null,
       "status": "LIVE",
       "lineup": {
@@ -309,7 +812,7 @@
             "proTeamId": 1,
             "slot": 2,
             "actual": 0,
-            "projection": 21.86,
+            "projection": 21.26,
             "injury": null
           },
           {
@@ -318,8 +821,8 @@
             "pos": "RB",
             "proTeamId": 12,
             "slot": 2,
-            "actual": 31.9,
-            "projection": 20.88,
+            "actual": 0,
+            "projection": 0,
             "injury": null
           },
           {
@@ -328,8 +831,8 @@
             "pos": "TE",
             "proTeamId": 13,
             "slot": 6,
-            "actual": 20.6,
-            "projection": 16.11,
+            "actual": 0,
+            "projection": 16.51,
             "injury": null
           },
           {
@@ -338,8 +841,8 @@
             "pos": "WR",
             "proTeamId": 7,
             "slot": 23,
-            "actual": 14.5,
-            "projection": 12.08,
+            "actual": 0,
+            "projection": 11.47,
             "injury": null
           },
           {
@@ -348,8 +851,8 @@
             "pos": "WR",
             "proTeamId": 4,
             "slot": 4,
-            "actual": 27.7,
-            "projection": 13.86,
+            "actual": 0,
+            "projection": 14.44,
             "injury": "Q"
           },
           {
@@ -358,8 +861,8 @@
             "pos": "WR",
             "proTeamId": 3,
             "slot": 23,
-            "actual": 11.4,
-            "projection": 12.57,
+            "actual": 0,
+            "projection": 12.27,
             "injury": null
           },
           {
@@ -368,8 +871,8 @@
             "pos": "WR",
             "proTeamId": 9,
             "slot": 4,
-            "actual": 7.7,
-            "projection": 14.68,
+            "actual": 0,
+            "projection": 14.01,
             "injury": null
           },
           {
@@ -378,8 +881,8 @@
             "pos": "QB",
             "proTeamId": 30,
             "slot": 0,
-            "actual": 13.08,
-            "projection": 18.78,
+            "actual": 0,
+            "projection": 19.28,
             "injury": null
           },
           {
@@ -388,8 +891,8 @@
             "pos": "D/ST",
             "proTeamId": 16,
             "slot": 16,
-            "actual": 10,
-            "projection": 8.5,
+            "actual": 0,
+            "projection": 7.19,
             "injury": null
           },
           {
@@ -398,68 +901,168 @@
             "pos": "K",
             "proTeamId": 12,
             "slot": 17,
-            "actual": 6,
-            "projection": 8.83,
+            "actual": 0,
+            "projection": 0,
             "injury": null
           }
         ],
-        "regretBench": [
-          {
-            "id": 4431452,
-            "name": "D. Maye",
-            "pos": "QB",
-            "proTeamId": 17,
-            "slot": 20,
-            "actual": 26.16,
-            "projection": 17.82,
-            "injury": null
-          },
-          {
-            "id": 4432773,
-            "name": "B. Thomas Jr.",
-            "pos": "WR",
-            "proTeamId": 30,
-            "slot": 20,
-            "actual": 9.7,
-            "projection": 8.27,
-            "injury": null
-          },
-          {
-            "id": 3116165,
-            "name": "C. Godwin Jr.",
-            "pos": "WR",
-            "proTeamId": 27,
-            "slot": 20,
-            "actual": 9.1,
-            "projection": 7.08,
-            "injury": null
-          }
-        ],
-        "pointsLeft": 15.08
+        "regretBench": [],
+        "pointsLeft": 0
       },
-      "projectionSd": 13.98,
-      "startersLeft": 1,
-      "aboveMedianProbability": 100,
-      "topScoreProbability": 7.61,
-      "belowMedianProbability": 0,
-      "medianDistanceSd": 2.54,
+      "projectionSd": 28.28,
+      "startersLeft": 8,
+      "aboveMedianProbability": 47.94,
+      "topScoreProbability": 5.16,
+      "belowMedianProbability": 52.06,
+      "medianDistanceSd": -0.05,
+      "closeToMedian": true,
+      "nearMedian": true,
+      "winProbability": 24.41
+    },
+    {
+      "teamId": 10,
+      "opponentId": 11,
+      "score": 0,
+      "opponentScore": 0,
+      "matchupId": 28,
+      "team": "Gibb it to Me Baby",
+      "opponent": "Brock You Like a Hurricane",
+      "logo": "https://mystique-api.fantasy.espn.com/apis/v1/domains/lm/images/a17151a0-a1ca-11f1-9afc-5feb43d211a1",
+      "projection": {
+        "espn": 146.91
+      },
+      "projectionAverage": 146.91,
+      "projectionTrend": null,
+      "status": "LIVE",
+      "lineup": {
+        "starters": [
+          {
+            "id": 4429795,
+            "name": "J. Gibbs",
+            "pos": "RB",
+            "proTeamId": 8,
+            "slot": 2,
+            "actual": 0,
+            "projection": 27.51,
+            "injury": null
+          },
+          {
+            "id": 4258173,
+            "name": "N. Collins",
+            "pos": "WR",
+            "proTeamId": 34,
+            "slot": 4,
+            "actual": 0,
+            "projection": 16.72,
+            "injury": null
+          },
+          {
+            "id": 4361370,
+            "name": "C. Olave",
+            "pos": "WR",
+            "proTeamId": 18,
+            "slot": 4,
+            "actual": 0,
+            "projection": 17.01,
+            "injury": null
+          },
+          {
+            "id": 4685702,
+            "name": "Q. Judkins",
+            "pos": "RB",
+            "proTeamId": 5,
+            "slot": 23,
+            "actual": 0,
+            "projection": 14.77,
+            "injury": null
+          },
+          {
+            "id": 4426388,
+            "name": "J. Williams",
+            "pos": "WR",
+            "proTeamId": 8,
+            "slot": 23,
+            "actual": 0,
+            "projection": 11.06,
+            "injury": null
+          },
+          {
+            "id": 4569173,
+            "name": "R. Stevenson",
+            "pos": "RB",
+            "proTeamId": 17,
+            "slot": 2,
+            "actual": 0,
+            "projection": 13.35,
+            "injury": null
+          },
+          {
+            "id": 3046779,
+            "name": "J. Goff",
+            "pos": "QB",
+            "proTeamId": 8,
+            "slot": 0,
+            "actual": 0,
+            "projection": 19.83,
+            "injury": null
+          },
+          {
+            "id": 4361050,
+            "name": "I. Likely",
+            "pos": "TE",
+            "proTeamId": 19,
+            "slot": 6,
+            "actual": 0,
+            "projection": 13.03,
+            "injury": null
+          },
+          {
+            "id": 4697745,
+            "name": "T. Loop",
+            "pos": "K",
+            "proTeamId": 33,
+            "slot": 17,
+            "actual": 0,
+            "projection": 8.68,
+            "injury": null
+          },
+          {
+            "id": -16025,
+            "name": "49ers D/ST",
+            "pos": "D/ST",
+            "proTeamId": 25,
+            "slot": 16,
+            "actual": 0,
+            "projection": 4.95,
+            "injury": null
+          }
+        ],
+        "regretBench": [],
+        "pointsLeft": 0
+      },
+      "projectionSd": 32.08,
+      "startersLeft": 10,
+      "aboveMedianProbability": 81.73,
+      "topScoreProbability": 29.03,
+      "belowMedianProbability": 18.27,
+      "medianDistanceSd": 0.91,
       "closeToMedian": false,
       "nearMedian": false,
-      "winProbability": 100
+      "winProbability": 75.59
     },
     {
       "teamId": 8,
-      "opponentId": 1,
-      "score": 136.38000000000002,
-      "opponentScore": 88.55999999999999,
-      "matchupId": 22,
+      "opponentId": 5,
+      "score": 0,
+      "opponentScore": 0,
+      "matchupId": 29,
       "team": "Mr. Action Jackson",
-      "opponent": "Ramosverse",
+      "opponent": "49er Faith-Fool",
       "logo": "https://g.espncdn.com/lm-static/logo-packs/ffl/Blockparty-RobbHars/blockplayers-01.svg",
       "projection": {
-        "espn": 147.04
+        "espn": 139.29
       },
-      "projectionAverage": 147.04,
+      "projectionAverage": 139.29,
       "projectionTrend": null,
       "status": "LIVE",
       "lineup": {
@@ -470,8 +1073,8 @@
             "pos": "WR",
             "proTeamId": 14,
             "slot": 4,
-            "actual": 28.7,
-            "projection": 18.41,
+            "actual": 0,
+            "projection": 22.1,
             "injury": null
           },
           {
@@ -480,8 +1083,8 @@
             "pos": "RB",
             "proTeamId": 13,
             "slot": 2,
-            "actual": 18.6,
-            "projection": 19.11,
+            "actual": 0,
+            "projection": 18.06,
             "injury": null
           },
           {
@@ -490,8 +1093,8 @@
             "pos": "QB",
             "proTeamId": 33,
             "slot": 0,
-            "actual": 18.88,
-            "projection": 21.52,
+            "actual": 0,
+            "projection": 19.34,
             "injury": "Q"
           },
           {
@@ -500,8 +1103,8 @@
             "pos": "WR",
             "proTeamId": 33,
             "slot": 4,
-            "actual": 26.8,
-            "projection": 15.77,
+            "actual": 0,
+            "projection": 16.37,
             "injury": null
           },
           {
@@ -510,8 +1113,8 @@
             "pos": "TE",
             "proTeamId": 11,
             "slot": 6,
-            "actual": 9.1,
-            "projection": 13.15,
+            "actual": 0,
+            "projection": 11.93,
             "injury": null
           },
           {
@@ -520,8 +1123,8 @@
             "pos": "WR",
             "proTeamId": 2,
             "slot": 23,
-            "actual": 2.7,
-            "projection": 13.15,
+            "actual": 0,
+            "projection": 12.79,
             "injury": "Q"
           },
           {
@@ -530,8 +1133,8 @@
             "pos": "WR",
             "proTeamId": 25,
             "slot": 23,
-            "actual": 12.6,
-            "projection": 11.94,
+            "actual": 0,
+            "projection": 12.96,
             "injury": null
           },
           {
@@ -540,8 +1143,8 @@
             "pos": "D/ST",
             "proTeamId": 34,
             "slot": 16,
-            "actual": 3,
-            "projection": 4.85,
+            "actual": 0,
+            "projection": 6.78,
             "injury": null
           },
           {
@@ -551,7 +1154,7 @@
             "proTeamId": 18,
             "slot": 2,
             "actual": 0,
-            "projection": 10.66,
+            "projection": 10.08,
             "injury": null
           },
           {
@@ -560,686 +1163,37 @@
             "pos": "K",
             "proTeamId": 11,
             "slot": 17,
-            "actual": 16,
-            "projection": 8.97,
-            "injury": null
-          }
-        ],
-        "regretBench": [
-          {
-            "id": 4608686,
-            "name": "K. Monangai",
-            "pos": "RB",
-            "proTeamId": 3,
-            "slot": 20,
-            "actual": 29,
-            "projection": 8.34,
-            "injury": "Q"
-          },
-          {
-            "id": 4569603,
-            "name": "M. Washington",
-            "pos": "WR",
-            "proTeamId": 15,
-            "slot": 20,
-            "actual": 12,
-            "projection": 10.56,
-            "injury": null
-          }
-        ],
-        "pointsLeft": 26.3
-      },
-      "projectionSd": 6.8,
-      "startersLeft": 1,
-      "aboveMedianProbability": 100,
-      "topScoreProbability": 0.01,
-      "belowMedianProbability": 0,
-      "medianDistanceSd": 2.62,
-      "closeToMedian": false,
-      "nearMedian": false,
-      "winProbability": 100
-    },
-    {
-      "teamId": 7,
-      "opponentId": 11,
-      "score": 131.34,
-      "opponentScore": 142.88,
-      "matchupId": 21,
-      "team": "Ruffing the Passer",
-      "opponent": "Brock You Like a Hurricane",
-      "logo": "https://mystique-api.fantasy.espn.com/apis/v1/domains/lm/images/7659cbc0-a1cd-11f1-9afc-5feb43d211a1",
-      "projection": {
-        "espn": 131.34
-      },
-      "projectionAverage": 131.34,
-      "projectionTrend": null,
-      "status": "LIVE",
-      "lineup": {
-        "starters": [
-          {
-            "id": 4374302,
-            "name": "A. St. Brown",
-            "pos": "WR",
-            "proTeamId": 8,
-            "slot": 4,
-            "actual": 15.5,
-            "projection": 20.51,
-            "injury": null
-          },
-          {
-            "id": 4431299,
-            "name": "R. Odunze",
-            "pos": "WR",
-            "proTeamId": 3,
-            "slot": 23,
-            "actual": 15.4,
-            "projection": 9.99,
-            "injury": null
-          },
-          {
-            "id": 4035538,
-            "name": "D. Montgomery",
-            "pos": "RB",
-            "proTeamId": 34,
-            "slot": 2,
-            "actual": 4.3,
-            "projection": 13.66,
-            "injury": null
-          },
-          {
-            "id": 4871023,
-            "name": "C. Tate",
-            "pos": "WR",
-            "proTeamId": 10,
-            "slot": 23,
-            "actual": 22.5,
-            "projection": 12.09,
-            "injury": null
-          },
-          {
-            "id": 3040151,
-            "name": "G. Kittle",
-            "pos": "TE",
-            "proTeamId": 25,
-            "slot": 6,
-            "actual": 17,
-            "projection": 13.91,
-            "injury": null
-          },
-          {
-            "id": 4241416,
-            "name": "C. Hubbard",
-            "pos": "RB",
-            "proTeamId": 29,
-            "slot": 2,
-            "actual": 26.9,
-            "projection": 16.86,
-            "injury": null
-          },
-          {
-            "id": 2473037,
-            "name": "J. Myers",
-            "pos": "K",
-            "proTeamId": 26,
-            "slot": 17,
-            "actual": 6,
-            "projection": 9.78,
-            "injury": null
-          },
-          {
-            "id": -16012,
-            "name": "Chiefs D/ST",
-            "pos": "D/ST",
-            "proTeamId": 12,
-            "slot": 16,
-            "actual": 1,
-            "projection": 6.51,
-            "injury": null
-          },
-          {
-            "id": 2576980,
-            "name": "M. Mariota",
-            "pos": "QB",
-            "proTeamId": 28,
-            "slot": 0,
-            "actual": 5.34,
-            "projection": 18.81,
-            "injury": "D"
-          },
-          {
-            "id": 4431492,
-            "name": "R. Wilson",
-            "pos": "WR",
-            "proTeamId": 23,
-            "slot": 4,
-            "actual": 17.4,
-            "projection": 8.39,
-            "injury": null
-          }
-        ],
-        "regretBench": [
-          {
-            "id": 4361432,
-            "name": "R. Doubs",
-            "pos": "WR",
-            "proTeamId": 17,
-            "slot": 20,
-            "actual": 23.8,
-            "projection": 9.86,
-            "injury": null
-          },
-          {
-            "id": 4036378,
-            "name": "J. Love",
-            "pos": "QB",
-            "proTeamId": 9,
-            "slot": 20,
-            "actual": 13.08,
-            "projection": 15.16,
-            "injury": null
-          },
-          {
-            "id": 4038941,
-            "name": "J. Herbert",
-            "pos": "QB",
-            "proTeamId": 24,
-            "slot": 20,
-            "actual": 10.56,
-            "projection": 12.69,
-            "injury": null
-          }
-        ],
-        "pointsLeft": 16.14
-      },
-      "projectionSd": 0,
-      "startersLeft": 0,
-      "aboveMedianProbability": 100,
-      "topScoreProbability": 0,
-      "belowMedianProbability": 0,
-      "medianDistanceSd": 206758.34,
-      "closeToMedian": false,
-      "nearMedian": false,
-      "winProbability": 0
-    },
-    {
-      "teamId": 4,
-      "opponentId": 6,
-      "score": 127.02,
-      "opponentScore": 117.52,
-      "matchupId": 20,
-      "team": "Kirbo Crushers",
-      "opponent": "Claremont In Yo Stace!",
-      "logo": "https://mystique-api.fantasy.espn.com/apis/v1/domains/lm/images/8ee3dcb0-8150-11f0-8306-0b32d1884cc7",
-      "projection": {
-        "espn": 127.02
-      },
-      "projectionAverage": 127.02,
-      "projectionTrend": null,
-      "status": "LIVE",
-      "lineup": {
-        "starters": [
-          {
-            "id": 4241389,
-            "name": "C. Lamb",
-            "pos": "WR",
-            "proTeamId": 6,
-            "slot": 4,
-            "actual": 42.3,
-            "projection": 17.18,
-            "injury": null
-          },
-          {
-            "id": 3043078,
-            "name": "D. Henry",
-            "pos": "RB",
-            "proTeamId": 33,
-            "slot": 2,
-            "actual": 15.9,
-            "projection": 20.81,
-            "injury": null
-          },
-          {
-            "id": 4612826,
-            "name": "L. McConkey",
-            "pos": "WR",
-            "proTeamId": 24,
-            "slot": 23,
             "actual": 0,
-            "projection": 11.88,
-            "injury": "Q"
-          },
-          {
-            "id": 4040715,
-            "name": "J. Hurts",
-            "pos": "QB",
-            "proTeamId": 21,
-            "slot": 0,
-            "actual": 13.52,
-            "projection": 17.85,
-            "injury": null
-          },
-          {
-            "id": 5083076,
-            "name": "H. Fannin Jr.",
-            "pos": "TE",
-            "proTeamId": 5,
-            "slot": 6,
-            "actual": 11.7,
-            "projection": 11.2,
-            "injury": null
-          },
-          {
-            "id": 3916433,
-            "name": "J. Meyers",
-            "pos": "WR",
-            "proTeamId": 30,
-            "slot": 23,
-            "actual": 6.3,
-            "projection": 10.87,
-            "injury": null
-          },
-          {
-            "id": 4688813,
-            "name": "J. Downs",
-            "pos": "WR",
-            "proTeamId": 11,
-            "slot": 4,
-            "actual": 4.6,
-            "projection": 13.78,
-            "injury": null
-          },
-          {
-            "id": 4689936,
-            "name": "J. Bates",
-            "pos": "K",
-            "proTeamId": 8,
-            "slot": 17,
-            "actual": 18,
-            "projection": 8.71,
-            "injury": null
-          },
-          {
-            "id": 4371733,
-            "name": "K. Gainwell",
-            "pos": "RB",
-            "proTeamId": 27,
-            "slot": 2,
-            "actual": 10.7,
-            "projection": 8.3,
-            "injury": null
-          },
-          {
-            "id": -16030,
-            "name": "Jaguars D/ST",
-            "pos": "D/ST",
-            "proTeamId": 30,
-            "slot": 16,
-            "actual": 4,
-            "projection": 5.06,
+            "projection": 8.87,
             "injury": null
           }
         ],
-        "regretBench": [
-          {
-            "id": 4373678,
-            "name": "K. Shakir",
-            "pos": "WR",
-            "proTeamId": 2,
-            "slot": 20,
-            "actual": 13.2,
-            "projection": 9.85,
-            "injury": null
-          },
-          {
-            "id": 4683062,
-            "name": "X. Worthy",
-            "pos": "WR",
-            "proTeamId": 12,
-            "slot": 20,
-            "actual": 11,
-            "projection": 9.86,
-            "injury": null
-          },
-          {
-            "id": 3915411,
-            "name": "T. Johnson",
-            "pos": "RB",
-            "proTeamId": 2,
-            "slot": 20,
-            "actual": 3.2,
-            "projection": 4.47,
-            "injury": null
-          }
-        ],
-        "pointsLeft": 19.6
+        "regretBench": [],
+        "pointsLeft": 0
       },
-      "projectionSd": 0,
-      "startersLeft": 0,
-      "aboveMedianProbability": 30.77,
-      "topScoreProbability": 0,
-      "belowMedianProbability": 69.23,
-      "medianDistanceSd": 0,
-      "closeToMedian": true,
-      "nearMedian": true,
-      "winProbability": 30.77
-    },
-    {
-      "teamId": 12,
-      "opponentId": 3,
-      "score": 122.46,
-      "opponentScore": 93.48000000000002,
-      "matchupId": 19,
-      "team": "Beautiful Dark Twisted Fantasy",
-      "opponent": "Kyle Tucker",
-      "logo": "https://g.espncdn.com/lm-static/logo-packs/core/OldTimeMickeyAndFriends/Football_Mickey.svg",
-      "projection": {
-        "espn": 122.46
-      },
-      "projectionAverage": 122.46,
-      "projectionTrend": null,
-      "status": "LIVE",
-      "lineup": {
-        "starters": [
-          {
-            "id": 3117251,
-            "name": "C. McCaffrey",
-            "pos": "RB",
-            "proTeamId": 25,
-            "slot": 2,
-            "actual": 16,
-            "projection": 20.53,
-            "injury": null
-          },
-          {
-            "id": 3929630,
-            "name": "S. Barkley",
-            "pos": "RB",
-            "proTeamId": 21,
-            "slot": 2,
-            "actual": 2,
-            "projection": 14.6,
-            "injury": "Q"
-          },
-          {
-            "id": 4595348,
-            "name": "M. Nabers",
-            "pos": "WR",
-            "proTeamId": 19,
-            "slot": 4,
-            "actual": 24.2,
-            "projection": 13.82,
-            "injury": null
-          },
-          {
-            "id": 4567750,
-            "name": "E. Egbuka",
-            "pos": "WR",
-            "proTeamId": 27,
-            "slot": 4,
-            "actual": 3.3,
-            "projection": 11.34,
-            "injury": null
-          },
-          {
-            "id": 4723086,
-            "name": "C. Loveland",
-            "pos": "TE",
-            "proTeamId": 3,
-            "slot": 6,
-            "actual": 11.7,
-            "projection": 8.7,
-            "injury": null
-          },
-          {
-            "id": -16026,
-            "name": "Seahawks D/ST",
-            "pos": "D/ST",
-            "proTeamId": 26,
-            "slot": 16,
-            "actual": 12,
-            "projection": 7.86,
-            "injury": null
-          },
-          {
-            "id": 17427,
-            "name": "C. Santos",
-            "pos": "K",
-            "proTeamId": 3,
-            "slot": 17,
-            "actual": 11,
-            "projection": 8.47,
-            "injury": null
-          },
-          {
-            "id": 4685720,
-            "name": "B. Young",
-            "pos": "QB",
-            "proTeamId": 29,
-            "slot": 0,
-            "actual": 22.46,
-            "projection": 20.53,
-            "injury": null
-          },
-          {
-            "id": 4361411,
-            "name": "P. Freiermuth",
-            "pos": "TE",
-            "proTeamId": 23,
-            "slot": 23,
-            "actual": 10.7,
-            "projection": 8.14,
-            "injury": null
-          },
-          {
-            "id": 4429205,
-            "name": "J. Addison",
-            "pos": "WR",
-            "proTeamId": 16,
-            "slot": 23,
-            "actual": 9.1,
-            "projection": 15,
-            "injury": null
-          }
-        ],
-        "regretBench": [
-          {
-            "id": 3915511,
-            "name": "J. Burrow",
-            "pos": "QB",
-            "proTeamId": 4,
-            "slot": 20,
-            "actual": 25.72,
-            "projection": 18.46,
-            "injury": null
-          },
-          {
-            "id": 4429059,
-            "name": "W. Marks",
-            "pos": "RB",
-            "proTeamId": 34,
-            "slot": 20,
-            "actual": 8.2,
-            "projection": 8.53,
-            "injury": null
-          }
-        ],
-        "pointsLeft": 9.46
-      },
-      "projectionSd": 0,
-      "startersLeft": 0,
-      "aboveMedianProbability": 0,
-      "topScoreProbability": 0,
-      "belowMedianProbability": 100,
-      "medianDistanceSd": -123946.28,
+      "projectionSd": 30.33,
+      "startersLeft": 10,
+      "aboveMedianProbability": 75.51,
+      "topScoreProbability": 19.67,
+      "belowMedianProbability": 24.49,
+      "medianDistanceSd": 0.71,
       "closeToMedian": false,
       "nearMedian": false,
-      "winProbability": 100
-    },
-    {
-      "teamId": 6,
-      "opponentId": 4,
-      "score": 117.52,
-      "opponentScore": 127.02,
-      "matchupId": 20,
-      "team": "Claremont In Yo Stace!",
-      "opponent": "Kirbo Crushers",
-      "logo": "https://g.espncdn.com/lm-static/logo-packs/core/BobsBurgers/Bob_OnModel.svg",
-      "projection": {
-        "espn": 134.58
-      },
-      "projectionAverage": 134.58,
-      "projectionTrend": null,
-      "status": "LIVE",
-      "lineup": {
-        "starters": [
-          {
-            "id": 3918298,
-            "name": "J. Allen",
-            "pos": "QB",
-            "proTeamId": 2,
-            "slot": 0,
-            "actual": 18.52,
-            "projection": 22.52,
-            "injury": null
-          },
-          {
-            "id": 4426502,
-            "name": "D. London",
-            "pos": "WR",
-            "proTeamId": 1,
-            "slot": 4,
-            "actual": 0,
-            "projection": 17.06,
-            "injury": null
-          },
-          {
-            "id": 4426354,
-            "name": "G. Pickens",
-            "pos": "WR",
-            "proTeamId": 6,
-            "slot": 4,
-            "actual": 9.5,
-            "projection": 13.94,
-            "injury": null
-          },
-          {
-            "id": 4696981,
-            "name": "C. Skattebo",
-            "pos": "RB",
-            "proTeamId": 19,
-            "slot": 2,
-            "actual": 7.6,
-            "projection": 16.39,
-            "injury": null
-          },
-          {
-            "id": 16800,
-            "name": "D. Adams",
-            "pos": "WR",
-            "proTeamId": 14,
-            "slot": 23,
-            "actual": 7.2,
-            "projection": 15.92,
-            "injury": null
-          },
-          {
-            "id": 4430027,
-            "name": "S. LaPorta",
-            "pos": "TE",
-            "proTeamId": 8,
-            "slot": 6,
-            "actual": 22.4,
-            "projection": 11.25,
-            "injury": null
-          },
-          {
-            "id": 4569987,
-            "name": "J. Warren",
-            "pos": "RB",
-            "proTeamId": 23,
-            "slot": 2,
-            "actual": 15.6,
-            "projection": 17.31,
-            "injury": null
-          },
-          {
-            "id": 3116365,
-            "name": "M. Andrews",
-            "pos": "TE",
-            "proTeamId": 33,
-            "slot": 23,
-            "actual": 13.7,
-            "projection": 10.15,
-            "injury": null
-          },
-          {
-            "id": -16014,
-            "name": "Rams D/ST",
-            "pos": "D/ST",
-            "proTeamId": 14,
-            "slot": 16,
-            "actual": 7,
-            "projection": 6.18,
-            "injury": null
-          },
-          {
-            "id": 2971573,
-            "name": "K. Fairbairn",
-            "pos": "K",
-            "proTeamId": 34,
-            "slot": 17,
-            "actual": 16,
-            "projection": 9.9,
-            "injury": null
-          }
-        ],
-        "regretBench": [
-          {
-            "id": 4430539,
-            "name": "B. Strange",
-            "pos": "TE",
-            "proTeamId": 30,
-            "slot": 20,
-            "actual": 16.5,
-            "projection": 8.04,
-            "injury": null
-          },
-          {
-            "id": 4428718,
-            "name": "T. Tucker",
-            "pos": "WR",
-            "proTeamId": 13,
-            "slot": 20,
-            "actual": 8.4,
-            "projection": 9.34,
-            "injury": null
-          }
-        ],
-        "pointsLeft": 9.3
-      },
-      "projectionSd": 11.5,
-      "startersLeft": 1,
-      "aboveMedianProbability": 69.23,
-      "topScoreProbability": 0.03,
-      "belowMedianProbability": 30.77,
-      "medianDistanceSd": 0.47,
-      "closeToMedian": true,
-      "nearMedian": true,
-      "winProbability": 69.23
+      "winProbability": 58.99
     },
     {
       "teamId": 5,
-      "opponentId": 9,
-      "score": 110.69999999999999,
-      "opponentScore": 106.1,
-      "matchupId": 24,
+      "opponentId": 8,
+      "score": 0,
+      "opponentScore": 0,
+      "matchupId": 29,
       "team": "49er Faith-Fool",
-      "opponent": "The Mahomies",
+      "opponent": "Mr. Action Jackson",
       "logo": "https://g.espncdn.com/lm-static/logo-packs/ffl/TeamKinny-MartinLaksman/TeamKinny-31.svg",
       "projection": {
-        "espn": 110.7
+        "espn": 129.75
       },
-      "projectionAverage": 110.7,
+      "projectionAverage": 129.75,
       "projectionTrend": null,
       "status": "LIVE",
       "lineup": {
@@ -1250,8 +1204,8 @@
             "pos": "RB",
             "proTeamId": 11,
             "slot": 2,
-            "actual": 22.7,
-            "projection": 20.7,
+            "actual": 0,
+            "projection": 19.34,
             "injury": null
           },
           {
@@ -1260,8 +1214,8 @@
             "pos": "RB",
             "proTeamId": 4,
             "slot": 2,
-            "actual": 20.1,
-            "projection": 16.42,
+            "actual": 0,
+            "projection": 17.7,
             "injury": null
           },
           {
@@ -1270,8 +1224,8 @@
             "pos": "WR",
             "proTeamId": 20,
             "slot": 4,
-            "actual": 5.7,
-            "projection": 16.76,
+            "actual": 0,
+            "projection": 14.75,
             "injury": null
           },
           {
@@ -1280,8 +1234,8 @@
             "pos": "RB",
             "proTeamId": 3,
             "slot": 23,
-            "actual": 7.4,
-            "projection": 14.87,
+            "actual": 0,
+            "projection": 14.3,
             "injury": null
           },
           {
@@ -1290,8 +1244,8 @@
             "pos": "WR",
             "proTeamId": 22,
             "slot": 4,
-            "actual": 9.2,
-            "projection": 6.39,
+            "actual": 0,
+            "projection": 6.72,
             "injury": null
           },
           {
@@ -1300,8 +1254,8 @@
             "pos": "QB",
             "proTeamId": 6,
             "slot": 0,
-            "actual": 19.1,
-            "projection": 17.56,
+            "actual": 0,
+            "projection": 18.03,
             "injury": null
           },
           {
@@ -1310,8 +1264,8 @@
             "pos": "RB",
             "proTeamId": 16,
             "slot": 23,
-            "actual": 16.8,
-            "projection": 18.35,
+            "actual": 0,
+            "projection": 17.55,
             "injury": null
           },
           {
@@ -1320,8 +1274,8 @@
             "pos": "TE",
             "proTeamId": 2,
             "slot": 6,
-            "actual": 1.7,
-            "projection": 10.81,
+            "actual": 0,
+            "projection": 8.91,
             "injury": null
           },
           {
@@ -1330,8 +1284,8 @@
             "pos": "D/ST",
             "proTeamId": 21,
             "slot": 16,
-            "actual": 2,
-            "projection": 4.02,
+            "actual": 0,
+            "projection": 3.76,
             "injury": null
           },
           {
@@ -1340,58 +1294,168 @@
             "pos": "K",
             "proTeamId": 4,
             "slot": 17,
-            "actual": 6,
-            "projection": 8.42,
+            "actual": 0,
+            "projection": 8.69,
             "injury": null
           }
         ],
-        "regretBench": [
+        "regretBench": [],
+        "pointsLeft": 0
+      },
+      "projectionSd": 28.03,
+      "startersLeft": 10,
+      "aboveMedianProbability": 66.11,
+      "topScoreProbability": 11.03,
+      "belowMedianProbability": 33.89,
+      "medianDistanceSd": 0.43,
+      "closeToMedian": true,
+      "nearMedian": true,
+      "winProbability": 41.01
+    },
+    {
+      "teamId": 2,
+      "opponentId": 9,
+      "score": 0,
+      "opponentScore": 0,
+      "matchupId": 30,
+      "team": "TDsMaGee",
+      "opponent": "The Mahomies",
+      "logo": "https://g.espncdn.com/lm-static/logo-packs/ffl/SmackTalk-LeoEspinosa/Boom-10.svg",
+      "projection": {
+        "espn": 112.16
+      },
+      "projectionAverage": 112.16,
+      "projectionTrend": null,
+      "status": "LIVE",
+      "lineup": {
+        "starters": [
           {
-            "id": 3916148,
-            "name": "T. Pollard",
+            "id": 4379399,
+            "name": "J. Cook III",
             "pos": "RB",
-            "proTeamId": 10,
-            "slot": 20,
-            "actual": 13,
-            "projection": 11.99,
+            "proTeamId": 2,
+            "slot": 2,
+            "actual": 0,
+            "projection": 16.04,
             "injury": null
           },
           {
-            "id": 4870653,
-            "name": "K. Concepcion",
+            "id": 4685472,
+            "name": "T. McMillan",
             "pos": "WR",
-            "proTeamId": 5,
-            "slot": 20,
-            "actual": 11.4,
-            "projection": 9.52,
+            "proTeamId": 29,
+            "slot": 4,
+            "actual": 0,
+            "projection": 0,
+            "injury": null
+          },
+          {
+            "id": 4430737,
+            "name": "K. Williams",
+            "pos": "RB",
+            "proTeamId": 14,
+            "slot": 2,
+            "actual": 0,
+            "projection": 18,
+            "injury": null
+          },
+          {
+            "id": 4360761,
+            "name": "M. Wilson",
+            "pos": "WR",
+            "proTeamId": 22,
+            "slot": 4,
+            "actual": 0,
+            "projection": 17.06,
+            "injury": null
+          },
+          {
+            "id": 4569587,
+            "name": "W. Robinson",
+            "pos": "WR",
+            "proTeamId": 10,
+            "slot": 23,
+            "actual": 0,
+            "projection": 9.05,
+            "injury": null
+          },
+          {
+            "id": -16033,
+            "name": "Ravens D/ST",
+            "pos": "D/ST",
+            "proTeamId": 33,
+            "slot": 16,
+            "actual": 0,
+            "projection": 3.7,
+            "injury": null
+          },
+          {
+            "id": 4574716,
+            "name": "H. Mevis",
+            "pos": "K",
+            "proTeamId": 14,
+            "slot": 17,
+            "actual": 0,
+            "projection": 9.44,
+            "injury": null
+          },
+          {
+            "id": 4360689,
+            "name": "T. Shough",
+            "pos": "QB",
+            "proTeamId": 18,
+            "slot": 0,
+            "actual": 0,
+            "projection": 16.18,
+            "injury": null
+          },
+          {
+            "id": 5083315,
+            "name": "K. Sadiq",
+            "pos": "TE",
+            "proTeamId": 20,
+            "slot": 6,
+            "actual": 0,
+            "projection": 8.87,
+            "injury": null
+          },
+          {
+            "id": 4887558,
+            "name": "E. Wilson",
+            "pos": "RB",
+            "proTeamId": 26,
+            "slot": 23,
+            "actual": 0,
+            "projection": 13.83,
             "injury": null
           }
         ],
-        "pointsLeft": 11.3
+        "regretBench": [],
+        "pointsLeft": 0
       },
-      "projectionSd": 0,
-      "startersLeft": 0,
-      "aboveMedianProbability": 0,
-      "topScoreProbability": 0,
-      "belowMedianProbability": 100,
-      "medianDistanceSd": -368981.63,
-      "closeToMedian": false,
-      "nearMedian": false,
-      "winProbability": 100
+      "projectionSd": 25.47,
+      "startersLeft": 9,
+      "aboveMedianProbability": 41.4,
+      "topScoreProbability": 2.84,
+      "belowMedianProbability": 58.6,
+      "medianDistanceSd": -0.22,
+      "closeToMedian": true,
+      "nearMedian": true,
+      "winProbability": 60.56
     },
     {
       "teamId": 9,
-      "opponentId": 5,
-      "score": 106.1,
-      "opponentScore": 110.69999999999999,
-      "matchupId": 24,
+      "opponentId": 2,
+      "score": 0,
+      "opponentScore": 0,
+      "matchupId": 30,
       "team": "The Mahomies",
-      "opponent": "49er Faith-Fool",
+      "opponent": "TDsMaGee",
       "logo": "https://g.espncdn.com/lm-static/logo-packs/ffl/CrazyHelmets-ToddDetwiler/Helmets_09.svg",
       "projection": {
-        "espn": 106.1
+        "espn": 101.45
       },
-      "projectionAverage": 106.1,
+      "projectionAverage": 101.45,
       "projectionTrend": null,
       "status": "LIVE",
       "lineup": {
@@ -1402,8 +1466,8 @@
             "pos": "WR",
             "proTeamId": 4,
             "slot": 4,
-            "actual": 5.7,
-            "projection": 20.81,
+            "actual": 0,
+            "projection": 22.21,
             "injury": "Q"
           },
           {
@@ -1412,9 +1476,9 @@
             "pos": "RB",
             "proTeamId": 22,
             "slot": 2,
-            "actual": 6.5,
-            "projection": 15.8,
-            "injury": null
+            "actual": 0,
+            "projection": 15.25,
+            "injury": "Q"
           },
           {
             "id": 4361579,
@@ -1422,8 +1486,8 @@
             "pos": "RB",
             "proTeamId": 6,
             "slot": 2,
-            "actual": 31.3,
-            "projection": 14.76,
+            "actual": 0,
+            "projection": 17.77,
             "injury": null
           },
           {
@@ -1432,8 +1496,8 @@
             "pos": "QB",
             "proTeamId": 12,
             "slot": 0,
-            "actual": 17,
-            "projection": 18.97,
+            "actual": 0,
+            "projection": 0,
             "injury": null
           },
           {
@@ -1442,8 +1506,8 @@
             "pos": "TE",
             "proTeamId": 12,
             "slot": 6,
-            "actual": 3.5,
-            "projection": 11.91,
+            "actual": 0,
+            "projection": 0,
             "injury": null
           },
           {
@@ -1452,8 +1516,8 @@
             "pos": "WR",
             "proTeamId": 9,
             "slot": 4,
-            "actual": 11.7,
-            "projection": 13.07,
+            "actual": 0,
+            "projection": 12.95,
             "injury": null
           },
           {
@@ -1462,8 +1526,8 @@
             "pos": "K",
             "proTeamId": 30,
             "slot": 17,
-            "actual": 14,
-            "projection": 8.73,
+            "actual": 0,
+            "projection": 9.73,
             "injury": null
           },
           {
@@ -1472,8 +1536,8 @@
             "pos": "WR",
             "proTeamId": 21,
             "slot": 23,
-            "actual": 4.8,
-            "projection": 11.37,
+            "actual": 0,
+            "projection": 10.2,
             "injury": null
           },
           {
@@ -1482,8 +1546,8 @@
             "pos": "WR",
             "proTeamId": 3,
             "slot": 23,
-            "actual": 2.6,
-            "projection": 10.03,
+            "actual": 0,
+            "projection": 7.89,
             "injury": null
           },
           {
@@ -1492,352 +1556,27 @@
             "pos": "D/ST",
             "proTeamId": 3,
             "slot": 16,
-            "actual": 9,
-            "projection": 6.37,
-            "injury": null
-          }
-        ],
-        "regretBench": [
-          {
-            "id": 4047650,
-            "name": "D. Metcalf",
-            "pos": "WR",
-            "proTeamId": 23,
-            "slot": 20,
-            "actual": 17.5,
-            "projection": 10.17,
-            "injury": null
-          }
-        ],
-        "pointsLeft": 14.9
-      },
-      "projectionSd": 0,
-      "startersLeft": 0,
-      "aboveMedianProbability": 0,
-      "topScoreProbability": 0,
-      "belowMedianProbability": 100,
-      "medianDistanceSd": -719304.05,
-      "closeToMedian": false,
-      "nearMedian": false,
-      "winProbability": 0
-    },
-    {
-      "teamId": 3,
-      "opponentId": 12,
-      "score": 93.48000000000002,
-      "opponentScore": 122.46,
-      "matchupId": 19,
-      "team": "Kyle Tucker",
-      "opponent": "Beautiful Dark Twisted Fantasy",
-      "logo": "https://i.pinimg.com/280x280_RS/3a/d0/a9/3ad0a90c0e668da81c4e76e3fa51fbd0.jpg",
-      "projection": {
-        "espn": 93.48
-      },
-      "projectionAverage": 93.48,
-      "projectionTrend": null,
-      "status": "LIVE",
-      "lineup": {
-        "starters": [
-          {
-            "id": 4430878,
-            "name": "J. Smith-Njigba",
-            "pos": "WR",
-            "proTeamId": 26,
-            "slot": 4,
-            "actual": 12.6,
-            "projection": 22.31,
-            "injury": null
-          },
-          {
-            "id": 4685382,
-            "name": "O. Hampton",
-            "pos": "RB",
-            "proTeamId": 24,
-            "slot": 2,
-            "actual": 13.3,
-            "projection": 10.93,
-            "injury": null
-          },
-          {
-            "id": 4428331,
-            "name": "R. Rice",
-            "pos": "WR",
-            "proTeamId": 12,
-            "slot": 4,
             "actual": 0,
-            "projection": 15.09,
-            "injury": "Q"
-          },
-          {
-            "id": 4882093,
-            "name": "B. Tuten",
-            "pos": "RB",
-            "proTeamId": 30,
-            "slot": 2,
-            "actual": 11.1,
-            "projection": 12.88,
-            "injury": null
-          },
-          {
-            "id": 4596448,
-            "name": "B. Irving",
-            "pos": "RB",
-            "proTeamId": 27,
-            "slot": 23,
-            "actual": 6.1,
-            "projection": 16.25,
-            "injury": null
-          },
-          {
-            "id": 4432710,
-            "name": "T. Henderson",
-            "pos": "RB",
-            "proTeamId": 17,
-            "slot": 23,
-            "actual": 4.2,
-            "projection": 9.63,
-            "injury": null
-          },
-          {
-            "id": 4572680,
-            "name": "T. Kraft",
-            "pos": "TE",
-            "proTeamId": 9,
-            "slot": 6,
-            "actual": 17.5,
-            "projection": 8.96,
-            "injury": null
-          },
-          {
-            "id": 3953687,
-            "name": "B. Aubrey",
-            "pos": "K",
-            "proTeamId": 6,
-            "slot": 17,
-            "actual": 10,
-            "projection": 9.55,
-            "injury": null
-          },
-          {
-            "id": 12483,
-            "name": "M. Stafford",
-            "pos": "QB",
-            "proTeamId": 14,
-            "slot": 0,
-            "actual": 10.68,
-            "projection": 16.84,
-            "injury": null
-          },
-          {
-            "id": -16005,
-            "name": "Browns D/ST",
-            "pos": "D/ST",
-            "proTeamId": 5,
-            "slot": 16,
-            "actual": 8,
-            "projection": 6.58,
+            "projection": 5.46,
             "injury": null
           }
         ],
-        "regretBench": [
-          {
-            "id": 4832800,
-            "name": "D. Boston",
-            "pos": "WR",
-            "proTeamId": 5,
-            "slot": 20,
-            "actual": 13.9,
-            "projection": 10.67,
-            "injury": null
-          },
-          {
-            "id": 4685247,
-            "name": "B. Allen",
-            "pos": "RB",
-            "proTeamId": 20,
-            "slot": 20,
-            "actual": 8.7,
-            "projection": 12.94,
-            "injury": null
-          },
-          {
-            "id": 4429013,
-            "name": "T. Bigsby",
-            "pos": "RB",
-            "proTeamId": 21,
-            "slot": 20,
-            "actual": 5.5,
-            "projection": 2.91,
-            "injury": "Q"
-          }
-        ],
-        "pointsLeft": 18.4
+        "regretBench": [],
+        "pointsLeft": 0
       },
-      "projectionSd": 0,
-      "startersLeft": 0,
-      "aboveMedianProbability": 0,
-      "topScoreProbability": 0,
-      "belowMedianProbability": 100,
-      "medianDistanceSd": -1387402.39,
+      "projectionSd": 25.96,
+      "startersLeft": 8,
+      "aboveMedianProbability": 27,
+      "topScoreProbability": 1.37,
+      "belowMedianProbability": 73,
+      "medianDistanceSd": -0.63,
       "closeToMedian": false,
       "nearMedian": false,
-      "winProbability": 0
-    },
-    {
-      "teamId": 1,
-      "opponentId": 8,
-      "score": 88.55999999999999,
-      "opponentScore": 136.38000000000002,
-      "matchupId": 22,
-      "team": "Ramosverse",
-      "opponent": "Mr. Action Jackson",
-      "logo": "https://g.espncdn.com/lm-static/logo-packs/ffl/SmackTalk-LeoEspinosa/u_mad_bro-09.svg",
-      "projection": {
-        "espn": 88.56
-      },
-      "projectionAverage": 88.56,
-      "projectionTrend": null,
-      "status": "LIVE",
-      "lineup": {
-        "starters": [
-          {
-            "id": 4361307,
-            "name": "T. McBride",
-            "pos": "TE",
-            "proTeamId": 22,
-            "slot": 6,
-            "actual": 10.1,
-            "projection": 17.62,
-            "injury": null
-          },
-          {
-            "id": 4426338,
-            "name": "B. Nix",
-            "pos": "QB",
-            "proTeamId": 7,
-            "slot": 0,
-            "actual": 13.56,
-            "projection": 15.33,
-            "injury": null
-          },
-          {
-            "id": 4432620,
-            "name": "P. Washington",
-            "pos": "WR",
-            "proTeamId": 30,
-            "slot": 4,
-            "actual": 2,
-            "projection": 15.59,
-            "injury": null
-          },
-          {
-            "id": 3126486,
-            "name": "D. Samuel Sr.",
-            "pos": "WR",
-            "proTeamId": 25,
-            "slot": 23,
-            "actual": 18,
-            "projection": 10.84,
-            "injury": null
-          },
-          {
-            "id": -16023,
-            "name": "Steelers D/ST",
-            "pos": "D/ST",
-            "proTeamId": 23,
-            "slot": 16,
-            "actual": 5,
-            "projection": 8.19,
-            "injury": null
-          },
-          {
-            "id": 3150744,
-            "name": "C. McLaughlin",
-            "pos": "K",
-            "proTeamId": 27,
-            "slot": 17,
-            "actual": 2,
-            "projection": 8.5,
-            "injury": null
-          },
-          {
-            "id": 4686422,
-            "name": "X. Hutchinson",
-            "pos": "WR",
-            "proTeamId": 34,
-            "slot": 23,
-            "actual": 7.6,
-            "projection": 7.77,
-            "injury": null
-          },
-          {
-            "id": 4711533,
-            "name": "O. Gordon II",
-            "pos": "RB",
-            "proTeamId": 15,
-            "slot": 2,
-            "actual": 19,
-            "projection": 9.08,
-            "injury": null
-          },
-          {
-            "id": 2991662,
-            "name": "M. Hollins",
-            "pos": "WR",
-            "proTeamId": 17,
-            "slot": 4,
-            "actual": 8.3,
-            "projection": 9.77,
-            "injury": "Q"
-          },
-          {
-            "id": 4241457,
-            "name": "N. Harris",
-            "pos": "RB",
-            "proTeamId": 19,
-            "slot": 2,
-            "actual": 3,
-            "projection": 6.62,
-            "injury": null
-          }
-        ],
-        "regretBench": [
-          {
-            "id": 4036133,
-            "name": "T. Hockenson",
-            "pos": "TE",
-            "proTeamId": 16,
-            "slot": 20,
-            "actual": 25.9,
-            "projection": 9.09,
-            "injury": null
-          },
-          {
-            "id": 4432577,
-            "name": "C. Stroud",
-            "pos": "QB",
-            "proTeamId": 34,
-            "slot": 20,
-            "actual": 24.08,
-            "projection": 17.09,
-            "injury": null
-          }
-        ],
-        "pointsLeft": 34.42
-      },
-      "projectionSd": 0,
-      "startersLeft": 0,
-      "aboveMedianProbability": 0,
-      "topScoreProbability": 0,
-      "belowMedianProbability": 100,
-      "medianDistanceSd": 0,
-      "closeToMedian": true,
-      "nearMedian": false,
-      "winProbability": 0
+      "winProbability": 39.44
     }
   ],
-  "median": 124.74,
-  "projectedMedian": 129.18,
+  "median": 0,
+  "projectedMedian": 117.76,
   "projectionSources": [
     "ESPN live team projections, with ESPN player projections as fallback"
   ],
@@ -1845,15 +1584,171 @@
   "probabilitySimulations": 10000,
   "nflGames": [
     {
-      "id": "401872979",
-      "name": "ATL @ NO",
-      "kickoff": "2026-10-06T00:15Z",
+      "id": "401872980",
+      "name": "TB @ DAL",
+      "kickoff": "2026-10-09T00:15Z",
       "state": "pre",
       "completed": false,
-      "detail": "10/5 - 8:15 PM EDT",
+      "detail": "10/8 - 8:15 PM EDT",
+      "teamIds": [
+        6,
+        27
+      ],
+      "teams": [
+        {
+          "id": 6,
+          "abbrev": "DAL",
+          "score": 0,
+          "home": true
+        },
+        {
+          "id": 27,
+          "abbrev": "TB",
+          "score": 0,
+          "home": false
+        }
+      ]
+    },
+    {
+      "id": "401872981",
+      "name": "PHI VS JAX",
+      "kickoff": "2026-10-11T13:30Z",
+      "state": "pre",
+      "completed": false,
+      "detail": "10/11 - 9:30 AM EDT",
+      "teamIds": [
+        30,
+        21
+      ],
+      "teams": [
+        {
+          "id": 30,
+          "abbrev": "JAX",
+          "score": 0,
+          "home": true
+        },
+        {
+          "id": 21,
+          "abbrev": "PHI",
+          "score": 0,
+          "home": false
+        }
+      ]
+    },
+    {
+      "id": "401872990",
+      "name": "CHI @ GB",
+      "kickoff": "2026-10-11T17:00Z",
+      "state": "pre",
+      "completed": false,
+      "detail": "10/11 - 1:00 PM EDT",
+      "teamIds": [
+        9,
+        3
+      ],
+      "teams": [
+        {
+          "id": 9,
+          "abbrev": "GB",
+          "score": 0,
+          "home": true
+        },
+        {
+          "id": 3,
+          "abbrev": "CHI",
+          "score": 0,
+          "home": false
+        }
+      ]
+    },
+    {
+      "id": "401872984",
+      "name": "HOU @ TEN",
+      "kickoff": "2026-10-11T17:00Z",
+      "state": "pre",
+      "completed": false,
+      "detail": "10/11 - 1:00 PM EDT",
+      "teamIds": [
+        10,
+        34
+      ],
+      "teams": [
+        {
+          "id": 10,
+          "abbrev": "TEN",
+          "score": 0,
+          "home": true
+        },
+        {
+          "id": 34,
+          "abbrev": "HOU",
+          "score": 0,
+          "home": false
+        }
+      ]
+    },
+    {
+      "id": "401872982",
+      "name": "CIN @ MIA",
+      "kickoff": "2026-10-11T17:00Z",
+      "state": "pre",
+      "completed": false,
+      "detail": "10/11 - 1:00 PM EDT",
+      "teamIds": [
+        15,
+        4
+      ],
+      "teams": [
+        {
+          "id": 15,
+          "abbrev": "MIA",
+          "score": 0,
+          "home": true
+        },
+        {
+          "id": 4,
+          "abbrev": "CIN",
+          "score": 0,
+          "home": false
+        }
+      ]
+    },
+    {
+      "id": "401872986",
+      "name": "LV @ NE",
+      "kickoff": "2026-10-11T17:00Z",
+      "state": "pre",
+      "completed": false,
+      "detail": "10/11 - 1:00 PM EDT",
+      "teamIds": [
+        17,
+        13
+      ],
+      "teams": [
+        {
+          "id": 17,
+          "abbrev": "NE",
+          "score": 0,
+          "home": true
+        },
+        {
+          "id": 13,
+          "abbrev": "LV",
+          "score": 0,
+          "home": false
+        }
+      ]
+    },
+    {
+      "id": "401872987",
+      "name": "MIN @ NO",
+      "kickoff": "2026-10-11T17:00Z",
+      "state": "pre",
+      "completed": false,
+      "detail": "10/11 - 1:00 PM EDT",
       "teamIds": [
         18,
-        1
+        16
       ],
       "teams": [
         {
@@ -1863,3926 +1758,372 @@
           "home": true
         },
         {
-          "id": 1,
-          "abbrev": "ATL",
+          "id": 16,
+          "abbrev": "MIN",
           "score": 0,
           "home": false
         }
       ]
     },
     {
-      "id": "401872964",
-      "name": "PIT @ CLE",
-      "kickoff": "2026-10-02T00:15Z",
-      "state": "post",
-      "completed": true,
-      "detail": "Final",
+      "id": "401872983",
+      "name": "CLE @ NYJ",
+      "kickoff": "2026-10-11T17:00Z",
+      "state": "pre",
+      "completed": false,
+      "detail": "10/11 - 1:00 PM EDT",
       "teamIds": [
-        5,
-        23
+        20,
+        5
       ],
       "teams": [
         {
-          "id": 5,
-          "abbrev": "CLE",
-          "score": 27,
+          "id": 20,
+          "abbrev": "NYJ",
+          "score": 0,
           "home": true
         },
         {
-          "id": 23,
-          "abbrev": "PIT",
-          "score": 24,
+          "id": 5,
+          "abbrev": "CLE",
+          "score": 0,
           "home": false
         }
       ]
     },
     {
-      "id": "401872965",
-      "name": "IND VS WSH",
-      "kickoff": "2026-10-04T13:30Z",
-      "state": "post",
-      "completed": true,
-      "detail": "Final",
+      "id": "401872985",
+      "name": "IND @ PIT",
+      "kickoff": "2026-10-11T17:00Z",
+      "state": "pre",
+      "completed": false,
+      "detail": "10/11 - 1:00 PM EDT",
       "teamIds": [
-        28,
+        23,
         11
       ],
       "teams": [
         {
-          "id": 28,
-          "abbrev": "WSH",
-          "score": 13,
+          "id": 23,
+          "abbrev": "PIT",
+          "score": 0,
           "home": true
         },
         {
           "id": 11,
           "abbrev": "IND",
-          "score": 30,
+          "score": 0,
           "home": false
         }
       ]
     },
     {
-      "id": "401872971",
-      "name": "NE @ BUF",
-      "kickoff": "2026-10-04T17:00Z",
-      "state": "post",
-      "completed": true,
-      "detail": "Final",
+      "id": "401872988",
+      "name": "NYG @ WSH",
+      "kickoff": "2026-10-11T17:00Z",
+      "state": "pre",
+      "completed": false,
+      "detail": "10/11 - 1:00 PM EDT",
       "teamIds": [
-        2,
-        17
+        28,
+        19
       ],
       "teams": [
         {
-          "id": 2,
-          "abbrev": "BUF",
-          "score": 26,
+          "id": 28,
+          "abbrev": "WSH",
+          "score": 0,
           "home": true
         },
-        {
-          "id": 17,
-          "abbrev": "NE",
-          "score": 29,
-          "home": false
-        }
-      ]
-    },
-    {
-      "id": "401872972",
-      "name": "NYJ @ CHI",
-      "kickoff": "2026-10-04T17:00Z",
-      "state": "post",
-      "completed": true,
-      "detail": "Final",
-      "teamIds": [
-        3,
-        20
-      ],
-      "teams": [
-        {
-          "id": 3,
-          "abbrev": "CHI",
-          "score": 23,
-          "home": true
-        },
-        {
-          "id": 20,
-          "abbrev": "NYJ",
-          "score": 12,
-          "home": false
-        }
-      ]
-    },
-    {
-      "id": "401872969",
-      "name": "JAX @ CIN",
-      "kickoff": "2026-10-04T17:00Z",
-      "state": "post",
-      "completed": true,
-      "detail": "Final",
-      "teamIds": [
-        4,
-        30
-      ],
-      "teams": [
-        {
-          "id": 4,
-          "abbrev": "CIN",
-          "score": 17,
-          "home": true
-        },
-        {
-          "id": 30,
-          "abbrev": "JAX",
-          "score": 22,
-          "home": false
-        }
-      ]
-    },
-    {
-      "id": "401872966",
-      "name": "ARI @ NYG",
-      "kickoff": "2026-10-04T17:00Z",
-      "state": "post",
-      "completed": true,
-      "detail": "Final",
-      "teamIds": [
-        19,
-        22
-      ],
-      "teams": [
         {
           "id": 19,
           "abbrev": "NYG",
-          "score": 36,
-          "home": true
-        },
-        {
-          "id": 22,
-          "abbrev": "ARI",
-          "score": 24,
+          "score": 0,
           "home": false
         }
       ]
     },
     {
-      "id": "401872970",
-      "name": "LAR @ PHI",
-      "kickoff": "2026-10-04T17:00Z",
-      "state": "post",
-      "completed": true,
-      "detail": "Final",
+      "id": "401872989",
+      "name": "DEN @ LAC",
+      "kickoff": "2026-10-11T20:05Z",
+      "state": "pre",
+      "completed": false,
+      "detail": "10/11 - 4:05 PM EDT",
       "teamIds": [
-        21,
-        14
-      ],
-      "teams": [
-        {
-          "id": 21,
-          "abbrev": "PHI",
-          "score": 20,
-          "home": true
-        },
-        {
-          "id": 14,
-          "abbrev": "LAR",
-          "score": 24,
-          "home": false
-        }
-      ]
-    },
-    {
-      "id": "401872968",
-      "name": "GB @ TB",
-      "kickoff": "2026-10-04T17:00Z",
-      "state": "post",
-      "completed": true,
-      "detail": "Final",
-      "teamIds": [
-        27,
-        9
-      ],
-      "teams": [
-        {
-          "id": 27,
-          "abbrev": "TB",
-          "score": 14,
-          "home": true
-        },
-        {
-          "id": 9,
-          "abbrev": "GB",
-          "score": 17,
-          "home": false
-        }
-      ]
-    },
-    {
-      "id": "401872973",
-      "name": "TEN @ BAL",
-      "kickoff": "2026-10-04T17:00Z",
-      "state": "post",
-      "completed": true,
-      "detail": "Final",
-      "teamIds": [
-        33,
-        10
-      ],
-      "teams": [
-        {
-          "id": 33,
-          "abbrev": "BAL",
-          "score": 24,
-          "home": true
-        },
-        {
-          "id": 10,
-          "abbrev": "TEN",
-          "score": 18,
-          "home": false
-        }
-      ]
-    },
-    {
-      "id": "401872967",
-      "name": "DAL @ HOU",
-      "kickoff": "2026-10-04T17:00Z",
-      "state": "post",
-      "completed": true,
-      "detail": "Final",
-      "teamIds": [
-        34,
-        6
-      ],
-      "teams": [
-        {
-          "id": 34,
-          "abbrev": "HOU",
-          "score": 30,
-          "home": true
-        },
-        {
-          "id": 6,
-          "abbrev": "DAL",
-          "score": 34,
-          "home": false
-        }
-      ]
-    },
-    {
-      "id": "401872974",
-      "name": "MIA @ MIN",
-      "kickoff": "2026-10-04T20:05Z",
-      "state": "post",
-      "completed": true,
-      "detail": "Final",
-      "teamIds": [
-        16,
-        15
-      ],
-      "teams": [
-        {
-          "id": 16,
-          "abbrev": "MIN",
-          "score": 15,
-          "home": true
-        },
-        {
-          "id": 15,
-          "abbrev": "MIA",
-          "score": 10,
-          "home": false
-        }
-      ]
-    },
-    {
-      "id": "401872976",
-      "name": "KC @ LV",
-      "kickoff": "2026-10-04T20:25Z",
-      "state": "post",
-      "completed": true,
-      "detail": "Final",
-      "teamIds": [
-        13,
-        12
-      ],
-      "teams": [
-        {
-          "id": 13,
-          "abbrev": "LV",
-          "score": 27,
-          "home": true
-        },
-        {
-          "id": 12,
-          "abbrev": "KC",
-          "score": 30,
-          "home": false
-        }
-      ]
-    },
-    {
-      "id": "401872975",
-      "name": "DEN @ SF",
-      "kickoff": "2026-10-04T20:25Z",
-      "state": "post",
-      "completed": true,
-      "detail": "Final",
-      "teamIds": [
-        25,
+        24,
         7
       ],
       "teams": [
         {
-          "id": 25,
-          "abbrev": "SF",
-          "score": 24,
+          "id": 24,
+          "abbrev": "LAC",
+          "score": 0,
           "home": true
         },
         {
           "id": 7,
           "abbrev": "DEN",
-          "score": 14,
+          "score": 0,
           "home": false
         }
       ]
     },
     {
-      "id": "401872977",
-      "name": "LAC @ SEA",
-      "kickoff": "2026-10-04T20:25Z",
-      "state": "post",
-      "completed": true,
-      "detail": "Final",
+      "id": "401872991",
+      "name": "DET @ ARI",
+      "kickoff": "2026-10-11T20:25Z",
+      "state": "pre",
+      "completed": false,
+      "detail": "10/11 - 4:25 PM EDT",
       "teamIds": [
-        26,
-        24
-      ],
-      "teams": [
-        {
-          "id": 26,
-          "abbrev": "SEA",
-          "score": 30,
-          "home": true
-        },
-        {
-          "id": 24,
-          "abbrev": "LAC",
-          "score": 23,
-          "home": false
-        }
-      ]
-    },
-    {
-      "id": "401872978",
-      "name": "DET @ CAR",
-      "kickoff": "2026-10-05T00:20Z",
-      "state": "post",
-      "completed": true,
-      "detail": "Final",
-      "teamIds": [
-        29,
+        22,
         8
       ],
       "teams": [
         {
-          "id": 29,
-          "abbrev": "CAR",
-          "score": 32,
+          "id": 22,
+          "abbrev": "ARI",
+          "score": 0,
           "home": true
         },
         {
           "id": 8,
           "abbrev": "DET",
-          "score": 26,
+          "score": 0,
+          "home": false
+        }
+      ]
+    },
+    {
+      "id": "401872992",
+      "name": "SF @ SEA",
+      "kickoff": "2026-10-11T20:25Z",
+      "state": "pre",
+      "completed": false,
+      "detail": "10/11 - 4:25 PM EDT",
+      "teamIds": [
+        26,
+        25
+      ],
+      "teams": [
+        {
+          "id": 26,
+          "abbrev": "SEA",
+          "score": 0,
+          "home": true
+        },
+        {
+          "id": 25,
+          "abbrev": "SF",
+          "score": 0,
+          "home": false
+        }
+      ]
+    },
+    {
+      "id": "401872993",
+      "name": "BAL @ ATL",
+      "kickoff": "2026-10-12T00:20Z",
+      "state": "pre",
+      "completed": false,
+      "detail": "10/11 - 8:20 PM EDT",
+      "teamIds": [
+        1,
+        33
+      ],
+      "teams": [
+        {
+          "id": 1,
+          "abbrev": "ATL",
+          "score": 0,
+          "home": true
+        },
+        {
+          "id": 33,
+          "abbrev": "BAL",
+          "score": 0,
+          "home": false
+        }
+      ]
+    },
+    {
+      "id": "401872994",
+      "name": "BUF @ LAR",
+      "kickoff": "2026-10-13T00:15Z",
+      "state": "pre",
+      "completed": false,
+      "detail": "10/12 - 8:15 PM EDT",
+      "teamIds": [
+        14,
+        2
+      ],
+      "teams": [
+        {
+          "id": 14,
+          "abbrev": "LAR",
+          "score": 0,
+          "home": true
+        },
+        {
+          "id": 2,
+          "abbrev": "BUF",
+          "score": 0,
           "home": false
         }
       ]
     }
   ],
   "winHistory": {
-    "week": 4,
+    "week": 5,
     "points": [
       {
-        "t": "2026-09-29T13:30:48.252Z",
-        "p": {
-          "1": 22.91,
-          "2": 44.94,
-          "3": 50.46,
-          "4": 29.63,
-          "5": 59.34,
-          "6": 70.37,
-          "7": 35.68,
-          "8": 77.09,
-          "9": 40.66,
-          "10": 55.06,
-          "11": 64.32,
-          "12": 49.54
-        }
-      },
-      {
-        "t": "2026-09-29T14:50:15.125Z",
-        "p": {
-          "1": 24.46,
-          "2": 44.57,
-          "3": 50.72,
-          "4": 29.68,
-          "5": 59.34,
-          "6": 70.32,
-          "7": 35.11,
-          "8": 75.54,
-          "9": 40.66,
-          "10": 55.43,
-          "11": 64.89,
-          "12": 49.28
-        }
-      },
-      {
-        "t": "2026-09-30T14:27:44.399Z",
-        "p": {
-          "1": 30.12,
-          "2": 47.02,
-          "3": 53.08,
-          "4": 27.73,
-          "5": 56.23,
-          "6": 72.27,
-          "7": 31.92,
-          "8": 69.88,
-          "9": 43.77,
-          "10": 52.98,
-          "11": 68.08,
-          "12": 46.92
-        }
-      },
-      {
-        "t": "2026-09-30T14:53:56.443Z",
-        "p": {
-          "1": 31.01,
-          "2": 46.09,
-          "3": 53.24,
-          "4": 28.22,
-          "5": 56.32,
-          "6": 71.78,
-          "7": 36.26,
-          "8": 68.99,
-          "9": 43.68,
-          "10": 53.91,
-          "11": 63.74,
-          "12": 46.76
-        }
-      },
-      {
-        "t": "2026-10-01T13:38:29.111Z",
-        "p": {
-          "1": 30.37,
-          "2": 47.09,
-          "3": 52.35,
-          "4": 35.07,
-          "5": 56.74,
-          "6": 64.93,
-          "7": 37.03,
-          "8": 69.63,
-          "9": 43.26,
-          "10": 52.91,
-          "11": 62.97,
-          "12": 47.65
-        }
-      },
-      {
-        "t": "2026-10-02T00:00:20.934Z",
-        "p": {
-          "1": 30.79,
-          "2": 47.9,
-          "3": 56.28,
-          "4": 35.05,
-          "5": 55.71,
-          "6": 64.95,
-          "7": 33.94,
-          "8": 69.21,
-          "9": 44.29,
-          "10": 52.1,
-          "11": 66.06,
-          "12": 43.72
-        }
-      },
-      {
-        "t": "2026-10-02T00:21:46.378Z",
-        "p": {
-          "1": 31.74,
-          "2": 46.8,
-          "3": 59.99,
-          "4": 34.36,
-          "5": 56.32,
-          "6": 65.64,
-          "7": 33.99,
-          "8": 68.26,
-          "9": 43.68,
-          "10": 53.2,
-          "11": 66.01,
-          "12": 40.01
-        }
-      },
-      {
-        "t": "2026-10-02T00:23:49.448Z",
-        "p": {
-          "1": 32.43,
-          "2": 47.24,
-          "3": 60.32,
-          "4": 34.86,
-          "5": 56.86,
-          "6": 65.14,
-          "7": 34.78,
-          "8": 67.57,
-          "9": 43.14,
-          "10": 52.76,
-          "11": 65.22,
-          "12": 39.68
-        }
-      },
-      {
-        "t": "2026-10-02T00:32:57.502Z",
-        "p": {
-          "1": 31.75,
-          "2": 46.92,
-          "3": 59.52,
-          "4": 37.15,
-          "5": 56.39,
-          "6": 62.85,
-          "7": 34.6,
-          "8": 68.25,
-          "9": 43.61,
-          "10": 53.08,
-          "11": 65.4,
-          "12": 40.48
-        }
-      },
-      {
-        "t": "2026-10-02T00:43:18.392Z",
-        "p": {
-          "1": 32.06,
-          "2": 47.85,
-          "3": 59.81,
-          "4": 35.94,
-          "5": 56.29,
-          "6": 64.06,
-          "7": 34.79,
-          "8": 67.94,
-          "9": 43.71,
-          "10": 52.15,
-          "11": 65.21,
-          "12": 40.19
-        }
-      },
-      {
-        "t": "2026-10-02T00:47:15.020Z",
-        "p": {
-          "1": 32.51,
-          "2": 47.22,
-          "3": 59.47,
-          "4": 36.83,
-          "5": 56.9,
-          "6": 63.17,
-          "7": 34.71,
-          "8": 67.49,
-          "9": 43.1,
-          "10": 52.78,
-          "11": 65.29,
-          "12": 40.53
-        }
-      },
-      {
-        "t": "2026-10-02T00:53:00.136Z",
-        "p": {
-          "1": 33.16,
-          "2": 46.67,
-          "3": 58.7,
-          "4": 36.33,
-          "5": 57.14,
-          "6": 63.67,
-          "7": 34.51,
-          "8": 66.84,
-          "9": 42.86,
-          "10": 53.33,
-          "11": 65.49,
-          "12": 41.3
-        }
-      },
-      {
-        "t": "2026-10-02T00:56:13.105Z",
-        "p": {
-          "1": 32.41,
-          "2": 47.35,
-          "3": 59.59,
-          "4": 37.03,
-          "5": 55.94,
-          "6": 62.97,
-          "7": 33.39,
-          "8": 67.59,
-          "9": 44.06,
-          "10": 52.65,
-          "11": 66.61,
-          "12": 40.41
-        }
-      },
-      {
-        "t": "2026-10-02T00:57:47.167Z",
-        "p": {
-          "1": 32.76,
-          "2": 46.82,
-          "3": 61.95,
-          "4": 37.14,
-          "5": 56.56,
-          "6": 62.86,
-          "7": 34.32,
-          "8": 67.24,
-          "9": 43.44,
-          "10": 53.18,
-          "11": 65.68,
-          "12": 38.05
-        }
-      },
-      {
-        "t": "2026-10-02T01:04:08.408Z",
-        "p": {
-          "1": 31.21,
-          "2": 47.12,
-          "3": 60.75,
-          "4": 36.58,
-          "5": 56.46,
-          "6": 63.42,
-          "7": 35.03,
-          "8": 68.79,
-          "9": 43.54,
-          "10": 52.88,
-          "11": 64.97,
-          "12": 39.25
-        }
-      },
-      {
-        "t": "2026-10-02T01:07:46.502Z",
-        "p": {
-          "1": 30.92,
-          "2": 47.72,
-          "3": 59.77,
-          "4": 36.4,
-          "5": 56.36,
-          "6": 63.6,
-          "7": 35.48,
-          "8": 69.08,
-          "9": 43.64,
-          "10": 52.28,
-          "11": 64.52,
-          "12": 40.23
-        }
-      },
-      {
-        "t": "2026-10-02T01:10:52.025Z",
-        "p": {
-          "1": 31.01,
-          "2": 46.69,
-          "3": 59.66,
-          "4": 37.54,
-          "5": 56,
-          "6": 62.46,
-          "7": 34.26,
-          "8": 68.99,
-          "9": 44,
-          "10": 53.31,
-          "11": 65.74,
-          "12": 40.34
-        }
-      },
-      {
-        "t": "2026-10-02T01:18:13.092Z",
-        "p": {
-          "1": 30.3,
-          "2": 46.3,
-          "3": 59.53,
-          "4": 36.74,
-          "5": 55.87,
-          "6": 63.26,
-          "7": 34.18,
-          "8": 69.7,
-          "9": 44.13,
-          "10": 53.7,
-          "11": 65.82,
-          "12": 40.47
-        }
-      },
-      {
-        "t": "2026-10-02T01:24:56.270Z",
-        "p": {
-          "1": 30.36,
-          "2": 47.08,
-          "3": 59.91,
-          "4": 37.13,
-          "5": 55.95,
-          "6": 62.87,
-          "7": 34.08,
-          "8": 69.64,
-          "9": 44.05,
-          "10": 52.92,
-          "11": 65.92,
-          "12": 40.09
-        }
-      },
-      {
-        "t": "2026-10-02T01:53:20.899Z",
-        "p": {
-          "1": 30.91,
-          "2": 45.78,
-          "3": 60.65,
-          "4": 36.85,
-          "5": 56.37,
-          "6": 63.15,
-          "7": 40.26,
-          "8": 69.09,
-          "9": 43.63,
-          "10": 54.22,
-          "11": 59.74,
-          "12": 39.35
-        }
-      },
-      {
-        "t": "2026-10-02T02:08:46.262Z",
-        "p": {
-          "1": 31,
-          "2": 44.29,
-          "3": 60.03,
-          "4": 36.23,
-          "5": 56.46,
-          "6": 63.77,
-          "7": 39.05,
-          "8": 69,
-          "9": 43.54,
-          "10": 55.71,
-          "11": 60.95,
-          "12": 39.97
-        }
-      },
-      {
-        "t": "2026-10-02T02:10:05.459Z",
-        "p": {
-          "1": 30.91,
-          "2": 45.78,
-          "3": 60.65,
-          "4": 36.85,
-          "5": 56.37,
-          "6": 63.15,
-          "7": 40.26,
-          "8": 69.09,
-          "9": 43.63,
-          "10": 54.22,
-          "11": 59.74,
-          "12": 39.35
-        }
-      },
-      {
-        "t": "2026-10-02T02:16:57.920Z",
-        "p": {
-          "1": 30.55,
-          "2": 43.66,
-          "3": 60.02,
-          "4": 36.18,
-          "5": 57.04,
-          "6": 63.82,
-          "7": 39.73,
-          "8": 69.45,
-          "9": 42.96,
-          "10": 56.34,
-          "11": 60.27,
-          "12": 39.98
-        }
-      },
-      {
-        "t": "2026-10-02T02:20:36.905Z",
-        "p": {
-          "1": 30.1,
-          "2": 43.25,
-          "3": 58.2,
-          "4": 37.08,
-          "5": 56.43,
-          "6": 62.92,
-          "7": 40.57,
-          "8": 69.9,
-          "9": 43.57,
-          "10": 56.75,
-          "11": 59.43,
-          "12": 41.8
-        }
-      },
-      {
-        "t": "2026-10-02T02:27:40.386Z",
-        "p": {
-          "1": 30.61,
-          "2": 43.34,
-          "3": 60.17,
-          "4": 37.19,
-          "5": 55.99,
-          "6": 62.81,
-          "7": 39.72,
-          "8": 69.39,
-          "9": 44.01,
-          "10": 56.66,
-          "11": 60.28,
-          "12": 39.83
-        }
-      },
-      {
-        "t": "2026-10-02T02:29:45.571Z",
-        "p": {
-          "1": 30.66,
-          "2": 42.1,
-          "3": 60.39,
-          "4": 36.64,
-          "5": 57.21,
-          "6": 63.36,
-          "7": 38.64,
-          "8": 69.34,
-          "9": 42.79,
-          "10": 57.9,
-          "11": 61.36,
-          "12": 39.61
-        }
-      },
-      {
-        "t": "2026-10-02T02:31:08.075Z",
-        "p": {
-          "1": 31.08,
-          "2": 42.42,
-          "3": 60.75,
-          "4": 36.63,
-          "5": 56.45,
-          "6": 63.37,
-          "7": 39.54,
-          "8": 68.92,
-          "9": 43.55,
-          "10": 57.58,
-          "11": 60.46,
-          "12": 39.25
-        }
-      },
-      {
-        "t": "2026-10-02T02:34:28.334Z",
-        "p": {
-          "1": 30.73,
-          "2": 41.66,
-          "3": 60.34,
-          "4": 36.51,
-          "5": 55.51,
-          "6": 63.49,
-          "7": 39.86,
-          "8": 69.27,
-          "9": 44.49,
-          "10": 58.34,
-          "11": 60.14,
-          "12": 39.66
-        }
-      },
-      {
-        "t": "2026-10-02T02:38:19.382Z",
-        "p": {
-          "1": 30.43,
-          "2": 41.56,
-          "3": 61.73,
-          "4": 36.36,
-          "5": 56.82,
-          "6": 63.64,
-          "7": 39.41,
-          "8": 69.57,
-          "9": 43.18,
-          "10": 58.44,
-          "11": 60.59,
-          "12": 38.27
-        }
-      },
-      {
-        "t": "2026-10-02T02:42:06.274Z",
-        "p": {
-          "1": 29.89,
-          "2": 40.21,
-          "3": 61.55,
-          "4": 36.59,
-          "5": 56.7,
-          "6": 63.41,
-          "7": 39.63,
-          "8": 70.11,
-          "9": 43.3,
-          "10": 59.79,
-          "11": 60.37,
-          "12": 38.45
-        }
-      },
-      {
-        "t": "2026-10-02T02:46:18.156Z",
-        "p": {
-          "1": 30.8,
-          "2": 40.78,
-          "3": 61.99,
-          "4": 36.15,
-          "5": 56.07,
-          "6": 63.85,
-          "7": 40.84,
-          "8": 69.2,
-          "9": 43.93,
-          "10": 59.22,
-          "11": 59.16,
-          "12": 38.01
-        }
-      },
-      {
-        "t": "2026-10-02T02:50:16.659Z",
-        "p": {
-          "1": 30.87,
-          "2": 40.19,
-          "3": 61.68,
-          "4": 36.27,
-          "5": 56.19,
-          "6": 63.73,
-          "7": 39.67,
-          "8": 69.13,
-          "9": 43.81,
-          "10": 59.81,
-          "11": 60.33,
-          "12": 38.32
-        }
-      },
-      {
-        "t": "2026-10-02T02:51:05.844Z",
-        "p": {
-          "1": 30.67,
-          "2": 40.49,
-          "3": 61.22,
-          "4": 37.12,
-          "5": 55.83,
-          "6": 62.88,
-          "7": 39.76,
-          "8": 69.33,
-          "9": 44.17,
-          "10": 59.51,
-          "11": 60.24,
-          "12": 38.78
-        }
-      },
-      {
-        "t": "2026-10-02T02:53:52.736Z",
-        "p": {
-          "1": 30.96,
-          "2": 39.47,
-          "3": 61.56,
-          "4": 36.37,
-          "5": 56.07,
-          "6": 63.63,
-          "7": 39.17,
-          "8": 69.04,
-          "9": 43.93,
-          "10": 60.53,
-          "11": 60.83,
-          "12": 38.44
-        }
-      },
-      {
-        "t": "2026-10-02T02:55:21.769Z",
-        "p": {
-          "1": 29.43,
-          "2": 40.18,
-          "3": 62.62,
-          "4": 36.48,
-          "5": 56.35,
-          "6": 63.52,
-          "7": 39.2,
-          "8": 70.57,
-          "9": 43.65,
-          "10": 59.82,
-          "11": 60.8,
-          "12": 37.38
-        }
-      },
-      {
-        "t": "2026-10-02T02:56:55.523Z",
-        "p": {
-          "1": 30.72,
-          "2": 39.56,
-          "3": 61.24,
-          "4": 36.83,
-          "5": 55.98,
-          "6": 63.17,
-          "7": 39.27,
-          "8": 69.28,
-          "9": 44.02,
-          "10": 60.44,
-          "11": 60.73,
-          "12": 38.76
-        }
-      },
-      {
-        "t": "2026-10-02T03:00:53.872Z",
-        "p": {
-          "1": 32.28,
-          "2": 40.09,
-          "3": 59.75,
-          "4": 36.98,
-          "5": 55.73,
-          "6": 63.02,
-          "7": 39.58,
-          "8": 67.72,
-          "9": 44.27,
-          "10": 59.91,
-          "11": 60.42,
-          "12": 40.25
-        }
-      },
-      {
-        "t": "2026-10-02T03:05:27.769Z",
-        "p": {
-          "1": 30.64,
-          "2": 38.39,
-          "3": 60.05,
-          "4": 35.5,
-          "5": 57.14,
-          "6": 64.5,
-          "7": 38.57,
-          "8": 69.36,
-          "9": 42.86,
-          "10": 61.61,
-          "11": 61.43,
-          "12": 39.95
-        }
-      },
-      {
-        "t": "2026-10-02T03:10:19.910Z",
-        "p": {
-          "1": 30.41,
-          "2": 38.13,
-          "3": 59.38,
-          "4": 35.66,
-          "5": 55.69,
-          "6": 64.34,
-          "7": 40.07,
-          "8": 69.59,
-          "9": 44.31,
-          "10": 61.87,
-          "11": 59.93,
-          "12": 40.62
-        }
-      },
-      {
-        "t": "2026-10-02T03:15:25.529Z",
-        "p": {
-          "1": 29.76,
-          "2": 37.54,
-          "3": 59.44,
-          "4": 37.27,
-          "5": 56.75,
-          "6": 62.73,
-          "7": 39.71,
-          "8": 70.24,
-          "9": 43.25,
-          "10": 62.46,
-          "11": 60.29,
-          "12": 40.56
-        }
-      },
-      {
-        "t": "2026-10-02T03:16:17.050Z",
-        "p": {
-          "1": 32.08,
-          "2": 36.41,
-          "3": 58.91,
-          "4": 36.15,
-          "5": 55.78,
-          "6": 63.85,
-          "7": 38.94,
-          "8": 67.92,
-          "9": 44.22,
-          "10": 63.59,
-          "11": 61.06,
-          "12": 41.09
-        }
-      },
-      {
-        "t": "2026-10-02T03:19:15.036Z",
-        "p": {
-          "1": 30.3,
-          "2": 38.48,
-          "3": 60.29,
-          "4": 36.39,
-          "5": 56.29,
-          "6": 63.61,
-          "7": 41.22,
-          "8": 69.7,
-          "9": 43.71,
-          "10": 61.52,
-          "11": 58.78,
-          "12": 39.71
-        }
-      },
-      {
-        "t": "2026-10-02T03:26:03.045Z",
-        "p": {
-          "1": 30.39,
-          "2": 36.72,
-          "3": 56.32,
-          "4": 36.34,
-          "5": 56.1,
-          "6": 63.66,
-          "7": 41.58,
-          "8": 69.61,
-          "9": 43.9,
-          "10": 63.28,
-          "11": 58.42,
-          "12": 43.68
-        }
-      },
-      {
-        "t": "2026-10-02T03:36:26.915Z",
-        "p": {
-          "1": 30.15,
-          "2": 37.63,
-          "3": 53.19,
-          "4": 36.93,
-          "5": 56.54,
-          "6": 63.07,
-          "7": 41.56,
-          "8": 69.85,
-          "9": 43.46,
-          "10": 62.37,
-          "11": 58.44,
-          "12": 46.81
-        }
-      },
-      {
-        "t": "2026-10-02T03:40:51.825Z",
-        "p": {
-          "1": 30.58,
-          "2": 37.76,
-          "3": 53.06,
-          "4": 37.7,
-          "5": 56.36,
-          "6": 62.3,
-          "7": 42.2,
-          "8": 69.42,
-          "9": 43.64,
-          "10": 62.24,
-          "11": 57.8,
-          "12": 46.94
-        }
-      },
-      {
-        "t": "2026-10-02T03:43:51.120Z",
-        "p": {
-          "1": 30.88,
-          "2": 37.37,
-          "3": 54.44,
-          "4": 36.74,
-          "5": 55.75,
-          "6": 63.26,
-          "7": 42.55,
-          "8": 69.12,
-          "9": 44.25,
-          "10": 62.63,
-          "11": 57.45,
-          "12": 45.56
-        }
-      },
-      {
-        "t": "2026-10-02T03:45:20.233Z",
-        "p": {
-          "1": 27.55,
-          "2": 38.17,
-          "3": 55.05,
-          "4": 37.85,
-          "5": 55.95,
-          "6": 62.15,
-          "7": 42.41,
-          "8": 72.45,
-          "9": 44.05,
-          "10": 61.83,
-          "11": 57.59,
-          "12": 44.95
-        }
-      },
-      {
-        "t": "2026-10-02T04:23:49.744Z",
-        "p": {
-          "1": 28.21,
-          "2": 34.45,
-          "3": 54.89,
-          "4": 38.03,
-          "5": 56.63,
-          "6": 61.97,
-          "7": 41.83,
-          "8": 71.79,
-          "9": 43.37,
-          "10": 65.55,
-          "11": 58.17,
-          "12": 45.11
-        }
-      },
-      {
-        "t": "2026-10-02T13:47:50.055Z",
-        "p": {
-          "1": 15.67,
-          "2": 33.77,
-          "3": 55.23,
-          "4": 38.38,
-          "5": 56.1,
-          "6": 61.62,
-          "7": 41.84,
-          "8": 84.33,
-          "9": 43.9,
-          "10": 66.23,
-          "11": 58.16,
-          "12": 44.77
-        }
-      },
-      {
-        "t": "2026-10-03T13:20:38.272Z",
-        "p": {
-          "1": 16,
-          "2": 27.88,
-          "3": 55.59,
-          "4": 37.6,
-          "5": 56.99,
-          "6": 62.4,
-          "7": 42.86,
-          "8": 84,
-          "9": 43.01,
-          "10": 72.12,
-          "11": 57.14,
-          "12": 44.41
-        }
-      },
-      {
-        "t": "2026-10-03T13:33:57.650Z",
-        "p": {
-          "1": 15.77,
-          "2": 27.8,
-          "3": 54.95,
-          "4": 37.48,
-          "5": 56.82,
-          "6": 62.52,
-          "7": 42.41,
-          "8": 84.23,
-          "9": 43.18,
-          "10": 72.2,
-          "11": 57.59,
-          "12": 45.05
-        }
-      },
-      {
-        "t": "2026-10-03T20:38:06.052Z",
-        "p": {
-          "1": 20.69,
-          "2": 27.8,
-          "3": 55.33,
-          "4": 37.88,
-          "5": 67.23,
-          "6": 62.12,
-          "7": 41.55,
-          "8": 79.31,
-          "9": 32.77,
-          "10": 72.2,
-          "11": 58.45,
-          "12": 44.67
-        }
-      },
-      {
-        "t": "2026-10-04T01:10:55.565Z",
-        "p": {
-          "1": 21.88,
-          "2": 28.29,
-          "3": 54.75,
-          "4": 37.35,
-          "5": 57.43,
-          "6": 62.65,
-          "7": 43.21,
-          "8": 78.12,
-          "9": 42.57,
-          "10": 71.71,
-          "11": 56.79,
-          "12": 45.25
-        }
-      },
-      {
-        "t": "2026-10-04T12:17:28.220Z",
-        "p": {
-          "1": 21.69,
-          "2": 27.75,
-          "3": 55.82,
-          "4": 37.12,
-          "5": 46.35,
-          "6": 62.88,
-          "7": 43.22,
-          "8": 78.31,
-          "9": 53.65,
-          "10": 72.25,
-          "11": 56.78,
-          "12": 44.18
-        }
-      },
-      {
-        "t": "2026-10-04T13:38:35.740Z",
-        "p": {
-          "1": 21.56,
-          "2": 28.74,
-          "3": 54.75,
-          "4": 36.69,
-          "5": 47.39,
-          "6": 63.31,
-          "7": 41.94,
-          "8": 78.44,
-          "9": 52.61,
-          "10": 71.26,
-          "11": 58.06,
-          "12": 45.25
-        }
-      },
-      {
-        "t": "2026-10-04T13:43:04.888Z",
-        "p": {
-          "1": 21.43,
-          "2": 27.8,
-          "3": 55.12,
-          "4": 37.55,
-          "5": 46.67,
-          "6": 62.45,
-          "7": 43.02,
-          "8": 78.57,
-          "9": 53.33,
-          "10": 72.2,
-          "11": 56.98,
-          "12": 44.88
-        }
-      },
-      {
-        "t": "2026-10-04T13:48:26.223Z",
-        "p": {
-          "1": 21.79,
-          "2": 28.29,
-          "3": 55.54,
-          "4": 36.81,
-          "5": 46.89,
-          "6": 63.19,
-          "7": 43.02,
-          "8": 78.21,
-          "9": 53.11,
-          "10": 71.71,
-          "11": 56.98,
-          "12": 44.46
-        }
-      },
-      {
-        "t": "2026-10-04T14:06:53.018Z",
-        "p": {
-          "1": 20.75,
-          "2": 28.47,
-          "3": 55.52,
-          "4": 37.19,
-          "5": 46.43,
-          "6": 62.81,
-          "7": 43.45,
-          "8": 79.25,
-          "9": 53.57,
-          "10": 71.53,
-          "11": 56.55,
-          "12": 44.48
-        }
-      },
-      {
-        "t": "2026-10-04T14:17:28.938Z",
-        "p": {
-          "1": 21.69,
-          "2": 28.74,
-          "3": 54.94,
-          "4": 37.28,
-          "5": 45.9,
-          "6": 62.72,
-          "7": 42.9,
-          "8": 78.31,
-          "9": 54.1,
-          "10": 71.26,
-          "11": 57.1,
-          "12": 45.06
-        }
-      },
-      {
-        "t": "2026-10-04T14:35:19.825Z",
-        "p": {
-          "1": 20.7,
-          "2": 27.52,
-          "3": 55.82,
-          "4": 37.44,
-          "5": 47.11,
-          "6": 62.56,
-          "7": 42.93,
-          "8": 79.3,
-          "9": 52.89,
-          "10": 72.48,
-          "11": 57.07,
-          "12": 44.18
-        }
-      },
-      {
-        "t": "2026-10-04T14:36:01.659Z",
-        "p": {
-          "1": 21.73,
-          "2": 28.04,
-          "3": 54.77,
-          "4": 37.5,
-          "5": 47.34,
-          "6": 62.5,
-          "7": 43.84,
-          "8": 78.27,
-          "9": 52.66,
-          "10": 71.96,
-          "11": 56.16,
-          "12": 45.23
-        }
-      },
-      {
-        "t": "2026-10-04T14:41:32.417Z",
-        "p": {
-          "1": 21.13,
-          "2": 27.81,
-          "3": 56.36,
-          "4": 37.05,
-          "5": 46.49,
-          "6": 62.95,
-          "7": 43.33,
-          "8": 78.87,
-          "9": 53.51,
-          "10": 72.19,
-          "11": 56.67,
-          "12": 43.64
-        }
-      },
-      {
-        "t": "2026-10-04T14:48:12.628Z",
-        "p": {
-          "1": 21.58,
-          "2": 28.09,
-          "3": 55.17,
-          "4": 37.23,
-          "5": 46.55,
-          "6": 62.77,
-          "7": 44.43,
-          "8": 78.42,
-          "9": 53.45,
-          "10": 71.91,
-          "11": 55.57,
-          "12": 44.83
-        }
-      },
-      {
-        "t": "2026-10-04T14:56:38.602Z",
-        "p": {
-          "1": 21.05,
-          "2": 27.35,
-          "3": 55.2,
-          "4": 36.91,
-          "5": 52.64,
-          "6": 63.09,
-          "7": 43.94,
-          "8": 78.95,
-          "9": 47.36,
-          "10": 72.65,
-          "11": 56.06,
-          "12": 44.8
-        }
-      },
-      {
-        "t": "2026-10-04T14:59:48.123Z",
-        "p": {
-          "1": 20.02,
-          "2": 28.26,
-          "3": 55.37,
-          "4": 37.02,
-          "5": 53.26,
-          "6": 62.98,
-          "7": 44.02,
-          "8": 79.98,
-          "9": 46.74,
-          "10": 71.74,
-          "11": 55.98,
-          "12": 44.63
-        }
-      },
-      {
-        "t": "2026-10-04T15:25:13.322Z",
-        "p": {
-          "1": 20.14,
-          "2": 28.47,
-          "3": 54.82,
-          "4": 37.42,
-          "5": 53.9,
-          "6": 62.58,
-          "7": 43.26,
-          "8": 79.86,
-          "9": 46.1,
-          "10": 71.53,
-          "11": 56.74,
-          "12": 45.18
-        }
-      },
-      {
-        "t": "2026-10-04T15:39:30.152Z",
-        "p": {
-          "1": 20.1,
-          "2": 28.06,
-          "3": 49.38,
-          "4": 36.15,
-          "5": 52.61,
-          "6": 63.85,
-          "7": 42.97,
-          "8": 79.9,
-          "9": 47.39,
-          "10": 71.94,
-          "11": 57.03,
-          "12": 50.62
-        }
-      },
-      {
-        "t": "2026-10-04T15:40:16.488Z",
-        "p": {
-          "1": 20.29,
-          "2": 27.9,
-          "3": 48.57,
-          "4": 37.47,
-          "5": 52.93,
-          "6": 62.53,
-          "7": 42.89,
-          "8": 79.71,
-          "9": 47.07,
-          "10": 72.1,
-          "11": 57.11,
-          "12": 51.43
-        }
-      },
-      {
-        "t": "2026-10-04T15:46:53.592Z",
-        "p": {
-          "1": 17.85,
-          "2": 28.25,
-          "3": 49.43,
-          "4": 37.93,
-          "5": 53.16,
-          "6": 62.07,
-          "7": 42.3,
-          "8": 82.15,
-          "9": 46.84,
-          "10": 71.75,
-          "11": 57.7,
-          "12": 50.57
-        }
-      },
-      {
-        "t": "2026-10-04T15:55:13.573Z",
-        "p": {
-          "1": 18.36,
-          "2": 28.09,
-          "3": 47.9,
-          "4": 37.76,
-          "5": 53.96,
-          "6": 62.24,
-          "7": 43.42,
-          "8": 81.64,
-          "9": 46.04,
-          "10": 71.91,
-          "11": 56.58,
-          "12": 52.1
-        }
-      },
-      {
-        "t": "2026-10-04T16:06:44.160Z",
-        "p": {
-          "1": 18.01,
-          "2": 28.54,
-          "3": 48.99,
-          "4": 38.26,
-          "5": 56.07,
-          "6": 61.74,
-          "7": 42.65,
-          "8": 81.99,
-          "9": 43.93,
-          "10": 71.46,
-          "11": 57.35,
-          "12": 51.01
-        }
-      },
-      {
-        "t": "2026-10-04T16:14:27.836Z",
-        "p": {
-          "1": 17.51,
-          "2": 28.36,
-          "3": 49.16,
-          "4": 37.25,
-          "5": 54.97,
-          "6": 62.75,
-          "7": 43.5,
-          "8": 82.49,
-          "9": 45.03,
-          "10": 71.64,
-          "11": 56.5,
-          "12": 50.84
-        }
-      },
-      {
-        "t": "2026-10-04T16:37:26.378Z",
-        "p": {
-          "1": 14.51,
-          "2": 27.78,
-          "3": 49.64,
-          "4": 37.75,
-          "5": 56.06,
-          "6": 62.25,
-          "7": 42.64,
-          "8": 85.49,
-          "9": 43.94,
-          "10": 72.22,
-          "11": 57.36,
-          "12": 50.36
-        }
-      },
-      {
-        "t": "2026-10-04T16:59:02.586Z",
-        "p": {
-          "1": 17.08,
-          "2": 27.99,
-          "3": 49.28,
-          "4": 28.41,
-          "5": 55.75,
-          "6": 71.59,
-          "7": 32.06,
-          "8": 82.92,
-          "9": 44.25,
-          "10": 72.01,
-          "11": 67.94,
-          "12": 50.72
-        }
-      },
-      {
-        "t": "2026-10-04T17:03:18.596Z",
-        "p": {
-          "1": 13.59,
-          "2": 30.14,
-          "3": 49.07,
-          "4": 29.79,
-          "5": 57.05,
-          "6": 70.21,
-          "7": 30.78,
-          "8": 86.41,
-          "9": 42.95,
-          "10": 69.86,
-          "11": 69.22,
-          "12": 50.93
-        }
-      },
-      {
-        "t": "2026-10-04T17:04:04.946Z",
-        "p": {
-          "1": 13.66,
-          "2": 31.81,
-          "3": 49.08,
-          "4": 29.48,
-          "5": 57.72,
-          "6": 70.52,
-          "7": 31.66,
-          "8": 86.34,
-          "9": 42.28,
-          "10": 68.19,
-          "11": 68.34,
-          "12": 50.92
-        }
-      },
-      {
-        "t": "2026-10-04T17:04:56.764Z",
-        "p": {
-          "1": 13.99,
-          "2": 30.69,
-          "3": 47.74,
-          "4": 28.94,
-          "5": 58.34,
-          "6": 71.06,
-          "7": 30.83,
-          "8": 86.01,
-          "9": 41.66,
-          "10": 69.31,
-          "11": 69.17,
-          "12": 52.26
-        }
-      },
-      {
-        "t": "2026-10-04T17:06:31.824Z",
-        "p": {
-          "1": 12.56,
-          "2": 32.38,
-          "3": 49.03,
-          "4": 29.11,
-          "5": 57.85,
-          "6": 70.89,
-          "7": 31.08,
-          "8": 87.44,
-          "9": 42.15,
-          "10": 67.62,
-          "11": 68.92,
-          "12": 50.97
-        }
-      },
-      {
-        "t": "2026-10-04T17:16:15.205Z",
-        "p": {
-          "1": 12.31,
-          "2": 31.33,
-          "3": 48.97,
-          "4": 29.22,
-          "5": 61.93,
-          "6": 70.78,
-          "7": 30.78,
-          "8": 87.69,
-          "9": 38.07,
-          "10": 68.67,
-          "11": 69.22,
-          "12": 51.03
-        }
-      },
-      {
-        "t": "2026-10-04T17:16:58.906Z",
-        "p": {
-          "1": 12.61,
-          "2": 32.13,
-          "3": 48.63,
-          "4": 28.71,
-          "5": 62.71,
-          "6": 71.29,
-          "7": 30.25,
-          "8": 87.39,
-          "9": 37.29,
-          "10": 67.87,
-          "11": 69.75,
-          "12": 51.37
-        }
-      },
-      {
-        "t": "2026-10-04T17:17:40.155Z",
-        "p": {
-          "1": 11.97,
-          "2": 31.7,
-          "3": 49.13,
-          "4": 28.49,
-          "5": 62.75,
-          "6": 71.51,
-          "7": 29.91,
-          "8": 88.03,
-          "9": 37.25,
-          "10": 68.3,
-          "11": 70.09,
-          "12": 50.87
-        }
-      },
-      {
-        "t": "2026-10-04T17:19:50.394Z",
-        "p": {
-          "1": 12.26,
-          "2": 31.81,
-          "3": 48.85,
-          "4": 29.14,
-          "5": 62.13,
-          "6": 70.86,
-          "7": 29.93,
-          "8": 87.74,
-          "9": 37.87,
-          "10": 68.19,
-          "11": 70.07,
-          "12": 51.15
-        }
-      },
-      {
-        "t": "2026-10-04T17:20:55.633Z",
-        "p": {
-          "1": 12.18,
-          "2": 31.98,
-          "3": 48.35,
-          "4": 29.59,
-          "5": 63.51,
-          "6": 70.41,
-          "7": 30.63,
-          "8": 87.82,
-          "9": 36.49,
-          "10": 68.02,
-          "11": 69.37,
-          "12": 51.65
-        }
-      },
-      {
-        "t": "2026-10-04T17:21:44.297Z",
-        "p": {
-          "1": 11.83,
-          "2": 28.73,
-          "3": 48.67,
-          "4": 29.5,
-          "5": 62.27,
-          "6": 70.5,
-          "7": 29.7,
-          "8": 88.17,
-          "9": 37.73,
-          "10": 71.27,
-          "11": 70.3,
-          "12": 51.33
-        }
-      },
-      {
-        "t": "2026-10-04T17:25:40.143Z",
-        "p": {
-          "1": 10.6,
-          "2": 30.21,
-          "3": 48.71,
-          "4": 29.23,
-          "5": 63.28,
-          "6": 70.77,
-          "7": 29.98,
-          "8": 89.4,
-          "9": 36.72,
-          "10": 69.79,
-          "11": 70.02,
-          "12": 51.29
-        }
-      },
-      {
-        "t": "2026-10-04T17:26:25.991Z",
-        "p": {
-          "1": 10.94,
-          "2": 30.34,
-          "3": 49.31,
-          "4": 29.34,
-          "5": 63.45,
-          "6": 70.66,
-          "7": 30.32,
-          "8": 89.06,
-          "9": 36.55,
-          "10": 69.66,
-          "11": 69.68,
-          "12": 50.69
-        }
-      },
-      {
-        "t": "2026-10-04T17:27:09.290Z",
-        "p": {
-          "1": 11,
-          "2": 29.7,
-          "3": 49.39,
-          "4": 29.1,
-          "5": 63.34,
-          "6": 70.9,
-          "7": 29.62,
-          "8": 89,
-          "9": 36.66,
-          "10": 70.3,
-          "11": 70.38,
-          "12": 50.61
-        }
-      },
-      {
-        "t": "2026-10-04T17:32:30.931Z",
-        "p": {
-          "1": 11.41,
-          "2": 30.53,
-          "3": 48.85,
-          "4": 28.31,
-          "5": 61.95,
-          "6": 71.69,
-          "7": 29.89,
-          "8": 88.59,
-          "9": 38.05,
-          "10": 69.47,
-          "11": 70.11,
-          "12": 51.15
-        }
-      },
-      {
-        "t": "2026-10-04T17:33:17.763Z",
-        "p": {
-          "1": 10.68,
-          "2": 29.8,
-          "3": 48.85,
-          "4": 27.93,
-          "5": 61.34,
-          "6": 72.07,
-          "7": 29.72,
-          "8": 89.32,
-          "9": 38.66,
-          "10": 70.2,
-          "11": 70.28,
-          "12": 51.15
-        }
-      },
-      {
-        "t": "2026-10-04T17:41:02.842Z",
-        "p": {
-          "1": 10.42,
-          "2": 29.56,
-          "3": 49.02,
-          "4": 26.51,
-          "5": 62.14,
-          "6": 73.49,
-          "7": 30.75,
-          "8": 89.58,
-          "9": 37.86,
-          "10": 70.44,
-          "11": 69.25,
-          "12": 50.98
-        }
-      },
-      {
-        "t": "2026-10-04T17:45:15.920Z",
-        "p": {
-          "1": 9.47,
-          "2": 28.48,
-          "3": 49.13,
-          "4": 26.15,
-          "5": 61.69,
-          "6": 73.85,
-          "7": 29.31,
-          "8": 90.53,
-          "9": 38.31,
-          "10": 71.52,
-          "11": 70.69,
-          "12": 50.87
-        }
-      },
-      {
-        "t": "2026-10-04T17:46:02.430Z",
-        "p": {
-          "1": 9.32,
-          "2": 29.48,
-          "3": 49.14,
-          "4": 26.68,
-          "5": 62.08,
-          "6": 73.32,
-          "7": 29.16,
-          "8": 90.68,
-          "9": 37.92,
-          "10": 70.52,
-          "11": 70.84,
-          "12": 50.86
-        }
-      },
-      {
-        "t": "2026-10-04T17:46:45.516Z",
-        "p": {
-          "1": 8.78,
-          "2": 29.1,
-          "3": 48.28,
-          "4": 26.38,
-          "5": 61.93,
-          "6": 73.62,
-          "7": 29.95,
-          "8": 91.22,
-          "9": 38.07,
-          "10": 70.9,
-          "11": 70.05,
-          "12": 51.72
-        }
-      },
-      {
-        "t": "2026-10-04T17:51:37.824Z",
-        "p": {
-          "1": 9.34,
-          "2": 26.95,
-          "3": 49.94,
-          "4": 25.52,
-          "5": 61.52,
-          "6": 74.48,
-          "7": 29.57,
-          "8": 90.66,
-          "9": 38.48,
-          "10": 73.05,
-          "11": 70.43,
-          "12": 50.06
-        }
-      },
-      {
-        "t": "2026-10-04T17:55:25.363Z",
-        "p": {
-          "1": 8.59,
-          "2": 26.11,
-          "3": 48.98,
-          "4": 25.89,
-          "5": 61.2,
-          "6": 74.11,
-          "7": 28.62,
-          "8": 91.41,
-          "9": 38.8,
-          "10": 73.89,
-          "11": 71.38,
-          "12": 51.02
-        }
-      },
-      {
-        "t": "2026-10-04T18:03:52.947Z",
-        "p": {
-          "1": 5.39,
-          "2": 26,
-          "3": 49.19,
-          "4": 22.45,
-          "5": 63.71,
-          "6": 77.55,
-          "7": 29.65,
-          "8": 94.61,
-          "9": 36.29,
-          "10": 74,
-          "11": 70.35,
-          "12": 50.81
-        }
-      },
-      {
-        "t": "2026-10-04T18:04:45.736Z",
-        "p": {
-          "1": 4.8,
-          "2": 26.33,
-          "3": 49.64,
-          "4": 22.78,
-          "5": 64.41,
-          "6": 77.22,
-          "7": 28.99,
-          "8": 95.2,
-          "9": 35.59,
-          "10": 73.67,
-          "11": 71.01,
-          "12": 50.36
-        }
-      },
-      {
-        "t": "2026-10-04T18:05:34.911Z",
-        "p": {
-          "1": 5.09,
-          "2": 26.67,
-          "3": 48.78,
-          "4": 24.13,
-          "5": 63.11,
-          "6": 75.87,
-          "7": 28.38,
-          "8": 94.91,
-          "9": 36.89,
-          "10": 73.33,
-          "11": 71.62,
-          "12": 51.22
-        }
-      },
-      {
-        "t": "2026-10-04T18:06:21.918Z",
-        "p": {
-          "1": 4.98,
-          "2": 25.01,
-          "3": 49.28,
-          "4": 23.89,
-          "5": 64.09,
-          "6": 76.11,
-          "7": 29.1,
-          "8": 95.02,
-          "9": 35.91,
-          "10": 74.99,
-          "11": 70.9,
-          "12": 50.72
-        }
-      },
-      {
-        "t": "2026-10-04T18:07:49.754Z",
-        "p": {
-          "1": 5.07,
-          "2": 25.7,
-          "3": 48.84,
-          "4": 21.92,
-          "5": 63.53,
-          "6": 78.08,
-          "7": 29.26,
-          "8": 94.93,
-          "9": 36.47,
-          "10": 74.3,
-          "11": 70.74,
-          "12": 51.16
-        }
-      },
-      {
-        "t": "2026-10-04T18:08:34.988Z",
-        "p": {
-          "1": 4.97,
-          "2": 25.8,
-          "3": 49.38,
-          "4": 21.42,
-          "5": 62.58,
-          "6": 78.58,
-          "7": 29.12,
-          "8": 95.03,
-          "9": 37.42,
-          "10": 74.2,
-          "11": 70.88,
-          "12": 50.62
-        }
-      },
-      {
-        "t": "2026-10-04T18:15:33.656Z",
-        "p": {
-          "1": 4.32,
-          "2": 24.25,
-          "3": 49.42,
-          "4": 21.76,
-          "5": 60.41,
-          "6": 78.24,
-          "7": 29.32,
-          "8": 95.68,
-          "9": 39.59,
-          "10": 75.75,
-          "11": 70.68,
-          "12": 50.58
-        }
-      },
-      {
-        "t": "2026-10-04T18:16:39.942Z",
-        "p": {
-          "1": 4.4,
-          "2": 22.94,
-          "3": 48.75,
-          "4": 21.43,
-          "5": 61.03,
-          "6": 78.57,
-          "7": 28.86,
-          "8": 95.6,
-          "9": 38.97,
-          "10": 77.06,
-          "11": 71.14,
-          "12": 51.25
-        }
-      },
-      {
-        "t": "2026-10-04T18:17:32.340Z",
-        "p": {
-          "1": 3.74,
-          "2": 23.67,
-          "3": 44.55,
-          "4": 22.07,
-          "5": 59.56,
-          "6": 77.93,
-          "7": 28.59,
-          "8": 96.26,
-          "9": 40.44,
-          "10": 76.33,
-          "11": 71.41,
-          "12": 55.45
-        }
-      },
-      {
-        "t": "2026-10-04T18:18:59.050Z",
-        "p": {
-          "1": 3.91,
-          "2": 23.38,
-          "3": 43.99,
-          "4": 21.58,
-          "5": 59.08,
-          "6": 78.42,
-          "7": 28.62,
-          "8": 96.09,
-          "9": 40.92,
-          "10": 76.62,
-          "11": 71.38,
-          "12": 56.01
-        }
-      },
-      {
-        "t": "2026-10-04T18:21:16.086Z",
-        "p": {
-          "1": 3.86,
-          "2": 23.78,
-          "3": 43.64,
-          "4": 20.41,
-          "5": 58.26,
-          "6": 79.59,
-          "7": 28.14,
-          "8": 96.14,
-          "9": 41.74,
-          "10": 76.22,
-          "11": 71.86,
-          "12": 56.36
-        }
-      },
-      {
-        "t": "2026-10-04T18:22:46.421Z",
-        "p": {
-          "1": 3.74,
-          "2": 23.75,
-          "3": 43.94,
-          "4": 19.74,
-          "5": 59.67,
-          "6": 80.26,
-          "7": 28.87,
-          "8": 96.26,
-          "9": 40.33,
-          "10": 76.25,
-          "11": 71.13,
-          "12": 56.06
-        }
-      },
-      {
-        "t": "2026-10-04T18:23:28.681Z",
-        "p": {
-          "1": 3.45,
-          "2": 23.32,
-          "3": 44.11,
-          "4": 19.21,
-          "5": 60.45,
-          "6": 80.79,
-          "7": 28.58,
-          "8": 96.55,
-          "9": 39.55,
-          "10": 76.68,
-          "11": 71.42,
-          "12": 55.89
-        }
-      },
-      {
-        "t": "2026-10-04T18:26:26.969Z",
-        "p": {
-          "1": 3.6,
-          "2": 23.35,
-          "3": 43.32,
-          "4": 19.19,
-          "5": 59.05,
-          "6": 80.81,
-          "7": 30.49,
-          "8": 96.4,
-          "9": 40.95,
-          "10": 76.65,
-          "11": 69.51,
-          "12": 56.68
-        }
-      },
-      {
-        "t": "2026-10-04T18:27:08.457Z",
-        "p": {
-          "1": 3.46,
-          "2": 24.48,
-          "3": 42.82,
-          "4": 19.55,
-          "5": 60.07,
-          "6": 80.45,
-          "7": 29.84,
-          "8": 96.54,
-          "9": 39.93,
-          "10": 75.52,
-          "11": 70.16,
-          "12": 57.18
-        }
-      },
-      {
-        "t": "2026-10-04T18:27:52.018Z",
-        "p": {
-          "1": 3.51,
-          "2": 25.15,
-          "3": 42.01,
-          "4": 15.23,
-          "5": 59.24,
-          "6": 84.77,
-          "7": 29.37,
-          "8": 96.49,
-          "9": 40.76,
-          "10": 74.85,
-          "11": 70.63,
-          "12": 57.99
-        }
-      },
-      {
-        "t": "2026-10-04T18:28:35.521Z",
-        "p": {
-          "1": 3.57,
-          "2": 24.94,
-          "3": 41.39,
-          "4": 14.65,
-          "5": 59.19,
-          "6": 85.35,
-          "7": 29.64,
-          "8": 96.43,
-          "9": 40.81,
-          "10": 75.06,
-          "11": 70.36,
-          "12": 58.61
-        }
-      },
-      {
-        "t": "2026-10-04T18:29:19.568Z",
-        "p": {
-          "1": 2.69,
-          "2": 26.28,
-          "3": 41.7,
-          "4": 14.85,
-          "5": 62.02,
-          "6": 85.15,
-          "7": 29.61,
-          "8": 97.31,
-          "9": 37.98,
-          "10": 73.72,
-          "11": 70.39,
-          "12": 58.3
-        }
-      },
-      {
-        "t": "2026-10-04T18:37:15.567Z",
-        "p": {
-          "1": 2.79,
-          "2": 24.75,
-          "3": 41.85,
-          "4": 17.37,
-          "5": 61.72,
-          "6": 82.63,
-          "7": 30.34,
-          "8": 97.21,
-          "9": 38.28,
-          "10": 75.25,
-          "11": 69.66,
-          "12": 58.15
-        }
-      },
-      {
-        "t": "2026-10-04T18:38:44.770Z",
-        "p": {
-          "1": 2.92,
-          "2": 26.53,
-          "3": 41.52,
-          "4": 18.43,
-          "5": 62.46,
-          "6": 81.57,
-          "7": 30.65,
-          "8": 97.08,
-          "9": 37.54,
-          "10": 73.47,
-          "11": 69.35,
-          "12": 58.48
-        }
-      },
-      {
-        "t": "2026-10-04T18:43:51.786Z",
-        "p": {
-          "1": 2.9,
-          "2": 25.44,
-          "3": 47.76,
-          "4": 19.19,
-          "5": 62.77,
-          "6": 80.81,
-          "7": 29.65,
-          "8": 97.1,
-          "9": 37.23,
-          "10": 74.56,
-          "11": 70.35,
-          "12": 52.24
-        }
-      },
-      {
-        "t": "2026-10-04T18:45:26.554Z",
-        "p": {
-          "1": 2.79,
-          "2": 25.56,
-          "3": 48.31,
-          "4": 19.96,
-          "5": 63.21,
-          "6": 80.04,
-          "7": 28.72,
-          "8": 97.21,
-          "9": 36.79,
-          "10": 74.44,
-          "11": 71.28,
-          "12": 51.69
-        }
-      },
-      {
-        "t": "2026-10-04T18:46:23.538Z",
-        "p": {
-          "1": 3.33,
-          "2": 25.26,
-          "3": 47.3,
-          "4": 19.58,
-          "5": 60.48,
-          "6": 80.42,
-          "7": 29.31,
-          "8": 96.67,
-          "9": 39.52,
-          "10": 74.74,
-          "11": 70.69,
-          "12": 52.7
-        }
-      },
-      {
-        "t": "2026-10-04T18:47:07.151Z",
-        "p": {
-          "1": 3.29,
-          "2": 24.57,
-          "3": 47.27,
-          "4": 19.3,
-          "5": 58.75,
-          "6": 80.7,
-          "7": 29.12,
-          "8": 96.71,
-          "9": 41.25,
-          "10": 75.43,
-          "11": 70.88,
-          "12": 52.73
-        }
-      },
-      {
-        "t": "2026-10-04T18:55:25.009Z",
-        "p": {
-          "1": 2.5,
-          "2": 17.88,
-          "3": 46.65,
-          "4": 15.98,
-          "5": 58.74,
-          "6": 84.02,
-          "7": 30.98,
-          "8": 97.5,
-          "9": 41.26,
-          "10": 82.12,
-          "11": 69.02,
-          "12": 53.35
-        }
-      },
-      {
-        "t": "2026-10-04T18:56:58.365Z",
-        "p": {
-          "1": 2.53,
-          "2": 16.83,
-          "3": 48.26,
-          "4": 15.92,
-          "5": 58.22,
-          "6": 84.08,
-          "7": 32.43,
-          "8": 97.47,
-          "9": 41.78,
-          "10": 83.17,
-          "11": 67.57,
-          "12": 51.74
-        }
-      },
-      {
-        "t": "2026-10-04T18:59:10.440Z",
-        "p": {
-          "1": 2.98,
-          "2": 16.74,
-          "3": 48.36,
-          "4": 14.34,
-          "5": 58.96,
-          "6": 85.66,
-          "7": 31.33,
-          "8": 97.02,
-          "9": 41.04,
-          "10": 83.26,
-          "11": 68.67,
-          "12": 51.64
-        }
-      },
-      {
-        "t": "2026-10-04T19:00:39.001Z",
-        "p": {
-          "1": 2.97,
-          "2": 16.26,
-          "3": 48.38,
-          "4": 14.03,
-          "5": 60.15,
-          "6": 85.97,
-          "7": 34.41,
-          "8": 97.03,
-          "9": 39.85,
-          "10": 83.74,
-          "11": 65.59,
-          "12": 51.62
-        }
-      },
-      {
-        "t": "2026-10-04T19:08:56.961Z",
-        "p": {
-          "1": 3.3,
-          "2": 16.57,
-          "3": 42.22,
-          "4": 14.68,
-          "5": 43.66,
-          "6": 85.32,
-          "7": 36.29,
-          "8": 96.7,
-          "9": 56.34,
-          "10": 83.43,
-          "11": 63.71,
-          "12": 57.78
-        }
-      },
-      {
-        "t": "2026-10-04T19:09:39.718Z",
-        "p": {
-          "1": 3.58,
-          "2": 16.35,
-          "3": 42.53,
-          "4": 13.71,
-          "5": 43.35,
-          "6": 86.29,
-          "7": 35.64,
-          "8": 96.42,
-          "9": 56.65,
-          "10": 83.65,
-          "11": 64.36,
-          "12": 57.47
-        }
-      },
-      {
-        "t": "2026-10-04T19:10:25.808Z",
-        "p": {
-          "1": 3.85,
-          "2": 16.52,
-          "3": 42.2,
-          "4": 13.89,
-          "5": 43.39,
-          "6": 86.11,
-          "7": 35.94,
-          "8": 96.15,
-          "9": 56.61,
-          "10": 83.48,
-          "11": 64.06,
-          "12": 57.8
-        }
-      },
-      {
-        "t": "2026-10-04T19:11:08.516Z",
-        "p": {
-          "1": 3.5,
-          "2": 16.36,
-          "3": 41.22,
-          "4": 13.23,
-          "5": 43.6,
-          "6": 86.77,
-          "7": 36.3,
-          "8": 96.5,
-          "9": 56.4,
-          "10": 83.64,
-          "11": 63.7,
-          "12": 58.78
-        }
-      },
-      {
-        "t": "2026-10-04T19:16:42.359Z",
-        "p": {
-          "1": 3.15,
-          "2": 16.13,
-          "3": 41.61,
-          "4": 15.69,
-          "5": 44.88,
-          "6": 84.31,
-          "7": 36.19,
-          "8": 96.85,
-          "9": 55.12,
-          "10": 83.87,
-          "11": 63.81,
-          "12": 58.39
-        }
-      },
-      {
-        "t": "2026-10-04T19:18:14.452Z",
-        "p": {
-          "1": 3.39,
-          "2": 18.02,
-          "3": 42.24,
-          "4": 23.67,
-          "5": 44.49,
-          "6": 76.33,
-          "7": 30.96,
-          "8": 96.61,
-          "9": 55.51,
-          "10": 81.98,
-          "11": 69.04,
-          "12": 57.76
-        }
-      },
-      {
-        "t": "2026-10-04T19:19:47.008Z",
-        "p": {
-          "1": 3.14,
-          "2": 18.6,
-          "3": 41.83,
-          "4": 22.52,
-          "5": 42.9,
-          "6": 77.48,
-          "7": 30.69,
-          "8": 96.86,
-          "9": 57.1,
-          "10": 81.4,
-          "11": 69.31,
-          "12": 58.17
-        }
-      },
-      {
-        "t": "2026-10-04T19:20:34.344Z",
-        "p": {
-          "1": 3.23,
-          "2": 18.31,
-          "3": 43.09,
-          "4": 23.52,
-          "5": 42.37,
-          "6": 76.48,
-          "7": 30.73,
-          "8": 96.77,
-          "9": 57.63,
-          "10": 81.69,
-          "11": 69.27,
-          "12": 56.91
-        }
-      },
-      {
-        "t": "2026-10-04T19:22:21.334Z",
-        "p": {
-          "1": 3.24,
-          "2": 16.86,
-          "3": 44.69,
-          "4": 23.15,
-          "5": 43.3,
-          "6": 76.85,
-          "7": 30.76,
-          "8": 96.76,
-          "9": 56.7,
-          "10": 83.14,
-          "11": 69.24,
-          "12": 55.31
-        }
-      },
-      {
-        "t": "2026-10-04T19:27:42.157Z",
-        "p": {
-          "1": 4,
-          "2": 18.17,
-          "3": 42.29,
-          "4": 31.54,
-          "5": 42.03,
-          "6": 68.46,
-          "7": 30.7,
-          "8": 96,
-          "9": 57.97,
-          "10": 81.83,
-          "11": 69.3,
-          "12": 57.71
-        }
-      },
-      {
-        "t": "2026-10-04T19:28:26.542Z",
-        "p": {
-          "1": 3.76,
-          "2": 18.42,
-          "3": 42.45,
-          "4": 31.02,
-          "5": 32.94,
-          "6": 68.98,
-          "7": 31.35,
-          "8": 96.24,
-          "9": 67.06,
-          "10": 81.58,
-          "11": 68.65,
-          "12": 57.55
-        }
-      },
-      {
-        "t": "2026-10-04T19:30:40.329Z",
-        "p": {
-          "1": 3.66,
-          "2": 19.25,
-          "3": 42.72,
-          "4": 28.44,
-          "5": 38.2,
-          "6": 71.56,
-          "7": 27.59,
-          "8": 96.34,
-          "9": 61.8,
-          "10": 80.75,
-          "11": 72.41,
-          "12": 57.28
-        }
-      },
-      {
-        "t": "2026-10-04T19:31:29.858Z",
-        "p": {
-          "1": 4.03,
-          "2": 19.24,
-          "3": 41.41,
-          "4": 27.76,
-          "5": 38.77,
-          "6": 72.24,
-          "7": 27.8,
-          "8": 95.97,
-          "9": 61.23,
-          "10": 80.76,
-          "11": 72.2,
-          "12": 58.59
-        }
-      },
-      {
-        "t": "2026-10-04T19:32:14.116Z",
-        "p": {
-          "1": 3.79,
-          "2": 19.28,
-          "3": 41.65,
-          "4": 28.16,
-          "5": 38.33,
-          "6": 71.84,
-          "7": 27.43,
-          "8": 96.21,
-          "9": 61.67,
-          "10": 80.72,
-          "11": 72.57,
-          "12": 58.35
-        }
-      },
-      {
-        "t": "2026-10-04T19:33:47.863Z",
-        "p": {
-          "1": 3.81,
-          "2": 19.29,
-          "3": 41.57,
-          "4": 27.62,
-          "5": 37.51,
-          "6": 72.38,
-          "7": 27.51,
-          "8": 96.19,
-          "9": 62.49,
-          "10": 80.71,
-          "11": 72.49,
-          "12": 58.43
-        }
-      },
-      {
-        "t": "2026-10-04T19:34:35.094Z",
-        "p": {
-          "1": 3.75,
-          "2": 18.83,
-          "3": 41.68,
-          "4": 27.64,
-          "5": 38.05,
-          "6": 72.36,
-          "7": 28.63,
-          "8": 96.25,
-          "9": 61.95,
-          "10": 81.17,
-          "11": 71.37,
-          "12": 58.32
-        }
-      },
-      {
-        "t": "2026-10-04T19:36:01.625Z",
-        "p": {
-          "1": 3.49,
-          "2": 19.25,
-          "3": 41.77,
-          "4": 28.04,
-          "5": 37.78,
-          "6": 71.96,
-          "7": 27.75,
-          "8": 96.51,
-          "9": 62.22,
-          "10": 80.75,
-          "11": 72.25,
-          "12": 58.23
-        }
-      },
-      {
-        "t": "2026-10-04T19:38:21.591Z",
-        "p": {
-          "1": 3.4,
-          "2": 18.93,
-          "3": 41.9,
-          "4": 28.48,
-          "5": 38.25,
-          "6": 71.52,
-          "7": 27.99,
-          "8": 96.6,
-          "9": 61.75,
-          "10": 81.07,
-          "11": 72.01,
-          "12": 58.1
-        }
-      },
-      {
-        "t": "2026-10-04T19:39:05.089Z",
-        "p": {
-          "1": 3.81,
-          "2": 19.1,
-          "3": 42.47,
-          "4": 27.88,
-          "5": 38.29,
-          "6": 72.12,
-          "7": 27.95,
-          "8": 96.19,
-          "9": 61.71,
-          "10": 80.9,
-          "11": 72.05,
-          "12": 57.53
-        }
-      },
-      {
-        "t": "2026-10-04T19:42:22.259Z",
-        "p": {
-          "1": 3.52,
-          "2": 17.88,
-          "3": 42.55,
-          "4": 27.94,
-          "5": 38.78,
-          "6": 72.06,
-          "7": 26.86,
-          "8": 96.48,
-          "9": 61.22,
-          "10": 82.12,
-          "11": 73.14,
-          "12": 57.45
-        }
-      },
-      {
-        "t": "2026-10-04T19:43:06.689Z",
-        "p": {
-          "1": 3.52,
-          "2": 17.11,
-          "3": 43.26,
-          "4": 27.88,
-          "5": 37.2,
-          "6": 72.12,
-          "7": 26.76,
-          "8": 96.48,
-          "9": 62.8,
-          "10": 82.89,
-          "11": 73.24,
-          "12": 56.74
-        }
-      },
-      {
-        "t": "2026-10-04T19:43:50.303Z",
-        "p": {
-          "1": 3.73,
-          "2": 16.92,
-          "3": 43.59,
-          "4": 27.47,
-          "5": 37.59,
-          "6": 72.53,
-          "7": 27.1,
-          "8": 96.27,
-          "9": 62.41,
-          "10": 83.08,
-          "11": 72.9,
-          "12": 56.41
-        }
-      },
-      {
-        "t": "2026-10-04T19:50:46.690Z",
-        "p": {
-          "1": 2.83,
-          "2": 16.77,
-          "3": 39.92,
-          "4": 26.91,
-          "5": 36.55,
-          "6": 73.09,
-          "7": 24.09,
-          "8": 97.17,
-          "9": 63.45,
-          "10": 83.23,
-          "11": 75.91,
-          "12": 60.08
-        }
-      },
-      {
-        "t": "2026-10-04T19:51:31.936Z",
-        "p": {
-          "1": 3.02,
-          "2": 16.84,
-          "3": 40.12,
-          "4": 27.3,
-          "5": 37.6,
-          "6": 72.7,
-          "7": 22.78,
-          "8": 96.98,
-          "9": 62.4,
-          "10": 83.16,
-          "11": 77.22,
-          "12": 59.88
-        }
-      },
-      {
-        "t": "2026-10-04T19:52:53.459Z",
-        "p": {
-          "1": 2.89,
-          "2": 21.11,
-          "3": 40.6,
-          "4": 26.11,
-          "5": 33.61,
-          "6": 73.89,
-          "7": 22.89,
-          "8": 97.11,
-          "9": 66.39,
-          "10": 78.89,
-          "11": 77.11,
-          "12": 59.4
-        }
-      },
-      {
-        "t": "2026-10-04T19:54:14.653Z",
-        "p": {
-          "1": 2.77,
-          "2": 21.98,
-          "3": 40.61,
-          "4": 20.92,
-          "5": 33.22,
-          "6": 79.08,
-          "7": 22.33,
-          "8": 97.23,
-          "9": 66.78,
-          "10": 78.02,
-          "11": 77.67,
-          "12": 59.39
-        }
-      },
-      {
-        "t": "2026-10-04T19:55:55.318Z",
-        "p": {
-          "1": 2.69,
-          "2": 21.95,
-          "3": 40.42,
-          "4": 20.9,
-          "5": 34.07,
-          "6": 79.1,
-          "7": 22.57,
-          "8": 97.31,
-          "9": 65.93,
-          "10": 78.05,
-          "11": 77.43,
-          "12": 59.58
-        }
-      },
-      {
-        "t": "2026-10-04T19:56:48.795Z",
-        "p": {
-          "1": 2.61,
-          "2": 22.42,
-          "3": 39.96,
-          "4": 20.23,
-          "5": 34,
-          "6": 79.77,
-          "7": 25.22,
-          "8": 97.39,
-          "9": 66,
-          "10": 77.58,
-          "11": 74.78,
-          "12": 60.04
-        }
-      },
-      {
-        "t": "2026-10-04T20:00:30.743Z",
-        "p": {
-          "1": 1.34,
-          "2": 13.43,
-          "3": 37.79,
-          "4": 23.54,
-          "5": 20.03,
-          "6": 76.46,
-          "7": 33.17,
-          "8": 98.66,
-          "9": 79.97,
-          "10": 86.57,
-          "11": 66.83,
-          "12": 62.21
-        }
-      },
-      {
-        "t": "2026-10-04T20:01:13.760Z",
-        "p": {
-          "1": 1.27,
-          "2": 13.69,
-          "3": 37.5,
-          "4": 23.76,
-          "5": 18.94,
-          "6": 76.24,
-          "7": 32.37,
-          "8": 98.73,
-          "9": 81.06,
-          "10": 86.31,
-          "11": 67.63,
-          "12": 62.5
-        }
-      },
-      {
-        "t": "2026-10-04T20:07:06.364Z",
-        "p": {
-          "1": 0.6,
-          "2": 14.51,
-          "3": 37.7,
-          "4": 44.81,
-          "5": 17.88,
-          "6": 55.19,
-          "7": 34.11,
-          "8": 99.4,
-          "9": 82.12,
-          "10": 85.49,
-          "11": 65.89,
-          "12": 62.3
-        }
-      },
-      {
-        "t": "2026-10-04T20:11:40.785Z",
-        "p": {
-          "1": 0.78,
-          "2": 18.58,
-          "3": 38.01,
-          "4": 33.91,
-          "5": 15.96,
-          "6": 66.09,
-          "7": 34.45,
-          "8": 99.22,
-          "9": 84.04,
-          "10": 81.42,
-          "11": 65.55,
-          "12": 61.99
-        }
-      },
-      {
-        "t": "2026-10-04T20:22:55.809Z",
-        "p": {
-          "1": 0.02,
-          "2": 15.84,
-          "3": 36.46,
-          "4": 63.87,
-          "5": 41.96,
-          "6": 36.13,
-          "7": 30.41,
-          "8": 99.98,
-          "9": 58.04,
-          "10": 84.16,
-          "11": 69.59,
-          "12": 63.54
-        }
-      },
-      {
-        "t": "2026-10-04T20:26:46.831Z",
-        "p": {
-          "1": 0.01,
-          "2": 11.54,
-          "3": 32.33,
-          "4": 64.34,
-          "5": 41.74,
-          "6": 35.66,
-          "7": 35.11,
-          "8": 99.99,
-          "9": 58.26,
-          "10": 88.46,
-          "11": 64.89,
-          "12": 67.67
-        }
-      },
-      {
-        "t": "2026-10-04T20:27:38.424Z",
-        "p": {
-          "1": 0.01,
-          "2": 11.05,
-          "3": 29.33,
-          "4": 64.13,
-          "5": 41.44,
-          "6": 35.87,
-          "7": 34.22,
-          "8": 99.99,
-          "9": 58.56,
-          "10": 88.95,
-          "11": 65.78,
-          "12": 70.67
-        }
-      },
-      {
-        "t": "2026-10-04T20:29:07.198Z",
-        "p": {
-          "1": 0.01,
-          "2": 11.58,
-          "3": 30.48,
-          "4": 64.44,
-          "5": 42.09,
-          "6": 35.56,
-          "7": 34.64,
-          "8": 99.99,
-          "9": 57.91,
-          "10": 88.42,
-          "11": 65.36,
-          "12": 69.52
-        }
-      },
-      {
-        "t": "2026-10-04T20:37:36.915Z",
-        "p": {
-          "1": 0.01,
-          "2": 11.82,
-          "3": 30.88,
-          "4": 64.78,
-          "5": 40.77,
-          "6": 35.22,
-          "7": 32.91,
-          "8": 99.99,
-          "9": 59.23,
-          "10": 88.18,
-          "11": 67.09,
-          "12": 69.12
-        }
-      },
-      {
-        "t": "2026-10-04T20:42:57.724Z",
-        "p": {
-          "1": 0.01,
-          "2": 12.06,
-          "3": 31.22,
-          "4": 64.66,
-          "5": 41.79,
-          "6": 35.34,
-          "7": 30.45,
-          "8": 99.99,
-          "9": 58.21,
-          "10": 87.94,
-          "11": 69.55,
-          "12": 68.78
-        }
-      },
-      {
-        "t": "2026-10-04T20:46:02.012Z",
-        "p": {
-          "1": 0.01,
-          "2": 11.74,
-          "3": 27.62,
-          "4": 64.99,
-          "5": 41.99,
-          "6": 35.01,
-          "7": 31.05,
-          "8": 99.99,
-          "9": 58.01,
-          "10": 88.26,
-          "11": 68.95,
-          "12": 72.38
-        }
-      },
-      {
-        "t": "2026-10-04T20:50:36.977Z",
-        "p": {
-          "1": 0.01,
-          "2": 13.13,
-          "3": 27.92,
-          "4": 63.33,
-          "5": 40.33,
-          "6": 36.67,
-          "7": 30.71,
-          "8": 99.99,
-          "9": 59.67,
-          "10": 86.87,
-          "11": 69.29,
-          "12": 72.08
-        }
-      },
-      {
-        "t": "2026-10-05T01:11:50.382Z",
-        "p": {
-          "1": 0,
-          "2": 30.12,
-          "3": 0,
-          "4": 39.01,
-          "5": 100,
-          "6": 60.99,
-          "7": 1.36,
-          "8": 100,
-          "9": 0,
-          "10": 69.88,
-          "11": 98.64,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T01:14:16.110Z",
-        "p": {
-          "1": 0,
-          "2": 30.3,
-          "3": 0,
-          "4": 37.8,
-          "5": 100,
-          "6": 62.2,
-          "7": 1.26,
-          "8": 100,
-          "9": 0,
-          "10": 69.7,
-          "11": 98.74,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T01:15:03.992Z",
-        "p": {
-          "1": 0,
-          "2": 31,
-          "3": 0,
-          "4": 37.56,
-          "5": 100,
-          "6": 62.44,
-          "7": 1.4,
-          "8": 100,
-          "9": 0,
-          "10": 69,
-          "11": 98.6,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T01:26:36.719Z",
-        "p": {
-          "1": 0,
-          "2": 43.8,
-          "3": 0,
-          "4": 38.64,
-          "5": 100,
-          "6": 61.36,
-          "7": 1.32,
-          "8": 100,
-          "9": 0,
-          "10": 56.2,
-          "11": 98.68,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T01:27:21.573Z",
-        "p": {
-          "1": 0,
-          "2": 42.74,
-          "3": 0,
-          "4": 37.54,
-          "5": 100,
-          "6": 62.46,
-          "7": 1.47,
-          "8": 100,
-          "9": 0,
-          "10": 57.26,
-          "11": 98.53,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T01:28:06.380Z",
-        "p": {
-          "1": 0,
-          "2": 42.06,
-          "3": 0,
-          "4": 37.41,
-          "5": 100,
-          "6": 62.59,
-          "7": 1.5,
-          "8": 100,
-          "9": 0,
-          "10": 57.94,
-          "11": 98.5,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T01:28:56.033Z",
-        "p": {
-          "1": 0,
-          "2": 43.01,
-          "3": 0,
-          "4": 37.68,
-          "5": 100,
-          "6": 62.32,
-          "7": 0.95,
-          "8": 100,
-          "9": 0,
-          "10": 56.99,
-          "11": 99.05,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T01:29:45.946Z",
-        "p": {
-          "1": 0,
-          "2": 41.88,
-          "3": 0,
-          "4": 37.35,
-          "5": 100,
-          "6": 62.65,
-          "7": 0.95,
-          "8": 100,
-          "9": 0,
-          "10": 58.12,
-          "11": 99.05,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T01:31:05.536Z",
-        "p": {
-          "1": 0,
-          "2": 41.42,
-          "3": 0,
-          "4": 37.87,
-          "5": 100,
-          "6": 62.13,
-          "7": 0.96,
-          "8": 100,
-          "9": 0,
-          "10": 58.58,
-          "11": 99.04,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T01:34:58.633Z",
-        "p": {
-          "1": 0,
-          "2": 39.53,
-          "3": 0,
-          "4": 40.66,
-          "5": 100,
-          "6": 59.34,
-          "7": 0.76,
-          "8": 100,
-          "9": 0,
-          "10": 60.47,
-          "11": 99.24,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T01:38:50.627Z",
-        "p": {
-          "1": 0,
-          "2": 44.9,
-          "3": 0,
-          "4": 40.26,
-          "5": 100,
-          "6": 59.74,
-          "7": 0.79,
-          "8": 100,
-          "9": 0,
-          "10": 55.1,
-          "11": 99.21,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T01:43:14.417Z",
-        "p": {
-          "1": 0,
-          "2": 52.89,
-          "3": 0,
-          "4": 41.17,
-          "5": 100,
-          "6": 58.83,
-          "7": 1.08,
-          "8": 100,
-          "9": 0,
-          "10": 47.11,
-          "11": 98.92,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T01:50:06.207Z",
-        "p": {
-          "1": 0,
-          "2": 49.96,
-          "3": 0,
-          "4": 40.8,
-          "5": 100,
-          "6": 59.2,
-          "7": 0.92,
-          "8": 100,
-          "9": 0,
-          "10": 50.04,
-          "11": 99.08,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T01:56:23.116Z",
-        "p": {
-          "1": 0,
-          "2": 49.82,
-          "3": 0,
-          "4": 52.4,
-          "5": 100,
-          "6": 47.6,
-          "7": 0.76,
-          "8": 100,
-          "9": 0,
-          "10": 50.18,
-          "11": 99.24,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T02:08:34.496Z",
-        "p": {
-          "1": 0,
-          "2": 52.31,
-          "3": 0,
-          "4": 52.08,
-          "5": 100,
-          "6": 47.92,
-          "7": 0.78,
-          "8": 100,
-          "9": 0,
-          "10": 47.69,
-          "11": 99.22,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T02:10:09.288Z",
-        "p": {
-          "1": 0,
-          "2": 52.76,
-          "3": 0,
-          "4": 52.14,
-          "5": 100,
-          "6": 47.86,
-          "7": 0.82,
-          "8": 100,
-          "9": 0,
-          "10": 47.24,
-          "11": 99.18,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T02:18:27.981Z",
-        "p": {
-          "1": 0,
-          "2": 67.62,
-          "3": 0,
-          "4": 52.46,
-          "5": 100,
-          "6": 47.54,
-          "7": 0.74,
-          "8": 100,
-          "9": 0,
-          "10": 32.38,
-          "11": 99.26,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T02:21:38.582Z",
-        "p": {
-          "1": 0,
-          "2": 68.31,
-          "3": 0,
-          "4": 51.65,
-          "5": 100,
-          "6": 48.35,
-          "7": 0.96,
-          "8": 100,
-          "9": 0,
-          "10": 31.69,
-          "11": 99.04,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T02:22:25.339Z",
-        "p": {
-          "1": 0,
-          "2": 68.96,
-          "3": 0,
-          "4": 52.07,
-          "5": 100,
-          "6": 47.93,
-          "7": 0.84,
-          "8": 100,
-          "9": 0,
-          "10": 31.04,
-          "11": 99.16,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T02:23:12.370Z",
-        "p": {
-          "1": 0,
-          "2": 69.2,
-          "3": 0,
-          "4": 52.38,
-          "5": 100,
-          "6": 47.62,
-          "7": 0.86,
-          "8": 100,
-          "9": 0,
-          "10": 30.8,
-          "11": 99.14,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T02:31:01.478Z",
-        "p": {
-          "1": 0,
-          "2": 68.63,
-          "3": 0,
-          "4": 60.25,
-          "5": 100,
-          "6": 39.75,
-          "7": 0.78,
-          "8": 100,
-          "9": 0,
-          "10": 31.37,
-          "11": 99.22,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T02:32:34.865Z",
-        "p": {
-          "1": 0,
-          "2": 68.83,
-          "3": 0,
-          "4": 61.38,
-          "5": 100,
-          "6": 38.62,
-          "7": 0.89,
-          "8": 100,
-          "9": 0,
-          "10": 31.17,
-          "11": 99.11,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T02:33:26.367Z",
-        "p": {
-          "1": 0,
-          "2": 69.27,
-          "3": 0,
-          "4": 61.17,
-          "5": 100,
-          "6": 38.83,
-          "7": 0.75,
-          "8": 100,
-          "9": 0,
-          "10": 30.73,
-          "11": 99.25,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T02:35:54.399Z",
-        "p": {
-          "1": 0,
-          "2": 68.9,
-          "3": 0,
-          "4": 60.85,
-          "5": 100,
-          "6": 39.15,
-          "7": 1.56,
-          "8": 100,
-          "9": 0,
-          "10": 31.1,
-          "11": 98.44,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T02:41:07.528Z",
-        "p": {
-          "1": 0,
-          "2": 64.83,
-          "3": 0,
-          "4": 59.39,
-          "5": 100,
-          "6": 40.61,
-          "7": 0.66,
-          "8": 100,
-          "9": 0,
-          "10": 35.17,
-          "11": 99.34,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T02:50:48.667Z",
-        "p": {
-          "1": 0,
-          "2": 64.31,
-          "3": 0,
-          "4": 60.4,
-          "5": 100,
-          "6": 39.6,
-          "7": 2.04,
-          "8": 100,
-          "9": 0,
-          "10": 35.69,
-          "11": 97.96,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T02:52:16.141Z",
-        "p": {
-          "1": 0,
-          "2": 64.48,
-          "3": 0,
-          "4": 60.97,
-          "5": 100,
-          "6": 39.03,
-          "7": 2.64,
-          "8": 100,
-          "9": 0,
-          "10": 35.52,
-          "11": 97.36,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T02:56:41.140Z",
-        "p": {
-          "1": 0,
-          "2": 67.4,
-          "3": 0,
-          "4": 61.6,
-          "5": 100,
-          "6": 38.4,
-          "7": 3.2,
-          "8": 100,
-          "9": 0,
-          "10": 32.6,
-          "11": 96.8,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T03:08:19.189Z",
-        "p": {
-          "1": 0,
-          "2": 62.07,
-          "3": 0,
-          "4": 61.45,
-          "5": 100,
-          "6": 38.55,
-          "7": 2.13,
-          "8": 100,
-          "9": 0,
-          "10": 37.93,
-          "11": 97.87,
-          "12": 100
-        }
-      },
-      {
-        "t": "2026-10-05T04:09:22.041Z",
-        "p": {
-          "1": 0,
-          "2": 78.66,
-          "3": 0,
-          "4": 30.77,
-          "5": 100,
-          "6": 69.23,
-          "7": 0,
-          "8": 100,
-          "9": 0,
-          "10": 21.34,
-          "11": 100,
-          "12": 100
+        "t": "2026-10-06T12:57:50.583Z",
+        "p": {
+          "1": 28.18,
+          "2": 60.56,
+          "3": 78.04,
+          "4": 68.55,
+          "5": 41.01,
+          "6": 71.82,
+          "7": 21.96,
+          "8": 58.99,
+          "9": 39.44,
+          "10": 75.59,
+          "11": 24.41,
+          "12": 31.45
         }
       }
     ]
   },
   "raffleHistory": {
-    "week": 4,
+    "week": 5,
     "points": [
       {
-        "t": "2026-10-05T15:30:44.130Z",
+        "t": "2026-10-06T12:57:50.583Z",
         "p": {
-          "1": 0,
-          "2": 72.77,
-          "3": 0,
-          "4": 0,
-          "5": 0,
-          "6": 0.03,
-          "7": 0,
-          "8": 0.01,
-          "9": 0,
-          "10": 19.62,
-          "11": 7.61,
-          "12": 0
+          "1": 2.36,
+          "2": 2.84,
+          "3": 5.6,
+          "4": 7.91,
+          "5": 11.03,
+          "6": 13.21,
+          "7": 0.29,
+          "8": 19.67,
+          "9": 1.37,
+          "10": 29.03,
+          "11": 5.16,
+          "12": 1.64
         }
       }
     ]
   },
   "projectionHistory": [
     {
-      "timestamp": "2026-10-05T15:30:44.130Z",
-      "week": 4,
+      "timestamp": "2026-10-06T12:57:50.583Z",
+      "week": 5,
       "scores": [
         {
-          "teamId": 2,
-          "projection": 187.57
-        },
-        {
-          "teamId": 10,
-          "projection": 174.36
-        },
-        {
-          "teamId": 11,
-          "projection": 164.74
-        },
-        {
-          "teamId": 8,
-          "projection": 147.04
-        },
-        {
-          "teamId": 7,
-          "projection": 131.34
-        },
-        {
           "teamId": 4,
-          "projection": 127.02
+          "projection": 123.79
         },
         {
           "teamId": 12,
-          "projection": 122.46
-        },
-        {
-          "teamId": 6,
-          "projection": 134.58
-        },
-        {
-          "teamId": 5,
-          "projection": 110.7
-        },
-        {
-          "teamId": 9,
-          "projection": 106.1
+          "projection": 104.94
         },
         {
           "teamId": 3,
-          "projection": 93.48
+          "projection": 119.09
+        },
+        {
+          "teamId": 7,
+          "projection": 89
+        },
+        {
+          "teamId": 6,
+          "projection": 131.53
         },
         {
           "teamId": 1,
-          "projection": 88.56
+          "projection": 109.01
+        },
+        {
+          "teamId": 11,
+          "projection": 116.43
+        },
+        {
+          "teamId": 10,
+          "projection": 146.91
+        },
+        {
+          "teamId": 8,
+          "projection": 139.29
+        },
+        {
+          "teamId": 5,
+          "projection": 129.75
+        },
+        {
+          "teamId": 2,
+          "projection": 112.16
+        },
+        {
+          "teamId": 9,
+          "projection": 101.45
         }
       ]
     },
     {
-      "timestamp": "2026-10-05T16:20:37.503Z",
-      "week": 4,
+      "timestamp": "2026-10-06T12:58:53.652Z",
+      "week": 5,
       "scores": [
         {
-          "teamId": 2,
-          "projection": 187.57
-        },
-        {
-          "teamId": 10,
-          "projection": 174.36
-        },
-        {
-          "teamId": 11,
-          "projection": 164.74
-        },
-        {
-          "teamId": 8,
-          "projection": 147.04
-        },
-        {
-          "teamId": 7,
-          "projection": 131.34
-        },
-        {
           "teamId": 4,
-          "projection": 127.02
+          "projection": 123.79
         },
         {
           "teamId": 12,
-          "projection": 122.46
-        },
-        {
-          "teamId": 6,
-          "projection": 134.58
-        },
-        {
-          "teamId": 5,
-          "projection": 110.7
-        },
-        {
-          "teamId": 9,
-          "projection": 106.1
+          "projection": 104.94
         },
         {
           "teamId": 3,
-          "projection": 93.48
-        },
-        {
-          "teamId": 1,
-          "projection": 88.56
-        }
-      ]
-    },
-    {
-      "timestamp": "2026-10-05T16:31:36.027Z",
-      "week": 4,
-      "scores": [
-        {
-          "teamId": 2,
-          "projection": 187.57
-        },
-        {
-          "teamId": 10,
-          "projection": 174.36
-        },
-        {
-          "teamId": 11,
-          "projection": 164.74
-        },
-        {
-          "teamId": 8,
-          "projection": 147.04
+          "projection": 119.09
         },
         {
           "teamId": 7,
-          "projection": 131.34
-        },
-        {
-          "teamId": 4,
-          "projection": 127.02
-        },
-        {
-          "teamId": 12,
-          "projection": 122.46
+          "projection": 89
         },
         {
           "teamId": 6,
-          "projection": 134.58
-        },
-        {
-          "teamId": 5,
-          "projection": 110.7
-        },
-        {
-          "teamId": 9,
-          "projection": 106.1
-        },
-        {
-          "teamId": 3,
-          "projection": 93.48
+          "projection": 131.53
         },
         {
           "teamId": 1,
-          "projection": 88.56
-        }
-      ]
-    },
-    {
-      "timestamp": "2026-10-05T17:06:48.430Z",
-      "week": 4,
-      "scores": [
-        {
-          "teamId": 2,
-          "projection": 187.57
-        },
-        {
-          "teamId": 10,
-          "projection": 174.36
+          "projection": 109.01
         },
         {
           "teamId": 11,
-          "projection": 164.74
+          "projection": 116.43
+        },
+        {
+          "teamId": 10,
+          "projection": 146.91
         },
         {
           "teamId": 8,
-          "projection": 147.04
-        },
-        {
-          "teamId": 7,
-          "projection": 131.34
-        },
-        {
-          "teamId": 4,
-          "projection": 127.02
-        },
-        {
-          "teamId": 12,
-          "projection": 122.46
-        },
-        {
-          "teamId": 6,
-          "projection": 134.58
+          "projection": 139.29
         },
         {
           "teamId": 5,
-          "projection": 110.7
+          "projection": 129.75
+        },
+        {
+          "teamId": 2,
+          "projection": 112.16
         },
         {
           "teamId": 9,
-          "projection": 106.1
-        },
-        {
-          "teamId": 3,
-          "projection": 93.48
-        },
-        {
-          "teamId": 1,
-          "projection": 88.56
+          "projection": 101.45
         }
       ]
     }
