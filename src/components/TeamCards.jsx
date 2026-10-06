@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { basisLineup, basisTag, basisWindow } from "../lib/tradeBasis.js";
 import { money } from "../lib/data.js";
 
 function TeamProfile({ team, onClose }) {
@@ -80,7 +81,7 @@ function TeamProfile({ team, onClose }) {
           </div>
         </> : null}
         {team.profileAnalytics.winWinTrades?.length ? <>
-          <div className="trade-section-heading trade-target-heading"><span>🤝</span><div><small>1-FOR-1 WIN-WIN TRADES</small><strong>Trades That Help Both Teams</strong><em>Historical simulation through completed weeks · each side gains a win, or 5+ optimal-lineup pts per week without losing one</em></div></div>
+          <div className="trade-section-heading trade-target-heading"><span>🤝</span><div><small>WIN-WIN TRADES</small><strong>Trades That Help Both Teams</strong><em>Replayed over the weeks played, with optimal lineups or lineups set by ESPN projections, over the season or the last 4 weeks · each side gains a win, or 5+ pts per week without losing one</em></div></div>
           <div className="trade-target-list">
             {team.profileAnalytics.winWinTrades.map((t, i) => <div className="trade-target win-win-trade" key={t.otherTeamId + "-" + t.givePlayerId + "-" + t.getPlayerId + "-" + i}>
               <div className="trade-target-info">
@@ -88,9 +89,9 @@ function TeamProfile({ team, onClose }) {
                 <span>Get {t.getPlayer}{t.getPosition ? `, ${t.getPosition}` : ""} <small>ROS #{t.getRosRank}</small> from {t.otherTeam}</span>
               </div>
               <div className="trade-target-impact">
-                <b>Your historical optimal lineup: +{money(t.yourBoost)} pts</b>
-                <em>Swapping {t.givePlayer} for {t.getPlayer} would have led to {t.yourWinsAdded} more {Number(t.yourWinsAdded) === 1 ? "win" : "wins"} in your optimal lineups ({t.yourH2hWinsAdded} H2H + {t.yourMedianWinsAdded} median)</em>
-                <em>{t.otherTeam}: +{money(t.theirBoost)} optimal-lineup pts and {t.theirWinsAdded} more {Number(t.theirWinsAdded) === 1 ? "win" : "wins"} in their optimal lineups ({t.theirH2hWinsAdded} H2H + {t.theirMedianWinsAdded} median)</em>
+                <b>{t.kind ? `${t.kind} · ` : ""}{basisTag(t.basis)}: +{money(t.yourBoost)} pts</b>
+                <em>Swapping {t.givePlayer} for {t.getPlayer} would have led to {t.yourWinsAdded} more {Number(t.yourWinsAdded) === 1 ? "win" : "wins"} in {basisLineup(t.basis, "your")}{basisWindow(t.basis)} ({t.yourH2hWinsAdded} H2H + {t.yourMedianWinsAdded} median)</em>
+                <em>{t.otherTeam}: +{money(t.theirBoost)} pts and {t.theirWinsAdded} more {Number(t.theirWinsAdded) === 1 ? "win" : "wins"} in {basisLineup(t.basis)} ({t.theirH2hWinsAdded} H2H + {t.theirMedianWinsAdded} median)</em>
               </div>
             </div>)}
           </div>

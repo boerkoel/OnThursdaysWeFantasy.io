@@ -2,7 +2,7 @@ import { DATA, fit, listNames, pickLine, possessive, readJson, surname } from ".
 
 // League Wire: TRADE THAT NEEDS TO HAPPEN (the swap where both sides gain the
 // most) and up to two more TRADE IDEAs, from the win-win trades
-// calculate-stats.js finds (each team's optimal lineups before vs after, over
+// calculate-stats.js finds (each team's lineups before vs after, optimal or projection-set, over
 // the weeks played). No player appears in two stories.
 const teamsData = await readJson(`${DATA}/teams.json`).catch(() => null);
 
@@ -19,6 +19,9 @@ export function rankedWinWinTrades() {
     (b.yourBoost + b.theirBoost) - (a.yourBoost + a.theirBoost));
 }
 
+const inLineups = t => (t.basis?.lineup === "projected" ? "projection-set lineups" : "optimal lineups") +
+  (t.basis?.window && t.basis.window !== "season" ? ` over the ${t.basis.window}` : "");
+
 function story(t, lead) {
   // Multi-player trades name players by surname so the teams still fit.
   const multi = playersIn(t).length + gettingIn(t).length > 2;
@@ -31,12 +34,12 @@ function story(t, lead) {
   const short = t.yourWinsAdded === t.theirWinsAdded ? `+${t.yourWinsAdded} win${t.yourWinsAdded === 1 ? "" : "s"} each`
     : `+${t.yourWinsAdded} for ${t.team}, +${t.theirWinsAdded} for ${t.otherTeam}`;
   return fit(
-    `${lead}: ${possessive(t.team)} ${give} for ${possessive(t.otherTeam)} ${get}. Swapping them would have led to ${both} in their optimal lineups.`,
-    `${lead}: ${possessive(t.team)} ${give} for ${possessive(t.otherTeam)} ${get}. Optimal lineups say ${short}.`,
-    `${lead}: ${possessive(t.team)} ${give} for ${possessive(t.otherTeam)} ${get}. Win-win: +${t.yourWinsAdded} and +${t.theirWinsAdded} wins in optimal lineups.`,
-    `${lead}: ${possessive(t.team)} ${give} for ${possessive(t.otherTeam)} ${get}. A win-win in optimal lineups.`,
-    `${lead}: ${give} for ${get} (${t.team} ↔ ${t.otherTeam}). Optimal lineups: ${short}.`,
-    `${lead}: ${give} ↔ ${get}, a win-win in optimal lineups.`
+    `${lead}: ${possessive(t.team)} ${give} for ${possessive(t.otherTeam)} ${get}. Swapping them would have led to ${both} in their ${inLineups(t)}.`,
+    `${lead}: ${possessive(t.team)} ${give} for ${possessive(t.otherTeam)} ${get}. ${inLineups(t)[0].toUpperCase() + inLineups(t).slice(1)} say ${short}.`,
+    `${lead}: ${possessive(t.team)} ${give} for ${possessive(t.otherTeam)} ${get}. Win-win: +${t.yourWinsAdded} and +${t.theirWinsAdded} wins in ${inLineups(t)}.`,
+    `${lead}: ${possessive(t.team)} ${give} for ${possessive(t.otherTeam)} ${get}. A win-win in ${inLineups(t)}.`,
+    `${lead}: ${give} for ${get} (${t.team} ↔ ${t.otherTeam}). ${inLineups(t)[0].toUpperCase() + inLineups(t).slice(1)}: ${short}.`,
+    `${lead}: ${give} ↔ ${get}, a win-win in ${inLineups(t)}.`
   );
 }
 

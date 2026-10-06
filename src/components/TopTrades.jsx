@@ -1,10 +1,11 @@
 import React from "react";
 import { ShareButton, TeamLogo } from "./LiveBits.jsx";
+import { basisTag } from "../lib/tradeBasis.js";
 
 // Teams tab: the league's best win-win trades (1-for-1, 2-for-1, 2-for-2),
 // ranked like the League Wire's TRADE THAT NEEDS TO HAPPEN: the smaller of
 // the two sides' gains first, then the total. Gains are wins added in each
-// team's optimal lineups over the weeks played. No player appears twice.
+// team's lineups over the weeks played (see basis). No player appears twice.
 const MAX_TRADES = 5;
 
 export function topTrades(teams) {
@@ -37,10 +38,10 @@ export default function TopTrades({ teams, week }) {
     kicker: `Week ${week} · Win-win trades`,
     title: "🤝 Trades that need to happen",
     lines: trades.flatMap(t => [
-      { text: `${t.team} ⇄ ${t.otherTeam}${t.kind ? ` (${t.kind})` : ""}`, size: 26, color: "accent", weight: 800, gap: 24 },
+      { text: `${t.team} ⇄ ${t.otherTeam} (${t.kind ? t.kind + ", " : ""}${basisTag(t.basis)})`, size: 26, color: "accent", weight: 800, gap: 24 },
       { text: `${t.team} gets ${players(t.getPlayers, t.getPlayer)}: ${wins(t.yourWinsAdded)}`, size: 23, color: "ink", gap: 6 },
       { text: `${t.otherTeam} gets ${players(t.givePlayers, t.givePlayer)}: ${wins(t.theirWinsAdded)}`, size: 23, color: "ink", gap: 4 }
-    ]).concat([{ text: "Wins added in each team's optimal lineups so far this season.", size: 19, gap: 26 }])
+    ]).concat([{ text: "Wins added in each team's optimal lineups, or the lineups ESPN's projections would set, this season or over the last 4 weeks.", size: 19, gap: 26 }])
   });
   return (
     <section id="trades" className="section">
@@ -48,10 +49,10 @@ export default function TopTrades({ teams, week }) {
         <div><span className="section-kicker">THE TRADE MACHINE</span><h2>Trades that need to happen</h2></div>
         <ShareButton section="trades" iconOnly label="Share the top trades" filename={`week-${week}-top-trades`} build={share} />
       </div>
-      <p className="team-cards-intro">Swaps where both sides come out ahead: the wins each team would have added in its optimal lineups so far this season.</p>
+      <p className="team-cards-intro">Swaps where both sides come out ahead: the wins each team would have added, replaying the weeks with optimal lineups or the lineups ESPN's projections would have set, over the season or the last 4 weeks.</p>
       <div className="top-trades">
         {trades.map(t => <article className="top-trade" key={t.teamId + ":" + t.givePlayerId + ":" + t.getPlayerId}>
-          {t.kind ? <span className="top-trade-kind">{t.kind}</span> : null}
+          <span className="top-trade-kind">{t.kind ? `${t.kind} · ` : ""}{basisTag(t.basis)}</span>
           {[[t.team, t.teamId, t.getPlayers || [t.getPlayer], t.yourWinsAdded, t.yourBoost], [t.otherTeam, t.otherTeamId, t.givePlayers || [t.givePlayer], t.theirWinsAdded, t.theirBoost]]
             .map(([team, id, gets, w, boost]) => <div className="top-trade-side" key={id}>
               <strong><TeamLogo src={logoOf(id)} />{team}</strong>
