@@ -1,6 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { BENCH_SLOT, IR_SLOT, settledLineupRegret } from "./lib/lineup.js";
-import { SIMULATIONS, medianOf, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
+import { SIMULATIONS, gameScriptInputs, medianOf, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
 
 const season = process.env.ESPN_SEASON || "2026";
 const leagueId = process.env.ESPN_LEAGUE_ID || "998599827";
@@ -112,6 +112,9 @@ for (const event of nflWeek?.events || []) {
     state: status?.state || "pre",
     completed: status?.completed === true || status?.state === "post",
     detail: status?.shortDetail || "",
+    // Quarter and seconds left in it, for game script in the simulations.
+    period: gameScriptInputs(competition).period,
+    clock: gameScriptInputs(competition).clock,
     teamIds: (competition.competitors || []).map(c => Number(c.team?.id)).filter(Number.isFinite),
     // For the matchup cards' lineups: "@CLE 24-27 Final".
     teams: (competition.competitors || []).map(c => ({ id: Number(c.team?.id), abbrev: c.team?.abbreviation || "", score: Number(c.score) || 0, home: c.homeAway === "home" }))
@@ -164,7 +167,7 @@ for (const teamId of teams.keys()) {
       const nflGame = nflGamesByTeam.get(Number(player.proTeamId));
       // Teams missing from the week's schedule are on bye.
       if (!nflWeek || (nflGame && !nflGame.completed)) {
-        remainingPlayers.push(playerOutlook({ actual, projection: fullProjection, positionId: player.defaultPositionId }));
+        remainingPlayers.push(playerOutlook({ actual, projection: fullProjection, positionId: player.defaultPositionId, game: nflGame, proTeamId: player.proTeamId }));
       }
     }
     if (!Number.isFinite(fullProjection)) continue;

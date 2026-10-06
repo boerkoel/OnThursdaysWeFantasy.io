@@ -1,5 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises";
-import { SIMULATIONS, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
+import { SIMULATIONS, gameScriptInputs, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
 
 // Death Watch for the companion guillotine league (public on ESPN, so no
 // cookies are needed): each week the lowest-scoring surviving team is
@@ -39,7 +39,7 @@ const nflGameByProTeam = new Map();
 for (const event of nflWeek?.events || []) {
   const competition = event.competitions?.[0];
   const status = competition?.status?.type;
-  const game = { name: event.shortName || "", completed: status?.completed === true || status?.state === "post" };
+  const game = { name: event.shortName || "", completed: status?.completed === true || status?.state === "post", ...gameScriptInputs(competition) };
   for (const c of competition?.competitors || []) nflGameByProTeam.set(Number(c.team?.id), game);
 }
 
@@ -119,7 +119,7 @@ const alive = [...scoreByTeam.values()]
       if (nflWeek && (!game || game.completed)) continue;
       const actual = Number.isFinite(weeklyStat(player, 0)) ? weeklyStat(player, 0) : 0;
       const projection = weeklyStat(player, 1);
-      remaining.push({ name: player.fullName, game: game?.name || "", actual: round(actual), ...playerOutlook({ actual, projection, positionId: player.defaultPositionId }) });
+      remaining.push({ name: player.fullName, game: game?.name || "", actual: round(actual), ...playerOutlook({ actual, projection, positionId: player.defaultPositionId, game, proTeamId: player.proTeamId }) });
     }
     const score = round(Number(t.totalPointsLive ?? t.totalPoints ?? 0));
     return {

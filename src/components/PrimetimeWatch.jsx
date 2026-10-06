@@ -38,9 +38,11 @@ function nightSlot(nflGames) {
 }
 
 // A side's players in tonight's games: names, points still projected, SD.
-function tonight(players, gameTeams) {
+// games: tonight's nflGames entries (for game script).
+function tonight(players, gameTeams, games = []) {
   const list = (players || []).filter(p => gameTeams.has(Number(p.proTeamId)));
-  const outlook = list.map(p => playerOutlook({ actual: p.actual, projection: p.projection, positionId: POSITION_IDS[p.pos] }));
+  const outlook = list.map(p => playerOutlook({ actual: p.actual, projection: p.projection, positionId: POSITION_IDS[p.pos],
+    game: games.find(g => (g.teamIds || []).includes(Number(p.proTeamId))), proTeamId: p.proTeamId }));
   return {
     list,
     rest: outlook.reduce((sum, o) => sum + o.rest, 0),
@@ -73,7 +75,7 @@ export function primetimeStories({ scores, nflGames, guillotine }) {
     const b = byId.get(a.opponentId);
     if (!b || seen.has(a.matchupId) || !open(a.winProbability)) continue;
     seen.add(a.matchupId);
-    const sa = tonight(a.lineup?.starters, gameTeams), sb = tonight(b.lineup?.starters, gameTeams);
+    const sa = tonight(a.lineup?.starters, gameTeams, slot), sb = tonight(b.lineup?.starters, gameTeams, slot);
     if (!sa.list.length && !sb.list.length) continue;
     const marginSd = Math.hypot(Number(a.projectionSd) || 0, Number(b.projectionSd) || 0);
     const [fav, dog] = Number(a.winProbability) >= Number(b.winProbability) ? [a, b] : [b, a];
@@ -94,7 +96,7 @@ export function primetimeStories({ scores, nflGames, guillotine }) {
 
   // Median races.
   const median = scores.filter(s => open(s.aboveMedianProbability)).map(s => {
-    const side = tonight(s.lineup?.starters, gameTeams);
+    const side = tonight(s.lineup?.starters, gameTeams, slot);
     return side.list.length ? { s, side, odds: bigQuiet(Number(s.aboveMedianProbability), side.sd, Number(s.projectionSd)) } : null;
   }).filter(Boolean).sort((x, y) => Math.abs(Number(x.s.aboveMedianProbability) - 50) - Math.abs(Number(y.s.aboveMedianProbability) - 50)).slice(0, 5);
 
@@ -102,13 +104,13 @@ export function primetimeStories({ scores, nflGames, guillotine }) {
   // has already clinched it.
   const leader = [...scores].sort((x, y) => Number(y.score) - Number(x.score))[0];
   const raffleLocked = scores.find(s => Number(s.topScoreProbability) >= 100) || null;
-  const raffle = raffleLocked ? [] : scores.filter(s => open(s.topScoreProbability) && (Number(s.topScoreProbability) >= 1 || s === leader)).map(s => ({ s, side: tonight(s.lineup?.starters, gameTeams) }))
+  const raffle = raffleLocked ? [] : scores.filter(s => open(s.topScoreProbability) && (Number(s.topScoreProbability) >= 1 || s === leader)).map(s => ({ s, side: tonight(s.lineup?.starters, gameTeams, slot) }))
     .filter(x => x.side.list.length || x.s === leader).sort((x, y) => Number(y.s.topScoreProbability) - Number(x.s.topScoreProbability)).slice(0, 4);
 
   // Death Watch: still in danger with players tonight; or already doomed.
   const doomed = (guillotine?.teams || []).find(t => Number(t.chopProbability) >= 100) || null;
   const death = doomed ? [] : Number(guillotine?.week) && (guillotine.teams || []).filter(t => open(t.chopProbability)).map(t => {
-    const side = tonight(t.lineup, gameTeams);
+    const side = tonight(t.lineup, gameTeams, slot);
     if (!side.list.length) return null;
     const swing = (t.gameSwings || []).find(g => slot.some(s => s.name === g.game));
     return { t, side, swing };
