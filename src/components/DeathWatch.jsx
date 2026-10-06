@@ -29,6 +29,16 @@ function DwLogo({ team, size = "sm" }) {
   return <span className={`inline-team-logo ${size} logo-initials`} aria-hidden="true">{initials}</span>;
 }
 
+// An obituary's paragraphs (split on blank lines). Within one, a line ending
+// in two spaces or a backslash is a markdown hard break (kept as a new line,
+// e.g. a limerick); other line breaks just join the words.
+const obituaryParagraphs = text => String(text).split(/\n\s*\n/).map(paragraph =>
+  paragraph.trim().split("\n").reduce((out, line, i, lines) => {
+    const hard = / {2,}$|\\$/.test(lines[i - 1] || "");
+    const clean = line.replace(/\s*\\$/, "").trim();
+    return i === 0 ? clean : out + (hard ? "\n" : " ") + clean;
+  }, "")).filter(Boolean);
+
 // Whether content/obituaries.md has a written obituary for this team.
 export const hasObituary = team => handwrittenObituaries.has(String(team || "").trim().toLowerCase());
 
@@ -163,7 +173,7 @@ function Obituaries({ guillotine }) {
               <strong className="dw-team"><DwLogo team={c} size="md" />{c.team}</strong>
               <p className="rip-cause">{cause(c)}</p>
               {obituary
-                ? obituary.split(/\n\s*\n/).map((paragraph, p) => <p className="rip-obituary" key={p}>{paragraph.replace(/\s*\n\s*/g, " ")}</p>)
+                ? obituaryParagraphs(obituary).map((paragraph, p) => <p className="rip-obituary" key={p}>{paragraph}</p>)
                 : <p className="rip-obituary">Obituary pending.</p>}
               <div className="card-actions">
                 <ShareButton section="rip" filename={`rip-${c.team}`.replace(/[^\w-]+/g, "-")} build={() => ({
@@ -172,7 +182,7 @@ function Obituaries({ guillotine }) {
                   lines: [
                     { text: dates(c), size: 30, color: "accent", weight: 800, gap: 30 },
                     { text: cause(c), size: 30, color: "ink" },
-                    { text: obituary || "Obituary pending.", size: obituary && obituary.length > 700 ? 24 : 27, gap: 30 }
+                    { text: obituary ? obituaryParagraphs(obituary).join("\n\n") : "Obituary pending.", size: obituary && obituary.length > 700 ? 24 : 27, gap: 30 }
                   ]
                 })} />
               </div>
