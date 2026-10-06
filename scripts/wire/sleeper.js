@@ -56,7 +56,8 @@ export function addPracticeReportStory(add) {
   ), 48 + report.weight * 7);
 }
 
-// TRENDING: Tuesday through Saturday, before Sunday's games.
+// TRENDING: Tuesday through Saturday, before Sunday's games. The wording
+// never names the data source (most of the league wouldn't know it).
 export function addTrendingStory(add) {
   if (!["Tue", "Wed", "Thu", "Fri", "Sat"].includes(etDay())) return;
   const hot = (sleeperData?.trending?.add || []).filter(t => players[t.id] && !rosterByPlayer.has(Number(t.id)))
@@ -68,11 +69,10 @@ export function addTrendingStory(add) {
   const who = dst ? `the ${p.name.split(" ").slice(-1)[0]} D/ST` : `${p.name} (${p.pos}, ${p.team})`;
   const Who = who[0].toUpperCase() + who.slice(1);
   const [hes, him] = dst ? ["They're", "them"] : ["He's", "him"];
-  const adds = hot.count >= 1e6 ? (hot.count / 1e6).toFixed(1).replace(/\.0$/, "") + "M" : hot.count >= 1e3 ? Math.round(hot.count / 1e3) + "K" : String(hot.count);
   add("TRENDING", fit(
     "📈 TRENDING: " + pickLine("trending:" + hot.id, [
       `The whole internet is adding ${who}. ${hes} on our waiver wire.`,
-      `${Who} was added ${adds} times on Sleeper in a day. Nobody here has ${him}.`,
+      `${Who} is one of the most-added players in fantasy this week. Nobody here has ${him}.`,
       `Every other league is scrambling for ${who}. Ours has ${him} sitting on waivers.`
     ]),
     `📈 TRENDING: Everyone's adding ${dst ? who : p.name}. ${hes} on our waiver wire.`
