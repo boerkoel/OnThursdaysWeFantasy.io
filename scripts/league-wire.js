@@ -9,6 +9,7 @@ import { buildKeyPlays } from "./wire/key-plays.js";
 import { addLineupMistakeStories } from "./wire/lineup-mistakes.js";
 import { addObituaryStory } from "./wire/obits.js";
 import { addPickupStories } from "./wire/pickups.js";
+import { addLongTermRegretStory } from "./wire/regrets.js";
 import { addPrimetimeStories } from "./wire/primetime.js";
 import { addRaffleStories } from "./wire/raffle.js";
 import { interleave, weekHeadlines, weekInReview } from "./wire/review.js";
@@ -136,6 +137,7 @@ async function buildMarqueeStories() {
   addDeathWatchStory(add);
   try { addWaiverStories(add); } catch (error) { console.warn("League Wire: waiver stories failed: " + error.message); }
   addPickupStories(add);
+  try { addLongTermRegretStory(add); } catch (error) { console.warn("League Wire: long-term regret failed: " + error.message); }
   try { addTradeStory(add); } catch (error) { console.warn("League Wire: trade story failed: " + error.message); }
   try { await addObituaryStory(add); } catch (error) { console.warn("League Wire: obituary story failed: " + error.message); }
   try { addRosterStories(add); } catch (error) { console.warn("League Wire: roster stories failed: " + error.message); }
@@ -183,7 +185,7 @@ const WIRE_MAX = 12;
 const WIRE_CORE = 8;
 const PER_TYPE_MAX = 2;
 const ROSTER_TYPES = new Set(["INJURY WARD", "BOLD STRATEGY", "THIN ICE", "FRESH OFF THE WIRE",
-  "WAIVER WIRE", "WAIVER TUG-OF-WAR", "SHOPPING SPREE", "TRADE THAT NEEDS TO HAPPEN", "TRADE IDEA", "BYE BYE BYE", "DEATH WATCH BYE"]);
+  "WAIVER WIRE", "WAIVER TUG-OF-WAR", "SHOPPING SPREE", "TRADE THAT NEEDS TO HAPPEN", "TRADE IDEA", "BYE BYE BYE", "DEATH WATCH BYE", "LONG-TERM REGRET"]);
 const SWAP_TYPES = new Set(["MANAGER MISCUE", "SHREWD SWAP"]);
 // Projection-driven matchup stories wait until Wednesday 11 AM ET, after
 // waivers clear and managers set their lineups (Jim: early-week flips are

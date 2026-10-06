@@ -798,6 +798,51 @@ for (const team of teams.values()) {
   benchTargetsByTeam.set(Number(team.id), targets.sort((a,b) => b.boost - a.boost || a.startRate - b.startRate));
 }
 
+// Long-term regrets (League Wire): players still on the bench that the
+// manager has rarely or never started. For each week he sat, swap him into
+// the manager's actual lineup over the weakest starter he could replace and
+// rescore the week against the opponent and the median.
+const longTermRegretsByTeam = new Map();
+for (const team of teams.values()) {
+  const currentTeam = (rosterData.teams || []).find(t => Number(t.id) === Number(team.id));
+  const regrets = [];
+  for (const entry of currentTeam?.roster?.entries || []) {
+    if (Number(entry.lineupSlotId) !== 20) continue;
+    const playerId = Number(entry.playerId);
+    const history = playerTeamHistory.get(`${team.id}|${playerId}`);
+    if (!history?.weekly?.length) continue;
+    const startedWeeks = history.weekly.filter(w => w.started).length;
+    let points = 0, h2h = 0, median = 0;
+    const weeks = [];
+    for (const w of history.weekly.filter(w => !w.started)) {
+      const entries = weeklyRosterForTeam(w.week, team.id)?.roster?.entries || [];
+      const me = entries.find(e => Number(e.playerId) === playerId);
+      if (!me || Number(me.lineupSlotId) === 21) continue;
+      const myPoints = Number(me.playerPoolEntry?.appliedStatTotal) || 0;
+      const eligible = (me.playerPoolEntry?.player?.eligibleSlots || []).map(Number);
+      const starters = entries.filter(e => ![20, 21].includes(Number(e.lineupSlotId)));
+      const weakest = starters.filter(e => eligible.includes(Number(e.lineupSlotId)))
+        .map(e => Number(e.playerPoolEntry?.appliedStatTotal) || 0).sort((a, b) => a - b)[0];
+      if (weakest === undefined || myPoints <= weakest) continue;
+      const gain = myPoints - weakest;
+      const actual = starters.reduce((sum, e) => sum + (Number(e.playerPoolEntry?.appliedStatTotal) || 0), 0);
+      const game = completed.find(m => m.week === w.week && (m.homeTeamId === Number(team.id) || m.awayTeamId === Number(team.id)));
+      const opponent = game ? Number(game.homeTeamId === Number(team.id) ? game.awayScore : game.homeScore) : NaN;
+      const weekMedian = Number(weeklyMedianByWeek.get(w.week));
+      const flip = target => Number.isFinite(target) && actual < target && actual + gain > target ? 1 : 0;
+      h2h += flip(opponent);
+      median += flip(weekMedian);
+      points += gain;
+      weeks.push(w.week);
+    }
+    if (h2h + median >= 1) {
+      regrets.push({playerId, player:entry.playerPoolEntry?.player?.fullName || history.name, position:positionNames[Number(entry.playerPoolEntry?.player?.defaultPositionId)] || null,
+        startedWeeks, rosteredWeeks:history.weekly.length, weeks, points:round(points), h2hWins:h2h, medianWins:median, winsAdded:h2h + median});
+    }
+  }
+  longTermRegretsByTeam.set(Number(team.id), regrets.sort((a, b) => b.winsAdded - a.winsAdded || b.points - a.points).slice(0, 3));
+}
+
 const rosterFitByTeam = new Map();
 for (const team of teams.values()) {
   const fit = positionFitByTeam.get(Number(team.id)) || {strengths:[],needs:[]};
@@ -1644,6 +1689,7 @@ await writeJson("data/current/teams.json",{season:settings.seasonId,currentWeek,
       positionFit:positionFitByTeam.get(Number(t.id))||null,
       rosterFit:rosterFitByTeam.get(Number(t.id))||null,
       winWinTrades:winWinTradesByTeam.get(Number(t.id))||[],
+      longTermRegrets:longTermRegretsByTeam.get(Number(t.id))||[],
       waiverTargets:freeAgentData ? waiverTargetsByTeam.get(Number(t.id))||[] : null,
       trend:trend ? {...trend,direction:trend.slope >= 2 ? "up" : trend.slope <= -2 ? "down" : "steady"} : null,
       luck:luck ? {actualWins:round(luck.actual),expectedWins:round(luck.expected),difference:round(luck.luck)} : null
