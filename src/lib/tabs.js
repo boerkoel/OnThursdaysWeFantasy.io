@@ -18,7 +18,7 @@ export const TAB_SECTIONS = {
   standings: [["standings-odds", "Standings"], ["playoffs", "Playoffs"], ["ultimate-loser", "Ultimate Loser"], ["raffle", "Raffle"]],
   "death-watch": [["death-watch", "At risk"], ["survival", "Survival odds"], ["rip", "RIP"]],
   league: [["history", "History"], ["awards", "Awards"], ["record-book", "Record Book"], ["rivalries", "Rivalries"]],
-  teams: [],
+  teams: [["trades", "Trades"], ["teams", "Team cards"]],
   survivor: [["survivor", "Pool"], ["survivor-picks", "Picks"], ["survivor-managers", "Managers"], ["survivor-teams", "Teams left"], ["survivor-standings", "Entries"]]
 };
 export const SECTION_TAB = {
@@ -26,6 +26,7 @@ export const SECTION_TAB = {
   "standings-odds": "standings", playoffs: "standings", "ultimate-loser": "standings", raffle: "standings",
   rip: "death-watch", survival: "death-watch",
   history: "league", awards: "league", "record-book": "league", rivalries: "league",
+  trades: "teams",
   "survivor-picks": "survivor", "survivor-managers": "survivor", "survivor-teams": "survivor", "survivor-standings": "survivor"
 };
 const isTab = id => TABS.some(t => t.id === id);

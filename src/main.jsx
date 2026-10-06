@@ -13,6 +13,7 @@ import { ShareButton, TeamLogo, UpdatedAgo, useChangedScores } from "./component
 import LeagueWire from "./components/LeagueWire.jsx";
 import { useRefresh } from "./components/PullToRefresh.jsx";
 import TeamCards from "./components/TeamCards.jsx";
+import TopTrades from "./components/TopTrades.jsx";
 import { DeathWatch } from "./components/DeathWatch.jsx";
 import SwingChart, { tippingPoint } from "./components/SwingChart.jsx";
 import MatchupLineup from "./components/MatchupLineup.jsx";
@@ -659,6 +660,7 @@ function App() {
       </> : null}
 
       {tab === "teams" ? <>
+      <TopTrades teams={teamsData.teams || []} week={metadata.currentWeek || scoreboard.week} />
       <section id="teams" className="section">
         <div className="section-heading">
           <div><span className="section-kicker">THE ROSTER ROOM</span><h2>Team Cards</h2></div>

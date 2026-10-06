@@ -969,3 +969,13 @@ section,details,.odds-block{scroll-margin-top:72px}
 .sv-highlight>span{font-size:18px;line-height:1.2}
 .sv-highlight p{margin:0;color:#c7c9c1;font-size:13px;line-height:1.4}
 .sv-highlight b{color:#f7f7f2}
+/* Teams tab: trades that need to happen */
+.top-trades{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.top-trade{position:relative;display:grid;gap:8px;padding:14px;border:1px solid #30332d;border-radius:14px;background:#ffffff06}
+.top-trade-kind{position:absolute;top:10px;right:12px;padding:2px 7px;border:1px solid #4a533e;border-radius:999px;color:#b8c69b;font-size:10px;font-weight:800;letter-spacing:.06em}
+.top-trade-side{display:grid;gap:2px}
+.top-trade-side+.top-trade-side{padding-top:8px;border-top:1px dashed #30332d}
+.top-trade-side strong{display:flex;align-items:center;gap:7px;font-size:14px}
+.top-trade-side span{color:#c7c9c1;font-size:13px}
+.top-trade-side b{color:#9fd196;font-size:13px}
+.top-trade-side small{color:#8b8e86;font-weight:600}
