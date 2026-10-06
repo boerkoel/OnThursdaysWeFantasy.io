@@ -181,7 +181,7 @@ const WIRE_MAX = 12;
 const WIRE_CORE = 8;
 const PER_TYPE_MAX = 2;
 const ROSTER_TYPES = new Set(["INJURY WARD", "BOLD STRATEGY", "THIN ICE", "FRESH OFF THE WIRE",
-  "WAIVER WIRE", "WAIVER TUG-OF-WAR", "SHOPPING SPREE", "TRADE THAT NEEDS TO HAPPEN"]);
+  "WAIVER WIRE", "WAIVER TUG-OF-WAR", "SHOPPING SPREE", "TRADE THAT NEEDS TO HAPPEN", "TRADE IDEA"]);
 const SWAP_TYPES = new Set(["MANAGER MISCUE", "SHREWD SWAP"]);
 function curate(all) {
   const etDay = iso => new Date(iso).toLocaleDateString("en-US", {weekday:"short", timeZone:"America/New_York"});

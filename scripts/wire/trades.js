@@ -1,40 +1,58 @@
-import { DATA, fit, pickLine, possessive, readJson } from "./context.js";
+import { DATA, fit, listNames, pickLine, possessive, readJson } from "./context.js";
 
-// League Wire: TRADE THAT NEEDS TO HAPPEN. The 1-for-1 swap where both
-// sides gain the most, from the win-win trades calculate-stats.js finds
-// (each team's optimal lineups before vs after, over the weeks played).
+// League Wire: TRADE THAT NEEDS TO HAPPEN (the swap where both sides gain the
+// most) and up to two more TRADE IDEAs, from the win-win trades
+// calculate-stats.js finds (each team's optimal lineups before vs after, over
+// the weeks played). No player appears in two stories.
 const teamsData = await readJson(`${DATA}/teams.json`).catch(() => null);
 
-export function bestWinWinTrade() {
+const playersIn = t => t.givePlayers || [t.givePlayer];
+const gettingIn = t => t.getPlayers || [t.getPlayer];
+
+export function rankedWinWinTrades() {
   const trades = (teamsData?.teams || []).flatMap(t => (t.profileAnalytics?.winWinTrades || [])
     .filter(x => x.perspective === "A")
     .map(x => ({ ...x, team: t.name })));
-  return trades.sort((a, b) =>
+  return trades.filter(t => Math.min(t.yourWinsAdded, t.theirWinsAdded) >= 1).sort((a, b) =>
     Math.min(b.yourWinsAdded, b.theirWinsAdded) - Math.min(a.yourWinsAdded, a.theirWinsAdded) ||
     (b.yourWinsAdded + b.theirWinsAdded) - (a.yourWinsAdded + a.theirWinsAdded) ||
-    (b.yourBoost + b.theirBoost) - (a.yourBoost + a.theirBoost))[0] || null;
+    (b.yourBoost + b.theirBoost) - (a.yourBoost + a.theirBoost));
 }
 
-export function addTradeStory(add) {
-  const t = bestWinWinTrade();
-  if (!t || Math.min(t.yourWinsAdded, t.theirWinsAdded) < 1) return;
+function story(t, lead) {
+  const give = listNames(playersIn(t)), get = listNames(gettingIn(t));
   const wins = n => `${n} more win${n === 1 ? "" : "s"}`;
   const both = t.yourWinsAdded === t.theirWinsAdded
     ? `${wins(t.yourWinsAdded)} each`
     : `${wins(t.yourWinsAdded)} for ${t.team}, ${wins(t.theirWinsAdded)} for ${t.otherTeam}`;
-  const lead = pickLine("trade:" + t.givePlayerId + ":" + t.getPlayerId, [
-    "🤝 TRADE THAT NEEDS TO HAPPEN",
-    "🤝 Somebody pick up the phone",
-    "🤝 The trade machine has spoken"
-  ]);
   const short = t.yourWinsAdded === t.theirWinsAdded ? `+${t.yourWinsAdded} win${t.yourWinsAdded === 1 ? "" : "s"} each`
     : `+${t.yourWinsAdded} for ${t.team}, +${t.theirWinsAdded} for ${t.otherTeam}`;
-  add("TRADE THAT NEEDS TO HAPPEN", fit(
-    `${lead}: ${possessive(t.team)} ${t.givePlayer} for ${possessive(t.otherTeam)} ${t.getPlayer}. Swapping them would have led to ${both} in their optimal lineups.`,
-    `${lead}: ${possessive(t.team)} ${t.givePlayer} for ${possessive(t.otherTeam)} ${t.getPlayer}. Optimal lineups say ${short} in wins.`,
-    `${lead}: ${possessive(t.team)} ${t.givePlayer} for ${possessive(t.otherTeam)} ${t.getPlayer}. Win-win: +${t.yourWinsAdded} and +${t.theirWinsAdded} wins in optimal lineups.`,
-    `${lead}: ${possessive(t.team)} ${t.givePlayer} for ${possessive(t.otherTeam)} ${t.getPlayer}. A win-win in optimal lineups.`,
-    `${lead}: ${t.givePlayer} for ${t.getPlayer} (${t.team} ↔ ${t.otherTeam}). Optimal lineups: ${short} in wins.`,
-    `${lead}: ${t.givePlayer} ↔ ${t.getPlayer}, a win-win in optimal lineups.`
-  ), 34);
+  return fit(
+    `${lead}: ${possessive(t.team)} ${give} for ${possessive(t.otherTeam)} ${get}. Swapping them would have led to ${both} in their optimal lineups.`,
+    `${lead}: ${possessive(t.team)} ${give} for ${possessive(t.otherTeam)} ${get}. Optimal lineups say ${short}.`,
+    `${lead}: ${possessive(t.team)} ${give} for ${possessive(t.otherTeam)} ${get}. Win-win: +${t.yourWinsAdded} and +${t.theirWinsAdded} wins in optimal lineups.`,
+    `${lead}: ${possessive(t.team)} ${give} for ${possessive(t.otherTeam)} ${get}. A win-win in optimal lineups.`,
+    `${lead}: ${give} for ${get} (${t.team} ↔ ${t.otherTeam}). Optimal lineups: ${short}.`,
+    `${lead}: ${give} ↔ ${get}, a win-win in optimal lineups.`
+  );
+}
+
+export function addTradeStory(add) {
+  const used = new Set();
+  const picks = [];
+  for (const t of rankedWinWinTrades()) {
+    const names = [...playersIn(t), ...gettingIn(t)];
+    if (names.some(n => used.has(n))) continue;
+    names.forEach(n => used.add(n));
+    picks.push(t);
+    if (picks.length === 3) break;
+  }
+  picks.forEach((t, i) => {
+    const key = "trade:" + [...playersIn(t), ...gettingIn(t)].join("+");
+    if (i === 0) {
+      add("TRADE THAT NEEDS TO HAPPEN", story(t, pickLine(key, ["🤝 TRADE THAT NEEDS TO HAPPEN", "🤝 Somebody pick up the phone", "🤝 The trade machine has spoken"])), 72);
+    } else {
+      add("TRADE IDEA", story(t, pickLine(key, ["💡 Trade idea", "📞 Call your trade partner", "🔁 Swap shop"])), 40 - i);
+    }
+  });
 }

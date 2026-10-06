@@ -29,5 +29,5 @@ export async function addObituaryStory(add) {
     `${lead}${how}. Read it on the Death Watch tab, and bring tissues.`,
     `${lead}${how}. Read it on the Death Watch tab.`,
     `${lead}. Read it on the Death Watch tab.`
-  ), 62);
+  ), 92);   // high enough to always make the wire's top 8
 }
