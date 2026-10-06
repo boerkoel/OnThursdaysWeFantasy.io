@@ -45,11 +45,11 @@ Rest in pieces, Kevin. There is no Plan C.
 
 We gather today to mourn Stacey Mette and her tragically poorly named fantasy football team, whose life was cut short by the cruelest weapon in the league: a razor-thin margin of defeat.
 
-There once was a manager named Mette,   
-Whose team was a terrible betty.   
-With Diggs looking sick,   
-And Kincaid doing tricks,   
-She was chopped by a team without a name yet.
+There once was a manager, Mette,   
+Whose roster was limp as spaghetti.   
+With Diggs looking ill   
+And Kincaid standing still,   
+She got chopped by a no-name. How petty!
 
 Josh Allen did his part, but Cook couldn’t cook. Skattebo took the wrong road, McBride never found his groove, and even Golden couldn’t strike gold.
 
