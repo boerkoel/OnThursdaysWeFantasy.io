@@ -1,6 +1,7 @@
 import { round } from "./lib/simulation.js";
 import { settledLineupRegret } from "./lib/lineup.js";
 import { DATA, OUT, STORY_MAX_CHARS, clockNow, currentScores, currentWeek, currentWeekMatchups, fit, isNearMedian, listNames, liveTeams, money, name, nflGames, pct, possessive, previousScoreboard, projectedMedian, pts, readJson, recentGameIds, writeJson } from "./wire/context.js";
+import { addByeStories } from "./wire/byes.js";
 import { addDeathWatchStory } from "./wire/death-watch.js";
 import { addEarlyMomentumStories } from "./wire/early-momentum.js";
 import { addInjuryStories } from "./wire/injuries.js";
@@ -149,6 +150,7 @@ async function buildMarqueeStories() {
   try { addInjuryStories(add); } catch (error) { console.warn("League Wire: injury stories failed: " + error.message); }
   try { addMiscueStory(add); } catch (error) { console.warn("League Wire: manager miscue failed: " + error.message); }
   try { addShrewdSwapStory(add); } catch (error) { console.warn("League Wire: shrewd swap failed: " + error.message); }
+  try { addByeStories(add); } catch (error) { console.warn("League Wire: bye stories failed: " + error.message); }
   try { addZombieStories(add); } catch (error) { console.warn("League Wire: zombie starters failed: " + error.message); }
   try { addStockWatchStory(add); } catch (error) { console.warn("League Wire: stock watch failed: " + error.message); }
 
@@ -181,7 +183,7 @@ const WIRE_MAX = 12;
 const WIRE_CORE = 8;
 const PER_TYPE_MAX = 2;
 const ROSTER_TYPES = new Set(["INJURY WARD", "BOLD STRATEGY", "THIN ICE", "FRESH OFF THE WIRE",
-  "WAIVER WIRE", "WAIVER TUG-OF-WAR", "SHOPPING SPREE", "TRADE THAT NEEDS TO HAPPEN", "TRADE IDEA"]);
+  "WAIVER WIRE", "WAIVER TUG-OF-WAR", "SHOPPING SPREE", "TRADE THAT NEEDS TO HAPPEN", "TRADE IDEA", "BYE BYE BYE", "DEATH WATCH BYE"]);
 const SWAP_TYPES = new Set(["MANAGER MISCUE", "SHREWD SWAP"]);
 function curate(all) {
   const etDay = iso => new Date(iso).toLocaleDateString("en-US", {weekday:"short", timeZone:"America/New_York"});

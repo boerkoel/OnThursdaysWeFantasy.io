@@ -1,21 +1,31 @@
 import { BENCH_SLOT, IR_SLOT } from "../lib/lineup.js";
-import { OUT, currentWeek, fit, guillotineData, liveTeams, money, name, nflGameByProTeam, nflGames, pct, pickLine, possessive, pts, rosterData } from "./context.js";
+import { OUT, clockNow, currentWeek, fit, guillotineData, liveTeams, money, name, nflGameByProTeam, nflGames, pct, pickLine, possessive, pts, rosterData } from "./context.js";
 import { kickoffLabel } from "./what-to-watch.js";
 
 // League Wire: zombie starters and lineup alerts.
 // ---- Zombie starters ---------------------------------------------------------
 // A starter who's OUT, on IR, suspended or on a bye. Before kickoff: LINEUP
-// ALERT (there's still time). After: ZOMBIE STARTER, with whoever was on the
-// bench. Both leagues; at most one story each.
+// ALERT (there's still time), only in the last 24 hours (earlier, injury
+// tags are still settling). After: ZOMBIE STARTER, with whoever was on the
+// bench. A bye only counts once Sunday's games start (until then managers
+// can still swap; BYE BYE BYE covers the week's byes). Both leagues; at most
+// one story each.
 export const ZOMBIE_STATUS = { OUT: ["OUT", "listed OUT"], INJURY_RESERVE: ["on IR", "on injured reserve"], SUSPENSION: ["suspended", "suspended"], O: ["OUT", "listed OUT"], IR: ["on IR", "on injured reserve"], SSPD: ["suspended", "suspended"] };
 export const BYE = ["on a bye", "on a bye this week"];
+const ALERT_WINDOW_MS = 24 * 60 * 60 * 1000;
 export function addZombieStories(add) {
   const whenOf = game => kickoffLabel(game.kickoff);
+  const etDay = iso => new Date(iso).toLocaleDateString("en-US", { weekday: "short", timeZone: "America/New_York" });
+  const sundayStarted = nflGames.some(g => g.kickoff && etDay(g.kickoff) === "Sun" && g.state !== "pre");
   const zombieOf = (proTeamId, status, actual) => {
     if (actual > 0) return null;
     const game = nflGameByProTeam.get(Number(proTeamId));
-    if (!game && nflGames.length) return { why: BYE, game: null, started: true };
-    if (game && ZOMBIE_STATUS[status]) return { why: ZOMBIE_STATUS[status], game, started: game.state !== "pre" };
+    if (!game && nflGames.length) return sundayStarted ? { why: BYE, game: null, started: true } : null;
+    if (game && ZOMBIE_STATUS[status]) {
+      const started = game.state !== "pre";
+      if (!started && Date.parse(game.kickoff) - clockNow() > ALERT_WINDOW_MS) return null;
+      return { why: ZOMBIE_STATUS[status], game, started };
+    }
     return null;
   };
 
