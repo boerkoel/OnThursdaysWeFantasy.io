@@ -8,7 +8,10 @@ import react from "@vitejs/plugin-react";
 // it with the published version.json to notice new code.
 // Commit time orders builds, so a live run still deploying the previous
 // commit never looks like an update.
-const BUILD_ID = process.env.GITHUB_SHA || `dev-${Date.now()}`;
+// The commit actually built (a live run checks out the latest main, which can
+// be newer than the commit that queued it).
+let BUILD_ID = process.env.GITHUB_SHA || `dev-${Date.now()}`;
+try { BUILD_ID = execSync("git rev-parse HEAD", { encoding: "utf8" }).trim() || BUILD_ID; } catch {}
 let BUILD_TIME = 0;
 try { BUILD_TIME = Number(execSync("git log -1 --format=%ct", { encoding: "utf8" }).trim()) || 0; } catch {}
 

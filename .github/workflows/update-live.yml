@@ -65,8 +65,13 @@ jobs:
         if: inputs.delay_seconds != '' && inputs.delay_seconds != '0'
         run: sleep "${{ inputs.delay_seconds }}"
 
+      # The latest main, not the commit this run was queued at: a chained run
+      # can sleep for hours, and building from its queued commit would
+      # republish older code and content (e.g. undo new obituaries).
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Check NFL live window
         id: window
