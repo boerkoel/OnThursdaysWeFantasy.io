@@ -72,7 +72,7 @@ export function addTrendingStory(add) {
   add("TRENDING", fit(
     "📈 TRENDING: " + pickLine("trending:" + hot.id, [
       `The whole internet is adding ${who}. ${hes} on our waiver wire.`,
-      `${Who} is one of the most-added players in fantasy this week. Nobody here has ${him}.`,
+      `${Who} is one of the most-added players in fantasy over the past 24 hours. Nobody here has ${him}.`,
       `Every other league is scrambling for ${who}. Ours has ${him} sitting on waivers.`
     ]),
     `📈 TRENDING: Everyone's adding ${dst ? who : p.name}. ${hes} on our waiver wire.`
