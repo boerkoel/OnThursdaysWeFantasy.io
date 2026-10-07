@@ -92,6 +92,50 @@ for (const t of weekEntry?.teams || []) {
   });
 }
 chopped.sort((a, b) => b.week - a.week);
+
+// FAAB bids from the last week of waiver runs, for the League Wire's bid
+// stories (photo finishes and overpays). ESPN lists every bid, losing ones
+// too: a claim that lost to a higher bid fails with the player gone. One
+// entry per player per run, with the winning bid and everyone who lost.
+const FAAB_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+async function fetchFaab() {
+  const budget = Number(league.settings?.acquisitionSettings?.acquisitionBudget) || null;
+  if (!league.settings?.acquisitionSettings?.isUsingAcquisitionBudget) return null;
+  const periods = [week, week - 1].filter(w => w >= 1);
+  const transactions = (await Promise.all(periods.map(w => fetchLeague(["mTransactions2"], w).then(d => d.transactions || []))))
+    .flat()
+    .filter(t => t.type === "WAIVER" && Number(t.processDate) && Date.now() - Number(t.processDate) <= FAAB_WINDOW_MS && t.status !== "CANCELED");
+  const runs = new Map();
+  for (const t of transactions) {
+    const add = (t.items || []).find(i => i.type === "ADD");
+    if (!add) continue;
+    // Claims in one run are processed within a second of each other.
+    const key = `${Math.round(Number(t.processDate) / 60000)}:${add.playerId}`;
+    runs.set(key, [...(runs.get(key) || []), t]);
+  }
+  const contests = [...runs.values()].map(claims => {
+    const won = claims.find(t => t.status === "EXECUTED");
+    if (!won) return null;
+    const bid = t => ({ teamId: Number(t.teamId), team: teamInfo.get(Number(t.teamId))?.name || `Team ${t.teamId}`, bid: Number(t.bidAmount) || 0 });
+    return { playerId: Number((won.items || []).find(i => i.type === "ADD").playerId), processedAt: new Date(Number(won.processDate)).toISOString(),
+      week: Number(won.scoringPeriodId), winner: bid(won),
+      others: claims.filter(t => t !== won && t.status.startsWith("FAILED")).map(bid).sort((a, b) => b.bid - a.bid) };
+  }).filter(Boolean);
+  // Player names and positions (D/STs have negative ids).
+  const ids = [...new Set(contests.map(c => c.playerId))];
+  const info = new Map();
+  if (ids.length) {
+    const response = await fetch(`${base}?view=kona_player_info&scoringPeriodId=${week}`, { headers: { Accept: "application/json", "User-Agent": "OnThursdaysWeFantasy/1.0",
+      "X-Fantasy-Filter": JSON.stringify({ players: { filterIds: { value: ids } } }) } });
+    if (response.ok) for (const p of (await response.json()).players || []) info.set(Number(p.player?.id ?? p.id), p.player);
+  }
+  for (const c of contests) {
+    const player = info.get(c.playerId);
+    c.player = player?.fullName || null;
+    c.position = player ? POSITIONS[Number(player.defaultPositionId)] || "" : "";
+  }
+  return { budget, claims: contests.filter(c => c.player).sort((a, b) => b.processedAt.localeCompare(a.processedAt) || b.winner.bid - a.winner.bid) };
+}
 const draftDate = league.settings?.draftSettings?.date ? new Date(league.settings.draftSettings.date).toISOString() : null;
 
 // Each team's starters for the Death Watch cards' lineup expander, in the
@@ -245,6 +289,8 @@ const lastSnapshot = chopHistory[chopHistory.length - 1];
 if (!lastSnapshot || Object.entries(snapshot.p).some(([id, p]) => lastSnapshot.p?.[id] !== p)) chopHistory.push(snapshot);
 if (chopHistory.length > MAX_CHOP_HISTORY) chopHistory = chopHistory.filter((_, i) => i % 2 === 0 || i >= chopHistory.length - 100);
 
+const faab = await fetchFaab().catch(error => { console.warn("Guillotine FAAB bids failed: " + error.message); return null; });
+
 await writeFile("data/current/guillotine.json", JSON.stringify({
   leagueId,
   leagueName: league.settings?.name || "Guillotine League",
@@ -254,6 +300,7 @@ await writeFile("data/current/guillotine.json", JSON.stringify({
   simulations: SIMULATIONS,
   teams: alive,
   chopped,
+  faab,
   chopHistory: { week, points: chopHistory }
 }, null, 2) + "\n");
 

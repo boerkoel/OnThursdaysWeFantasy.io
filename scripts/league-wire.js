@@ -3,6 +3,7 @@ import { settledLineupRegret } from "./lib/lineup.js";
 import { DATA, OUT, STORY_MAX_CHARS, clockNow, currentScores, currentWeek, currentWeekMatchups, fit, isNearMedian, listNames, liveTeams, money, name, nflGames, pct, possessive, previousScoreboard, projectedMedian, pts, readJson, recentGameIds, writeJson } from "./wire/context.js";
 import { addByeStories } from "./wire/byes.js";
 import { addDeathWatchStory } from "./wire/death-watch.js";
+import { addFaabStories } from "./wire/faab.js";
 import { addEarlyMomentumStories } from "./wire/early-momentum.js";
 import { addInjuryStories } from "./wire/injuries.js";
 import { buildKeyPlays, pregameNewsPlays } from "./wire/key-plays.js";
@@ -138,6 +139,7 @@ async function buildMarqueeStories() {
   addLineupMistakeStories(add, matchupStates, regrets);
   addDeathWatchStory(add);
   try { addWaiverStories(add); } catch (error) { console.warn("League Wire: waiver stories failed: " + error.message); }
+  try { addFaabStories(add); } catch (error) { console.warn("League Wire: FAAB stories failed: " + error.message); }
   addPickupStories(add);
   try { addLongTermRegretStory(add); } catch (error) { console.warn("League Wire: long-term regret failed: " + error.message); }
   try { addTradeStory(add); } catch (error) { console.warn("League Wire: trade story failed: " + error.message); }
@@ -187,12 +189,12 @@ await writeJson(`${OUT}/key-plays.json`, {
 // At most 2 of any one type. Roster stories (injury wards, bold strategies,
 // thin depth, fresh pickups) are pre-game talk: they retire once Sunday's
 // games start, and swap stories then stay only if the swap decides a matchup.
-// Waiver, trade, practice report and trending stories count as roster talk too.
+// Waiver, FAAB, trade, practice report and trending stories count as roster talk too.
 const WIRE_MAX = 12;
 const WIRE_CORE = 8;
 const PER_TYPE_MAX = 2;
 const ROSTER_TYPES = new Set(["INJURY WARD", "BOLD STRATEGY", "THIN ICE", "FRESH OFF THE WIRE",
-  "WAIVER WIRE", "WAIVER TUG-OF-WAR", "SHOPPING SPREE", "TRADE THAT SHOULD HAVE HAPPENED", "RETRO TRADE", "BYE BYE BYE", "DEATH WATCH BYE", "LONG-TERM REGRET",
+  "WAIVER WIRE", "WAIVER TUG-OF-WAR", "SHOPPING SPREE", "FAAB PHOTO FINISH", "FAAB OVERPAY", "TRADE THAT SHOULD HAVE HAPPENED", "RETRO TRADE", "BYE BYE BYE", "DEATH WATCH BYE", "LONG-TERM REGRET",
   "PRACTICE REPORT", "TRENDING"]);
 const SWAP_TYPES = new Set(["MANAGER MISCUE", "SHREWD SWAP"]);
 // Projection-driven matchup stories wait until Wednesday 11 AM ET, after
