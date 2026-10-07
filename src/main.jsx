@@ -681,7 +681,7 @@ function App() {
       </section>
       </> : null}
 
-      {tab === "survivor" ? <SurvivorTab /> : null}
+      {tab === "survivor" ? <SurvivorTab nflGames={scoreboard.nflGames || []} nflWeek={Number(scoreboard.week)} /> : null}
 
       <footer>On Thursdays We Fantasy · 2026 · Officially unofficial.</footer>
       {newVersion ? <button type="button" className="new-version-bar" onClick={reloadKeepingScroll}>✨ New version of the site — tap to refresh</button> : null}

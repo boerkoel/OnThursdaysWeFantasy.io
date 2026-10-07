@@ -55,7 +55,82 @@ function TeamChip({ pick, small = false }) {
   </span>;
 }
 
-export default function SurvivorTab() {
+// ESPN abbreviations that differ from the feed's.
+const FEED_ABBR = { WSH: "WAS", JAC: "JAX" };
+const feedTeam = a => FEED_ABBR[a] || a;
+
+// This week's games with the pool's revealed picks on each side, and each
+// manager's expected value (the tab's equal-share model) if either side wins.
+function GamesSection({ feed, games, pot }) {
+  const n = feed.contest?.currentWeek;
+  const entries = feed.entries || [];
+  // Entries still in it this week: alive, or knocked out this week (their pick is in a game below).
+  const inPlay = entries.filter(e => e.alive || e.eliminatedWeek === n);
+  const pickOf = e => e.picks?.[n];
+  const revealed = inPlay.filter(pickOf).length;
+  const users = [...new Set(inPlay.map(e => e.user))];
+  // Expected value per manager when the given teams lose (their entries are out).
+  const valueIf = losers => {
+    const survives = e => {
+      const p = pickOf(e);
+      if (p?.result === "lost") return false;
+      return !(p && losers.has(p.team));
+    };
+    let alive = inPlay.filter(survives);
+    if (!alive.length) alive = inPlay.filter(e => pickOf(e)?.result !== "lost");   // everyone lost: auto-revive
+    const per = alive.length ? pot / alive.length : 0;
+    return Object.fromEntries(users.map(u => [u, alive.filter(e => e.user === u).length * per]));
+  };
+  const now = valueIf(new Set());
+  const rows = (games || []).map(g => {
+    const [home, away] = [g.teams.find(t => t.home), g.teams.find(t => !t.home)];
+    if (!home || !away) return null;
+    const side = t => {
+      const team = feedTeam(t.abbrev);
+      const by = inPlay.filter(e => pickOf(e)?.team === team);
+      const who = {};
+      for (const e of by) who[e.user] = (who[e.user] || 0) + 1;
+      return { team, score: g.state === "pre" ? null : t.score, count: by.length, who: Object.entries(who).sort((a, b) => b[1] - a[1]) };
+    };
+    const a = side(away), h = side(home);
+    const winner = g.completed ? (a.score > h.score ? a.team : h.score > a.score ? h.team : null) : null;
+    return { g, a, h, winner };
+  }).filter(Boolean).sort((x, y) => (y.a.count + y.h.count) - (x.a.count + x.h.count) || String(x.g.kickoff).localeCompare(String(y.g.kickoff)));
+  if (!rows.length) return null;
+  const status = g => g.completed ? "Final" : g.state === "in" ? (g.detail || "Live") : g.detail || "";
+  const sideCell = (x, winner, completed) => <div className={"sv-game-side" + (completed && winner && winner !== x.team ? " lost" : completed && winner === x.team ? " won" : "")}>
+    <img src={logo(x.team)} alt="" loading="lazy" /><b>{x.team}</b>{x.score != null && x.score !== "" ? <span className="sv-game-score">{x.score}</span> : null}
+    <span className="sv-game-picks">{x.count ? <>{x.count} {x.count === 1 ? "entry" : "entries"} · {pct(revealed ? x.count / revealed * 100 : 0)}</> : "no picks"}</span>
+    {x.who.length ? <small>{x.who.map(([u, k]) => k > 1 ? `${u} ×${k}` : u).join(", ")}</small> : null}
+  </div>;
+  return <section id="survivor-games" className="section">
+    <div className="section-heading"><div><span className="section-kicker">WEEK {n} · WHO'S RIDING WHOM</span><h2>Games</h2></div>
+      <span className="record-count">{revealed} OF {inPlay.length} PICKS REVEALED</span></div>
+    <div className="sv-games">
+      {rows.filter(r => r.a.count + r.h.count > 0 || r.g.state !== "pre").map(({ g, a, h, winner }) => {
+        const swing = a.count || h.count;
+        const ifA = swing ? valueIf(new Set([h.team])) : null, ifH = swing ? valueIf(new Set([a.team])) : null;
+        const movers = swing ? users.map(u => ({ u, now: now[u], a: ifA[u], h: ifH[u] }))
+          .filter(m => Math.abs(m.a - m.h) >= 0.5).sort((x, y) => Math.abs(y.a - y.h) - Math.abs(x.a - x.h)) : [];
+        return <div className={"sv-game" + (g.state === "in" ? " live" : "") + (g.completed ? " final" : "")} key={g.id}>
+          <div className="sv-game-head"><span>{status(g)}</span></div>
+          <div className="sv-game-sides">{sideCell(a, winner, g.completed)}<span className="sv-game-at">@</span>{sideCell(h, winner, g.completed)}</div>
+          {movers.length && !g.completed ? <details className="sv-root">
+            <summary>Rooting interests · {movers.length} {movers.length === 1 ? "manager" : "managers"}</summary>
+            <div className="sv-root-row head"><span>Manager</span><span>If {a.team} wins</span><span>If {h.team} wins</span><span>Root for</span></div>
+            {movers.map(m => <div className="sv-root-row" key={m.u}><b>{m.u}</b><span>{dollars(m.a)}</span><span>{dollars(m.h)}</span>
+              <b className={m.a > m.h ? "up" : "down"}>{m.a > m.h ? a.team : h.team}</b></div>)}
+          </details> : null}
+        </div>;
+      })}
+    </div>
+    {rows.some(r => !(r.a.count + r.h.count > 0 || r.g.state !== "pre")) ? <p className="sv-game-later"><b>Not kicked off yet:</b> {rows.filter(r => !(r.a.count + r.h.count > 0 || r.g.state !== "pre"))
+      .sort((x, y) => String(x.g.kickoff).localeCompare(String(y.g.kickoff))).map(r => `${r.a.team} @ ${r.h.team}`).join(" · ")}</p> : null}
+    <p className="median-note">Picks show once their game kicks off. Rooting interests use the same money model as Managers: every live entry gets an equal share of the {dollars(pot)} pot, so a game moves a manager's value both through their own entries and through everyone else's. Picks that haven't been revealed yet are assumed to survive.</p>
+  </section>;
+}
+
+export default function SurvivorTab({ nflGames = [], nflWeek = null }) {
   const { feed, failed } = useSurvivorFeed();
   const weeks = feed?.weeks || [];
   const lockedWeeks = weeks.filter(w => w.locked);
@@ -161,6 +236,8 @@ export default function SurvivorTab() {
         {highlights.map(h => <div className="sv-highlight" key={h.title}><span>{h.icon}</span><p><b>{h.title}</b> {h.text}</p></div>)}
       </div> : null}
     </section>
+
+    {nflWeek === Number(c.currentWeek) ? <GamesSection feed={feed} games={nflGames} pot={pot} /> : null}
 
     <section id="survivor-picks" className="section">
       <div className="section-heading"><div><span className="section-kicker">WHO PICKED WHOM</span><h2>Pick distribution</h2></div></div>

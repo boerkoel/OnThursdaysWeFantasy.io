@@ -913,6 +913,24 @@ section,details,.odds-block{scroll-margin-top:72px}
 .sv-dist{border:1px solid #30332d;border-radius:16px;padding:6px 14px 2px}
 .sv-dist-row{display:grid;grid-template-columns:minmax(0,130px) 1fr 44px 26px;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid #242620;font-size:13px}
 .sv-dist-row:last-of-type{border-bottom:0}
+.sv-games{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.sv-game{border:1px solid #2a2d27;border-radius:10px;padding:10px 12px;background:#151713}
+.sv-game.live{border-color:#6b7a52;box-shadow:0 0 0 1px #6b7a52 inset}
+.sv-game-head{font-size:11px;font-weight:800;letter-spacing:.04em;color:#9a9d93;text-transform:uppercase;margin-bottom:6px}
+.sv-game.live .sv-game-head{color:#b5d17a}
+.sv-game-sides{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:start}
+.sv-game-at{color:#6f726a;font-size:12px;padding-top:4px}
+.sv-game-side{display:grid;grid-template-columns:22px auto 1fr;column-gap:6px;row-gap:2px;align-items:center;font-size:13px}
+.sv-game-side img{width:22px;height:22px}
+.sv-game-score{justify-self:end;font-weight:800;font-size:15px}
+.sv-game-picks{grid-column:1/-1;color:#c7c9c1;font-size:12px}
+.sv-game-side small{grid-column:1/-1;color:#8d9087;font-size:11px;line-height:1.35}
+.sv-game-side.won .sv-game-picks{color:#8fd184}.sv-game-side.lost{opacity:.55}.sv-game-side.lost .sv-game-picks{color:#e58a86}
+.sv-game-later{margin:10px 0 0;font-size:12px;color:#a9ac9f;line-height:1.5}
+.sv-root{margin-top:8px;font-size:12px}.sv-root summary{cursor:pointer;color:#a9ac9f;font-weight:700}
+.sv-root-row{display:grid;grid-template-columns:minmax(0,1.2fr) 1fr 1fr auto;gap:8px;padding:4px 0;border-bottom:1px solid #242620}
+.sv-root-row.head{color:#8d9087;font-size:11px;font-weight:800;text-transform:uppercase}
+.sv-root-row .up{color:#8fd184}.sv-root-row .down{color:#e58a86}
 .sv-dist-team{display:flex;align-items:center;gap:7px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sv-dist-team img{width:22px;height:22px;object-fit:contain;flex:none}
 .sv-dist-bar{height:10px;border-radius:999px;background:#ffffff08;overflow:hidden}

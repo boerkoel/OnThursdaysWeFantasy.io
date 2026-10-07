@@ -59,10 +59,18 @@ export function SectionNav({ tab }) {
 
   useEffect(() => {
     // Only offer sections that are on the page (e.g. RIP once someone's chopped).
-    const sections = (TAB_SECTIONS[tab] || []).filter(([id]) => document.getElementById(id));
-    setPresent(sections);
-    if (!sections.length) return;
+    // Tabs that load their data after opening (Survivor) add sections later, so
+    // look again whenever the page changes.
+    let sections = [];
+    const find = () => {
+      const next = (TAB_SECTIONS[tab] || []).filter(([id]) => document.getElementById(id));
+      if (next.map(([id]) => id).join() !== sections.map(([id]) => id).join()) { sections = next; setPresent(next); }
+    };
+    find();
+    const observer = new MutationObserver(find);
+    observer.observe(document.body, { childList: true, subtree: true });
     const onScroll = () => {
+      if (!sections.length) return;
       let current = sections[0][0];
       for (const [id] of sections) {
         const el = document.getElementById(id);
@@ -72,7 +80,7 @@ export function SectionNav({ tab }) {
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => { observer.disconnect(); window.removeEventListener("scroll", onScroll); };
   }, [tab]);
 
   useEffect(() => {
