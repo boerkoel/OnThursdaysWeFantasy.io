@@ -6,6 +6,7 @@ import { addDeathWatchStory } from "./wire/death-watch.js";
 import { addFaabStories } from "./wire/faab.js";
 import { addEarlyMomentumStories } from "./wire/early-momentum.js";
 import { addInjuryStories } from "./wire/injuries.js";
+import { addKeyMatchupStories } from "./wire/key-matchups.js";
 import { buildKeyPlays, pregameNewsPlays } from "./wire/key-plays.js";
 import { addLineupMistakeStories } from "./wire/lineup-mistakes.js";
 import { addNewsStories } from "./wire/news.js";
@@ -152,6 +153,7 @@ async function buildMarqueeStories() {
   addWhatToWatchStories(add, matchupStates);
   addEarlyMomentumStories(add, matchupStates);
   // Newest stories; a bug in one shouldn't take down the whole wire.
+  try { addKeyMatchupStories(add, matchupStates); } catch (error) { console.warn("League Wire: key matchups failed: " + error.message); }
   try { addGameToWatchStory(add, matchupStates); } catch (error) { console.warn("League Wire: game to watch failed: " + error.message); }
   try { addInjuryStories(add); } catch (error) { console.warn("League Wire: injury stories failed: " + error.message); }
   try { addMiscueStory(add); } catch (error) { console.warn("League Wire: manager miscue failed: " + error.message); }
