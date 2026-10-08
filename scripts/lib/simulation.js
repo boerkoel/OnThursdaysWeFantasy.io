@@ -154,12 +154,28 @@ export function simulateFinal(team, rng, playerPoints = null) {
 // Players whose games start are locked; as the week goes on fewer slots stay
 // open, so the simulation follows the lineups actually played.
 export const LINEUP_RATES = {
-  // Managers who've already changed their lineup this week mostly leave it.
-  set: { reset: 0.1, cover: 0.9 },
-  // Untouched lineups: often fixed up before kickoff, less so once Sunday is under way.
-  untouched: { reset: 0.5, cover: 0.65 },
-  untouchedSunday: { reset: 0.25, cover: 0.5 }
+  // Chance of re-setting to the best lineup, from 3+ days before the team's
+  // next open kickoff (far) down to kickoff (near). Managers who've already
+  // changed their lineup this week mostly leave it.
+  set: { far: 0.1, near: 0.05, cover: 0.9 },
+  untouched: { far: 0.5, near: 0.2, cover: 0.6 }
 };
+const DECAY_HOURS = 72;
+export function lineupRates(set, hoursToKickoff) {
+  const r = set ? LINEUP_RATES.set : LINEUP_RATES.untouched;
+  const w = Math.min(1, Math.max(0, (Number(hoursToKickoff) || 0) / DECAY_HOURS));
+  return { reset: r.near + (r.far - r.near) * w, cover: r.cover };
+}
+
+// Playing hurt: an injured player who suits up (chance to play < 1) scores a
+// bit less, swings more and is likelier to leave early, scaled by how unlikely
+// he was to play.
+export const HURT = { meanCut: 0.15, sdBoost: 0.3, exitAdd: 0.15 };
+export function hurtOutlook(o, chance) {
+  const doubt = Math.max(0, 1 - chance);
+  if (!doubt) return o;
+  return { ...o, rest: o.rest * (1 - HURT.meanCut * doubt), sd: o.sd * (1 + HURT.sdBoost * doubt), exitRisk: Math.min(0.9, o.exitRisk + HURT.exitAdd * doubt) };
+}
 
 // Best assignment of pool players to slots by value (each player once, only
 // in eligible slots). Returns a pool index per slot (-1 if none fits).

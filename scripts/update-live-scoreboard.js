@@ -204,11 +204,10 @@ for (const teamId of teams.keys()) {
 const lineupBaseline = trackLineups(previousScoreboard?.lineupBaseline, currentWeek,
   [...teams.keys()].map(id => [id, rosterEntriesForTeam(id)]));
 const chanceToPlay = await chanceToPlayFn(new Map(nflGames.flatMap(g => g.teams.map(t => [Number(t.id), fixAbbr(t.abbrev)]))));
-const sundayUnderway = nflGames.filter(g => g.state !== "pre").length >= 3;
 const lineupModels = new Map(), lineupSummaries = new Map();
 for (const teamId of teams.keys()) {
   const { model, summary } = buildLineupModel({ entries: rosterEntriesForTeam(teamId), nflWeek: Boolean(nflWeek),
-    gameFor: id => nflGamesByTeam.get(id) || null, weeklyStat, chanceToPlay, set: lineupBaseline.changed[teamId], sundayUnderway });
+    gameFor: id => nflGamesByTeam.get(id) || null, weeklyStat, chanceToPlay, set: lineupBaseline.changed[teamId] });
   if (model) lineupModels.set(teamId, model);
   if (summary) lineupSummaries.set(teamId, summary);
 }

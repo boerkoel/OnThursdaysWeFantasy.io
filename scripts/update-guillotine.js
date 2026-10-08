@@ -40,7 +40,7 @@ const nflGameByProTeam = new Map(), abbrByProTeam = new Map();
 for (const event of nflWeek?.events || []) {
   const competition = event.competitions?.[0];
   const status = competition?.status?.type;
-  const game = { name: event.shortName || "", state: status?.state || "pre", completed: status?.completed === true || status?.state === "post", ...gameScriptInputs(competition) };
+  const game = { name: event.shortName || "", kickoff: event.date || null, state: status?.state || "pre", completed: status?.completed === true || status?.state === "post", ...gameScriptInputs(competition) };
   for (const c of competition?.competitors || []) {
     nflGameByProTeam.set(Number(c.team?.id), game);
     abbrByProTeam.set(Number(c.team?.id), fixAbbr(c.team?.abbreviation || ""));
@@ -152,7 +152,6 @@ const shortName = player => /D\/ST/.test(player.fullName) ? player.fullName : (p
 // starters since the week's first lineups, chance to play, each team's model.
 const lineupBaseline = trackLineups(previous?.lineupBaseline, week, [...rosterByTeam].filter(([id]) => scoreByTeam.has(id)));
 const chanceToPlay = await chanceToPlayFn(abbrByProTeam);
-const sundayUnderway = [...new Set(nflGameByProTeam.values())].filter(g => g.state !== "pre").length >= 3;
 
 const alive = [...scoreByTeam.values()]
   .filter(t => Number(t.eliminationMatchupPeriod) === 0)
@@ -172,7 +171,7 @@ const alive = [...scoreByTeam.values()]
     // Starters still to play (bye weeks and finished games have nothing left to
     // add), and the lineup model the simulation uses.
     const built = buildLineupModel({ entries: rosterByTeam.get(teamId) || [], nflWeek: Boolean(nflWeek),
-      gameFor: id => nflGameByProTeam.get(id) || null, weeklyStat, chanceToPlay, set: lineupBaseline.changed[teamId], sundayUnderway });
+      gameFor: id => nflGameByProTeam.get(id) || null, weeklyStat, chanceToPlay, set: lineupBaseline.changed[teamId] });
     for (const r of built.remaining) remaining.push({ name: r.player.fullName, game: r.game?.name || "", actual: round(r.actual), ...r.outlook });
     const score = round(Number(t.totalPointsLive ?? t.totalPoints ?? 0));
     return {

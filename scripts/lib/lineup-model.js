@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { LINEUP_RATES, bestLineup, playerOutlook } from "./simulation.js";
+import { bestLineup, hurtOutlook, lineupRates, playerOutlook } from "./simulation.js";
 
 // Lineup decisions still to come, shared by the main league's weekly
 // simulation (update-live-scoreboard.js) and the guillotine league's
@@ -46,7 +46,8 @@ export function trackLineups(previous, week, entriesByTeam) {
 // completed, ...gameScriptInputs } or null on bye. Starters still to play keep
 // the order of `entries` (their index in the returned `remaining`), so callers
 // can tally each current starter's simulated points.
-export function buildLineupModel({ entries, nflWeek, gameFor, weeklyStat, chanceToPlay, set, sundayUnderway }) {
+export function buildLineupModel({ entries, nflWeek, gameFor, weeklyStat, chanceToPlay, set, now = Date.now() }) {
+  let nextKickoff = Infinity;
   const fixed = [], fixedIdx = [], slots = [], pool = [], current = [], remaining = [], poolRemIdx = [];
   for (const entry of entries || []) {
     const slot = Number(entry.lineupSlotId), player = entry.playerPoolEntry?.player;
@@ -66,13 +67,15 @@ export function buildLineupModel({ entries, nflWeek, gameFor, weeklyStat, chance
     }
     const bye = !game || !Number.isFinite(projection);
     const chance = bye ? 1 : chanceToPlay(player);
-    pool.push({ name: player.fullName, outlook: bye ? { ...outlook, rest: 0, sd: 0 } : outlook, eligibleSlots: (player.eligibleSlots || []).map(Number),
+    if (starter && game?.kickoff) nextKickoff = Math.min(nextKickoff, Date.parse(game.kickoff));
+    pool.push({ name: player.fullName, outlook: bye ? { ...outlook, rest: 0, sd: 0 } : hurtOutlook(outlook, chance), eligibleSlots: (player.eligibleSlots || []).map(Number),
       chance, value: bye ? 0 : Math.max(0, projection) * chance, bye, starter });
     poolRemIdx.push(remIdx);
     if (starter) { slots.push(slot); current.push(pool.length - 1); }
   }
   if (!nflWeek || (!slots.length && !fixed.length)) return { model: null, remaining };
-  const rates = set ? LINEUP_RATES.set : sundayUnderway ? LINEUP_RATES.untouchedSunday : LINEUP_RATES.untouched;
+  // Fewer re-sets as the team's next open kickoff nears (0 hours = now).
+  const rates = lineupRates(Boolean(set), Number.isFinite(nextKickoff) ? (nextKickoff - now) / 3600000 : 0);
   const best = bestLineup(slots, pool);
   const valueOf = lineup => lineup.reduce((sum, i) => sum + (i >= 0 ? pool[i].value : 0), 0);
   const summary = {
