@@ -1,4 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises";
+import { buildLineupModel, chanceToPlayFn, fixAbbr, trackLineups } from "./lib/lineup-model.js";
 import { SIMULATIONS, gameScriptInputs, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
 
 // Death Watch for the companion guillotine league (public on ESPN, so no
@@ -35,12 +36,15 @@ const [scores, rosters, nflWeek] = await Promise.all([
   fetchJson(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?week=${week}&seasontype=2&season=${season}`).catch(() => null)
 ]);
 
-const nflGameByProTeam = new Map();
+const nflGameByProTeam = new Map(), abbrByProTeam = new Map();
 for (const event of nflWeek?.events || []) {
   const competition = event.competitions?.[0];
   const status = competition?.status?.type;
-  const game = { name: event.shortName || "", completed: status?.completed === true || status?.state === "post", ...gameScriptInputs(competition) };
-  for (const c of competition?.competitors || []) nflGameByProTeam.set(Number(c.team?.id), game);
+  const game = { name: event.shortName || "", state: status?.state || "pre", completed: status?.completed === true || status?.state === "post", ...gameScriptInputs(competition) };
+  for (const c of competition?.competitors || []) {
+    nflGameByProTeam.set(Number(c.team?.id), game);
+    abbrByProTeam.set(Number(c.team?.id), fixAbbr(c.team?.abbreviation || ""));
+  }
 }
 
 const weeklyStat = (player, statSourceId) => Number((player?.stats || []).find(s =>
@@ -144,6 +148,12 @@ const POSITIONS = { 1: "QB", 2: "RB", 3: "WR", 4: "TE", 5: "K", 16: "D/ST" };
 const INJURY_SHORT = { QUESTIONABLE: "Q", DOUBTFUL: "D", OUT: "O", INJURY_RESERVE: "IR", SUSPENSION: "SSPD" };
 const shortName = player => /D\/ST/.test(player.fullName) ? player.fullName : (player.firstName ? player.firstName[0] + ". " : "") + (player.lastName || player.fullName);
 
+// Lineup decisions still to come (lib/lineup-model.js): who has changed their
+// starters since the week's first lineups, chance to play, each team's model.
+const lineupBaseline = trackLineups(previous?.lineupBaseline, week, [...rosterByTeam].filter(([id]) => scoreByTeam.has(id)));
+const chanceToPlay = await chanceToPlayFn(abbrByProTeam);
+const sundayUnderway = [...new Set(nflGameByProTeam.values())].filter(g => g.state !== "pre").length >= 3;
+
 const alive = [...scoreByTeam.values()]
   .filter(t => Number(t.eliminationMatchupPeriod) === 0)
   .map(t => {
@@ -158,13 +168,12 @@ const alive = [...scoreByTeam.values()]
       lineup.push({ id: Number(entry.playerId), name: shortName(player), pos: POSITIONS[Number(player.defaultPositionId)] || "", proTeamId: Number(player.proTeamId), slot,
         actual: Number.isFinite(weekActual) ? round(weekActual) : 0, projection: Number.isFinite(weekProjection) ? round(weekProjection) : null,
         injury: INJURY_SHORT[player.injuryStatus] || null });
-      const game = nflGameByProTeam.get(Number(player.proTeamId));
-      // Bye weeks (no game) and finished games have nothing left to add.
-      if (nflWeek && (!game || game.completed)) continue;
-      const actual = Number.isFinite(weeklyStat(player, 0)) ? weeklyStat(player, 0) : 0;
-      const projection = weeklyStat(player, 1);
-      remaining.push({ name: player.fullName, game: game?.name || "", actual: round(actual), ...playerOutlook({ actual, projection, positionId: player.defaultPositionId, game, proTeamId: player.proTeamId }) });
     }
+    // Starters still to play (bye weeks and finished games have nothing left to
+    // add), and the lineup model the simulation uses.
+    const built = buildLineupModel({ entries: rosterByTeam.get(teamId) || [], nflWeek: Boolean(nflWeek),
+      gameFor: id => nflGameByProTeam.get(id) || null, weeklyStat, chanceToPlay, set: lineupBaseline.changed[teamId], sundayUnderway });
+    for (const r of built.remaining) remaining.push({ name: r.player.fullName, game: r.game?.name || "", actual: round(r.actual), ...r.outlook });
     const score = round(Number(t.totalPointsLive ?? t.totalPoints ?? 0));
     return {
       teamId,
@@ -176,7 +185,9 @@ const alive = [...scoreByTeam.values()]
       // Spread of the final score, for estimating how much one play moves the chop odds.
       projectionSd: round(Math.hypot(...remaining.map(p => p.sd))),
       remaining,
-      lineup
+      lineup,
+      lineupModel: built.model,
+      lineupOutlook: built.summary || null
     };
   });
 
@@ -197,7 +208,7 @@ const gameTallies = new Map(alive.map(t => {
 }));
 const playerPoints = new Map(alive.map(t => [t.teamId, new Array(t.remaining.length)]));
 for (let sim = 0; sim < SIMULATIONS; sim++) {
-  const finals = alive.map(t => ({ teamId: t.teamId, score: simulateFinal({ score: t.score, players: t.remaining }, rng, playerPoints.get(t.teamId)) }));
+  const finals = alive.map(t => ({ teamId: t.teamId, score: simulateFinal({ score: t.score, players: t.remaining, lineup: t.lineupModel }, rng, playerPoints.get(t.teamId)) }));
   const lowest = Math.min(...finals.map(f => f.score));
   const last = finals.filter(f => f.score === lowest);
   for (const f of last) chopCounts.set(f.teamId, chopCounts.get(f.teamId) + 1 / last.length);
@@ -221,7 +232,7 @@ for (let sim = 0; sim < SIMULATIONS; sim++) {
 
 // Exact 0%/100% only when locked, judged from each team's lowest and highest
 // possible final score (players can lose points); otherwise possibleOdds.
-const rangeOf = t => scoreRange({ score: t.score, players: t.remaining });
+const rangeOf = t => scoreRange({ score: t.score, players: t.remaining, lineup: t.lineupModel });
 for (const t of alive) {
   const me = rangeOf(t);
   const others = alive.filter(o => o.teamId !== t.teamId).map(rangeOf);
@@ -267,6 +278,7 @@ for (const t of alive) {
 for (const t of alive) {
   t.playersLeft = t.remaining.length;
   t.remaining = t.remaining.map(p => ({ name: p.name, game: p.game, actual: p.actual, projectedRest: round(p.rest) }));
+  delete t.lineupModel;   // simulation input only
 }
 // What a team with players left needs to climb past the lowest team that's
 // already finished (the score it must beat to be sure it isn't last).
@@ -298,6 +310,7 @@ await writeFile("data/current/guillotine.json", JSON.stringify({
   week,
   lastUpdated: new Date().toISOString(),
   simulations: SIMULATIONS,
+  lineupBaseline,
   teams: alive,
   chopped,
   faab,

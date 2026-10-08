@@ -129,7 +129,7 @@ function drawPoints(p, rng) {
 // If given, playerPoints[i] is set to player i's simulated points. A team with
 // a lineup model (team.lineup, below) simulates lineup decisions too.
 export function simulateFinal(team, rng, playerPoints = null) {
-  if (team.lineup) return simulateLineupWeek(team, rng);
+  if (team.lineup) return simulateLineupWeek(team, rng, playerPoints);
   let total = team.score;
   team.players.forEach((p, i) => {
     const points = drawPoints(p, rng);
@@ -183,10 +183,17 @@ export function bestLineup(slots, pool) {
   return out;
 }
 
-function simulateLineupWeek(team, rng) {
+// playerPoints (optional) gets each current starter's contribution, indexed as
+// in buildLineupModel's `remaining` (0 if he sat or was benched).
+function simulateLineupWeek(team, rng, playerPoints = null) {
   const L = team.lineup;
+  if (playerPoints) playerPoints.fill(0);
   let total = team.score;
-  for (const p of L.fixed) total += drawPoints(p, rng);
+  L.fixed.forEach((p, j) => {
+    const points = drawPoints(p, rng);
+    if (playerPoints && L.fixedIdx?.[j] >= 0) playerPoints[L.fixedIdx[j]] = points;
+    total += points;
+  });
   const lineup = rng() < L.reset ? L.best : L.current;
   const plays = L.pool.map(p => rng() < p.chance);
   const used = new Set(lineup.filter(i => i >= 0 && plays[i]));
@@ -203,7 +210,11 @@ function simulateLineupWeek(team, rng) {
         if (i >= 0) used.add(i);
       }
     }
-    if (i >= 0) total += drawPoints(L.pool[i].outlook, rng);
+    if (i >= 0) {
+      const points = drawPoints(L.pool[i].outlook, rng);
+      if (playerPoints && L.poolRemIdx?.[i] >= 0) playerPoints[L.poolRemIdx[i]] = points;
+      total += points;
+    }
   });
   return total;
 }
