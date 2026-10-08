@@ -1,6 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { BENCH_SLOT, IR_SLOT, settledLineupRegret } from "./lib/lineup.js";
-import { SIMULATIONS, gameScriptInputs, medianOf, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
+import { LINEUP_RATES, SIMULATIONS, bestLineup, gameScriptInputs, medianOf, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
 
 const season = process.env.ESPN_SEASON || "2026";
 const leagueId = process.env.ESPN_LEAGUE_ID || "998599827";
@@ -197,6 +197,71 @@ for (const teamId of teams.keys()) {
   }
 }
 
+// ---- Lineup decisions still to come (see LINEUP_RATES in lib/simulation.js) ----
+// Who has touched their lineup this week: the first lineups seen each week are
+// the baseline (kept in scoreboard.json, which every live run restores); any
+// change to a team's starters after that marks the lineup as set.
+const lineupKey = teamId => rosterEntriesForTeam(teamId)
+  .filter(e => ![20, 21].includes(Number(e.lineupSlotId)))
+  .map(e => `${e.playerId}:${e.lineupSlotId}`).sort().join(",");
+const oldBaseline = previousScoreboard?.lineupBaseline;
+const lineupBaseline = oldBaseline?.week === currentWeek
+  ? { ...oldBaseline, changed: { ...(oldBaseline.changed || {}) } }
+  : { week: currentWeek, seenAt: new Date().toISOString(), teams: Object.fromEntries([...teams.keys()].map(id => [id, lineupKey(id)])), changed: {} };
+for (const teamId of teams.keys()) {
+  const key = lineupKey(teamId);
+  if (lineupBaseline.teams[teamId] == null) lineupBaseline.teams[teamId] = key;
+  else if (!lineupBaseline.changed[teamId] && key !== lineupBaseline.teams[teamId]) lineupBaseline.changed[teamId] = new Date().toISOString();
+}
+
+// Chance to play: ESPN's OUT/IR is final; otherwise FantasyPros "Are They
+// Playing?" (scripts/fetch-play-chance.js), else a rule of thumb from ESPN's tag.
+const playChance = await readFile("data/current/play-chance.json", "utf8").then(JSON.parse).catch(() => null);
+const normName = name => String(name || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+  .replace(/\b(jr|sr|ii|iii|iv|v)\b\.?/g, "").replace(/[^a-z]/g, "");
+const fixAbbr = a => ({ WSH: "WAS", JAC: "JAX" })[a] || a;
+const chanceByPlayer = new Map((playChance?.players || []).filter(p => p.chance != null)
+  .map(p => [`${normName(p.name)}|${fixAbbr(p.team)}`, p.chance]));
+const abbrByProTeam = new Map(nflGames.flatMap(g => g.teams.map(t => [Number(t.id), fixAbbr(t.abbrev)])));
+const ESPN_TAG_CHANCE = { OUT: 0, INJURY_RESERVE: 0, SUSPENSION: 0, DOUBTFUL: 0.2, QUESTIONABLE: 0.6, DAY_TO_DAY: 0.8 };
+function chanceToPlay(player) {
+  const tag = String(player.injuryStatus || "").toUpperCase();
+  if (ESPN_TAG_CHANCE[tag] === 0) return 0;
+  const fp = chanceByPlayer.get(`${normName(player.fullName)}|${abbrByProTeam.get(Number(player.proTeamId))}`);
+  if (fp != null) return fp;
+  return ESPN_TAG_CHANCE[tag] ?? 1;
+}
+const sundayUnderway = nflGames.filter(g => g.state !== "pre").length >= 3;
+
+const lineupModels = new Map();
+for (const teamId of teams.keys()) {
+  const fixed = [], slots = [], pool = [], current = [];
+  for (const entry of rosterEntriesForTeam(teamId)) {
+    const slot = Number(entry.lineupSlotId), player = entry.playerPoolEntry?.player;
+    if (!player || slot === 21) continue;
+    const game = nflGamesByTeam.get(Number(player.proTeamId));
+    const weeklyActual = weeklyStat(player, 0);
+    const actual = Number.isFinite(weeklyActual) ? weeklyActual : 0;
+    const projection = weeklyProjection(player);
+    const outlook = playerOutlook({ actual, projection, positionId: player.defaultPositionId, game, proTeamId: player.proTeamId });
+    const open = nflWeek && (!game || game.state === "pre");   // not kicked off yet (or on bye): can still be moved
+    if (!open) {
+      if (slot !== 20 && (!nflWeek || (game && !game.completed))) fixed.push(outlook);
+      continue;
+    }
+    const byeOrNone = !game || !Number.isFinite(projection);
+    const chance = byeOrNone ? 1 : chanceToPlay(player);
+    const p = { outlook: byeOrNone ? { ...outlook, rest: 0, sd: 0 } : outlook, eligibleSlots: (player.eligibleSlots || []).map(Number),
+      chance, value: byeOrNone ? 0 : Math.max(0, projection) * chance };
+    pool.push(p);
+    if (slot !== 20) { slots.push(slot); current.push(pool.length - 1); }
+  }
+  if (!nflWeek || (!slots.length && !fixed.length)) continue;
+  const rates = lineupBaseline.changed[teamId] ? LINEUP_RATES.set : sundayUnderway ? LINEUP_RATES.untouchedSunday : LINEUP_RATES.untouched;
+  lineupModels.set(teamId, { fixed, slots, pool, current, best: bestLineup(slots, pool), ...rates,
+    set: Boolean(lineupBaseline.changed[teamId]) });
+}
+
 const liveProjectionTeamIds = new Set(espnProjectionByTeam.keys());
 
 // Each team's lineup for the matchup cards: the starters, plus (once their
@@ -265,7 +330,8 @@ const median = round(medianOf(currentScores.map(s => Number(s.score))) ?? 0);
 const probabilityTeams = currentScores.map(s => ({
   teamId: s.teamId,
   score: Number(s.score) || 0,
-  players: remainingPlayersByTeam.get(s.teamId) || []
+  players: remainingPlayersByTeam.get(s.teamId) || [],
+  lineup: lineupModels.get(s.teamId) || null
 }));
 const projectedMedian = round(medianOf(currentScores.map(s => Number(s.projectionAverage ?? s.score))) ?? median);
 
@@ -480,7 +546,8 @@ await writeFile("data/current/scoreboard.json", JSON.stringify({
   nflGames,
   winHistory: { week: currentWeek, points: winHistory },
   raffleHistory: { week: currentWeek, points: raffleHistory },
-  projectionHistory
+  projectionHistory,
+  lineupBaseline
 }, null, 2) + "\n");
 
 console.log(`Updated live scoreboard for Week ${currentWeek} with ${currentScores.length} teams; ESPN live projections available for ${liveProjectionTeamIds.size} teams.`);

@@ -120,16 +120,90 @@ function normal(rng) {
   return Math.sqrt(-2 * Math.log(Math.max(rng(), 1e-12))) * Math.cos(2 * Math.PI * rng());
 }
 
+// One player's simulated remaining points (see playerOutlook).
+function drawPoints(p, rng) {
+  return rng() < p.exitRisk ? p.rest * EARLY_EXIT_SHARE * rng() : Math.max(-p.floor, p.rest + p.sd * normal(rng));
+}
+
 // team: { score, players: [playerOutlook, ...] } for starters still to play.
-// If given, playerPoints[i] is set to player i's simulated points.
+// If given, playerPoints[i] is set to player i's simulated points. A team with
+// a lineup model (team.lineup, below) simulates lineup decisions too.
 export function simulateFinal(team, rng, playerPoints = null) {
+  if (team.lineup) return simulateLineupWeek(team, rng);
   let total = team.score;
   team.players.forEach((p, i) => {
-    const points = rng() < p.exitRisk
-      ? p.rest * EARLY_EXIT_SHARE * rng()
-      : Math.max(-p.floor, p.rest + p.sd * normal(rng));
+    const points = drawPoints(p, rng);
     if (playerPoints) playerPoints[i] = points;
     total += points;
+  });
+  return total;
+}
+
+// ---- Lineup decisions still to come ------------------------------------
+// Before kickoff a lineup isn't final: managers swap players, and injured
+// starters sit. team.lineup = {
+//   fixed: [playerOutlook]   starters whose games are under way (locked),
+//   slots: [slotId]          starting slots whose player hasn't kicked off,
+//   pool:  [{ outlook, eligibleSlots, chance, value }]  everyone who can still
+//          fill those slots (starters and bench not yet kicked off); chance =
+//          chance to play, value = projection x chance,
+//   current: [pool index per slot]  the lineup as set (-1 = empty),
+//   best:    [pool index per slot]  the best lineup by projection,
+//   reset, cover }  chance the manager re-sets to the best lineup, and chance
+//   he replaces a starter who doesn't play.
+// Players whose games start are locked; as the week goes on fewer slots stay
+// open, so the simulation follows the lineups actually played.
+export const LINEUP_RATES = {
+  // Managers who've already changed their lineup this week mostly leave it.
+  set: { reset: 0.1, cover: 0.9 },
+  // Untouched lineups: often fixed up before kickoff, less so once Sunday is under way.
+  untouched: { reset: 0.5, cover: 0.65 },
+  untouchedSunday: { reset: 0.25, cover: 0.5 }
+};
+
+// Best assignment of pool players to slots by value (each player once, only
+// in eligible slots). Returns a pool index per slot (-1 if none fits).
+export function bestLineup(slots, pool) {
+  const full = (1 << slots.length) - 1, memo = new Map();
+  const solve = (i, used) => {
+    if (i >= pool.length || used === full) return { value: 0, picks: [] };
+    const key = i * 4096 + used;
+    if (memo.has(key)) return memo.get(key);
+    let best = solve(i + 1, used);
+    for (let k = 0; k < slots.length; k++) {
+      if (used & (1 << k) || !pool[i].eligibleSlots.includes(slots[k])) continue;
+      const rest = solve(i + 1, used | (1 << k));
+      if (pool[i].value + rest.value > best.value) best = { value: pool[i].value + rest.value, picks: [[k, i], ...rest.picks] };
+    }
+    memo.set(key, best);
+    return best;
+  };
+  const out = slots.map(() => -1);
+  for (const [k, i] of solve(0, 0).picks) out[k] = i;
+  return out;
+}
+
+function simulateLineupWeek(team, rng) {
+  const L = team.lineup;
+  let total = team.score;
+  for (const p of L.fixed) total += drawPoints(p, rng);
+  const lineup = rng() < L.reset ? L.best : L.current;
+  const plays = L.pool.map(p => rng() < p.chance);
+  const used = new Set(lineup.filter(i => i >= 0 && plays[i]));
+  L.slots.forEach((slot, k) => {
+    let i = lineup[k];
+    if (i < 0 || !plays[i]) {
+      // Starter out (or slot empty): usually swapped for the best healthy bench option.
+      i = -1;
+      if (rng() < L.cover) {
+        for (let j = 0; j < L.pool.length; j++) {
+          if (used.has(j) || !plays[j] || !L.pool[j].eligibleSlots.includes(slot)) continue;
+          if (i < 0 || L.pool[j].outlook.rest > L.pool[i].outlook.rest) i = j;
+        }
+        if (i >= 0) used.add(i);
+      }
+    }
+    if (i >= 0) total += drawPoints(L.pool[i].outlook, rng);
   });
   return total;
 }
@@ -137,6 +211,12 @@ export function simulateFinal(team, rng, playerPoints = null) {
 // Lowest and highest possible final score. Used to report outcomes that are
 // truly locked exactly (0% or 100%) instead of as simulation odds.
 export function scoreRange(team) {
+  if (team.lineup) {
+    const L = team.lineup;
+    if (!L.fixed.length && !L.slots.length) return { min: team.score, max: team.score };
+    const worst = L.pool.reduce((m, p) => Math.max(m, p.outlook.floor), 0);
+    return { min: team.score - L.fixed.reduce((sum, p) => sum + p.floor, 0) - L.slots.length * worst, max: Infinity };
+  }
   if (!team.players.length) return { min: team.score, max: team.score };
   return { min: team.score - team.players.reduce((sum, p) => sum + p.floor, 0), max: Infinity };
 }

@@ -49,6 +49,10 @@ jobs:
         run: node scripts/restore-live-state.js
       - name: Preserve previous scoreboard for live story detection
         run: cp data/current/scoreboard.json /tmp/previous-scoreboard.json || true
+      - name: Fetch FantasyPros play chances
+        continue-on-error: true
+        run: node scripts/fetch-play-chance.js
+
       - name: Update live scoreboard
         env:
           ESPN_SEASON: "2026"
