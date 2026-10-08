@@ -1,7 +1,43 @@
 {
   "week": 5,
-  "updatedAt": "2026-10-07T22:14:27.750Z",
+  "updatedAt": "2026-10-08T14:24:55.777Z",
   "claims": [
+    {
+      "teamId": 9,
+      "won": false,
+      "status": "FAILED_INVALIDPLAYERSOURCE",
+      "processedAt": "2026-10-07T07:19:33.127Z",
+      "playerId": 14880,
+      "droppedPlayerId": 2973405,
+      "player": "Kirk Cousins",
+      "position": "QB",
+      "projection": 14.41,
+      "dropped": "Kalif Raymond"
+    },
+    {
+      "teamId": 9,
+      "won": true,
+      "status": "EXECUTED",
+      "processedAt": "2026-10-07T07:19:33.127Z",
+      "playerId": 3116164,
+      "droppedPlayerId": 4241474,
+      "player": "Mike Gesicki",
+      "position": "TE",
+      "projection": 6.61,
+      "dropped": "Brian Robinson Jr."
+    },
+    {
+      "teamId": 11,
+      "won": true,
+      "status": "EXECUTED",
+      "processedAt": "2026-10-08T07:09:42.230Z",
+      "playerId": 4832955,
+      "droppedPlayerId": 3116165,
+      "player": "Emmett Johnson",
+      "position": "RB",
+      "projection": 0,
+      "dropped": "Chris Godwin Jr."
+    },
     {
       "teamId": 7,
       "won": false,
@@ -39,18 +75,6 @@
       "dropped": "Emmett Johnson"
     },
     {
-      "teamId": 9,
-      "won": false,
-      "status": "FAILED_INVALIDPLAYERSOURCE",
-      "processedAt": "2026-10-07T07:19:33.127Z",
-      "playerId": 14880,
-      "droppedPlayerId": 2973405,
-      "player": "Kirk Cousins",
-      "position": "QB",
-      "projection": 14.41,
-      "dropped": "Kalif Raymond"
-    },
-    {
       "teamId": 11,
       "won": true,
       "status": "EXECUTED",
@@ -63,16 +87,16 @@
       "dropped": "Harrison Butker"
     },
     {
-      "teamId": 9,
+      "teamId": 7,
       "won": true,
       "status": "EXECUTED",
-      "processedAt": "2026-10-07T07:19:33.127Z",
-      "playerId": 3116164,
-      "droppedPlayerId": 4241474,
-      "player": "Mike Gesicki",
-      "position": "TE",
-      "projection": 6.61,
-      "dropped": "Brian Robinson Jr."
+      "processedAt": "2026-10-08T07:09:42.229Z",
+      "playerId": 4241474,
+      "droppedPlayerId": 2576980,
+      "player": "Brian Robinson Jr.",
+      "position": "RB",
+      "projection": 8.17,
+      "dropped": "Marcus Mariota"
     },
     {
       "teamId": 1,
