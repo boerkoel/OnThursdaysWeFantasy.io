@@ -3,7 +3,7 @@
   "leagueName": "Chop it like its Hot!",
   "draftDate": "2026-09-10T16:00:00.000Z",
   "week": 5,
-  "lastUpdated": "2026-10-09T15:15:45.586Z",
+  "lastUpdated": "2026-10-10T14:17:33.245Z",
   "simulations": 10000,
   "lineupBaseline": {
     "week": 5,
@@ -33,20 +33,20 @@
       "abbrev": "TN",
       "logo": "/OnThursdaysWeFantasy.io/guillotine-logos/team-4.svg",
       "score": -1.75,
-      "projected": 94.01,
-      "projectionSd": 25.66,
+      "projected": 93.57,
+      "projectionSd": 25.56,
       "remaining": [
         {
           "name": "Amon-Ra St. Brown",
           "game": "DET @ ARI",
           "actual": 0,
-          "projectedRest": 18.49
+          "projectedRest": 18.5
         },
         {
           "name": "Terry McLaurin",
           "game": "NYG @ WSH",
           "actual": 0,
-          "projectedRest": 12.49
+          "projectedRest": 12.05
         },
         {
           "name": "Derrick Henry",
@@ -93,7 +93,7 @@
           "proTeamId": 8,
           "slot": 4,
           "actual": 0,
-          "projection": 18.49,
+          "projection": 18.5,
           "injury": null
         },
         {
@@ -103,7 +103,7 @@
           "proTeamId": 28,
           "slot": 23,
           "actual": 0,
-          "projection": 12.49,
+          "projection": 12.05,
           "injury": "Q"
         },
         {
@@ -124,7 +124,7 @@
           "slot": 0,
           "actual": 0,
           "projection": 0,
-          "injury": "Q"
+          "injury": "O"
         },
         {
           "id": 4871023,
@@ -144,7 +144,7 @@
           "slot": 6,
           "actual": 0,
           "projection": 11.76,
-          "injury": "Q"
+          "injury": null
         },
         {
           "id": 17372,
@@ -173,7 +173,7 @@
           "proTeamId": 6,
           "slot": 16,
           "actual": -1.75,
-          "projection": 7,
+          "projection": 7.03,
           "injury": null
         }
       ],
@@ -183,31 +183,27 @@
         "atRisk": [
           {
             "name": "Terry McLaurin",
-            "chance": 0.08
+            "chance": 0.57
           },
           {
             "name": "Lamar Jackson",
-            "chance": 0.05
+            "chance": 0
           },
           {
             "name": "Carnell Tate",
-            "chance": 0.85
-          },
-          {
-            "name": "Isaiah Likely",
-            "chance": 0.9
+            "chance": 0.91
           }
         ],
-        "gain": 32.2
+        "gain": 25.7
       },
-      "chopProbability": 35.55,
+      "chopProbability": 34.4,
       "swingPlayer": {
         "name": "Amon-Ra St. Brown",
         "game": "DET @ ARI",
-        "projectedRest": 18.49,
-        "chopIfAbove": 23.62,
-        "chopIfBelow": 45.84,
-        "bigGame": 28.66,
+        "projectedRest": 18.5,
+        "chopIfAbove": 22.14,
+        "chopIfBelow": 44.85,
+        "bigGame": 28.79,
         "quietGame": 8.2
       },
       "gameSwings": [
@@ -216,10 +212,10 @@
           "players": [
             "Amon-Ra St. Brown"
           ],
-          "projectedRest": 18.49,
-          "chopIfAbove": 23.62,
-          "chopIfBelow": 45.84,
-          "bigGame": 28.66,
+          "projectedRest": 18.5,
+          "chopIfAbove": 22.14,
+          "chopIfBelow": 44.85,
+          "bigGame": 28.79,
           "quietGame": 8.2
         },
         {
@@ -229,22 +225,22 @@
             "Lamar Jackson"
           ],
           "projectedRest": 18.73,
-          "chopIfAbove": 23.72,
-          "chopIfBelow": 45.84,
-          "bigGame": 28.49,
-          "quietGame": 8.84
+          "chopIfAbove": 22.66,
+          "chopIfBelow": 45.07,
+          "bigGame": 28.36,
+          "quietGame": 8.82
         },
         {
-          "game": "NYG @ WSH",
+          "game": "HOU @ TEN",
           "players": [
-            "Terry McLaurin",
-            "Isaiah Likely"
+            "Carnell Tate",
+            "David Montgomery"
           ],
-          "projectedRest": 24.25,
-          "chopIfAbove": 16.73,
-          "chopIfBelow": 37.27,
-          "bigGame": 29.65,
-          "quietGame": 8.88
+          "projectedRest": 25.57,
+          "chopIfAbove": 21.07,
+          "chopIfBelow": 43.45,
+          "bigGame": 35.36,
+          "quietGame": 14.95
         }
       ],
       "swingGame": {
@@ -254,237 +250,15 @@
           "Lamar Jackson"
         ],
         "projectedRest": 18.73,
-        "chopIfAbove": 23.72,
-        "chopIfBelow": 45.84,
-        "bigGame": 28.49,
-        "quietGame": 8.84
+        "chopIfAbove": 22.66,
+        "chopIfBelow": 45.07,
+        "bigGame": 28.36,
+        "quietGame": 8.82
       },
       "rival": {
         "teamId": 6,
         "team": "Moose Knucklers",
-        "share": 25.54
-      },
-      "playersLeft": 8
-    },
-    {
-      "teamId": 6,
-      "team": "Moose Knucklers",
-      "abbrev": "MK",
-      "logo": "/OnThursdaysWeFantasy.io/guillotine-logos/team-6.jpg",
-      "score": 1.9,
-      "projected": 118.05,
-      "projectionSd": 28.1,
-      "remaining": [
-        {
-          "name": "Brock Bowers",
-          "game": "LV @ NE",
-          "actual": 0,
-          "projectedRest": 14.77
-        },
-        {
-          "name": "Jalen Hurts",
-          "game": "PHI VS JAX",
-          "actual": 0,
-          "projectedRest": 22.44
-        },
-        {
-          "name": "Garrett Wilson",
-          "game": "CLE @ NYJ",
-          "actual": 0,
-          "projectedRest": 13.47
-        },
-        {
-          "name": "Kyren Williams",
-          "game": "BUF @ LAR",
-          "actual": 0,
-          "projectedRest": 18.61
-        },
-        {
-          "name": "Cameron Dicker",
-          "game": "DEN @ LAC",
-          "actual": 0,
-          "projectedRest": 9.12
-        },
-        {
-          "name": "Michael Wilson",
-          "game": "DET @ ARI",
-          "actual": 0,
-          "projectedRest": 15.69
-        },
-        {
-          "name": "Braelon Allen",
-          "game": "CLE @ NYJ",
-          "actual": 0,
-          "projectedRest": 15.26
-        },
-        {
-          "name": "Jaguars D/ST",
-          "game": "PHI VS JAX",
-          "actual": 0,
-          "projectedRest": 6.79
-        }
-      ],
-      "lineup": [
-        {
-          "id": 4432665,
-          "name": "B. Bowers",
-          "pos": "TE",
-          "proTeamId": 13,
-          "slot": 6,
-          "actual": 0,
-          "projection": 14.77,
-          "injury": null
-        },
-        {
-          "id": 4040715,
-          "name": "J. Hurts",
-          "pos": "QB",
-          "proTeamId": 21,
-          "slot": 0,
-          "actual": 0,
-          "projection": 22.44,
-          "injury": null
-        },
-        {
-          "id": 4241389,
-          "name": "C. Lamb",
-          "pos": "WR",
-          "proTeamId": 6,
-          "slot": 4,
-          "actual": 1.9,
-          "projection": 17.62,
-          "injury": "Q"
-        },
-        {
-          "id": 4569618,
-          "name": "G. Wilson",
-          "pos": "WR",
-          "proTeamId": 20,
-          "slot": 23,
-          "actual": 0,
-          "projection": 13.47,
-          "injury": null
-        },
-        {
-          "id": 4430737,
-          "name": "K. Williams",
-          "pos": "RB",
-          "proTeamId": 14,
-          "slot": 2,
-          "actual": 0,
-          "projection": 18.61,
-          "injury": null
-        },
-        {
-          "id": 4362081,
-          "name": "C. Dicker",
-          "pos": "K",
-          "proTeamId": 24,
-          "slot": 17,
-          "actual": 0,
-          "projection": 9.12,
-          "injury": null
-        },
-        {
-          "id": 4360761,
-          "name": "M. Wilson",
-          "pos": "WR",
-          "proTeamId": 22,
-          "slot": 4,
-          "actual": 0,
-          "projection": 15.69,
-          "injury": null
-        },
-        {
-          "id": 4685247,
-          "name": "B. Allen",
-          "pos": "RB",
-          "proTeamId": 20,
-          "slot": 2,
-          "actual": 0,
-          "projection": 15.26,
-          "injury": null
-        },
-        {
-          "id": -16030,
-          "name": "Jaguars D/ST",
-          "pos": "D/ST",
-          "proTeamId": 30,
-          "slot": 16,
-          "actual": 0,
-          "projection": 6.79,
-          "injury": null
-        }
-      ],
-      "lineupOutlook": {
-        "set": true,
-        "openSlots": 8,
-        "atRisk": [],
-        "gain": 0
-      },
-      "chopProbability": 18.01,
-      "swingPlayer": {
-        "name": "Kyren Williams",
-        "game": "BUF @ LAR",
-        "projectedRest": 18.61,
-        "chopIfAbove": 9.21,
-        "chopIfBelow": 25.62,
-        "bigGame": 28.44,
-        "quietGame": 8.64
-      },
-      "gameSwings": [
-        {
-          "game": "PHI VS JAX",
-          "players": [
-            "Jalen Hurts",
-            "Jaguars D/ST"
-          ],
-          "projectedRest": 29.23,
-          "chopIfAbove": 8.77,
-          "chopIfBelow": 25.85,
-          "bigGame": 39.54,
-          "quietGame": 17.89
-        },
-        {
-          "game": "BUF @ LAR",
-          "players": [
-            "Kyren Williams"
-          ],
-          "projectedRest": 18.61,
-          "chopIfAbove": 9.21,
-          "chopIfBelow": 25.62,
-          "bigGame": 28.44,
-          "quietGame": 8.64
-        },
-        {
-          "game": "CLE @ NYJ",
-          "players": [
-            "Garrett Wilson",
-            "Braelon Allen"
-          ],
-          "projectedRest": 28.73,
-          "chopIfAbove": 9.17,
-          "chopIfBelow": 25.39,
-          "bigGame": 39.6,
-          "quietGame": 18.02
-        }
-      ],
-      "swingGame": {
-        "game": "PHI VS JAX",
-        "players": [
-          "Jalen Hurts",
-          "Jaguars D/ST"
-        ],
-        "projectedRest": 29.23,
-        "chopIfAbove": 8.77,
-        "chopIfBelow": 25.85,
-        "bigGame": 39.54,
-        "quietGame": 17.89
-      },
-      "rival": {
-        "teamId": 4,
-        "team": "Team Name",
-        "share": 34.94
+        "share": 28.58
       },
       "playersLeft": 8
     },
@@ -494,26 +268,26 @@
       "abbrev": "JST",
       "logo": "/OnThursdaysWeFantasy.io/guillotine-logos/team-10.svg",
       "score": 0,
-      "projected": 127.91,
+      "projected": 127.94,
       "projectionSd": 33.27,
       "remaining": [
         {
           "name": "Jahmyr Gibbs",
           "game": "DET @ ARI",
           "actual": 0,
-          "projectedRest": 28.46
+          "projectedRest": 28.47
         },
         {
           "name": "Justin Jefferson",
           "game": "MIN @ NO",
           "actual": 0,
-          "projectedRest": 17.11
+          "projectedRest": 17.13
         },
         {
           "name": "Ashton Jeanty",
           "game": "LV @ NE",
           "actual": 0,
-          "projectedRest": 18.41
+          "projectedRest": 18.43
         },
         {
           "name": "George Kittle",
@@ -554,7 +328,7 @@
           "proTeamId": 8,
           "slot": 2,
           "actual": 0,
-          "projection": 28.46,
+          "projection": 28.47,
           "injury": null
         },
         {
@@ -564,7 +338,7 @@
           "proTeamId": 16,
           "slot": 4,
           "actual": 0,
-          "projection": 17.11,
+          "projection": 17.13,
           "injury": "Q"
         },
         {
@@ -574,7 +348,7 @@
           "proTeamId": 13,
           "slot": 2,
           "actual": 0,
-          "projection": 18.41,
+          "projection": 18.43,
           "injury": "Q"
         },
         {
@@ -644,11 +418,11 @@
         "atRisk": [
           {
             "name": "Justin Jefferson",
-            "chance": 0.58
+            "chance": 0.67
           },
           {
             "name": "Ashton Jeanty",
-            "chance": 0.81
+            "chance": 0.62
           },
           {
             "name": "Bryce Young",
@@ -656,17 +430,17 @@
             "bye": true
           }
         ],
-        "gain": 27.4
+        "gain": 25.7
       },
-      "chopProbability": 14.77,
+      "chopProbability": 20.18,
       "swingPlayer": {
         "name": "Jahmyr Gibbs",
         "game": "DET @ ARI",
-        "projectedRest": 28.46,
-        "chopIfAbove": 5.81,
-        "chopIfBelow": 22.68,
-        "bigGame": 43.1,
-        "quietGame": 13.42
+        "projectedRest": 28.47,
+        "chopIfAbove": 8.17,
+        "chopIfBelow": 30.55,
+        "bigGame": 43.09,
+        "quietGame": 13.63
       },
       "gameSwings": [
         {
@@ -674,11 +448,11 @@
           "players": [
             "Jahmyr Gibbs"
           ],
-          "projectedRest": 28.46,
-          "chopIfAbove": 5.81,
-          "chopIfBelow": 22.68,
-          "bigGame": 43.1,
-          "quietGame": 13.42
+          "projectedRest": 28.47,
+          "chopIfAbove": 8.17,
+          "chopIfBelow": 30.55,
+          "bigGame": 43.09,
+          "quietGame": 13.63
         },
         {
           "game": "BUF @ LAR",
@@ -686,41 +460,499 @@
             "Puka Nacua"
           ],
           "projectedRest": 20.53,
-          "chopIfAbove": 7.63,
-          "chopIfBelow": 21.2,
-          "bigGame": 31.87,
-          "quietGame": 9.02
+          "chopIfAbove": 11.44,
+          "chopIfBelow": 27.87,
+          "bigGame": 32.02,
+          "quietGame": 9.36
         },
         {
-          "game": "LV @ NE",
+          "game": "MIN @ NO",
           "players": [
-            "Ashton Jeanty"
+            "Justin Jefferson"
           ],
-          "projectedRest": 18.41,
-          "chopIfAbove": 6.36,
-          "chopIfBelow": 19.46,
-          "bigGame": 28.22,
-          "quietGame": 5.53
+          "projectedRest": 17.13,
+          "chopIfAbove": 9.28,
+          "chopIfBelow": 24.39,
+          "bigGame": 27.24,
+          "quietGame": 3.47
         }
       ],
       "swingGame": {
-        "game": "SF @ SEA",
+        "game": "IND @ PIT",
         "players": [
-          "George Kittle",
-          "Eddy Pineiro"
+          "Steelers D/ST",
+          "Jaylen Warren"
         ],
-        "projectedRest": 21.45,
-        "chopIfAbove": 8.18,
-        "chopIfBelow": 20.41,
-        "bigGame": 30.41,
-        "quietGame": 12.58
+        "projectedRest": 21.95,
+        "chopIfAbove": 12.56,
+        "chopIfBelow": 26.85,
+        "bigGame": 31.22,
+        "quietGame": 12.3
       },
       "rival": {
         "teamId": 4,
         "team": "Team Name",
-        "share": 36.79
+        "share": 39.27
       },
       "playersLeft": 8
+    },
+    {
+      "teamId": 6,
+      "team": "Moose Knucklers",
+      "abbrev": "MK",
+      "logo": "/OnThursdaysWeFantasy.io/guillotine-logos/team-6.jpg",
+      "score": 1.9,
+      "projected": 118.16,
+      "projectionSd": 28.13,
+      "remaining": [
+        {
+          "name": "Brock Bowers",
+          "game": "LV @ NE",
+          "actual": 0,
+          "projectedRest": 14.83
+        },
+        {
+          "name": "Jalen Hurts",
+          "game": "PHI VS JAX",
+          "actual": 0,
+          "projectedRest": 22.47
+        },
+        {
+          "name": "Garrett Wilson",
+          "game": "CLE @ NYJ",
+          "actual": 0,
+          "projectedRest": 13.49
+        },
+        {
+          "name": "Kyren Williams",
+          "game": "BUF @ LAR",
+          "actual": 0,
+          "projectedRest": 18.61
+        },
+        {
+          "name": "Cameron Dicker",
+          "game": "DEN @ LAC",
+          "actual": 0,
+          "projectedRest": 9.12
+        },
+        {
+          "name": "Michael Wilson",
+          "game": "DET @ ARI",
+          "actual": 0,
+          "projectedRest": 15.69
+        },
+        {
+          "name": "Braelon Allen",
+          "game": "CLE @ NYJ",
+          "actual": 0,
+          "projectedRest": 15.27
+        },
+        {
+          "name": "Jaguars D/ST",
+          "game": "PHI VS JAX",
+          "actual": 0,
+          "projectedRest": 6.79
+        }
+      ],
+      "lineup": [
+        {
+          "id": 4432665,
+          "name": "B. Bowers",
+          "pos": "TE",
+          "proTeamId": 13,
+          "slot": 6,
+          "actual": 0,
+          "projection": 14.83,
+          "injury": null
+        },
+        {
+          "id": 4040715,
+          "name": "J. Hurts",
+          "pos": "QB",
+          "proTeamId": 21,
+          "slot": 0,
+          "actual": 0,
+          "projection": 22.47,
+          "injury": null
+        },
+        {
+          "id": 4241389,
+          "name": "C. Lamb",
+          "pos": "WR",
+          "proTeamId": 6,
+          "slot": 4,
+          "actual": 1.9,
+          "projection": 17.62,
+          "injury": "Q"
+        },
+        {
+          "id": 4569618,
+          "name": "G. Wilson",
+          "pos": "WR",
+          "proTeamId": 20,
+          "slot": 23,
+          "actual": 0,
+          "projection": 13.49,
+          "injury": null
+        },
+        {
+          "id": 4430737,
+          "name": "K. Williams",
+          "pos": "RB",
+          "proTeamId": 14,
+          "slot": 2,
+          "actual": 0,
+          "projection": 18.61,
+          "injury": null
+        },
+        {
+          "id": 4362081,
+          "name": "C. Dicker",
+          "pos": "K",
+          "proTeamId": 24,
+          "slot": 17,
+          "actual": 0,
+          "projection": 9.12,
+          "injury": null
+        },
+        {
+          "id": 4360761,
+          "name": "M. Wilson",
+          "pos": "WR",
+          "proTeamId": 22,
+          "slot": 4,
+          "actual": 0,
+          "projection": 15.69,
+          "injury": null
+        },
+        {
+          "id": 4685247,
+          "name": "B. Allen",
+          "pos": "RB",
+          "proTeamId": 20,
+          "slot": 2,
+          "actual": 0,
+          "projection": 15.27,
+          "injury": null
+        },
+        {
+          "id": -16030,
+          "name": "Jaguars D/ST",
+          "pos": "D/ST",
+          "proTeamId": 30,
+          "slot": 16,
+          "actual": 0,
+          "projection": 6.79,
+          "injury": null
+        }
+      ],
+      "lineupOutlook": {
+        "set": true,
+        "openSlots": 8,
+        "atRisk": [],
+        "gain": 0
+      },
+      "chopProbability": 18.29,
+      "swingPlayer": {
+        "name": "Jalen Hurts",
+        "game": "PHI VS JAX",
+        "projectedRest": 22.47,
+        "chopIfAbove": 9.92,
+        "chopIfBelow": 25.56,
+        "bigGame": 31.58,
+        "quietGame": 12.27
+      },
+      "gameSwings": [
+        {
+          "game": "CLE @ NYJ",
+          "players": [
+            "Garrett Wilson",
+            "Braelon Allen"
+          ],
+          "projectedRest": 28.75,
+          "chopIfAbove": 8.68,
+          "chopIfBelow": 26.41,
+          "bigGame": 39.4,
+          "quietGame": 17.72
+        },
+        {
+          "game": "PHI VS JAX",
+          "players": [
+            "Jalen Hurts",
+            "Jaguars D/ST"
+          ],
+          "projectedRest": 29.26,
+          "chopIfAbove": 8.83,
+          "chopIfBelow": 26.22,
+          "bigGame": 39.46,
+          "quietGame": 17.8
+        },
+        {
+          "game": "BUF @ LAR",
+          "players": [
+            "Kyren Williams"
+          ],
+          "projectedRest": 18.61,
+          "chopIfAbove": 10.4,
+          "chopIfBelow": 25.39,
+          "bigGame": 28.21,
+          "quietGame": 8.61
+        }
+      ],
+      "swingGame": {
+        "game": "CLE @ NYJ",
+        "players": [
+          "Garrett Wilson",
+          "Braelon Allen"
+        ],
+        "projectedRest": 28.75,
+        "chopIfAbove": 8.68,
+        "chopIfBelow": 26.41,
+        "bigGame": 39.4,
+        "quietGame": 17.72
+      },
+      "rival": {
+        "teamId": 4,
+        "team": "Team Name",
+        "share": 37.09
+      },
+      "playersLeft": 8
+    },
+    {
+      "teamId": 9,
+      "team": "Mel's Mediocre Mob",
+      "abbrev": "MMM",
+      "logo": "/OnThursdaysWeFantasy.io/guillotine-logos/team-9.svg",
+      "score": 0,
+      "projected": 134.06,
+      "projectionSd": 30.76,
+      "remaining": [
+        {
+          "name": "Ja'Marr Chase",
+          "game": "CIN @ MIA",
+          "actual": 0,
+          "projectedRest": 20.15
+        },
+        {
+          "name": "Jonathan Taylor",
+          "game": "IND @ PIT",
+          "actual": 0,
+          "projectedRest": 20.63
+        },
+        {
+          "name": "Tony Pollard",
+          "game": "HOU @ TEN",
+          "actual": 0,
+          "projectedRest": 14.16
+        },
+        {
+          "name": "Colston Loveland",
+          "game": "CHI @ GB",
+          "actual": 0,
+          "projectedRest": 8.86
+        },
+        {
+          "name": "Rhamondre Stevenson",
+          "game": "LV @ NE",
+          "actual": 0,
+          "projectedRest": 13.93
+        },
+        {
+          "name": "Jared Goff",
+          "game": "DET @ ARI",
+          "actual": 0,
+          "projectedRest": 26.4
+        },
+        {
+          "name": "Parker Washington",
+          "game": "PHI VS JAX",
+          "actual": 0,
+          "projectedRest": 13.5
+        },
+        {
+          "name": "Jake Bates",
+          "game": "DET @ ARI",
+          "actual": 0,
+          "projectedRest": 9.36
+        },
+        {
+          "name": "Vikings D/ST",
+          "game": "MIN @ NO",
+          "actual": 0,
+          "projectedRest": 7.06
+        }
+      ],
+      "lineup": [
+        {
+          "id": 4362628,
+          "name": "J. Chase",
+          "pos": "WR",
+          "proTeamId": 4,
+          "slot": 4,
+          "actual": 0,
+          "projection": 20.15,
+          "injury": "Q"
+        },
+        {
+          "id": 4242335,
+          "name": "J. Taylor",
+          "pos": "RB",
+          "proTeamId": 11,
+          "slot": 2,
+          "actual": 0,
+          "projection": 20.63,
+          "injury": null
+        },
+        {
+          "id": 3916148,
+          "name": "T. Pollard",
+          "pos": "RB",
+          "proTeamId": 10,
+          "slot": 2,
+          "actual": 0,
+          "projection": 14.16,
+          "injury": null
+        },
+        {
+          "id": 4723086,
+          "name": "C. Loveland",
+          "pos": "TE",
+          "proTeamId": 3,
+          "slot": 6,
+          "actual": 0,
+          "projection": 8.86,
+          "injury": null
+        },
+        {
+          "id": 4569173,
+          "name": "R. Stevenson",
+          "pos": "RB",
+          "proTeamId": 17,
+          "slot": 23,
+          "actual": 0,
+          "projection": 13.93,
+          "injury": "Q"
+        },
+        {
+          "id": 3046779,
+          "name": "J. Goff",
+          "pos": "QB",
+          "proTeamId": 8,
+          "slot": 0,
+          "actual": 0,
+          "projection": 26.4,
+          "injury": null
+        },
+        {
+          "id": 4432620,
+          "name": "P. Washington",
+          "pos": "WR",
+          "proTeamId": 30,
+          "slot": 4,
+          "actual": 0,
+          "projection": 13.5,
+          "injury": null
+        },
+        {
+          "id": 4689936,
+          "name": "J. Bates",
+          "pos": "K",
+          "proTeamId": 8,
+          "slot": 17,
+          "actual": 0,
+          "projection": 9.36,
+          "injury": null
+        },
+        {
+          "id": -16016,
+          "name": "Vikings D/ST",
+          "pos": "D/ST",
+          "proTeamId": 16,
+          "slot": 16,
+          "actual": 0,
+          "projection": 7.06,
+          "injury": null
+        }
+      ],
+      "lineupOutlook": {
+        "set": false,
+        "openSlots": 9,
+        "atRisk": [
+          {
+            "name": "Ja'Marr Chase",
+            "chance": 0.83
+          },
+          {
+            "name": "Rhamondre Stevenson",
+            "chance": 0.93
+          }
+        ],
+        "gain": 0.1
+      },
+      "chopProbability": 11.61,
+      "swingPlayer": {
+        "name": "Jared Goff",
+        "game": "DET @ ARI",
+        "projectedRest": 26.4,
+        "chopIfAbove": 5.26,
+        "chopIfBelow": 17.26,
+        "bigGame": 36.84,
+        "quietGame": 14.55
+      },
+      "gameSwings": [
+        {
+          "game": "DET @ ARI",
+          "players": [
+            "Jared Goff",
+            "Jake Bates"
+          ],
+          "projectedRest": 35.77,
+          "chopIfAbove": 4.74,
+          "chopIfBelow": 17.7,
+          "bigGame": 47.19,
+          "quietGame": 22.47
+        },
+        {
+          "game": "IND @ PIT",
+          "players": [
+            "Jonathan Taylor"
+          ],
+          "projectedRest": 20.63,
+          "chopIfAbove": 5.47,
+          "chopIfBelow": 16.95,
+          "bigGame": 31.21,
+          "quietGame": 9.86
+        },
+        {
+          "game": "CIN @ MIA",
+          "players": [
+            "Ja'Marr Chase"
+          ],
+          "projectedRest": 20.15,
+          "chopIfAbove": 4.54,
+          "chopIfBelow": 15.6,
+          "bigGame": 32,
+          "quietGame": 6
+        }
+      ],
+      "swingGame": {
+        "game": "DET @ ARI",
+        "players": [
+          "Jared Goff",
+          "Jake Bates"
+        ],
+        "projectedRest": 35.77,
+        "chopIfAbove": 4.74,
+        "chopIfBelow": 17.7,
+        "bigGame": 47.19,
+        "quietGame": 22.47
+      },
+      "rival": {
+        "teamId": 4,
+        "team": "Team Name",
+        "share": 34.74
+      },
+      "playersLeft": 9
     },
     {
       "teamId": 8,
@@ -728,8 +960,8 @@
       "abbrev": "TAY",
       "logo": "/OnThursdaysWeFantasy.io/guillotine-logos/team-8.jpg",
       "score": 15.2,
-      "projected": 124.27,
-      "projectionSd": 28.28,
+      "projected": 135.63,
+      "projectionSd": 29.26,
       "remaining": [
         {
           "name": "Seahawks D/ST",
@@ -741,7 +973,7 @@
           "name": "Aaron Jones Sr.",
           "game": "MIN @ NO",
           "actual": 0,
-          "projectedRest": 19.26
+          "projectedRest": 18.68
         },
         {
           "name": "Jason Myers",
@@ -753,13 +985,13 @@
           "name": "Drake London",
           "game": "BAL @ ATL",
           "actual": 0,
-          "projectedRest": 15.08
+          "projectedRest": 15.13
         },
         {
           "name": "Tee Higgins",
           "game": "CIN @ MIA",
           "actual": 0,
-          "projectedRest": 0
+          "projectedRest": 11.93
         },
         {
           "name": "Trey McBride",
@@ -771,13 +1003,13 @@
           "name": "Josh Allen",
           "game": "BUF @ LAR",
           "actual": 0,
-          "projectedRest": 26.57
+          "projectedRest": 26.55
         },
         {
           "name": "James Cook III",
           "game": "BUF @ LAR",
           "actual": 0,
-          "projectedRest": 17.29
+          "projectedRest": 17.28
         }
       ],
       "lineup": [
@@ -808,7 +1040,7 @@
           "proTeamId": 16,
           "slot": 23,
           "actual": 0,
-          "projection": 19.26,
+          "projection": 18.68,
           "injury": null
         },
         {
@@ -828,7 +1060,7 @@
           "proTeamId": 1,
           "slot": 4,
           "actual": 0,
-          "projection": 15.08,
+          "projection": 15.13,
           "injury": null
         },
         {
@@ -838,7 +1070,7 @@
           "proTeamId": 4,
           "slot": 4,
           "actual": 0,
-          "projection": 0,
+          "projection": 11.93,
           "injury": "Q"
         },
         {
@@ -858,7 +1090,7 @@
           "proTeamId": 2,
           "slot": 0,
           "actual": 0,
-          "projection": 26.57,
+          "projection": 26.55,
           "injury": null
         },
         {
@@ -868,30 +1100,25 @@
           "proTeamId": 2,
           "slot": 2,
           "actual": 0,
-          "projection": 17.29,
+          "projection": 17.28,
           "injury": null
         }
       ],
       "lineupOutlook": {
         "set": false,
         "openSlots": 8,
-        "atRisk": [
-          {
-            "name": "Tee Higgins",
-            "chance": 0.54
-          }
-        ],
+        "atRisk": [],
         "gain": 0
       },
-      "chopProbability": 12.11,
+      "chopProbability": 7.35,
       "swingPlayer": {
         "name": "Josh Allen",
         "game": "BUF @ LAR",
-        "projectedRest": 26.57,
-        "chopIfAbove": 4.65,
-        "chopIfBelow": 18.62,
-        "bigGame": 37.16,
-        "quietGame": 14.59
+        "projectedRest": 26.55,
+        "chopIfAbove": 2.66,
+        "chopIfBelow": 11.42,
+        "bigGame": 37.26,
+        "quietGame": 14.66
       },
       "gameSwings": [
         {
@@ -900,11 +1127,11 @@
             "Josh Allen",
             "James Cook III"
           ],
-          "projectedRest": 43.86,
-          "chopIfAbove": 3.03,
-          "chopIfBelow": 19.68,
-          "bigGame": 57.63,
-          "quietGame": 28.73
+          "projectedRest": 43.83,
+          "chopIfAbove": 1.48,
+          "chopIfBelow": 12.06,
+          "bigGame": 57.58,
+          "quietGame": 28.98
         },
         {
           "game": "DET @ ARI",
@@ -912,21 +1139,21 @@
             "Trey McBride"
           ],
           "projectedRest": 16.81,
-          "chopIfAbove": 5.96,
-          "chopIfBelow": 17.81,
-          "bigGame": 26.87,
-          "quietGame": 7.04
+          "chopIfAbove": 3.19,
+          "chopIfBelow": 11.12,
+          "bigGame": 26.75,
+          "quietGame": 7.06
         },
         {
           "game": "MIN @ NO",
           "players": [
             "Aaron Jones Sr."
           ],
-          "projectedRest": 19.26,
-          "chopIfAbove": 5.9,
-          "chopIfBelow": 17.55,
-          "bigGame": 29.3,
-          "quietGame": 8.94
+          "projectedRest": 18.68,
+          "chopIfAbove": 3.25,
+          "chopIfBelow": 11.06,
+          "bigGame": 28.45,
+          "quietGame": 8.64
         }
       ],
       "swingGame": {
@@ -935,254 +1162,18 @@
           "Josh Allen",
           "James Cook III"
         ],
-        "projectedRest": 43.86,
-        "chopIfAbove": 3.03,
-        "chopIfBelow": 19.68,
-        "bigGame": 57.63,
-        "quietGame": 28.73
+        "projectedRest": 43.83,
+        "chopIfAbove": 1.48,
+        "chopIfBelow": 12.06,
+        "bigGame": 57.58,
+        "quietGame": 28.98
       },
       "rival": {
         "teamId": 4,
         "team": "Team Name",
-        "share": 33.31
+        "share": 29.56
       },
       "playersLeft": 8
-    },
-    {
-      "teamId": 9,
-      "team": "Mel's Mediocre Mob",
-      "abbrev": "MMM",
-      "logo": "/OnThursdaysWeFantasy.io/guillotine-logos/team-9.svg",
-      "score": 0,
-      "projected": 134.08,
-      "projectionSd": 30.77,
-      "remaining": [
-        {
-          "name": "Ja'Marr Chase",
-          "game": "CIN @ MIA",
-          "actual": 0,
-          "projectedRest": 20.22
-        },
-        {
-          "name": "Jonathan Taylor",
-          "game": "IND @ PIT",
-          "actual": 0,
-          "projectedRest": 20.63
-        },
-        {
-          "name": "Tony Pollard",
-          "game": "HOU @ TEN",
-          "actual": 0,
-          "projectedRest": 14.16
-        },
-        {
-          "name": "Colston Loveland",
-          "game": "CHI @ GB",
-          "actual": 0,
-          "projectedRest": 8.83
-        },
-        {
-          "name": "Rhamondre Stevenson",
-          "game": "LV @ NE",
-          "actual": 0,
-          "projectedRest": 13.94
-        },
-        {
-          "name": "Jared Goff",
-          "game": "DET @ ARI",
-          "actual": 0,
-          "projectedRest": 26.38
-        },
-        {
-          "name": "Parker Washington",
-          "game": "PHI VS JAX",
-          "actual": 0,
-          "projectedRest": 13.49
-        },
-        {
-          "name": "Jake Bates",
-          "game": "DET @ ARI",
-          "actual": 0,
-          "projectedRest": 9.36
-        },
-        {
-          "name": "Vikings D/ST",
-          "game": "MIN @ NO",
-          "actual": 0,
-          "projectedRest": 7.06
-        }
-      ],
-      "lineup": [
-        {
-          "id": 4362628,
-          "name": "J. Chase",
-          "pos": "WR",
-          "proTeamId": 4,
-          "slot": 4,
-          "actual": 0,
-          "projection": 20.22,
-          "injury": "Q"
-        },
-        {
-          "id": 4242335,
-          "name": "J. Taylor",
-          "pos": "RB",
-          "proTeamId": 11,
-          "slot": 2,
-          "actual": 0,
-          "projection": 20.63,
-          "injury": null
-        },
-        {
-          "id": 3916148,
-          "name": "T. Pollard",
-          "pos": "RB",
-          "proTeamId": 10,
-          "slot": 2,
-          "actual": 0,
-          "projection": 14.16,
-          "injury": null
-        },
-        {
-          "id": 4723086,
-          "name": "C. Loveland",
-          "pos": "TE",
-          "proTeamId": 3,
-          "slot": 6,
-          "actual": 0,
-          "projection": 8.83,
-          "injury": null
-        },
-        {
-          "id": 4569173,
-          "name": "R. Stevenson",
-          "pos": "RB",
-          "proTeamId": 17,
-          "slot": 23,
-          "actual": 0,
-          "projection": 13.94,
-          "injury": "Q"
-        },
-        {
-          "id": 3046779,
-          "name": "J. Goff",
-          "pos": "QB",
-          "proTeamId": 8,
-          "slot": 0,
-          "actual": 0,
-          "projection": 26.38,
-          "injury": null
-        },
-        {
-          "id": 4432620,
-          "name": "P. Washington",
-          "pos": "WR",
-          "proTeamId": 30,
-          "slot": 4,
-          "actual": 0,
-          "projection": 13.49,
-          "injury": null
-        },
-        {
-          "id": 4689936,
-          "name": "J. Bates",
-          "pos": "K",
-          "proTeamId": 8,
-          "slot": 17,
-          "actual": 0,
-          "projection": 9.36,
-          "injury": null
-        },
-        {
-          "id": -16016,
-          "name": "Vikings D/ST",
-          "pos": "D/ST",
-          "proTeamId": 16,
-          "slot": 16,
-          "actual": 0,
-          "projection": 7.06,
-          "injury": null
-        }
-      ],
-      "lineupOutlook": {
-        "set": false,
-        "openSlots": 9,
-        "atRisk": [
-          {
-            "name": "Ja'Marr Chase",
-            "chance": 0.8
-          },
-          {
-            "name": "Rhamondre Stevenson",
-            "chance": 0.93
-          }
-        ],
-        "gain": 0.1
-      },
-      "chopProbability": 10.77,
-      "swingPlayer": {
-        "name": "Jared Goff",
-        "game": "DET @ ARI",
-        "projectedRest": 26.38,
-        "chopIfAbove": 4.34,
-        "chopIfBelow": 16.47,
-        "bigGame": 36.66,
-        "quietGame": 14.7
-      },
-      "gameSwings": [
-        {
-          "game": "DET @ ARI",
-          "players": [
-            "Jared Goff",
-            "Jake Bates"
-          ],
-          "projectedRest": 35.74,
-          "chopIfAbove": 3.72,
-          "chopIfBelow": 16.68,
-          "bigGame": 47.12,
-          "quietGame": 22.79
-        },
-        {
-          "game": "IND @ PIT",
-          "players": [
-            "Jonathan Taylor"
-          ],
-          "projectedRest": 20.63,
-          "chopIfAbove": 5.21,
-          "chopIfBelow": 15.68,
-          "bigGame": 31.32,
-          "quietGame": 9.84
-        },
-        {
-          "game": "CIN @ MIA",
-          "players": [
-            "Ja'Marr Chase"
-          ],
-          "projectedRest": 20.22,
-          "chopIfAbove": 4.13,
-          "chopIfBelow": 14.27,
-          "bigGame": 31.97,
-          "quietGame": 5.58
-        }
-      ],
-      "swingGame": {
-        "game": "DET @ ARI",
-        "players": [
-          "Jared Goff",
-          "Jake Bates"
-        ],
-        "projectedRest": 35.74,
-        "chopIfAbove": 3.72,
-        "chopIfBelow": 16.68,
-        "bigGame": 47.12,
-        "quietGame": 22.79
-      },
-      "rival": {
-        "teamId": 4,
-        "team": "Team Name",
-        "share": 34.39
-      },
-      "playersLeft": 9
     },
     {
       "teamId": 7,
@@ -1190,32 +1181,32 @@
       "abbrev": "UUT",
       "logo": "/OnThursdaysWeFantasy.io/guillotine-logos/team-7.svg",
       "score": 0,
-      "projected": 141.61,
-      "projectionSd": 32.54,
+      "projected": 145.02,
+      "projectionSd": 33.28,
       "remaining": [
         {
           "name": "Jaxon Smith-Njigba",
           "game": "SF @ SEA",
           "actual": 0,
-          "projectedRest": 18.98
+          "projectedRest": 18.99
         },
         {
           "name": "Bijan Robinson",
           "game": "BAL @ ATL",
           "actual": 0,
-          "projectedRest": 23.96
+          "projectedRest": 23.98
         },
         {
           "name": "Jaylen Waddle",
           "game": "DEN @ LAC",
           "actual": 0,
-          "projectedRest": 10.48
+          "projectedRest": 10.51
         },
         {
           "name": "D'Andre Swift",
           "game": "CHI @ GB",
           "actual": 0,
-          "projectedRest": 15.3
+          "projectedRest": 18.64
         },
         {
           "name": "Sam LaPorta",
@@ -1227,7 +1218,7 @@
           "name": "Broncos D/ST",
           "game": "DEN @ LAC",
           "actual": 0,
-          "projectedRest": 6.06
+          "projectedRest": 6.1
         },
         {
           "name": "Ka'imi Fairbairn",
@@ -1239,7 +1230,7 @@
           "name": "Chase Brown",
           "game": "CIN @ MIA",
           "actual": 0,
-          "projectedRest": 18.1
+          "projectedRest": 18.06
         },
         {
           "name": "Joe Burrow",
@@ -1256,7 +1247,7 @@
           "proTeamId": 26,
           "slot": 4,
           "actual": 0,
-          "projection": 18.98,
+          "projection": 18.99,
           "injury": null
         },
         {
@@ -1266,7 +1257,7 @@
           "proTeamId": 1,
           "slot": 2,
           "actual": 0,
-          "projection": 23.96,
+          "projection": 23.98,
           "injury": null
         },
         {
@@ -1276,7 +1267,7 @@
           "proTeamId": 7,
           "slot": 4,
           "actual": 0,
-          "projection": 10.48,
+          "projection": 10.51,
           "injury": null
         },
         {
@@ -1286,8 +1277,8 @@
           "proTeamId": 3,
           "slot": 23,
           "actual": 0,
-          "projection": 15.3,
-          "injury": "Q"
+          "projection": 18.64,
+          "injury": null
         },
         {
           "id": 4430027,
@@ -1306,7 +1297,7 @@
           "proTeamId": 7,
           "slot": 16,
           "actual": 0,
-          "projection": 6.06,
+          "projection": 6.1,
           "injury": null
         },
         {
@@ -1326,7 +1317,7 @@
           "proTeamId": 4,
           "slot": 2,
           "actual": 0,
-          "projection": 18.1,
+          "projection": 18.06,
           "injury": null
         },
         {
@@ -1346,15 +1337,15 @@
         "atRisk": [],
         "gain": 0
       },
-      "chopProbability": 6.13,
+      "chopProbability": 5.7,
       "swingPlayer": {
         "name": "Bijan Robinson",
         "game": "BAL @ ATL",
-        "projectedRest": 23.96,
-        "chopIfAbove": 1.9,
-        "chopIfBelow": 9.9,
-        "bigGame": 36.52,
-        "quietGame": 11.32
+        "projectedRest": 23.98,
+        "chopIfAbove": 1.61,
+        "chopIfBelow": 9.43,
+        "bigGame": 36.63,
+        "quietGame": 11.29
       },
       "gameSwings": [
         {
@@ -1363,33 +1354,33 @@
             "Chase Brown",
             "Joe Burrow"
           ],
-          "projectedRest": 45.54,
-          "chopIfAbove": 1.11,
-          "chopIfBelow": 10.23,
-          "bigGame": 59.63,
-          "quietGame": 29.77
+          "projectedRest": 45.5,
+          "chopIfAbove": 1.16,
+          "chopIfBelow": 9.49,
+          "bigGame": 59.69,
+          "quietGame": 29.99
         },
         {
           "game": "BAL @ ATL",
           "players": [
             "Bijan Robinson"
           ],
-          "projectedRest": 23.96,
-          "chopIfAbove": 1.9,
-          "chopIfBelow": 9.9,
-          "bigGame": 36.52,
-          "quietGame": 11.32
+          "projectedRest": 23.98,
+          "chopIfAbove": 1.61,
+          "chopIfBelow": 9.43,
+          "bigGame": 36.63,
+          "quietGame": 11.29
         },
         {
           "game": "SF @ SEA",
           "players": [
             "Jaxon Smith-Njigba"
           ],
-          "projectedRest": 18.98,
-          "chopIfAbove": 3.02,
-          "chopIfBelow": 8.91,
-          "bigGame": 29.51,
-          "quietGame": 8.38
+          "projectedRest": 18.99,
+          "chopIfAbove": 2.58,
+          "chopIfBelow": 8.44,
+          "bigGame": 29.7,
+          "quietGame": 8.48
         }
       ],
       "swingGame": {
@@ -1398,16 +1389,16 @@
           "Chase Brown",
           "Joe Burrow"
         ],
-        "projectedRest": 45.54,
-        "chopIfAbove": 1.11,
-        "chopIfBelow": 10.23,
-        "bigGame": 59.63,
-        "quietGame": 29.77
+        "projectedRest": 45.5,
+        "chopIfAbove": 1.16,
+        "chopIfBelow": 9.49,
+        "bigGame": 59.69,
+        "quietGame": 29.99
       },
       "rival": {
         "teamId": 4,
         "team": "Team Name",
-        "share": 31.37
+        "share": 31.63
       },
       "playersLeft": 9
     },
@@ -1417,7 +1408,7 @@
       "abbrev": "PUR",
       "logo": "/OnThursdaysWeFantasy.io/guillotine-logos/team-5.svg",
       "score": 39,
-      "projected": 146.13,
+      "projected": 146.12,
       "projectionSd": 27.3,
       "remaining": [
         {
@@ -1436,7 +1427,7 @@
           "name": "Quinshon Judkins",
           "game": "CLE @ NYJ",
           "actual": 0,
-          "projectedRest": 15.44
+          "projectedRest": 15.45
         },
         {
           "name": "Texans D/ST",
@@ -1454,7 +1445,7 @@
           "name": "Chris Olave",
           "game": "MIN @ NO",
           "actual": 0,
-          "projectedRest": 15.31
+          "projectedRest": 15.3
         },
         {
           "name": "Tyler Warren",
@@ -1491,7 +1482,7 @@
           "proTeamId": 5,
           "slot": 2,
           "actual": 0,
-          "projection": 15.44,
+          "projection": 15.45,
           "injury": null
         },
         {
@@ -1521,8 +1512,8 @@
           "proTeamId": 18,
           "slot": 4,
           "actual": 0,
-          "projection": 15.31,
-          "injury": "Q"
+          "projection": 15.3,
+          "injury": null
         },
         {
           "id": 4596448,
@@ -1531,7 +1522,7 @@
           "proTeamId": 27,
           "slot": 2,
           "actual": 34,
-          "projection": 16.55,
+          "projection": 16.54,
           "injury": null
         },
         {
@@ -1558,23 +1549,18 @@
       "lineupOutlook": {
         "set": true,
         "openSlots": 7,
-        "atRisk": [
-          {
-            "name": "Chris Olave",
-            "chance": 0.6
-          }
-        ],
-        "gain": 5.7
+        "atRisk": [],
+        "gain": 0
       },
-      "chopProbability": 2.72,
+      "chopProbability": 2.53,
       "swingPlayer": {
         "name": "Brock Purdy",
         "game": "SF @ SEA",
         "projectedRest": 24.63,
         "chopIfAbove": 0.58,
-        "chopIfBelow": 4.58,
-        "bigGame": 34.51,
-        "quietGame": 13.66
+        "chopIfBelow": 4.22,
+        "bigGame": 34.35,
+        "quietGame": 13.62
       },
       "gameSwings": [
         {
@@ -1584,10 +1570,21 @@
             "Brock Purdy"
           ],
           "projectedRest": 43.83,
-          "chopIfAbove": 0.2,
-          "chopIfBelow": 4.76,
-          "bigGame": 57.53,
-          "quietGame": 29
+          "chopIfAbove": 0.22,
+          "chopIfBelow": 4.45,
+          "bigGame": 57.56,
+          "quietGame": 28.97
+        },
+        {
+          "game": "MIN @ NO",
+          "players": [
+            "Chris Olave"
+          ],
+          "projectedRest": 15.3,
+          "chopIfAbove": 0.68,
+          "chopIfBelow": 4.13,
+          "bigGame": 23.6,
+          "quietGame": 6.75
         },
         {
           "game": "HOU @ TEN",
@@ -1596,21 +1593,10 @@
             "Texans D/ST"
           ],
           "projectedRest": 21.95,
-          "chopIfAbove": 0.9,
-          "chopIfBelow": 4.23,
-          "bigGame": 31.81,
-          "quietGame": 11.86
-        },
-        {
-          "game": "CLE @ NYJ",
-          "players": [
-            "Quinshon Judkins"
-          ],
-          "projectedRest": 15.44,
-          "chopIfAbove": 1.03,
-          "chopIfBelow": 4.18,
-          "bigGame": 23.48,
-          "quietGame": 7.38
+          "chopIfAbove": 0.75,
+          "chopIfBelow": 3.99,
+          "bigGame": 31.92,
+          "quietGame": 11.9
         }
       ],
       "swingGame": {
@@ -1620,15 +1606,15 @@
           "Brock Purdy"
         ],
         "projectedRest": 43.83,
-        "chopIfAbove": 0.2,
-        "chopIfBelow": 4.76,
-        "bigGame": 57.53,
-        "quietGame": 29
+        "chopIfAbove": 0.22,
+        "chopIfBelow": 4.45,
+        "bigGame": 57.56,
+        "quietGame": 28.97
       },
       "rival": {
         "teamId": 4,
         "team": "Team Name",
-        "share": 25.09
+        "share": 34.13
       },
       "playersLeft": 7
     }
@@ -5168,6 +5154,18 @@
           "8": 12.11,
           "9": 10.77,
           "10": 14.77
+        }
+      },
+      {
+        "t": "2026-10-10T14:17:33.107Z",
+        "p": {
+          "4": 34.4,
+          "5": 2.53,
+          "6": 18.29,
+          "7": 5.7,
+          "8": 7.35,
+          "9": 11.61,
+          "10": 20.18
         }
       }
     ]
