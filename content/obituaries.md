@@ -67,7 +67,7 @@ And somehow… Stacey is the one being buried.
 
 May she rest in peace—and may her roster rest in waivers.
 
-##Team Name
+## Team Name
 
 Today, we mourn **Team Name**. Billy, manager of the Moose Knucklers, has finished what he started: he never named his son, and now he’s eliminated his team.
 
