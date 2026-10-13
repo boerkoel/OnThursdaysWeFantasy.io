@@ -69,19 +69,19 @@ May she rest in peace—and may her roster rest in waivers.
 
 ## Team Name
 
-Today, we mourn **Team Name**. Billy, manager of the Moose Knucklers, has finished what he started: he never named his son, and now he’s eliminated his team.
+Today, we mourn Team Name. Billy, manager of the Moose Knucklers, has finished what he started: he never named his son, and now he’s eliminated his team.
 
-James fought valiantly, but David Montgomery delivered just 1.1 points—a performance worthy of *Monty Python*, not a starting running back. And like Monty Hall on *Let’s Make a Deal*, James picked the wrong door. Behind it? Dad, waiting to send him packing.
+James fought valiantly, but David Montgomery delivered just 1.1 points—a performance worthy of Monty Python, not a starting running back. And like Monty Hall on Let’s Make a Deal, James picked the wrong door. Behind it? Dad, waiting to send him packing.
 
-**Just-in** time for the funeral, Herbert couldn’t deliver the goods. Christian Tate couldn’t keep the faith, the Cowboys D/ST was wanted for defensive negligence, and even 29.9 from Isaiah Likely was *unlikely* to save the day. At least Derrick Henry went to work—but even the King couldn’t keep James from losing his crown.
+Just-in time for the funeral, Herbert couldn’t deliver the goods. Christian Tate couldn’t keep the faith, the Cowboys D/ST was wanted for defensive negligence, and even 29.9 from Isaiah Likely was unlikely to save the day. At least Derrick Henry went to work—but even the King couldn’t keep James from losing his crown.
 
 Billy didn’t just win. He delivered a full wedgie, hiking those Moose Knucklers shorts clear up to his armpits with 19.1 from Kyren on MNF. Some dads pass down wisdom; Billy passes down L’s.
 
-*Young James thought his team had thunder,*
-*While Monty made a Hall-worthy blunder,*
-*Dad’s shorts reached the sky,*
-*James waved his season goodbye,*
-*And the Knucklers left James six feet under.*
+Young James thought his team had thunder,  
+While Monty made a Hall-worthy blunder,  
+Dad’s shorts reached the sky,  
+James waved his season goodbye,  
+And the Knucklers left James six feet under.  
 
 Rest in pieces, Team Name. Billy, next time try naming your kid before you eliminate him.
 
