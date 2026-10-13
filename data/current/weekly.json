@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "currentWeek": 5,
+  "currentWeek": 6,
   "weeks": [
     {
       "week": 1,
@@ -592,6 +592,137 @@
         "winnerScore": 159.18,
         "loserScore": 88.56,
         "margin": 70.62
+      }
+    },
+    {
+      "week": 5,
+      "recap": [
+        {
+          "type": "HIGH SCORE",
+          "text": "🔥 Gibb it to Me Baby dropped 196.44 points — the week's highest score."
+        },
+        {
+          "type": "CLOSEST MATCHUP",
+          "text": "⚔️ TDsMaGee edged The Mahomies by just 8.86 points."
+        },
+        {
+          "type": "INSTANT REGRET",
+          "text": "🤦 Beautiful Dark Twisted Fantasy would have finished above the median by starting Woody Marks (12.50) over Jordan Addison (0.00)."
+        },
+        {
+          "type": "BIGGEST REGRET",
+          "text": "🪑 Brock You Like a Hurricane left 40.46 points on the bench with Drake Maye."
+        },
+        {
+          "type": "TOUGH LUCK",
+          "text": "😬 Brock You Like a Hurricane scored 159.94 and still took the L."
+        },
+        {
+          "type": "BLOWOUT",
+          "text": "💥 Kyle Tucker beat Ruffing the Passer 151.12-79.48 (71.64 points)."
+        }
+      ],
+      "regrets": [
+        {
+          "teamId": 12,
+          "team": "Beautiful Dark Twisted Fantasy",
+          "matchupId": 25,
+          "benchPlayer": "Woody Marks",
+          "benchPoints": 12.5,
+          "starter": "Jordan Addison",
+          "starterPoints": 0,
+          "gain": 12.5,
+          "flips": [
+            "median"
+          ]
+        }
+      ],
+      "matchups": [
+        {
+          "id": 25,
+          "week": 5,
+          "homeTeamId": 4,
+          "awayTeamId": 12,
+          "homeScore": 81.5,
+          "awayScore": 133.9,
+          "margin": 52.400000000000006,
+          "winner": "AWAY",
+          "completed": true
+        },
+        {
+          "id": 26,
+          "week": 5,
+          "homeTeamId": 3,
+          "awayTeamId": 7,
+          "homeScore": 151.12,
+          "awayScore": 79.48,
+          "margin": 71.64,
+          "winner": "HOME",
+          "completed": true
+        },
+        {
+          "id": 27,
+          "week": 5,
+          "homeTeamId": 6,
+          "awayTeamId": 1,
+          "homeScore": 188.9,
+          "awayScore": 117.34,
+          "margin": 71.56,
+          "winner": "HOME",
+          "completed": true
+        },
+        {
+          "id": 28,
+          "week": 5,
+          "homeTeamId": 11,
+          "awayTeamId": 10,
+          "homeScore": 159.94,
+          "awayScore": 196.44,
+          "margin": 36.5,
+          "winner": "AWAY",
+          "completed": true
+        },
+        {
+          "id": 29,
+          "week": 5,
+          "homeTeamId": 8,
+          "awayTeamId": 5,
+          "homeScore": 176.22,
+          "awayScore": 107.44,
+          "margin": 68.78,
+          "winner": "HOME",
+          "completed": true
+        },
+        {
+          "id": 30,
+          "week": 5,
+          "homeTeamId": 2,
+          "awayTeamId": 9,
+          "homeScore": 135.54,
+          "awayScore": 126.68,
+          "margin": 8.859999999999985,
+          "winner": "HOME",
+          "completed": true
+        }
+      ],
+      "highestScore": {
+        "week": 5,
+        "teamId": 10,
+        "team": "Gibb it to Me Baby",
+        "opponentId": 11,
+        "opponent": "Brock You Like a Hurricane",
+        "score": 196.44,
+        "result": "W"
+      },
+      "largestBlowout": {
+        "week": 5,
+        "winnerTeamId": 3,
+        "winner": "Kyle Tucker",
+        "loserTeamId": 7,
+        "loser": "Ruffing the Passer",
+        "winnerScore": 151.12,
+        "loserScore": 79.48,
+        "margin": 71.64
       }
     }
   ]

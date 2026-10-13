@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "currentWeek": 5,
+  "currentWeek": 6,
   "playoffTeamCount": 6,
   "playoffReseed": true,
   "playoffSeedingRule": "TOTAL_POINTS_SCORED",
@@ -8,101 +8,101 @@
   "seeds": [
     {
       "seed": 1,
-      "teamId": 11,
-      "team": "Brock You Like a Hurricane",
+      "teamId": 10,
+      "team": "Gibb it to Me Baby",
       "wins": 8,
-      "losses": 0,
-      "pointsFor": 655.52
+      "losses": 2,
+      "pointsFor": 816.1
     },
     {
       "seed": 2,
-      "teamId": 10,
-      "team": "Gibb it to Me Baby",
-      "wins": 6,
-      "losses": 2,
-      "pointsFor": 619.66
+      "teamId": 11,
+      "team": "Brock You Like a Hurricane",
+      "wins": 9,
+      "losses": 1,
+      "pointsFor": 815.46
     },
     {
       "seed": 3,
-      "teamId": 8,
-      "team": "Mr. Action Jackson",
-      "wins": 6,
-      "losses": 2,
-      "pointsFor": 555.78
+      "teamId": 6,
+      "team": "Claremont In Yo Stace!",
+      "wins": 9,
+      "losses": 1,
+      "pointsFor": 739.36
     },
     {
       "seed": 4,
-      "teamId": 6,
-      "team": "Claremont In Yo Stace!",
-      "wins": 7,
-      "losses": 1,
-      "pointsFor": 550.46
+      "teamId": 8,
+      "team": "Mr. Action Jackson",
+      "wins": 8,
+      "losses": 2,
+      "pointsFor": 732
     },
     {
       "seed": 5,
-      "teamId": 5,
-      "team": "49er Faith-Fool",
+      "teamId": 3,
+      "team": "Kyle Tucker",
       "wins": 5,
-      "losses": 3,
-      "pointsFor": 526.7
+      "losses": 5,
+      "pointsFor": 663.34
     },
     {
       "seed": 6,
-      "teamId": 4,
-      "team": "Kirbo Crushers",
-      "wins": 2,
+      "teamId": 2,
+      "team": "TDsMaGee",
+      "wins": 4,
       "losses": 6,
-      "pointsFor": 519.92
+      "pointsFor": 651.08
     }
   ],
   "nonPlayoffTeams": [
     {
       "seed": 7,
-      "teamId": 2,
-      "team": "TDsMaGee",
-      "wins": 2,
-      "losses": 6,
-      "pointsFor": 515.54
+      "teamId": 5,
+      "team": "49er Faith-Fool",
+      "wins": 5,
+      "losses": 5,
+      "pointsFor": 634.14
     },
     {
       "seed": 8,
-      "teamId": 3,
-      "team": "Kyle Tucker",
-      "wins": 3,
-      "losses": 5,
-      "pointsFor": 512.22
-    },
-    {
-      "seed": 9,
-      "teamId": 7,
-      "team": "Ruffing the Passer",
-      "wins": 2,
-      "losses": 6,
-      "pointsFor": 500.46
-    },
-    {
-      "seed": 10,
       "teamId": 9,
       "team": "The Mahomies",
       "wins": 4,
-      "losses": 4,
-      "pointsFor": 484.18
+      "losses": 6,
+      "pointsFor": 610.86
+    },
+    {
+      "seed": 9,
+      "teamId": 4,
+      "team": "Kirbo Crushers",
+      "wins": 2,
+      "losses": 8,
+      "pointsFor": 601.42
+    },
+    {
+      "seed": 10,
+      "teamId": 7,
+      "team": "Ruffing the Passer",
+      "wins": 2,
+      "losses": 8,
+      "pointsFor": 579.94
     },
     {
       "seed": 11,
       "teamId": 1,
       "team": "Ramosverse",
       "wins": 2,
-      "losses": 6,
-      "pointsFor": 441.94
+      "losses": 8,
+      "pointsFor": 559.28
     },
     {
       "seed": 12,
       "teamId": 12,
       "team": "Beautiful Dark Twisted Fantasy",
-      "wins": 1,
-      "losses": 7,
-      "pointsFor": 392.68
+      "wins": 2,
+      "losses": 8,
+      "pointsFor": 526.58
     }
   ],
   "schedule": [
@@ -112,8 +112,8 @@
       "round": "Quarterfinal",
       "homeSeed": 3,
       "awaySeed": 6,
-      "homeTeam": "Mr. Action Jackson",
-      "awayTeam": "Kirbo Crushers"
+      "homeTeam": "Claremont In Yo Stace!",
+      "awayTeam": "TDsMaGee"
     },
     {
       "id": "qf2",
@@ -121,8 +121,8 @@
       "round": "Quarterfinal",
       "homeSeed": 4,
       "awaySeed": 5,
-      "homeTeam": "Claremont In Yo Stace!",
-      "awayTeam": "49er Faith-Fool"
+      "homeTeam": "Mr. Action Jackson",
+      "awayTeam": "Kyle Tucker"
     },
     {
       "id": "sf1",
@@ -130,7 +130,7 @@
       "round": "Semifinal",
       "homeSeed": 1,
       "homeBye": true,
-      "homeTeam": "Brock You Like a Hurricane",
+      "homeTeam": "Gibb it to Me Baby",
       "awayTeam": null
     },
     {
@@ -139,7 +139,7 @@
       "round": "Semifinal",
       "homeSeed": 2,
       "homeBye": true,
-      "homeTeam": "Gibb it to Me Baby",
+      "homeTeam": "Brock You Like a Hurricane",
       "awayTeam": null
     },
     {
@@ -160,7 +160,7 @@
   "ultimateLoser": {
     "format": "3-week single elimination",
     "advancementRule": "LOWER_SCORE_ADVANCES",
-    "currentWeek": 5,
+    "currentWeek": 6,
     "status": "PROJECTED",
     "entrants": [
       {
@@ -169,7 +169,7 @@
         "team": "Beautiful Dark Twisted Fantasy",
         "source": "REGULAR_SEASON",
         "regularSeasonSeed": 12,
-        "pointsFor": 392.68
+        "pointsFor": 526.58
       },
       {
         "seed": 2,
@@ -177,39 +177,39 @@
         "team": "Ramosverse",
         "source": "REGULAR_SEASON",
         "regularSeasonSeed": 11,
-        "pointsFor": 441.94
+        "pointsFor": 559.28
       },
       {
         "seed": 3,
-        "teamId": 9,
-        "team": "The Mahomies",
-        "source": "REGULAR_SEASON",
-        "regularSeasonSeed": 10,
-        "pointsFor": 484.18
-      },
-      {
-        "seed": 4,
         "teamId": 7,
         "team": "Ruffing the Passer",
         "source": "REGULAR_SEASON",
+        "regularSeasonSeed": 10,
+        "pointsFor": 579.94
+      },
+      {
+        "seed": 4,
+        "teamId": 4,
+        "team": "Kirbo Crushers",
+        "source": "REGULAR_SEASON",
         "regularSeasonSeed": 9,
-        "pointsFor": 500.46
+        "pointsFor": 601.42
       },
       {
         "seed": 5,
-        "teamId": 3,
-        "team": "Kyle Tucker",
+        "teamId": 9,
+        "team": "The Mahomies",
         "source": "REGULAR_SEASON",
         "regularSeasonSeed": 8,
-        "pointsFor": 512.22
+        "pointsFor": 610.86
       },
       {
         "seed": 6,
-        "teamId": 2,
-        "team": "TDsMaGee",
+        "teamId": 5,
+        "team": "49er Faith-Fool",
         "source": "REGULAR_SEASON",
         "regularSeasonSeed": 7,
-        "pointsFor": 515.54
+        "pointsFor": 634.14
       },
       {
         "seed": 7,
@@ -254,8 +254,8 @@
         "round": "Quarterfinal",
         "homeSeed": 3,
         "awaySeed": 6,
-        "homeTeam": "The Mahomies",
-        "awayTeam": "TDsMaGee"
+        "homeTeam": "Ruffing the Passer",
+        "awayTeam": "49er Faith-Fool"
       },
       {
         "id": "ul-qf4",
@@ -263,8 +263,8 @@
         "round": "Quarterfinal",
         "homeSeed": 4,
         "awaySeed": 5,
-        "homeTeam": "Ruffing the Passer",
-        "awayTeam": "Kyle Tucker"
+        "homeTeam": "Kirbo Crushers",
+        "awayTeam": "The Mahomies"
       }
     ],
     "note": "Six regular-season non-playoff teams enter as seeds 1-6; the lower-ranked Week 15 playoff loser enters as seed 7 and the higher-ranked Week 15 playoff loser enters as seed 8. The lower-scoring team advances each round, and the remaining teams are reseeded highest-vs-lowest before the next round."
