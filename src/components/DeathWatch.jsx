@@ -242,7 +242,18 @@ export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
           {rivalLine(t) ? <p className="dw-insight">🏁 {rivalLine(t)}</p> : null}
           <p className="dw-left">{leftLine(t)}</p>
           {t.lineup?.length ? <button type="button" className="dw-lineup-toggle" aria-expanded={openLineups.has(t.teamId)} onClick={() => toggleLineup(t.teamId)}>{openLineups.has(t.teamId) ? "Hide lineup ▴" : "Lineup ▾"}</button> : null}
-          {openLineups.has(t.teamId) ? <TeamLineup lineup={t.lineup} nflGames={nflGames} /> : null}
+          {openLineups.has(t.teamId) ? (() => {
+            // Side by side with the team that most often finishes just above them.
+            const above = t.justAbove && guillotine.teams.find(o => o.teamId === t.justAbove.teamId);
+            if (!above?.lineup?.length) return <TeamLineup lineup={t.lineup} nflGames={nflGames} />;
+            return <div className="dw-vs">
+              <p className="dw-vs-note">Next to <b>{above.team}</b>, the team that finishes just above them in {Math.round(t.justAbove.share)}% of simulations.</p>
+              <div className="dw-vs-cols">
+                <div><strong className="dw-vs-head">{t.team}</strong><TeamLineup lineup={t.lineup} nflGames={nflGames} /></div>
+                <div><strong className="dw-vs-head">{above.team}</strong><TeamLineup lineup={above.lineup} nflGames={nflGames} /></div>
+              </div>
+            </div>;
+          })() : null}
           <div className="card-actions">
             <ShareButton section="death-watch" filename={`death-watch-week-${guillotine.week}-${t.team}`.replace(/[^\w-]+/g, "-")} build={() => ({
               kicker: `${guillotine.leagueName} · Week ${guillotine.week} Death Watch`,

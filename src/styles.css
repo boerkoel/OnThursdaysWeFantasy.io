@@ -1006,3 +1006,8 @@ section,details,.odds-block{scroll-margin-top:72px}
 .marquee-nav button{border:1px solid #30332d;background:#151713;color:#c7c9c1;border-radius:6px;width:26px;height:22px;font:inherit;font-weight:800;line-height:1;cursor:pointer}
 .marquee-stack[role=button]{cursor:pointer}
 .award-card:target,.team-card-item:target{outline:2px solid #b5d17a;outline-offset:2px;border-radius:10px}
+/* Death Watch: lineup side by side with the team just above. */
+.dw-vs-note{margin:6px 0;font-size:12px;color:#a9ac9f}
+.dw-vs-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.dw-vs-head{display:block;font-size:12px;margin:2px 0 4px}
+@media(max-width:480px){.dw-vs-cols{gap:6px;font-size:12px}}

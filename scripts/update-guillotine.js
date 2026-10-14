@@ -206,12 +206,16 @@ const gameTallies = new Map(alive.map(t => {
   return [t.teamId, [...groups].map(([game, players]) => ({ game, players, rest: players.reduce((sum, i) => sum + t.remaining[i].rest, 0), above: 0, choppedAbove: 0, choppedBelow: 0, pointsAbove: 0, pointsBelow: 0 }))];
 }));
 const playerPoints = new Map(alive.map(t => [t.teamId, new Array(t.remaining.length)]));
+const justAbove = new Map(alive.map(t => [t.teamId, new Map()]));
 for (let sim = 0; sim < SIMULATIONS; sim++) {
   const finals = alive.map(t => ({ teamId: t.teamId, score: simulateFinal({ score: t.score, players: t.remaining, lineup: t.lineupModel }, rng, playerPoints.get(t.teamId)) }));
   const lowest = Math.min(...finals.map(f => f.score));
   const last = finals.filter(f => f.score === lowest);
   for (const f of last) chopCounts.set(f.teamId, chopCounts.get(f.teamId) + 1 / last.length);
   const nextUp = last.length === 1 ? finals.filter(f => f.score > lowest).sort((a, b) => a.score - b.score)[0] : null;
+  // Every team's neighbour just above it in this simulated week (for the side-by-side lineups).
+  const order = finals.slice().sort((a, b) => a.score - b.score);
+  for (let k = 0; k + 1 < order.length; k++) { const m = justAbove.get(order[k].teamId); m.set(order[k + 1].teamId, (m.get(order[k + 1].teamId) || 0) + 1); }
   if (nextUp) { const m = escapedBy.get(last[0].teamId); m.set(nextUp.teamId, (m.get(nextUp.teamId) || 0) + 1); }
   for (const t of alive) {
     const chopped = last.some(f => f.teamId === t.teamId) ? 1 / last.length : 0;
@@ -275,6 +279,9 @@ for (const t of alive) {
   }
 }
 for (const t of alive) {
+  // The team that most often finishes just above this one (none for the usual leader).
+  const [aboveId, aboveCount] = [...justAbove.get(t.teamId).entries()].sort((a, b) => b[1] - a[1])[0] || [];
+  if (aboveId != null) t.justAbove = { teamId: aboveId, team: alive.find(o => o.teamId === aboveId)?.team || "", share: round(100 * aboveCount / SIMULATIONS) };
   t.playersLeft = t.remaining.length;
   t.remaining = t.remaining.map(p => ({ name: p.name, game: p.game, actual: p.actual, projectedRest: round(p.rest) }));
   delete t.lineupModel;   // simulation input only
