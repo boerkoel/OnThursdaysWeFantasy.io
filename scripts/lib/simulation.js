@@ -157,14 +157,18 @@ export const LINEUP_RATES = {
   // Chance of re-setting to the best lineup, from 3+ days before the team's
   // next open kickoff (far) down to kickoff (near). Managers who've already
   // changed their lineup this week mostly leave it.
-  set: { far: 0.1, near: 0.05, cover: 0.9 },
-  untouched: { far: 0.5, near: 0.2, cover: 0.6 }
+  set: { far: 0.15, near: 0.05, cover: 0.9 },
+  untouched: { far: 0.65, near: 0.2, cover: 0.6 },
+  // A fresh pickup (claimed this week) who belongs in the best lineup but
+  // isn't starting yet: he's almost certainly in the plan.
+  newClaim: { far: 0.85, near: 0.5 }
 };
 const DECAY_HOURS = 72;
-export function lineupRates(set, hoursToKickoff) {
+export function lineupRates(set, hoursToKickoff, claimPending = false) {
   const r = set ? LINEUP_RATES.set : LINEUP_RATES.untouched;
   const w = Math.min(1, Math.max(0, (Number(hoursToKickoff) || 0) / DECAY_HOURS));
-  return { reset: r.near + (r.far - r.near) * w, cover: r.cover };
+  const at = x => x.near + (x.far - x.near) * w;
+  return { reset: Math.max(at(r), claimPending ? at(LINEUP_RATES.newClaim) : 0), cover: r.cover };
 }
 
 // Playing hurt: an injured player who suits up (chance to play < 1) scores a

@@ -46,6 +46,7 @@ export function trackLineups(previous, week, entriesByTeam) {
 // completed, ...gameScriptInputs } or null on bye. Starters still to play keep
 // the order of `entries` (their index in the returned `remaining`), so callers
 // can tally each current starter's simulated points.
+const FRESH_MS = 6 * 24 * 3600 * 1000;   // a pickup counts as new for 6 days
 export function buildLineupModel({ entries, nflWeek, gameFor, weeklyStat, chanceToPlay, set, now = Date.now() }) {
   let nextKickoff = Infinity;
   const fixed = [], fixedIdx = [], slots = [], pool = [], current = [], remaining = [], poolRemIdx = [];
@@ -69,14 +70,17 @@ export function buildLineupModel({ entries, nflWeek, gameFor, weeklyStat, chance
     const chance = bye ? 1 : chanceToPlay(player);
     if (starter && game?.kickoff) nextKickoff = Math.min(nextKickoff, Date.parse(game.kickoff));
     pool.push({ name: player.fullName, outlook: bye ? { ...outlook, rest: 0, sd: 0 } : hurtOutlook(outlook, chance), eligibleSlots: (player.eligibleSlots || []).map(Number),
-      chance, value: bye ? 0 : Math.max(0, projection) * chance, bye, starter });
+      chance, value: bye ? 0 : Math.max(0, projection) * chance, bye, starter,
+      fresh: Number(entry.acquisitionDate) > now - FRESH_MS && ["WAIVER", "ADD", "FREEAGENT", "TRADE"].includes(String(entry.acquisitionType || "").toUpperCase()) });
     poolRemIdx.push(remIdx);
     if (starter) { slots.push(slot); current.push(pool.length - 1); }
   }
   if (!nflWeek || (!slots.length && !fixed.length)) return { model: null, remaining };
-  // Fewer re-sets as the team's next open kickoff nears (0 hours = now).
-  const rates = lineupRates(Boolean(set), Number.isFinite(nextKickoff) ? (nextKickoff - now) / 3600000 : 0);
   const best = bestLineup(slots, pool);
+  // New pickups the best lineup would start but the current one doesn't.
+  const pending = best.filter(i => i >= 0 && pool[i].fresh && !pool[i].starter).map(i => pool[i].name);
+  // Fewer re-sets as the team's next open kickoff nears (0 hours = now).
+  const rates = lineupRates(Boolean(set), Number.isFinite(nextKickoff) ? (nextKickoff - now) / 3600000 : 0, pending.length > 0);
   const valueOf = lineup => lineup.reduce((sum, i) => sum + (i >= 0 ? pool[i].value : 0), 0);
   const summary = {
     set: Boolean(set), openSlots: slots.length,
@@ -84,7 +88,8 @@ export function buildLineupModel({ entries, nflWeek, gameFor, weeklyStat, chance
     atRisk: current.map(i => pool[i]).filter(p => p.bye || p.chance < 0.95)
       .map(p => ({ name: p.name, chance: p.bye ? 0 : Math.round(p.chance * 100) / 100, bye: p.bye || undefined })),
     // Expected points the best lineup adds over the current one.
-    gain: Math.round((valueOf(best) - valueOf(current)) * 10) / 10
+    gain: Math.round((valueOf(best) - valueOf(current)) * 10) / 10,
+    newClaims: pending.length ? pending : undefined, reset: Math.round(rates.reset * 100) / 100
   };
   return { model: { fixed, fixedIdx, slots, pool, poolRemIdx, current, best, ...rates }, remaining, summary };
 }
