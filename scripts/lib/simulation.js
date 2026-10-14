@@ -120,9 +120,14 @@ function normal(rng) {
   return Math.sqrt(-2 * Math.log(Math.max(rng(), 1e-12))) * Math.cos(2 * Math.PI * rng());
 }
 
-// One player's simulated remaining points (see playerOutlook).
+// One player's simulated remaining points (see playerOutlook). Projections
+// already price in the usual chance of getting hurt mid-game, so the early-exit
+// draw only shapes the spread: the no-exit outcome is scaled up so the average
+// stays at the projection (exitRisk x EARLY_EXIT_SHARE / 2 is the exit draw's mean).
 function drawPoints(p, rng) {
-  return rng() < p.exitRisk ? p.rest * EARLY_EXIT_SHARE * rng() : Math.max(-p.floor, p.rest + p.sd * normal(rng));
+  const keep = 1 - p.exitRisk * (1 - EARLY_EXIT_SHARE / 2);
+  const rest = keep > 0 ? p.rest / keep : p.rest;
+  return rng() < p.exitRisk ? rest * EARLY_EXIT_SHARE * rng() : Math.max(-p.floor, rest + p.sd * normal(rng));
 }
 
 // team: { score, players: [playerOutlook, ...] } for starters still to play.
