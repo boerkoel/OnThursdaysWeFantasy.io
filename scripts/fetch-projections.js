@@ -2,7 +2,8 @@ import { readFile, writeFile } from "node:fs/promises";
 
 // Second-opinion weekly projections for the simulations (lib/lineup-model.js
 // blends them with ESPN's): Sleeper's public projections feed, which carries
-// RotoWire's PPR projections. Keyed by ESPN player id via sleeper.json (D/ST:
+// RotoWire's PPR projections, and FantasyPros' expert-consensus points
+// (r2p_pts, embedded in their free weekly PPR rankings pages as ecrData). Keyed by ESPN player id via sleeper.json (D/ST:
 // -16000 - ESPN team id, as there). Live runs call this too, so it skips the
 // download when the saved copy for this week is under MAX_AGE_MS old (FORCE=1
 // to override).
@@ -38,9 +39,60 @@ try {
   const n = Object.keys(sleeperPts).length;
   if (n < 100) throw new Error(`only ${n} players matched; keeping the previous file`);
   const company = rows.find(r => r.company)?.company || "unknown";
-  await writeFile(FILE, JSON.stringify({ week, season, fetchedAt: new Date().toISOString(),
-    sources: { sleeper: { label: `Sleeper (${company})`, points: sleeperPts } } }) + "\n");
+  const sources = { sleeper: { label: `Sleeper (${company})`, points: sleeperPts } };
+  try {
+    const fp = await fantasyPros(sleeper.players || {});
+    if (Object.keys(fp).length >= 100) sources.fantasypros = { label: "FantasyPros consensus", points: fp };
+    console.log(`Projections: FantasyPros consensus for ${Object.keys(fp).length} players.`);
+  } catch (error) {
+    console.warn(`FantasyPros projections skipped: ${error.message}`);
+  }
+  await writeFile(FILE, JSON.stringify({ week, season, fetchedAt: new Date().toISOString(), sources }) + "\n");
   console.log(`Projections: Sleeper (${company}) for ${n} players, Week ${week}.`);
 } catch (error) {
   console.warn(`Projections fetch skipped: ${error.message}${previous ? " (keeping the previous file)" : ""}`);
+}
+
+// FantasyPros weekly PPR rankings: each page embeds `ecrData = {players: [...]}`
+// with the consensus-derived projected points (r2p_pts). Matched to ESPN ids by
+// name + team through sleeper.json (D/ST by team).
+async function fantasyPros(sleeperPlayers) {
+  const norm = n => String(n || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\b(jr|sr|ii|iii|iv|v)\b\.?/g, "").replace(/[^a-z]/g, "");
+  const fixTeam = t => ({ JAC: "JAX", WSH: "WAS" })[t] || t;
+  const byNameTeam = new Map(), defByTeam = new Map();
+  for (const [espnId, p] of Object.entries(sleeperPlayers)) {
+    if (p.pos === "DEF") defByTeam.set(fixTeam(p.team), Number(espnId));
+    else byNameTeam.set(`${norm(p.name)}|${fixTeam(p.team)}`, Number(espnId));
+  }
+  const chances = await readFile("data/current/play-chance.json", "utf8").then(JSON.parse).catch(() => null);
+  const doubt = new Map((chances?.players || []).filter(p => p.chance != null).map(p => [`${norm(p.name)}|${fixTeam(p.team)}`, p.chance]));
+  const pages = ["qb", "ppr-rb", "ppr-wr", "ppr-te", "k", "dst"];
+  const out = {};
+  for (const page of pages) {
+    const res = await fetch(`https://www.fantasypros.com/nfl/rankings/${page}.php?week=${week}`, { headers: { "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36" } });
+    if (!res.ok) throw new Error(`${page}: ${res.status}`);
+    const html = await res.text();
+    const at = html.indexOf("ecrData");
+    if (at < 0) throw new Error(`${page}: no ecrData`);
+    const start = html.indexOf("{", at);
+    let depth = 0, inString = false, end = -1;
+    for (let i = start; i < html.length; i++) {
+      const ch = html[i];
+      if (inString) { if (ch === "\\") i++; else if (ch === "\"") inString = false; continue; }
+      if (ch === "\"") inString = true;
+      else if (ch === "{" || ch === "[") depth++;
+      else if (ch === "}" || ch === "]") { depth--; if (depth === 0) { end = i + 1; break; } }
+    }
+    const data = JSON.parse(html.slice(start, end));
+    for (const p of data.players || []) {
+      const pts = Number(p.r2p_pts);
+      if (!Number.isFinite(pts)) continue;
+      const team = fixTeam(p.player_team_id);
+      const id = page === "dst" ? defByTeam.get(team) : byNameTeam.get(`${norm(p.player_name)}|${team}`);
+      // FantasyPros' points already discount injured players, and the sims
+      // sit players by their chance to play, so skip doubtful ones (and zeros).
+      if (id != null && pts > 0.5 && (doubt.get(`${norm(p.player_name)}|${team}`) ?? 1) >= 0.9) out[id] = pts;
+    }
+  }
+  return out;
 }
