@@ -298,6 +298,25 @@ function App() {
   const [detailView, setDetailView] = useState("odds");
   const pairOf = matchupId => { const pair = scores.filter(s => s.matchupId === matchupId); return pair.length === 2 ? pair : null; };
   const isFollowed = matchupId => Boolean(pairOf(matchupId)?.some(t => followedTeams.includes(Number(t.teamId))));
+  // League Wire: tapping a story opens the card it's about. A main-league team
+  // named in it opens that team's matchup; guillotine stories go to that team's
+  // Death Watch card (or RIP); otherwise the story type picks a section.
+  const openWireStory = story => {
+    const type = String(story?.type || "").toUpperCase(), text = String(story?.text || "");
+    const named = list => list.filter(t => t.name && text.includes(t.name)).sort((a, b) => b.name.length - a.name.length)[0];
+    const go = id => { window.location.hash = id; };
+    if (/OBITUARY|CHOPPED/.test(type)) return go("rip");
+    const gTeam = named((guillotine.teams || []).map(t => ({ name: t.team, id: t.teamId })));
+    if (/DEATH WATCH|FAAB|SHOPPING SPREE|TUG-OF-WAR|GREAT ESCAPE|THIN ICE/.test(type) || (gTeam && !named(scores.map(x => ({ name: x.team }))))) return go(gTeam ? `dw-${gTeam.id}` : "death-watch");
+    if (/TRADE|SWAP|LONG-TERM REGRET/.test(type)) return go("trades");
+    if (/RAFFLE/.test(type)) return go("raffle");
+    if (/TITLE ODDS|TOILET BOWL/.test(type)) return go("standings-odds");
+    if (/MEDIAN/.test(type)) return go("scoreboard");
+    const team = named(scores.map(x => ({ name: x.team, matchupId: x.matchupId })));
+    if (team && pairOf(team.matchupId)) { go("live"); setOpenMatchup(team.matchupId); return; }
+    if (/TO WATCH|ALL EYES|HEAVYWEIGHT|KEY MATCHUP|MATCHUPS THAT MATTER/.test(type)) return go("primetime");
+    go("scores");
+  };
   const orderedMatchups = [...matchupIds].sort((x, y) => (y === myMatchupId) - (x === myMatchupId) || isFollowed(y) - isFollowed(x));
   const renderMatchupRow = (matchupId, mine = false) => {
     const pair = pairOf(matchupId);
@@ -422,7 +441,7 @@ function App() {
           : "Between games. Here’s where everyone stands."}</p></div>
         <div className="hero-stat"><strong>{scoreboard.projectedMedian != null ? money(scoreboard.projectedMedian) : "—"}</strong><span>Projected median</span></div>
       </section>
-      <LeagueWire stories={live.marquee.stories || []} status={status} week={live.marquee.week ?? scoreboard.week} />
+      <LeagueWire stories={live.marquee.stories || []} status={status} week={live.marquee.week ?? scoreboard.week} onOpen={openWireStory} />
       {renderMyTeam()}
       <PrimetimeWatch scores={scores} nflGames={scoreboard.nflGames || []} guillotine={Number(guillotine.week) === Number(scoreboard.week) ? guillotine : null} logos={teamLogos} week={scoreboard.week} />
       <section id="scores" className="section">

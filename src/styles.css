@@ -1000,3 +1000,9 @@ section,details,.odds-block{scroll-margin-top:72px}
 .top-trade-when{margin:0;color:#8b8e86;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
 .sv-ledger-row.head span[title]{cursor:help}
 @media(max-width:800px){.sv-ledger-row.head{letter-spacing:.02em;line-height:1.2}}
+
+/* League Wire: prev/next buttons; a story is a link to its card. */
+.marquee-nav{margin-left:auto;display:inline-flex;gap:4px}
+.marquee-nav button{border:1px solid #30332d;background:#151713;color:#c7c9c1;border-radius:6px;width:26px;height:22px;font:inherit;font-weight:800;line-height:1;cursor:pointer}
+.marquee-stack[role=button]{cursor:pointer}
+.award-card:target,.team-card-item:target{outline:2px solid #b5d17a;outline-offset:2px;border-radius:10px}

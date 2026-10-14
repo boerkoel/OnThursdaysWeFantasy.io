@@ -185,7 +185,7 @@ export default function TeamCards({ teams }) {
     const s = team.standings || {};
     const avg = s.games ? s.pointsFor / s.games : 0;
     return (
-      <div className="team-card-item" key={team.id}>
+      <div className="team-card-item" id={`team-${team.id}`} key={team.id}>
         <button className={selectedId === team.id ? "team-card selected" : "team-card"} type="button" aria-expanded={selectedId === team.id} onClick={() => setSelectedId(selectedId === team.id ? null : team.id)}>
           <div className="card-top"><span className="card-rank">#{i + 1}</span><span className="card-season">2026</span></div>
           <div className="card-logo-wrap"><img src={team.logo} alt="" className="team-logo" /></div>

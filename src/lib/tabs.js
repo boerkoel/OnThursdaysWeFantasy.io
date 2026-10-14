@@ -30,9 +30,11 @@ export const SECTION_TAB = {
   "survivor-games": "survivor", "survivor-picks": "survivor", "survivor-managers": "survivor", "survivor-teams": "survivor", "survivor-standings": "survivor"
 };
 const isTab = id => TABS.some(t => t.id === id);
+// Card ids (League Wire links): dw-<teamId> on Death Watch, team-<teamId> on Teams.
+const CARD_TAB = [["dw-", "death-watch"], ["team-", "teams"]];
 const tabFor = hash => {
   const id = hash.replace(/^#/, "");
-  return isTab(id) ? id : SECTION_TAB[id] || "live";
+  return isTab(id) ? id : SECTION_TAB[id] || CARD_TAB.find(([prefix]) => id.startsWith(prefix))?.[1] || "live";
 };
 
 export function useTabs() {

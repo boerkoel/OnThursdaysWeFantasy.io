@@ -10,9 +10,9 @@ const SWIPE_PX = 40;
 // Rotating live stories. Every story is rendered in the same grid cell and
 // only the active one is visible, so the box keeps the height of the longest
 // story instead of resizing as they rotate. On phones it's pinned under the
-// section strip; tap the right side (or swipe left) for the next story, the
-// left side (or swipe right) for the previous one.
-export default function LeagueWire({ stories, status, week }) {
+// section strip. Tap a story to open the card it's about (onOpen); swipe, or
+// use the ‹ › buttons, to move between stories.
+export default function LeagueWire({ stories, status, week, onOpen = null }) {
   const [index, setIndex] = useState(0);
   const [tapped, setTapped] = useState(false);
   const box = useRef(null);
@@ -40,19 +40,25 @@ export default function LeagueWire({ stories, status, week }) {
       show(active + (dx < 0 ? 1 : -1));
       return;
     }
+    if (onOpen) { onOpen(stories[active]); return; }
     const { left, width } = event.currentTarget.getBoundingClientRect();
     show(active + (event.clientX - left < width / 3 ? -1 : 1));
   };
   const onKeyDown = event => {
-    if (event.key === "ArrowRight" || event.key === "Enter" || event.key === " ") { event.preventDefault(); show(active + 1); }
+    if ((event.key === "Enter" || event.key === " ") && onOpen) { event.preventDefault(); onOpen(stories[active]); }
+    else if (event.key === "ArrowRight" || event.key === "Enter" || event.key === " ") { event.preventDefault(); show(active + 1); }
     else if (event.key === "ArrowLeft") { event.preventDefault(); show(active - 1); }
   };
 
   return (
     <section className="league-marquee" aria-label="League Wire" ref={box}>
-      <div className="marquee-label"><span>⚡</span><strong>LEAGUE WIRE</strong><small className={status === "LIVE" ? "is-live" : ""}>{status}</small></div>
-      <div className="marquee-stack" aria-live="polite" role={stories.length > 1 ? "button" : undefined} tabIndex={stories.length > 1 ? 0 : undefined}
-        aria-label={stories.length > 1 ? `Story ${active + 1} of ${stories.length}. Tap for the next story.` : undefined}
+      <div className="marquee-label"><span>⚡</span><strong>LEAGUE WIRE</strong><small className={status === "LIVE" ? "is-live" : ""}>{status}</small>
+        {stories.length > 1 ? <span className="marquee-nav">
+          <button type="button" aria-label="Previous story" onClick={() => show(active - 1)}>‹</button>
+          <button type="button" aria-label="Next story" onClick={() => show(active + 1)}>›</button>
+        </span> : null}</div>
+      <div className="marquee-stack" aria-live="polite" role={stories.length > 1 || onOpen ? "button" : undefined} tabIndex={stories.length > 1 || onOpen ? 0 : undefined}
+        aria-label={onOpen ? `Story ${active + 1} of ${stories.length}. Tap to open it; swipe for more.` : stories.length > 1 ? `Story ${active + 1} of ${stories.length}. Tap for the next story.` : undefined}
         onPointerDown={onPointerDown} onPointerUp={onPointerUp} onPointerCancel={() => { pointer.current = null; }} onKeyDown={onKeyDown}>
         {stories.map((story, i) => (
           <div className={i === active ? "marquee-story active" : "marquee-story"} aria-hidden={i !== active} key={story.type + story.text}>

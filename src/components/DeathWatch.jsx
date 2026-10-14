@@ -231,7 +231,7 @@ export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
         icon: "🪦"
       }))} />
       <div className="award-grid dw-details">
-        {atRisk.map((t, i) => <article className="award-card" key={t.teamId}>
+        {atRisk.map((t, i) => <article className="award-card" id={`dw-${t.teamId}`} key={t.teamId}>
           <small>{i === 0 ? "🪓 ON THE CHOPPING BLOCK" : `#${i + 1} MOST AT RISK`}</small>
           <strong className="dw-team"><DwLogo team={t} size="md" />{t.team}</strong>
           <b className="chop-odds">{t.chopProbability >= 100 ? "Chop guaranteed" : `${pct(t.chopProbability)} chance of being chopped`}</b>
