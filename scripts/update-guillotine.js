@@ -1,5 +1,5 @@
 import { readFile, writeFile } from "node:fs/promises";
-import { buildLineupModel, chanceToPlayFn, fixAbbr, trackLineups } from "./lib/lineup-model.js";
+import { altProjectionFn, buildLineupModel, calibrateAlt, chanceToPlayFn, fixAbbr, trackLineups } from "./lib/lineup-model.js";
 import { SIMULATIONS, gameScriptInputs, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
 
 // Death Watch for the companion guillotine league (public on ESPN, so no
@@ -152,6 +152,8 @@ const shortName = player => /D\/ST/.test(player.fullName) ? player.fullName : (p
 // starters since the week's first lineups, chance to play, each team's model.
 const lineupBaseline = trackLineups(previous?.lineupBaseline, week, [...rosterByTeam].filter(([id]) => scoreByTeam.has(id)));
 const chanceToPlay = await chanceToPlayFn(abbrByProTeam);
+const altProjection = calibrateAlt(await altProjectionFn(week), [...rosterByTeam.values()].flat().map(e => e.playerPoolEntry?.player).filter(Boolean), weeklyStat);
+console.log("Second-opinion projection scale by position:", JSON.stringify(altProjection.scale));
 
 const alive = [...scoreByTeam.values()]
   .filter(t => Number(t.eliminationMatchupPeriod) === 0)
@@ -171,7 +173,7 @@ const alive = [...scoreByTeam.values()]
     // Starters still to play (bye weeks and finished games have nothing left to
     // add), and the lineup model the simulation uses.
     const built = buildLineupModel({ entries: rosterByTeam.get(teamId) || [], nflWeek: Boolean(nflWeek),
-      gameFor: id => nflGameByProTeam.get(id) || null, weeklyStat, chanceToPlay, set: lineupBaseline.changed[teamId] });
+      gameFor: id => nflGameByProTeam.get(id) || null, weeklyStat, chanceToPlay, altProjection, set: lineupBaseline.changed[teamId] });
     for (const r of built.remaining) remaining.push({ name: r.player.fullName, game: r.game?.name || "", actual: round(r.actual), ...r.outlook });
     const score = round(Number(t.totalPointsLive ?? t.totalPoints ?? 0));
     return {

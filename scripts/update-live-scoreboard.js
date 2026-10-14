@@ -1,6 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { BENCH_SLOT, IR_SLOT, settledLineupRegret } from "./lib/lineup.js";
-import { buildLineupModel, chanceToPlayFn, fixAbbr, trackLineups } from "./lib/lineup-model.js";
+import { altProjectionFn, buildLineupModel, calibrateAlt, chanceToPlayFn, fixAbbr, trackLineups } from "./lib/lineup-model.js";
 import { SIMULATIONS, gameScriptInputs, medianOf, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
 
 const season = process.env.ESPN_SEASON || "2026";
@@ -204,10 +204,12 @@ for (const teamId of teams.keys()) {
 const lineupBaseline = trackLineups(previousScoreboard?.lineupBaseline, currentWeek,
   [...teams.keys()].map(id => [id, rosterEntriesForTeam(id)]));
 const chanceToPlay = await chanceToPlayFn(new Map(nflGames.flatMap(g => g.teams.map(t => [Number(t.id), fixAbbr(t.abbrev)]))));
+const altProjection = calibrateAlt(await altProjectionFn(currentWeek), [...teams.keys()].flatMap(id => rosterEntriesForTeam(id)).map(e => e.playerPoolEntry?.player).filter(Boolean), weeklyStat);
+console.log("Second-opinion projection scale by position:", JSON.stringify(altProjection.scale));
 const lineupModels = new Map(), lineupSummaries = new Map();
 for (const teamId of teams.keys()) {
   const { model, summary } = buildLineupModel({ entries: rosterEntriesForTeam(teamId), nflWeek: Boolean(nflWeek),
-    gameFor: id => nflGamesByTeam.get(id) || null, weeklyStat, chanceToPlay, set: lineupBaseline.changed[teamId] });
+    gameFor: id => nflGamesByTeam.get(id) || null, weeklyStat, chanceToPlay, altProjection, set: lineupBaseline.changed[teamId] });
   if (model) lineupModels.set(teamId, model);
   if (summary) lineupSummaries.set(teamId, summary);
 }

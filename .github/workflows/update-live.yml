@@ -108,6 +108,11 @@ jobs:
         if: steps.gate.outputs.update == 'true'
         run: cp data/current/scoreboard.json /tmp/previous-scoreboard.json || true
 
+      - name: Fetch second-opinion projections
+        if: steps.gate.outputs.update == 'true'
+        continue-on-error: true
+        run: node scripts/fetch-projections.js
+
       - name: Fetch FantasyPros play chances
         if: steps.gate.outputs.update == 'true'
         continue-on-error: true

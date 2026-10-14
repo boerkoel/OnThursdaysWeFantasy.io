@@ -25,6 +25,39 @@ export async function chanceToPlayFn(abbrByProTeam) {
   };
 }
 
+// Second-opinion projections (scripts/fetch-projections.js): ESPN player id ->
+// points, for this week. The simulation uses the average of ESPN and these,
+// and widens a player's spread by half the gap when they disagree.
+export async function altProjectionFn(week) {
+  const data = await readFile("data/current/projections.json", "utf8").then(JSON.parse).catch(() => null);
+  if (!data || Number(data.week) !== Number(week)) return () => null;
+  const tables = Object.values(data.sources || {}).map(src => src.points || {});
+  return player => {
+    const vals = tables.map(t => t[String(player.id)]).filter(v => Number.isFinite(v));
+    return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+  };
+}
+
+// Each league scores differently (ESPN projects with the league's scoring;
+// the second opinion is standard PPR), so scale the second opinion by
+// position to match ESPN on typical players: the median ESPN/alt ratio over
+// rostered players both project for 3+ points. What's left is real disagreement.
+export function calibrateAlt(rawFn, players, weeklyStat) {
+  const ratios = new Map();
+  for (const p of players) {
+    const espn = weeklyStat(p, 1), alt = rawFn(p);
+    if (!(espn >= 3 && alt >= 3)) continue;
+    const pos = Number(p.defaultPositionId);
+    if (!ratios.has(pos)) ratios.set(pos, []);
+    ratios.get(pos).push(espn / alt);
+  }
+  const median = xs => { const s = xs.slice().sort((a, b) => a - b); return s[Math.floor(s.length / 2)]; };
+  const scale = new Map([...ratios].filter(([, xs]) => xs.length >= 3).map(([pos, xs]) => [pos, median(xs)]));
+  const fn = p => { const alt = rawFn(p); return alt == null ? null : alt * (scale.get(Number(p.defaultPositionId)) ?? 1); };
+  fn.scale = Object.fromEntries([...scale].map(([k, v]) => [k, Math.round(v * 100) / 100]));
+  return fn;
+}
+
 // The week's first lineups (kept in the published scoreboard/guillotine JSON,
 // which every run restores) and which teams have changed their starters since.
 export const lineupKey = entries => (entries || [])
@@ -47,7 +80,7 @@ export function trackLineups(previous, week, entriesByTeam) {
 // the order of `entries` (their index in the returned `remaining`), so callers
 // can tally each current starter's simulated points.
 const FRESH_MS = 6 * 24 * 3600 * 1000;   // a pickup counts as new for 6 days
-export function buildLineupModel({ entries, nflWeek, gameFor, weeklyStat, chanceToPlay, set, now = Date.now() }) {
+export function buildLineupModel({ entries, nflWeek, gameFor, weeklyStat, chanceToPlay, set, now = Date.now(), altProjection = () => null }) {
   let nextKickoff = Infinity;
   const fixed = [], fixedIdx = [], slots = [], pool = [], current = [], remaining = [], poolRemIdx = [];
   for (const entry of entries || []) {
@@ -56,8 +89,13 @@ export function buildLineupModel({ entries, nflWeek, gameFor, weeklyStat, chance
     const game = gameFor(Number(player.proTeamId));
     const weeklyActual = weeklyStat(player, 0);
     const actual = Number.isFinite(weeklyActual) ? weeklyActual : 0;
-    const projection = weeklyStat(player, 1);
-    const outlook = playerOutlook({ actual, projection, positionId: player.defaultPositionId, game, proTeamId: player.proTeamId });
+    // ESPN's projection averaged with the second opinion; their gap adds spread.
+    const espn = weeklyStat(player, 1), alt = altProjection(player);
+    const projection = Number.isFinite(espn) && alt != null ? (espn + alt) / 2 : Number.isFinite(espn) ? espn : alt ?? NaN;
+    const base = playerOutlook({ actual, projection, positionId: player.defaultPositionId, game, proTeamId: player.proTeamId });
+    const gap = Number.isFinite(espn) && alt != null ? Math.abs(espn - alt) : 0;
+    const left = Number.isFinite(projection) && projection > 0 ? Math.min(1, base.rest / projection) : 0;
+    const outlook = gap ? { ...base, sd: Math.hypot(base.sd, 0.5 * gap * left) } : base;
     const starter = slot !== BENCH;
     const stillToPlay = starter && (!nflWeek || (game && !game.completed));
     const remIdx = stillToPlay ? remaining.push({ player, game, actual, outlook }) - 1 : -1;
