@@ -29,17 +29,25 @@ try {
   const response = await fetch(`https://api.sleeper.app/projections/nfl/${season}/${week}?season_type=regular&${query}`);
   if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
   const rows = await response.json();
-  const sleeperPts = {};
+  // Points (standard PPR) plus the stat line, so each league can score it
+  // with its own rules (lib/lineup-model.js: leagueScorer).
+  const STAT_KEYS = ["pass_yd", "pass_td", "pass_int", "pass_2pt", "pass_fd", "rush_yd", "rush_td", "rush_2pt", "rush_fd",
+    "rec", "rec_yd", "rec_td", "rec_2pt", "rec_fd", "fum_lost", "xpm", "fga", "fgm", "fgm_0_19", "fgm_20_29", "fgm_30_39", "fgm_40_49", "fgm_50p"];
+  const sleeperPts = {}, sleeperStats = {};
   for (const r of rows) {
     const pts = r?.stats?.pts_ppr;
     const espnId = espnBySid.get(String(r.player_id));
     if (pts == null || espnId == null) continue;
     sleeperPts[espnId] = Math.round(pts * 100) / 100;
+    if (r.player?.position !== "DEF") {
+      const line = Object.fromEntries(STAT_KEYS.filter(k => Number(r.stats[k])).map(k => [k, Math.round(r.stats[k] * 100) / 100]));
+      if (Object.keys(line).length) sleeperStats[espnId] = line;
+    }
   }
   const n = Object.keys(sleeperPts).length;
   if (n < 100) throw new Error(`only ${n} players matched; keeping the previous file`);
   const company = rows.find(r => r.company)?.company || "unknown";
-  const sources = { sleeper: { label: `Sleeper (${company})`, points: sleeperPts } };
+  const sources = { sleeper: { label: `Sleeper (${company})`, points: sleeperPts, stats: sleeperStats } };
   try {
     const fp = await fantasyPros(sleeper.players || {});
     if (Object.keys(fp).length >= 100) sources.fantasypros = { label: "FantasyPros consensus", points: fp };

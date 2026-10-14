@@ -204,8 +204,11 @@ for (const teamId of teams.keys()) {
 const lineupBaseline = trackLineups(previousScoreboard?.lineupBaseline, currentWeek,
   [...teams.keys()].map(id => [id, rosterEntriesForTeam(id)]));
 const chanceToPlay = await chanceToPlayFn(new Map(nflGames.flatMap(g => g.teams.map(t => [Number(t.id), fixAbbr(t.abbrev)]))));
-const altProjection = calibrateAlt(await altProjectionFn(currentWeek), [...teams.keys()].flatMap(id => rosterEntriesForTeam(id)).map(e => e.playerPoolEntry?.player).filter(Boolean), weeklyStat);
-console.log("Second-opinion projection scale by position:", JSON.stringify(altProjection.scale));
+// The league's scoring rules, for scoring the second opinion's stat lines.
+const scoringItems = await readFile("data/current/mSettings.json", "utf8").then(JSON.parse)
+  .then(m => m.settings?.scoringSettings?.scoringItems || null).catch(() => null);
+const altProjection = calibrateAlt(await altProjectionFn(currentWeek, scoringItems), [...teams.keys()].flatMap(id => rosterEntriesForTeam(id)).map(e => e.playerPoolEntry?.player).filter(Boolean), weeklyStat);
+console.log("Second-opinion scales by position:", JSON.stringify(altProjection.scale));
 const lineupModels = new Map(), lineupSummaries = new Map();
 for (const teamId of teams.keys()) {
   const { model, summary } = buildLineupModel({ entries: rosterEntriesForTeam(teamId), nflWeek: Boolean(nflWeek),

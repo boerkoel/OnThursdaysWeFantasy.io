@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { bestLineup, hurtOutlook, lineupRates, playerOutlook } from "./simulation.js";
+import { bestLineup, hurtOutlook, lineupRates, normalCdf, playerOutlook } from "./simulation.js";
 
 // Lineup decisions still to come, shared by the main league's weekly
 // simulation (update-live-scoreboard.js) and the guillotine league's
@@ -25,36 +25,83 @@ export async function chanceToPlayFn(abbrByProTeam) {
   };
 }
 
-// Second-opinion projections (scripts/fetch-projections.js): ESPN player id ->
-// points, for this week. The simulation uses the average of ESPN and these,
-// and widens a player's spread by half the gap when they disagree.
-export async function altProjectionFn(week) {
+// ---- Second-opinion projections (scripts/fetch-projections.js) ----
+// Sleeper/RotoWire stat lines are scored with the league's own ESPN scoring
+// rules (leagueScorer); FantasyPros (points only) and defenses are scaled to
+// ESPN by position (calibrateAlt). The sims average ESPN with these and widen
+// a player's spread by half the gap when they disagree.
+
+// ESPN scoring statId -> Sleeper stat keys. 211-213 are first downs (passing,
+// rushing, receiving); 17/18, 37/38, 56/57 are the yardage-milestone bonuses.
+const STAT_MAP = { 3: ["pass_yd"], 4: ["pass_td"], 19: ["pass_2pt"], 20: ["pass_int"], 24: ["rush_yd"], 25: ["rush_td"], 26: ["rush_2pt"],
+  42: ["rec_yd"], 43: ["rec_td"], 44: ["rec_2pt"], 53: ["rec"], 72: ["fum_lost"], 86: ["xpm"], 211: ["pass_fd"], 212: ["rush_fd"], 213: ["rec_fd"],
+  80: ["fgm_0_19", "fgm_20_29", "fgm_30_39"], 77: ["fgm_40_49"], 198: ["fgm_50p"], 74: ["fgm_50p"] };
+const MILESTONES = { 17: ["pass_yd", 300, 400], 18: ["pass_yd", 400, Infinity], 37: ["rush_yd", 100, 200], 38: ["rush_yd", 200, Infinity],
+  56: ["rec_yd", 100, 200], 57: ["rec_yd", 200, Infinity] };
+const YARD_SD = { pass_yd: 0.3, rush_yd: 0.5, rec_yd: 0.55 };   // typical spread of a week's yards, as a share of the projection
+export function leagueScorer(scoringItems) {
+  const items = (scoringItems || []).filter(i => Number(i.points));
+  const known = items.filter(i => STAT_MAP[i.statId] || MILESTONES[i.statId] || i.statId === 85);
+  const scorer = stats => {
+    if (!stats) return null;
+    let pts = 0;
+    for (const { statId, points } of known) {
+      if (STAT_MAP[statId]) pts += points * STAT_MAP[statId].reduce((sum, k) => sum + (Number(stats[k]) || 0), 0);
+      else if (statId === 85) pts += points * Math.max(0, (Number(stats.fga) || 0) - (Number(stats.fgm) || 0));
+      else {
+        // A milestone bonus pays its points times the chance of landing in its range.
+        const [k, lo, hi] = MILESTONES[statId], mean = Number(stats[k]) || 0;
+        if (mean <= 0) continue;
+        const sd = Math.max(15, YARD_SD[k] * mean);
+        pts += points * ((1 - normalCdf((lo - mean) / sd)) - (hi === Infinity ? 0 : 1 - normalCdf((hi - mean) / sd)));
+      }
+    }
+    return pts;
+  };
+  scorer.unmapped = items.filter(i => !known.includes(i)).map(i => i.statId);
+  return scorer;
+}
+
+// Per player this week: { scored } from Sleeper's stat line, plus the raw
+// point totals that still need scaling ({ fp, sleeper } for defenses).
+export async function altProjectionFn(week, scoringItems) {
   const data = await readFile("data/current/projections.json", "utf8").then(JSON.parse).catch(() => null);
-  if (!data || Number(data.week) !== Number(week)) return () => null;
-  const tables = Object.values(data.sources || {}).map(src => src.points || {});
+  if (!data || Number(data.week) !== Number(week)) return () => ({});
+  const sl = data.sources?.sleeper || {}, fp = data.sources?.fantasypros?.points || {};
+  const score = leagueScorer(scoringItems);
   return player => {
-    const vals = tables.map(t => t[String(player.id)]).filter(v => Number.isFinite(v));
-    return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+    const id = String(player.id), stats = sl.stats?.[id];
+    const scored = stats && scoringItems?.length ? score(stats) : null;
+    return { scored, fp: fp[id] ?? null, sleeper: scored == null ? sl.points?.[id] ?? null : null };
   };
 }
 
-// Each league scores differently (ESPN projects with the league's scoring;
-// the second opinion is standard PPR), so scale the second opinion by
-// position to match ESPN on typical players: the median ESPN/alt ratio over
-// rostered players both project for 3+ points. What's left is real disagreement.
+// Scale the raw sources (FantasyPros; Sleeper points where there's no stat
+// line) to ESPN by position: the median ESPN/source ratio over rostered
+// players both project for 3+ points. Returns player -> average of the
+// second opinions (or null).
 export function calibrateAlt(rawFn, players, weeklyStat) {
-  const ratios = new Map();
-  for (const p of players) {
-    const espn = weeklyStat(p, 1), alt = rawFn(p);
-    if (!(espn >= 3 && alt >= 3)) continue;
-    const pos = Number(p.defaultPositionId);
-    if (!ratios.has(pos)) ratios.set(pos, []);
-    ratios.get(pos).push(espn / alt);
-  }
   const median = xs => { const s = xs.slice().sort((a, b) => a - b); return s[Math.floor(s.length / 2)]; };
-  const scale = new Map([...ratios].filter(([, xs]) => xs.length >= 3).map(([pos, xs]) => [pos, median(xs)]));
-  const fn = p => { const alt = rawFn(p); return alt == null ? null : alt * (scale.get(Number(p.defaultPositionId)) ?? 1); };
-  fn.scale = Object.fromEntries([...scale].map(([k, v]) => [k, Math.round(v * 100) / 100]));
+  const scales = {};
+  for (const src of ["fp", "sleeper"]) {
+    const ratios = new Map();
+    for (const p of players) {
+      const espn = weeklyStat(p, 1), alt = rawFn(p)[src];
+      if (!(espn >= 3 && alt >= 3)) continue;
+      const pos = Number(p.defaultPositionId);
+      if (!ratios.has(pos)) ratios.set(pos, []);
+      ratios.get(pos).push(espn / alt);
+    }
+    scales[src] = Object.fromEntries([...ratios].filter(([, xs]) => xs.length >= 3).map(([pos, xs]) => [pos, Math.round(median(xs) * 100) / 100]));
+  }
+  const fn = p => {
+    const r = rawFn(p), pos = Number(p.defaultPositionId), vals = [];
+    if (r.scored != null) vals.push(r.scored);
+    if (r.fp != null) vals.push(r.fp * (scales.fp[pos] ?? 1));
+    if (r.sleeper != null) vals.push(r.sleeper * (scales.sleeper[pos] ?? 1));
+    return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+  };
+  fn.scale = scales;
   return fn;
 }
 

@@ -152,8 +152,8 @@ const shortName = player => /D\/ST/.test(player.fullName) ? player.fullName : (p
 // starters since the week's first lineups, chance to play, each team's model.
 const lineupBaseline = trackLineups(previous?.lineupBaseline, week, [...rosterByTeam].filter(([id]) => scoreByTeam.has(id)));
 const chanceToPlay = await chanceToPlayFn(abbrByProTeam);
-const altProjection = calibrateAlt(await altProjectionFn(week), [...rosterByTeam.values()].flat().map(e => e.playerPoolEntry?.player).filter(Boolean), weeklyStat);
-console.log("Second-opinion projection scale by position:", JSON.stringify(altProjection.scale));
+const altProjection = calibrateAlt(await altProjectionFn(week, league.settings?.scoringSettings?.scoringItems), [...rosterByTeam.values()].flat().map(e => e.playerPoolEntry?.player).filter(Boolean), weeklyStat);
+console.log("Second-opinion scales by position:", JSON.stringify(altProjection.scale));
 
 const alive = [...scoreByTeam.values()]
   .filter(t => Number(t.eliminationMatchupPeriod) === 0)
