@@ -73,7 +73,7 @@ Today, we mourn Team Name. Billy, manager of the Moose Knucklers, has finished w
 
 James fought valiantly, but David Montgomery delivered just 1.1 points—a performance worthy of Monty Python, not a starting running back. And like Monty Hall on Let’s Make a Deal, James picked the wrong door. Behind it? Dad, waiting to send him packing.
 
-Just-in time for the funeral, Herbert couldn’t deliver the goods. Christian Tate couldn’t keep the faith, the Cowboys D/ST was wanted for defensive negligence, and even 29.9 from Isaiah Likely was unlikely to save the day. At least Derrick Henry went to work—but even the King couldn’t keep James from losing his crown.
+Amon-Ra-diant effort, but James’s season still went dark. Just-in time for the funeral, Herbert couldn’t deliver the goods. The Cowboys D/ST was wanted for defensive negligence, and even 29.9 from Isaiah Likely was unlikely to save the day. At least Derrick Henry went to work—but even the King couldn’t keep James from losing his crown.
 
 Billy didn’t just win. He delivered a full wedgie, hiking those Moose Knucklers shorts clear up to his armpits with 19.1 from Kyren on MNF. Some dads pass down wisdom; Billy passes down L’s.
 
