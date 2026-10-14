@@ -26,6 +26,7 @@ import Notifications, { useFollowedTeams } from "./components/Notifications.jsx"
 import { seriesLine } from "./lib/recordBook.js";
 import { useMyTeam, useTabs } from "./lib/tabs.js";
 import { BackToTop, SectionNav, TabBar } from "./components/Navigation.jsx";
+import { AccuracyScorecard, MatchupOutcomes, OutcomeBar, outcomeScale } from "./components/OutcomeBar.jsx";
 
 // Standings and rest-of-season odds in one sortable table: current seed and
 // record (standings.json, playoffs.json) plus simulated odds (season-odds.js).
@@ -317,6 +318,7 @@ function App() {
     if (/TO WATCH|ALL EYES|HEAVYWEIGHT|KEY MATCHUP|MATCHUPS THAT MATTER/.test(type)) return go("primetime");
     go("scores");
   };
+  const leagueScale = outcomeScale(scores.filter(x => x.projection?.dist && x.projection.dist.p90 > x.projection.dist.p10));
   const orderedMatchups = [...matchupIds].sort((x, y) => (y === myMatchupId) - (x === myMatchupId) || isFollowed(y) - isFollowed(x));
   const renderMatchupRow = (matchupId, mine = false) => {
     const pair = pairOf(matchupId);
@@ -346,6 +348,7 @@ function App() {
         <div className="versus">vs</div>
         <MatchupTeam team={b} opponent={a} logo={teamLogos[b.teamId]} projected={false} flashing={flashingScores.has(b.teamId)} dotClass={medianDotClass(b)} />
       </div>
+      <MatchupOutcomes teams={[a, b]} />
       <div className="sheet-tabs" role="tablist">
         <button type="button" role="tab" aria-selected={view === "odds"} className={view === "odds" ? "active" : ""} onClick={() => setDetailView("odds")}>Odds & plays</button>
         {hasLineups ? <button type="button" role="tab" aria-selected={view === "lineup"} className={view === "lineup" ? "active" : ""} onClick={() => setDetailView("lineup")}>Lineups</button> : null}
@@ -465,11 +468,12 @@ function App() {
         </div>
         {displayScores.map((s, i) => <React.Fragment key={s.teamId}>
             {i === Math.floor(displayScores.length / 2) && <div className="median-line"><span>PROJECTED MEDIAN {scoreboard.projectedMedian != null ? money(scoreboard.projectedMedian) : "—"}</span></div>}
-            <div className={"score-row " + (projectedMedianEdgeTeams.has(s.teamId) ? "median-near" : Number(s.aboveMedianProbability) > 50 ? "median-above" : s.aboveMedianProbability != null ? "median-below" : "")}><span className="rank">{i + 1}</span><span className="score-team"><TeamLogo src={teamLogos[s.teamId]} />{s.team}{projectedMedianEdgeTeams.has(s.teamId) ? <em className="median-near-label">NEAR MEDIAN</em> : null}</span><span className="score-opponent">vs {s.opponent}</span><strong className={["score-primary", scoreSort === "projected" ? "projected-score" : "", flashingScores.has(s.teamId) ? "score-flash" : ""].join(" ").trim()}>{scoreSort === "wins" ? (expectedWins(s) != null ? expectedWins(s).toFixed(2) : "—") : money(scoreSort === "projected" ? s.projectionAverage : s.score)}</strong>{scoreSort === "wins" ? <span className="score-projection">H2H {pct(s.winProbability)}<em className="score-probability">ABOVE MEDIAN {pct(s.aboveMedianProbability)}</em></span> : <span className="score-projection">{scoreSort === "projected" ? "ACT " + money(s.score) : "PROJ "}{scoreSort === "projected" ? "" : (s.projectionTrend === "up" ? "↑ " : s.projectionTrend === "down" ? "↓ " : "")}{scoreSort === "projected" ? "" : (s.projectionAverage != null ? money(s.projectionAverage) : "—")}<em className="score-probability">ABOVE MEDIAN {pct(s.aboveMedianProbability)}</em></span>}</div>
+            <div className={"score-row " + (projectedMedianEdgeTeams.has(s.teamId) ? "median-near" : Number(s.aboveMedianProbability) > 50 ? "median-above" : s.aboveMedianProbability != null ? "median-below" : "")}><span className="rank">{i + 1}</span><span className="score-team"><TeamLogo src={teamLogos[s.teamId]} />{s.team}{projectedMedianEdgeTeams.has(s.teamId) ? <em className="median-near-label">NEAR MEDIAN</em> : null}</span><span className="score-opponent">vs {s.opponent}</span><strong className={["score-primary", scoreSort === "projected" ? "projected-score" : "", flashingScores.has(s.teamId) ? "score-flash" : ""].join(" ").trim()}>{scoreSort === "wins" ? (expectedWins(s) != null ? expectedWins(s).toFixed(2) : "—") : money(scoreSort === "projected" ? s.projectionAverage : s.score)}</strong>{scoreSort === "wins" ? <span className="score-projection">H2H {pct(s.winProbability)}<em className="score-probability">ABOVE MEDIAN {pct(s.aboveMedianProbability)}</em></span> : <span className="score-projection">{scoreSort === "projected" ? "ACT " + money(s.score) : "PROJ "}{scoreSort === "projected" ? "" : (s.projectionTrend === "up" ? "↑ " : s.projectionTrend === "down" ? "↓ " : "")}{scoreSort === "projected" ? "" : (s.projectionAverage != null ? money(s.projectionAverage) : "—")}<em className="score-probability">ABOVE MEDIAN {pct(s.aboveMedianProbability)}</em></span>}{leagueScale ? <span className="score-dist"><OutcomeBar dist={s.projection?.dist} espn={Number(s.projection?.espn)} lo={leagueScale.lo} hi={leagueScale.hi} width={110} /></span> : null}</div>
           </React.Fragment>)}
         </div>
-        <p className="median-note">The projected median is based on ESPN’s projected final scores. Odds of finishing above the median come from simulating the rest of the week, where the league median moves with every team’s result. Highlighted in yellow: the teams projected just above and just below the median, plus any team with a {NEAR_MEDIAN_MIN}–{NEAR_MEDIAN_MAX}% chance.</p>
+        <p className="median-note">Projections are ours: ESPN, RotoWire and FantasyPros averaged, with injuries and likely lineup moves simulated (the bar on wide screens: band = middle half of outcomes, line = 80%, ◆ = ESPN). The projected median is the median of those projections. Odds of finishing above the median come from simulating the rest of the week, where the league median moves with every team’s result. Highlighted in yellow: the teams projected just above and just below the median, plus any team with a {NEAR_MEDIAN_MIN}–{NEAR_MEDIAN_MAX}% chance.</p>
       </section>
+      <AccuracyScorecard scorecard={scoreboard.scorecard} />
       </> : null}
 
       {tab === "standings" ? <>

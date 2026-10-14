@@ -1011,3 +1011,22 @@ section,details,.odds-block{scroll-margin-top:72px}
 .dw-vs-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
 .dw-vs-head{display:block;font-size:12px;margin:2px 0 4px}
 @media(max-width:480px){.dw-vs-cols{gap:6px;font-size:12px}}
+
+/* Outcome distributions: our projection, its spread, and ESPN's marker. */
+.outcome-bar{display:block;overflow:visible}
+.outcome-bar .ob-range{stroke:#6f726a;stroke-width:1.5}
+.outcome-bar .ob-iqr{fill:#3b4a2c;stroke:#6b7a52}
+.outcome-bar .ob-mean{stroke:#e8f0d0;stroke-width:2.5}
+.outcome-bar .ob-espn{fill:#e0a64a}
+.score-dist{display:none}
+@media(min-width:720px){.score-dist{display:inline-flex;align-items:center;margin-left:10px}}
+.matchup-outcomes{margin:10px 0 6px;display:grid;gap:6px}
+.mo-row{display:grid;grid-template-columns:minmax(0,1fr) 220px minmax(0,1.2fr);gap:8px;align-items:center;font-size:12px}
+.mo-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}
+.mo-nums small{color:#a9ac9f}
+.mo-legend{margin:2px 0 0;font-size:11px;color:#8d9087;line-height:1.4}
+@media(max-width:520px){.mo-row{grid-template-columns:1fr;gap:2px}.mo-row .outcome-bar{width:100%}}
+.scorecard-table table{width:100%;border-collapse:collapse;font-size:13px}
+.scorecard-table td,.scorecard-table th{padding:6px 4px;border-bottom:1px solid #242620;text-align:left}
+.scorecard-table .num{text-align:right}.scorecard-table small{color:#8d9087;font-weight:400}
+.scorecard-table .up{color:#8fd184}.scorecard-table .down{color:#e58a86}

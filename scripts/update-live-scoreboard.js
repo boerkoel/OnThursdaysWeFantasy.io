@@ -1,7 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { BENCH_SLOT, IR_SLOT, settledLineupRegret } from "./lib/lineup.js";
 import { altProjectionFn, buildLineupModel, calibrateAlt, chanceToPlayFn, fixAbbr, trackLineups } from "./lib/lineup-model.js";
-import { SIMULATIONS, gameScriptInputs, medianOf, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
+import { SIMULATIONS, gameScriptInputs, medianOf, normalCdf, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
 
 const season = process.env.ESPN_SEASON || "2026";
 const leagueId = process.env.ESPN_LEAGUE_ID || "998599827";
@@ -285,7 +285,7 @@ const probabilityTeams = currentScores.map(s => ({
   players: remainingPlayersByTeam.get(s.teamId) || [],
   lineup: lineupModels.get(s.teamId) || null
 }));
-const projectedMedian = round(medianOf(currentScores.map(s => Number(s.projectionAverage ?? s.score))) ?? median);
+let projectedMedian = round(medianOf(currentScores.map(s => Number(s.projectionAverage ?? s.score))) ?? median);
 
 const rng = seededRng(currentScores.map(s => [s.teamId, s.score, s.projectionAverage]).sort((a, b) => a[0] - b[0]));
 const simulationSums = new Map(probabilityTeams.map(s => [s.teamId, 0]));
@@ -294,12 +294,15 @@ const aboveMedianCounts = new Map(probabilityTeams.map(s => [s.teamId, 0]));
 // The week's highest score earns a raffle ticket.
 const topScoreCounts = new Map(probabilityTeams.map(s => [s.teamId, 0]));
 const winCounts = new Map(probabilityTeams.map(s => [s.teamId, 0]));
+// Every simulated final, per team, for the outcome distribution (percentiles).
+const finalsByTeam = new Map(probabilityTeams.map(s => [s.teamId, new Float64Array(SIMULATIONS)]));
 
 for (let sim = 0; sim < SIMULATIONS; sim++) {
   const simulatedFinals = new Map();
   for (const team of probabilityTeams) {
     const finalScore = simulateFinal(team, rng);
     simulatedFinals.set(team.teamId, finalScore);
+    finalsByTeam.get(team.teamId)[sim] = finalScore;
     simulationSums.set(team.teamId, simulationSums.get(team.teamId) + finalScore);
     simulationSquaredSums.set(team.teamId, simulationSquaredSums.get(team.teamId) + finalScore ** 2);
   }
@@ -323,6 +326,16 @@ for (let sim = 0; sim < SIMULATIONS; sim++) {
   }
 }
 
+// Our projection: the simulated mean (ESPN + RotoWire + FantasyPros, chances
+// to play, likely lineup changes), plus the spread of outcomes.
+const distByTeam = new Map();
+for (const [teamId, finals] of finalsByTeam) {
+  const sorted = Float64Array.from(finals).sort();
+  const q = f => round(sorted[Math.min(sorted.length - 1, Math.floor(f * sorted.length))]);
+  distByTeam.set(teamId, { mean: round(finals.reduce((a, b) => a + b, 0) / finals.length), p10: q(0.1), p25: q(0.25), p50: q(0.5), p75: q(0.75), p90: q(0.9) });
+}
+// The projected median is the median of our projections.
+projectedMedian = round(medianOf(currentScores.map(s => distByTeam.get(s.teamId)?.mean ?? Number(s.projectionAverage ?? s.score))) ?? projectedMedian);
 const simulatedSdByTeam = new Map();
 for (const team of probabilityTeams) {
   const sum = simulationSums.get(team.teamId) || 0;
@@ -369,7 +382,7 @@ for (const score of currentScores) {
   score.topScoreProbability = lockedTopScoreOdds(score) ?? possibleOdds(topScoreCounts.get(score.teamId) || 0);
   score.belowMedianProbability = round(100 - score.aboveMedianProbability);
   score.medianDistanceSd = sd > 0
-    ? round((espnProjection - projectedMedian) / sd)
+    ? round(((distByTeam.get(score.teamId)?.mean ?? espnProjection) - projectedMedian) / sd)
     : 0;
   score.closeToMedian = Math.abs(score.medianDistanceSd) <= 0.5;
 }
@@ -378,7 +391,7 @@ for (const score of currentScores) {
 // always near it, plus any team with a 30-70% chance of finishing above it.
 const NEAR_MEDIAN_MIN = 30;
 const NEAR_MEDIAN_MAX = 70;
-const projectionOf = s => Number(s.projectionAverage ?? s.score);
+const projectionOf = s => Number(distByTeam.get(s.teamId)?.mean ?? s.projectionAverage ?? s.score);
 const justBelow = currentScores.filter(s => projectionOf(s) <= projectedMedian).sort((a, b) => projectionOf(b) - projectionOf(a))[0];
 const justAbove = currentScores.filter(s => projectionOf(s) >= projectedMedian && s !== justBelow).sort((a, b) => projectionOf(a) - projectionOf(b))[0];
 // The two teams projected closest to the median are flagged, unless the
@@ -430,11 +443,14 @@ for (const teamId of teams.keys()) {
 for (const score of currentScores) {
   const espnProjection = Number(score.projection?.espn);
   const baseline = recentProjectionAverage.get(score.teamId);
-  const delta = Number.isFinite(espnProjection) && Number.isFinite(baseline)
-    ? espnProjection - baseline
+  const ours = distByTeam.get(score.teamId)?.mean ?? espnProjection;
+  const delta = Number.isFinite(ours) && Number.isFinite(baseline)
+    ? ours - baseline
     : null;
-  score.projection = { espn: Number.isFinite(espnProjection) ? espnProjection : score.score };
-  score.projectionAverage = Number.isFinite(espnProjection) ? espnProjection : score.score;
+  const dist = distByTeam.get(score.teamId);
+  score.projection = { espn: Number.isFinite(espnProjection) ? espnProjection : score.score, otwf: dist?.mean ?? null, dist: dist || null };
+  // The displayed projection is ours (see distByTeam); ESPN's stays alongside.
+  score.projectionAverage = dist?.mean ?? (Number.isFinite(espnProjection) ? espnProjection : score.score);
   score.projectionTrend = Number.isFinite(delta) && Math.abs(delta) >= 0.25
     ? (delta > 0 ? "up" : "down")
     : null;
@@ -443,7 +459,7 @@ for (const score of currentScores) {
 const currentProjectionSnapshot = {
   timestamp: new Date().toISOString(),
   week: currentWeek,
-  scores: currentScores.map(score => ({ teamId: score.teamId, projection: Number(score.projection?.espn) }))
+  scores: currentScores.map(score => ({ teamId: score.teamId, projection: Number(score.projection?.otwf ?? score.projection?.espn) }))
 };
 const projectionHistory = [
   ...previousProjectionHistory.filter(snapshot => Number(snapshot.week) === currentWeek),
@@ -484,7 +500,56 @@ const swingPlays = Number(archivedPlays?.week) === currentWeek
   ? (archivedPlays.plays || []).filter(p => p.momentum?.shift >= 3).map(({ id, matchupId, fantasyTeamId, player, points, text, period, clock, wallclock, momentum }) =>
       ({ id, matchupId, fantasyTeamId, player, points, text, period, clock, wallclock, momentum }))
   : archive.weeks?.[currentWeek]?.plays || [];
-archive.weeks = { ...(archive.weeks || {}), [currentWeek]: { winHistory: thin(winHistory), plays: swingPlays } };
+// ---- Accuracy scorecard: our projections and odds vs ESPN's ----
+// Snapshots at Thursday's first kickoff ("thu") and once Sunday is under way
+// ("sun"): each team's projection (ours, ESPN's) and odds (ours, and what
+// ESPN's projections imply with the same spread). Finals once the week ends.
+const prevWeek = archive.weeks?.[currentWeek] || {};
+const forecasts = { ...(prevWeek.forecasts || {}) };
+const gamesStarted = nflGames.filter(g => g.state !== "pre").length;
+const impliedWin = (me, opp) => {
+  const sd = Math.hypot(Number(me.projectionSd) || 0, Number(opp.projectionSd) || 0) || 1;
+  return round(100 * normalCdf((Number(me.projection?.espn) - Number(opp.projection?.espn)) / sd));
+};
+const espnMedian = medianOf(currentScores.map(x => Number(x.projection?.espn)));
+const snapshot = () => ({ at: new Date().toISOString(), teams: Object.fromEntries(currentScores.map(x => {
+  const opp = currentScores.find(o => o.matchupId === x.matchupId && o.teamId !== x.teamId);
+  return [x.teamId, { ours: x.projection?.otwf, espn: x.projection?.espn, win: x.winProbability, winEspn: opp ? impliedWin(x, opp) : null,
+    above: x.aboveMedianProbability, aboveEspn: round(100 * normalCdf((Number(x.projection?.espn) - espnMedian) / (Number(x.projectionSd) || 1))) }];
+})) });
+if (!forecasts.thu && gamesStarted >= 1) forecasts.thu = snapshot();
+if (!forecasts.sun && gamesStarted >= 4) forecasts.sun = snapshot();
+let finals = prevWeek.finals || null;
+if (!finals && currentWeekMatchups.length && currentWeekMatchups.every(m => m.completed)) {
+  const finalMedian = medianOf(currentScores.map(x => Number(x.score)));
+  finals = Object.fromEntries(currentScores.map(x => {
+    const opp = currentScores.find(o => o.matchupId === x.matchupId && o.teamId !== x.teamId);
+    return [x.teamId, { score: Number(x.score), won: opp ? Number(x.score) > Number(opp.score) : null, above: Number(x.score) > finalMedian }];
+  }));
+}
+archive.weeks = { ...(archive.weeks || {}), [currentWeek]: { ...prevWeek, winHistory: thin(winHistory), plays: swingPlays, forecasts, ...(finals ? { finals } : {}) } };
+// Graded so far: average projection miss (points) and Brier scores for odds (lower is better).
+const scorecard = {};
+for (const when of ["thu", "sun"]) {
+  const t = { n: 0, weeks: 0, missOurs: 0, missEspn: 0, winN: 0, brierWin: 0, brierWinEspn: 0, aboveN: 0, brierAbove: 0, brierAboveEspn: 0 };
+  for (const wk of Object.values(archive.weeks || {})) {
+    const f = wk.forecasts?.[when], fin = wk.finals;
+    if (!f || !fin) continue;
+    t.weeks++;
+    for (const [id, x] of Object.entries(f.teams || {})) {
+      const r = fin[id];
+      if (!r || !Number.isFinite(x.ours) || !Number.isFinite(x.espn)) continue;
+      t.n++; t.missOurs += Math.abs(x.ours - r.score); t.missEspn += Math.abs(x.espn - r.score);
+      if (r.won != null && x.win != null && x.winEspn != null) { t.winN++; t.brierWin += (x.win / 100 - r.won) ** 2; t.brierWinEspn += (x.winEspn / 100 - r.won) ** 2; }
+      if (x.above != null && x.aboveEspn != null) { t.aboveN++; t.brierAbove += (x.above / 100 - r.above) ** 2; t.brierAboveEspn += (x.aboveEspn / 100 - r.above) ** 2; }
+    }
+  }
+  scorecard[when] = { weeks: t.weeks, teams: t.n,
+    missOurs: t.n ? round(t.missOurs / t.n) : null, missEspn: t.n ? round(t.missEspn / t.n) : null,
+    brierWin: t.winN ? round(t.brierWin / t.winN * 1000) / 1000 : null, brierWinEspn: t.winN ? round(t.brierWinEspn / t.winN * 1000) / 1000 : null,
+    brierAbove: t.aboveN ? round(t.brierAbove / t.aboveN * 1000) / 1000 : null, brierAboveEspn: t.aboveN ? round(t.brierAboveEspn / t.aboveN * 1000) / 1000 : null };
+}
+scorecard.since = Math.min(...Object.entries(archive.weeks || {}).filter(([, w]) => w.forecasts?.thu || w.forecasts?.sun).map(([k]) => Number(k)), currentWeek);
 await writeFile("data/current/week-archive.json", JSON.stringify({ updatedAt: new Date().toISOString(), weeks: archive.weeks }) + "\n");
 
 await writeFile("data/current/scoreboard.json", JSON.stringify({
@@ -500,7 +565,8 @@ await writeFile("data/current/scoreboard.json", JSON.stringify({
   winHistory: { week: currentWeek, points: winHistory },
   raffleHistory: { week: currentWeek, points: raffleHistory },
   projectionHistory,
-  lineupBaseline
+  lineupBaseline,
+  scorecard
 }, null, 2) + "\n");
 
 console.log(`Updated live scoreboard for Week ${currentWeek} with ${currentScores.length} teams; ESPN live projections available for ${liveProjectionTeamIds.size} teams.`);
