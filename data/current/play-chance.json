@@ -1,17 +1,29 @@
 {
  "source": "FantasyPros Are They Playing?",
  "url": "https://www.fantasypros.com/nfl/myplaybook/are-they-playing.php",
- "fetchedAt": "2026-10-14T18:08:46.735Z",
+ "fetchedAt": "2026-10-15T13:22:41.969Z",
  "players": [
   {
    "name": "Jaxon Smith-Njigba",
    "team": "SEA",
    "position": "WR",
-   "status": "Q",
-   "chance": 0.95713,
+   "status": "",
+   "chance": 1,
    "practices": [
     "Limit",
     "Limit",
+    "Full"
+   ]
+  },
+  {
+   "name": "Jonathan Taylor",
+   "team": "IND",
+   "position": "RB",
+   "status": "",
+   "chance": null,
+   "practices": [
+    "Limit",
+    null,
     null
    ]
   },
@@ -20,9 +32,57 @@
    "team": "DAL",
    "position": "WR",
    "status": "",
-   "chance": 0.8301,
+   "chance": 0.97781,
    "practices": [
+    "Full",
     null,
+    null
+   ]
+  },
+  {
+   "name": "Chris Olave",
+   "team": "NO",
+   "position": "WR",
+   "status": "Q",
+   "chance": 0.90141,
+   "practices": [
+    "DNP",
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Ashton Jeanty",
+   "team": "LV",
+   "position": "RB",
+   "status": "",
+   "chance": 0.98029,
+   "practices": [
+    "Full",
+    "--",
+    null
+   ]
+  },
+  {
+   "name": "Nico Collins",
+   "team": "HOU",
+   "position": "WR",
+   "status": "",
+   "chance": null,
+   "practices": [
+    "Limit",
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Jeremiyah Love",
+   "team": "ARI",
+   "position": "RB",
+   "status": "Q",
+   "chance": 0.58652,
+   "practices": [
+    "DNP",
     null,
     null
    ]
@@ -31,10 +91,10 @@
    "name": "Saquon Barkley",
    "team": "PHI",
    "position": "RB",
-   "status": "",
-   "chance": 0.42057,
+   "status": "Q",
+   "chance": 0.11096,
    "practices": [
-    null,
+    "DNP",
     null,
     null
    ]
@@ -43,11 +103,23 @@
    "name": "Lamar Jackson",
    "team": "BAL",
    "position": "QB",
-   "status": "",
-   "chance": 0.29058,
+   "status": "Q",
+   "chance": 0.1655,
    "practices": [
+    "DNP",
     null,
-    null,
+    null
+   ]
+  },
+  {
+   "name": "Brock Bowers",
+   "team": "LV",
+   "position": "TE",
+   "status": "Q",
+   "chance": 0.94746,
+   "practices": [
+    "Limit",
+    "--",
     null
    ]
   },
@@ -55,22 +127,22 @@
    "name": "DeVonta Smith",
    "team": "PHI",
    "position": "WR",
-   "status": "",
-   "chance": 0.48596,
+   "status": "Q",
+   "chance": 0.15403,
    "practices": [
-    null,
+    "DNP",
     null,
     null
    ]
   },
   {
-   "name": "Quinshon Judkins",
-   "team": "CLE",
-   "position": "RB",
+   "name": "Drake Maye",
+   "team": "NE",
+   "position": "QB",
    "status": "",
-   "chance": 0.39518,
+   "chance": 0.98934,
    "practices": [
-    null,
+    "Full",
     null,
     null
    ]
@@ -79,10 +151,22 @@
    "name": "Breece Hall",
    "team": "NYJ",
    "position": "RB",
-   "status": "",
-   "chance": 0.35222,
+   "status": "Q",
+   "chance": 0.114,
    "practices": [
+    "DNP",
     null,
+    null
+   ]
+  },
+  {
+   "name": "Quinshon Judkins",
+   "team": "CLE",
+   "position": "RB",
+   "status": "Q",
+   "chance": 0.11138,
+   "practices": [
+    "DNP",
     null,
     null
    ]
@@ -91,10 +175,22 @@
    "name": "A.J. Brown",
    "team": "NE",
    "position": "WR",
-   "status": "IR",
-   "chance": null,
+   "status": "Q",
+   "chance": 0.46067,
    "practices": [
+    "Limit",
     null,
+    null
+   ]
+  },
+  {
+   "name": "Rashee Rice",
+   "team": "KC",
+   "position": "WR",
+   "status": "Q",
+   "chance": 0.12678,
+   "practices": [
+    "DNP",
     null,
     null
    ]
@@ -103,10 +199,70 @@
    "name": "DJ Moore",
    "team": "BUF",
    "position": "WR",
-   "status": "",
-   "chance": 0.63466,
+   "status": "Q",
+   "chance": 0.2384,
    "practices": [
+    "DNP",
+    "--",
+    null
+   ]
+  },
+  {
+   "name": "Jalen Coker",
+   "team": "CAR",
+   "position": "WR",
+   "status": "",
+   "chance": 0.9325,
+   "practices": [
+    "Full",
     null,
+    null
+   ]
+  },
+  {
+   "name": "Patrick Mahomes II",
+   "team": "KC",
+   "position": "QB",
+   "status": "",
+   "chance": 0.97963,
+   "practices": [
+    "Full",
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Josh Downs",
+   "team": "IND",
+   "position": "WR",
+   "status": "",
+   "chance": null,
+   "practices": [
+    "Limit",
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Ladd McConkey",
+   "team": "LAC",
+   "position": "WR",
+   "status": "Q",
+   "chance": 0.77739,
+   "practices": [
+    "Limit",
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Denzel Boston",
+   "team": "CLE",
+   "position": "WR",
+   "status": "Q",
+   "chance": 0.90692,
+   "practices": [
+    "Limit",
     null,
     null
    ]
@@ -124,25 +280,25 @@
    ]
   },
   {
-   "name": "Ladd McConkey",
-   "team": "LAC",
+   "name": "KC Concepcion Jr.",
+   "team": "CLE",
    "position": "WR",
-   "status": "",
-   "chance": 0.6108,
+   "status": "Q",
+   "chance": 0.69317,
    "practices": [
-    null,
+    "Limit",
     null,
     null
    ]
   },
   {
-   "name": "Kyle Monangai",
-   "team": "CHI",
-   "position": "RB",
+   "name": "Jalen Hurts",
+   "team": "PHI",
+   "position": "QB",
    "status": "",
-   "chance": 0.37368,
+   "chance": 0.96516,
    "practices": [
-    null,
+    "Full",
     null,
     null
    ]
@@ -152,9 +308,45 @@
    "team": "CHI",
    "position": "QB",
    "status": "",
-   "chance": 0.55889,
+   "chance": 0.93957,
    "practices": [
+    "Full",
     null,
+    null
+   ]
+  },
+  {
+   "name": "Isaiah Likely",
+   "team": "NYG",
+   "position": "TE",
+   "status": "",
+   "chance": 0.98656,
+   "practices": [
+    "Full",
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Kyle Monangai",
+   "team": "CHI",
+   "position": "RB",
+   "status": "Q",
+   "chance": 0.24934,
+   "practices": [
+    "DNP",
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Tony Pollard",
+   "team": "TEN",
+   "position": "RB",
+   "status": "",
+   "chance": null,
+   "practices": [
+    "DNP",
     null,
     null
    ]
@@ -164,9 +356,9 @@
    "team": "HOU",
    "position": "RB",
    "status": "",
-   "chance": 0.53422,
+   "chance": null,
    "practices": [
-    null,
+    "--",
     null,
     null
    ]
@@ -184,25 +376,37 @@
    ]
   },
   {
-   "name": "Adonai Mitchell",
-   "team": "NYJ",
+   "name": "Dontayvion Wicks",
+   "team": "PHI",
    "position": "WR",
-   "status": "",
-   "chance": 0.24238,
+   "status": "Q",
+   "chance": 0.95211,
    "practices": [
-    null,
+    "Limit",
     null,
     null
    ]
   },
   {
-   "name": "Tyler Shough",
-   "team": "NO",
+   "name": "David Montgomery",
+   "team": "HOU",
+   "position": "RB",
+   "status": "Q",
+   "chance": 0.13122,
+   "practices": [
+    "DNP",
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Bryce Young",
+   "team": "CAR",
    "position": "QB",
    "status": "",
-   "chance": 0.9067,
+   "chance": 0.96935,
    "practices": [
-    null,
+    "Full",
     null,
     null
    ]
@@ -212,7 +416,55 @@
    "team": "NE",
    "position": "RB",
    "status": "O",
-   "chance": 0.10564,
+   "chance": 0.46833,
+   "practices": [
+    "Limit",
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Chris Godwin Jr.",
+   "team": "TB",
+   "position": "WR",
+   "status": "",
+   "chance": null,
+   "practices": [
+    "DNP",
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Tyler Shough",
+   "team": "NO",
+   "position": "QB",
+   "status": "",
+   "chance": 0.97963,
+   "practices": [
+    "Full",
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Adonai Mitchell",
+   "team": "NYJ",
+   "position": "WR",
+   "status": "Q",
+   "chance": 0.07788,
+   "practices": [
+    "DNP",
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Jordyn Tyson",
+   "team": "NO",
+   "position": "WR",
+   "status": "O",
+   "chance": null,
    "practices": [
     null,
     null,
@@ -224,30 +476,6 @@
    "team": "NO",
    "position": "RB",
    "status": "IR",
-   "chance": null,
-   "practices": [
-    null,
-    null,
-    null
-   ]
-  },
-  {
-   "name": "David Montgomery",
-   "team": "HOU",
-   "position": "RB",
-   "status": "",
-   "chance": 0.24945,
-   "practices": [
-    null,
-    null,
-    null
-   ]
-  },
-  {
-   "name": "Jordyn Tyson",
-   "team": "NO",
-   "position": "WR",
-   "status": "O",
    "chance": null,
    "practices": [
     null,
@@ -268,25 +496,25 @@
    ]
   },
   {
-   "name": "Tre' Harris",
-   "team": "LAC",
-   "position": "WR",
-   "status": "",
-   "chance": 0.29524,
+   "name": "Alvin Kamara",
+   "team": "NO",
+   "position": "RB",
+   "status": "Q",
+   "chance": 0.75213,
    "practices": [
-    null,
+    "Limit",
     null,
     null
    ]
   },
   {
-   "name": "Kenyon Sadiq",
-   "team": "NYJ",
-   "position": "TE",
-   "status": "",
-   "chance": 0.33024,
+   "name": "Tre' Harris",
+   "team": "LAC",
+   "position": "WR",
+   "status": "Q",
+   "chance": 0.19361,
    "practices": [
-    null,
+    "DNP",
     null,
     null
    ]
@@ -295,46 +523,58 @@
    "name": "Quentin Johnston",
    "team": "LAC",
    "position": "WR",
-   "status": "",
-   "chance": 0.28039,
+   "status": "Q",
+   "chance": 0.61807,
    "practices": [
-    null,
+    "Limit",
     null,
     null
    ]
   },
   {
-   "name": "Rico Dowdle",
-   "team": "PIT",
-   "position": "RB",
+   "name": "Keenan Allen",
+   "team": "IND",
+   "position": "WR",
    "status": "",
-   "chance": 0.79617,
-   "practices": [
-    null,
-    null,
-    null
-   ]
-  },
-  {
-   "name": "Terrance Ferguson",
-   "team": "LAR",
-   "position": "TE",
-   "status": "IR",
    "chance": null,
    "practices": [
-    null,
+    "DNP",
     null,
     null
    ]
   },
   {
-   "name": "Michael Penix Jr.",
-   "team": "ATL",
-   "position": "QB",
+   "name": "Mark Andrews",
+   "team": "BAL",
+   "position": "TE",
    "status": "",
-   "chance": 0.53173,
+   "chance": 0.98833,
    "practices": [
+    "Full",
     null,
+    null
+   ]
+  },
+  {
+   "name": "Kenyon Sadiq",
+   "team": "NYJ",
+   "position": "TE",
+   "status": "Q",
+   "chance": 0.69899,
+   "practices": [
+    "Limit",
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Dalton Schultz",
+   "team": "HOU",
+   "position": "TE",
+   "status": "",
+   "chance": null,
+   "practices": [
+    "Limit",
     null,
     null
    ]
@@ -352,14 +592,38 @@
    ]
   },
   {
-   "name": "Zach Charbonnet",
-   "team": "SEA",
+   "name": "Rico Dowdle",
+   "team": "PIT",
    "position": "RB",
    "status": "Q",
-   "chance": 0.23739,
+   "chance": 0.71491,
    "practices": [
     "Limit",
-    "Limit",
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Terrance Ferguson",
+   "team": "LAR",
+   "position": "TE",
+   "status": "IR",
+   "chance": null,
+   "practices": [
+    null,
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Michael Pittman Jr.",
+   "team": "PIT",
+   "position": "WR",
+   "status": "IR",
+   "chance": null,
+   "practices": [
+    "--",
+    null,
     null
    ]
   },
@@ -376,6 +640,42 @@
    ]
   },
   {
+   "name": "Darren Waller",
+   "team": "CAR",
+   "position": "TE",
+   "status": "Q",
+   "chance": 0.82434,
+   "practices": [
+    "Limit",
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Rashod Bateman",
+   "team": "BAL",
+   "position": "WR",
+   "status": "Q",
+   "chance": 0.97178,
+   "practices": [
+    "Limit",
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Zach Charbonnet",
+   "team": "SEA",
+   "position": "RB",
+   "status": "O",
+   "chance": 0,
+   "practices": [
+    "Limit",
+    "Limit",
+    "Limit"
+   ]
+  },
+  {
    "name": "Jonah Coleman",
    "team": "DEN",
    "position": "RB",
@@ -388,25 +688,13 @@
    ]
   },
   {
-   "name": "Roman Wilson",
-   "team": "PIT",
-   "position": "WR",
-   "status": "O",
-   "chance": 0.41875,
+   "name": "Michael Penix Jr.",
+   "team": "ATL",
+   "position": "QB",
+   "status": "",
+   "chance": 0.96654,
    "practices": [
-    null,
-    null,
-    null
-   ]
-  },
-  {
-   "name": "Michael Pittman Jr.",
-   "team": "PIT",
-   "position": "WR",
-   "status": "IR",
-   "chance": 0.13998,
-   "practices": [
-    null,
+    "Full",
     null,
     null
    ]
@@ -424,6 +712,18 @@
    ]
   },
   {
+   "name": "Keon Coleman",
+   "team": "BUF",
+   "position": "WR",
+   "status": "",
+   "chance": 0.98281,
+   "practices": [
+    "Full",
+    "--",
+    null
+   ]
+  },
+  {
    "name": "Pat Bryant",
    "team": "DEN",
    "position": "WR",
@@ -432,6 +732,30 @@
    "practices": [
     "--",
     "--",
+    "--"
+   ]
+  },
+  {
+   "name": "Roman Wilson",
+   "team": "PIT",
+   "position": "WR",
+   "status": "O",
+   "chance": 0.25567,
+   "practices": [
+    "DNP",
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Daniel Jones",
+   "team": "IND",
+   "position": "QB",
+   "status": "",
+   "chance": 0.97963,
+   "practices": [
+    "Full",
+    null,
     null
    ]
   },
@@ -439,10 +763,22 @@
    "name": "Ja'Kobi Lane",
    "team": "BAL",
    "position": "WR",
-   "status": "IR",
-   "chance": null,
+   "status": "",
+   "chance": 0.65144,
    "practices": [
+    "Full",
     null,
+    null
+   ]
+  },
+  {
+   "name": "Tyjae Spears",
+   "team": "TEN",
+   "position": "RB",
+   "status": "Q",
+   "chance": 0.8532,
+   "practices": [
+    "Limit",
     null,
     null
    ]
@@ -451,10 +787,10 @@
    "name": "Omar Cooper Jr.",
    "team": "NYJ",
    "position": "WR",
-   "status": "IR",
-   "chance": null,
+   "status": "Q",
+   "chance": 0.39612,
    "practices": [
-    null,
+    "Limit",
     null,
     null
    ]
@@ -463,34 +799,22 @@
    "name": "Jalen Nailor",
    "team": "LV",
    "position": "WR",
+   "status": "Q",
+   "chance": 0.16647,
+   "practices": [
+    "DNP",
+    "--",
+    null
+   ]
+  },
+  {
+   "name": "Najee Harris",
+   "team": "NYG",
+   "position": "RB",
    "status": "",
-   "chance": 0.41323,
+   "chance": 0.91678,
    "practices": [
-    null,
-    null,
-    null
-   ]
-  },
-  {
-   "name": "Christian Kirk",
-   "team": "SF",
-   "position": "WR",
-   "status": "IR",
-   "chance": null,
-   "practices": [
-    null,
-    null,
-    null
-   ]
-  },
-  {
-   "name": "Baker Mayfield",
-   "team": "TB",
-   "position": "QB",
-   "status": "O",
-   "chance": 0.17338,
-   "practices": [
-    null,
+    "Full",
     null,
     null
    ]
@@ -508,25 +832,25 @@
    ]
   },
   {
-   "name": "Mack Hollins",
-   "team": "NE",
-   "position": "WR",
-   "status": "IR",
-   "chance": 0.17295,
+   "name": "Baker Mayfield",
+   "team": "TB",
+   "position": "QB",
+   "status": "O",
+   "chance": 0.1423,
    "practices": [
-    null,
+    "DNP",
     null,
     null
    ]
   },
   {
-   "name": "Joshua Palmer",
-   "team": "BUF",
+   "name": "Mack Hollins",
+   "team": "NE",
    "position": "WR",
-   "status": "",
-   "chance": 0.40036,
+   "status": "IR",
+   "chance": null,
    "practices": [
-    null,
+    "--",
     null,
     null
    ]
@@ -544,21 +868,45 @@
    ]
   },
   {
-   "name": "George Holani",
-   "team": "SEA",
-   "position": "RB",
-   "status": "",
-   "chance": 0.9874,
+   "name": "Darnell Mooney",
+   "team": "NYG",
+   "position": "WR",
+   "status": "Q",
+   "chance": 0.92876,
    "practices": [
-    "Full",
-    "Full",
+    "Limit",
+    null,
     null
    ]
   },
   {
-   "name": "Tank Bigsby",
-   "team": "PHI",
-   "position": "RB",
+   "name": "Colby Parkinson",
+   "team": "LAR",
+   "position": "TE",
+   "status": "Q",
+   "chance": 0.94442,
+   "practices": [
+    "Limit",
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Charlie Kolar",
+   "team": "LAC",
+   "position": "TE",
+   "status": "",
+   "chance": 0.97715,
+   "practices": [
+    "Full",
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Christian Kirk",
+   "team": "SF",
+   "position": "WR",
    "status": "IR",
    "chance": null,
    "practices": [
@@ -568,8 +916,8 @@
    ]
   },
   {
-   "name": "Dylan Sampson",
-   "team": "CLE",
+   "name": "Tank Bigsby",
+   "team": "PHI",
    "position": "RB",
    "status": "IR",
    "chance": null,
@@ -592,37 +940,73 @@
    ]
   },
   {
+   "name": "Sean Tucker",
+   "team": "TB",
+   "position": "RB",
+   "status": "Q",
+   "chance": 0.12678,
+   "practices": [
+    "DNP",
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Dylan Sampson",
+   "team": "CLE",
+   "position": "RB",
+   "status": "Q",
+   "chance": 0.11048,
+   "practices": [
+    "DNP",
+    null,
+    null
+   ]
+  },
+  {
+   "name": "George Holani",
+   "team": "SEA",
+   "position": "RB",
+   "status": "",
+   "chance": 1,
+   "practices": [
+    "Full",
+    "Full",
+    "Full"
+   ]
+  },
+  {
+   "name": "Joshua Palmer",
+   "team": "BUF",
+   "position": "WR",
+   "status": "Q",
+   "chance": 0.6395,
+   "practices": [
+    "Limit",
+    "--",
+    null
+   ]
+  },
+  {
+   "name": "Jack Bech",
+   "team": "LV",
+   "position": "WR",
+   "status": "IR",
+   "chance": null,
+   "practices": [
+    null,
+    null,
+    null
+   ]
+  },
+  {
    "name": "Eli Stowers",
    "team": "PHI",
    "position": "TE",
-   "status": "IR",
-   "chance": null,
+   "status": "Q",
+   "chance": 0.37032,
    "practices": [
-    null,
-    null,
-    null
-   ]
-  },
-  {
-   "name": "Will Shipley",
-   "team": "PHI",
-   "position": "RB",
-   "status": "O",
-   "chance": null,
-   "practices": [
-    null,
-    null,
-    null
-   ]
-  },
-  {
-   "name": "Raheim Sanders",
-   "team": "CLE",
-   "position": "RB",
-   "status": "IR",
-   "chance": null,
-   "practices": [
-    null,
+    "Limit",
     null,
     null
    ]
@@ -640,9 +1024,33 @@
    ]
   },
   {
-   "name": "Jack Bech",
-   "team": "LV",
-   "position": "WR",
+   "name": "Ty Johnson",
+   "team": "BUF",
+   "position": "RB",
+   "status": "Q",
+   "chance": 0.63622,
+   "practices": [
+    "Limit",
+    "--",
+    null
+   ]
+  },
+  {
+   "name": "Will Shipley",
+   "team": "PHI",
+   "position": "RB",
+   "status": "O",
+   "chance": 0.09528,
+   "practices": [
+    "DNP",
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Raheim Sanders",
+   "team": "CLE",
+   "position": "RB",
    "status": "IR",
    "chance": null,
    "practices": [
@@ -656,9 +1064,33 @@
    "team": "GB",
    "position": "RB",
    "status": "IR",
-   "chance": 0.16732,
+   "chance": null,
    "practices": [
+    "--",
     null,
+    null
+   ]
+  },
+  {
+   "name": "Theo Johnson",
+   "team": "NYG",
+   "position": "TE",
+   "status": "Q",
+   "chance": 0.90979,
+   "practices": [
+    "Limit",
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Matt Hibner",
+   "team": "BAL",
+   "position": "TE",
+   "status": "Q",
+   "chance": 0.43745,
+   "practices": [
+    "DNP",
     null,
     null
    ]
@@ -676,13 +1108,61 @@
    ]
   },
   {
+   "name": "Xavier Legette",
+   "team": "CAR",
+   "position": "WR",
+   "status": "IR",
+   "chance": null,
+   "practices": [
+    null,
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Tyquan Thornton",
+   "team": "KC",
+   "position": "WR",
+   "status": "IR",
+   "chance": null,
+   "practices": [
+    null,
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Trevor Etienne",
+   "team": "CAR",
+   "position": "RB",
+   "status": "",
+   "chance": 0.38854,
+   "practices": [
+    "Full",
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Marcus Mariota",
+   "team": "WAS",
+   "position": "QB",
+   "status": "",
+   "chance": 0.17655,
+   "practices": [
+    null,
+    null,
+    null
+   ]
+  },
+  {
    "name": "Darius Slayton",
    "team": "IND",
    "position": "WR",
    "status": "",
-   "chance": 0.28803,
+   "chance": 0.73568,
    "practices": [
-    null,
+    "Full",
     null,
     null
    ]
@@ -691,10 +1171,10 @@
    "name": "Hollywood Brown",
    "team": "PHI",
    "position": "WR",
-   "status": "",
-   "chance": 0.33888,
+   "status": "Q",
+   "chance": 0.59199,
    "practices": [
-    null,
+    "Limit",
     null,
     null
    ]
@@ -715,10 +1195,10 @@
    "name": "Brenen Thompson",
    "team": "LAC",
    "position": "WR",
-   "status": "",
-   "chance": 0.40354,
+   "status": "Q",
+   "chance": 0.5341,
    "practices": [
-    null,
+    "Limit",
     null,
     null
    ]
@@ -740,33 +1220,33 @@
    "team": "HOU",
    "position": "WR",
    "status": "",
-   "chance": 0.23272,
+   "chance": 0.5711,
    "practices": [
-    null,
+    "Full",
     null,
     null
    ]
   },
   {
-   "name": "Xavier Legette",
+   "name": "Tommy Tremble",
    "team": "CAR",
-   "position": "WR",
-   "status": "IR",
-   "chance": null,
+   "position": "TE",
+   "status": "Q",
+   "chance": 0.75313,
    "practices": [
-    null,
+    "Limit",
     null,
     null
    ]
   },
   {
-   "name": "Marcus Mariota",
-   "team": "WAS",
-   "position": "QB",
-   "status": "",
-   "chance": 0.17655,
+   "name": "Nate Boerkircher",
+   "team": "JAC",
+   "position": "TE",
+   "status": "Q",
+   "chance": 0.90283,
    "practices": [
-    null,
+    "Limit",
     null,
     null
    ]
@@ -775,10 +1255,10 @@
    "name": "Savion Williams",
    "team": "GB",
    "position": "WR",
-   "status": "",
-   "chance": 0.24769,
+   "status": "Q",
+   "chance": 0.3081,
    "practices": [
-    null,
+    "Limit",
     null,
     null
    ]
@@ -808,6 +1288,18 @@
    ]
   },
   {
+   "name": "Nick Vannett",
+   "team": "BAL",
+   "position": "TE",
+   "status": "Q",
+   "chance": 0.81651,
+   "practices": [
+    "Limit",
+    null,
+    null
+   ]
+  },
+  {
    "name": "Demarcus Robinson",
    "team": "SF",
    "position": "WR",
@@ -823,10 +1315,10 @@
    "name": "Zach Wood",
    "team": "NO",
    "position": "TE",
-   "status": "IR",
-   "chance": null,
+   "status": "",
+   "chance": 0.43444,
    "practices": [
-    null,
+    "Full",
     null,
     null
    ]
@@ -860,9 +1352,21 @@
    "team": "BAL",
    "position": "TE",
    "status": "IR",
-   "chance": 0.54303,
+   "chance": null,
    "practices": [
+    "--",
     null,
+    null
+   ]
+  },
+  {
+   "name": "Marquez Valdes-Scantling",
+   "team": "LAC",
+   "position": "WR",
+   "status": "Q",
+   "chance": 0.9457,
+   "practices": [
+    "Limit",
     null,
     null
    ]
@@ -883,12 +1387,12 @@
    "name": "Drew Lock",
    "team": "SEA",
    "position": "QB",
-   "status": "Q",
-   "chance": 0.44777,
+   "status": "",
+   "chance": 1,
    "practices": [
     "Limit",
     "Limit",
-    null
+    "Limit"
    ]
   },
   {
@@ -908,9 +1412,9 @@
    "team": "TB",
    "position": "WR",
    "status": "IR",
-   "chance": null,
+   "chance": 0.35022,
    "practices": [
-    null,
+    "Full",
     null,
     null
    ]
@@ -919,10 +1423,22 @@
    "name": "Ashton Dulin",
    "team": "IND",
    "position": "WR",
-   "status": "",
-   "chance": 0.28218,
+   "status": "Q",
+   "chance": 0.07855,
    "practices": [
+    "DNP",
     null,
+    null
+   ]
+  },
+  {
+   "name": "Alex Bachman",
+   "team": "LAR",
+   "position": "WR",
+   "status": "",
+   "chance": null,
+   "practices": [
+    "Limit",
     null,
     null
    ]
@@ -959,6 +1475,30 @@
    "chance": null,
    "practices": [
     null,
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Devin Duvernay",
+   "team": "ARI",
+   "position": "WR",
+   "status": "Q",
+   "chance": 0.72581,
+   "practices": [
+    "Limit",
+    null,
+    null
+   ]
+  },
+  {
+   "name": "AJ Dillon",
+   "team": "CAR",
+   "position": "RB",
+   "status": "Q",
+   "chance": 0.19784,
+   "practices": [
+    "DNP",
     null,
     null
    ]
@@ -1003,10 +1543,10 @@
    "name": "Tylan Wallace",
    "team": "CLE",
    "position": "WR",
-   "status": "",
-   "chance": 0.38094,
+   "status": "Q",
+   "chance": 0.62459,
    "practices": [
-    null,
+    "Limit",
     null,
     null
    ]
@@ -1016,9 +1556,9 @@
    "team": "NE",
    "position": "RB",
    "status": "IR",
-   "chance": 0.28851,
+   "chance": null,
    "practices": [
-    null,
+    "--",
     null,
     null
    ]
@@ -1028,9 +1568,9 @@
    "team": "LAC",
    "position": "QB",
    "status": "IR",
-   "chance": 0.12976,
+   "chance": null,
    "practices": [
-    null,
+    "--",
     null,
     null
    ]
@@ -1063,22 +1603,10 @@
    "name": "Ben Skowronek",
    "team": "PIT",
    "position": "WR",
-   "status": "",
-   "chance": 0.27819,
+   "status": "Q",
+   "chance": 0.19105,
    "practices": [
-    null,
-    null,
-    null
-   ]
-  },
-  {
-   "name": "Tyquan Thornton",
-   "team": "KC",
-   "position": "WR",
-   "status": "IR",
-   "chance": null,
-   "practices": [
-    null,
+    "DNP",
     null,
     null
    ]
@@ -1136,9 +1664,9 @@
    "team": "CLE",
    "position": "QB",
    "status": "",
-   "chance": 0.22038,
+   "chance": 0.2861,
    "practices": [
-    null,
+    "Full",
     null,
     null
    ]
@@ -1192,13 +1720,37 @@
    ]
   },
   {
+   "name": "Davis Allen",
+   "team": "LAR",
+   "position": "TE",
+   "status": "Q",
+   "chance": 0.48694,
+   "practices": [
+    "DNP",
+    null,
+    null
+   ]
+  },
+  {
    "name": "Will Mallory",
    "team": "IND",
    "position": "TE",
    "status": "",
-   "chance": 0.34021,
+   "chance": 0.59531,
    "practices": [
+    "Full",
     null,
+    null
+   ]
+  },
+  {
+   "name": "Skyy Moore",
+   "team": "GB",
+   "position": "WR",
+   "status": "Q",
+   "chance": 0.25109,
+   "practices": [
+    "DNP",
     null,
     null
    ]
@@ -1240,6 +1792,18 @@
    ]
   },
   {
+   "name": "Grant Calcaterra",
+   "team": "PHI",
+   "position": "TE",
+   "status": "Q",
+   "chance": 0.54121,
+   "practices": [
+    "Limit",
+    null,
+    null
+   ]
+  },
+  {
    "name": "Malik Davis",
    "team": "DAL",
    "position": "RB",
@@ -1248,6 +1812,30 @@
    "practices": [
     null,
     null,
+    null
+   ]
+  },
+  {
+   "name": "KeAndre Lambert-Smith",
+   "team": "LAC",
+   "position": "WR",
+   "status": "Q",
+   "chance": 0.36862,
+   "practices": [
+    "Limit",
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Dareke Young",
+   "team": "LV",
+   "position": "WR",
+   "status": "",
+   "chance": 0.97715,
+   "practices": [
+    "Full",
+    "--",
     null
    ]
   },
@@ -1268,11 +1856,11 @@
    "team": "SEA",
    "position": "WR",
    "status": "",
-   "chance": 0.38297,
+   "chance": 1,
    "practices": [
     "Full",
     "Full",
-    null
+    "--"
    ]
   },
   {
@@ -1319,6 +1907,18 @@
    "chance": null,
    "practices": [
     null,
+    null,
+    null
+   ]
+  },
+  {
+   "name": "E.J. Jenkins",
+   "team": "PHI",
+   "position": "TE",
+   "status": "Q",
+   "chance": 0.94442,
+   "practices": [
+    "Limit",
     null,
     null
    ]
@@ -1459,10 +2059,10 @@
    "name": "David Martin-Robinson",
    "team": "TEN",
    "position": "TE",
-   "status": "",
-   "chance": 0.46749,
+   "status": "Q",
+   "chance": 0.62876,
    "practices": [
-    null,
+    "Limit",
     null,
     null
    ]
@@ -1484,10 +2084,10 @@
    "team": "LV",
    "position": "WR",
    "status": "",
-   "chance": 0.35915,
+   "chance": 0.43309,
    "practices": [
-    null,
-    null,
+    "Full",
+    "--",
     null
    ]
   },
@@ -1512,6 +2112,18 @@
    "practices": [
     null,
     null,
+    null
+   ]
+  },
+  {
+   "name": "Carter Runyon",
+   "team": "LV",
+   "position": "TE",
+   "status": "Q",
+   "chance": 0.51571,
+   "practices": [
+    "Limit",
+    "--",
     null
    ]
   },
@@ -1627,10 +2239,10 @@
    "name": "Carsen Ryan",
    "team": "CLE",
    "position": "TE",
-   "status": "",
-   "chance": 0.32837,
+   "status": "Q",
+   "chance": 0.09486,
    "practices": [
-    null,
+    "DNP",
     null,
     null
    ]
