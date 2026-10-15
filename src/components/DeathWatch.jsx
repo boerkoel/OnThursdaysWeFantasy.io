@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { formatDay, money, pct } from "../lib/data.js";
 import { ShareButton, TeamLogo } from "./LiveBits.jsx";
-import { TeamLineup } from "./MatchupLineup.jsx";
+import { LiveToggle, TeamLineup, useLiveOnly } from "./MatchupLineup.jsx";
+import { useSwipe } from "../lib/swipe.js";
 import ChopChart, { peakTeams } from "./ChopChart.jsx";
 import Podium from "./Podium.jsx";
 import obituaryData from "../../data/current/obituaries.json";
@@ -160,11 +161,12 @@ function Obituaries({ guillotine }) {
     : `Chopped in Week ${c.week} with ${money(c.finalScore)} pts${c.survivedBy ? `, ${money(c.margin)} short of ${c.survivedBy.team}` : ""}.`;
   const active = index % chopped.length;
   const step = delta => setIndex((active + delta + chopped.length) % chopped.length);
+  const swipe = useSwipe(() => step(-1), () => step(1));
   return (
     <details className="collapsible" id="rip">
       <summary>Rest in peace <span>{past.length} chopped{doomed.length ? ` · ${doomed.length} doomed` : ""}</span></summary>
       <div className="obit-carousel">
-        <div className="obit-stack">
+        <div className="obit-stack" {...(chopped.length > 1 ? swipe : {})}>
           {chopped.map((c, i) => {
             const obituary = obituaryFor(c);
             return <article className={i === active ? "obit-card active" : "obit-card"} aria-hidden={i !== active} key={c.teamId}>
@@ -206,6 +208,7 @@ const openObituaries = () => {
 
 export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
   const [openLineups, setOpenLineups] = useState(() => new Set());
+  const [liveOnly, setLiveOnly] = useLiveOnly();
   if (!(guillotine.teams?.length)) return null;
   const toggleLineup = id => setOpenLineups(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
   const atRisk = guillotine.teams.filter(t => t.chopProbability > 0).slice(0, 3);
@@ -245,12 +248,13 @@ export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
           {openLineups.has(t.teamId) ? (() => {
             // Side by side with the team that most often finishes just above them.
             const above = t.justAbove && guillotine.teams.find(o => o.teamId === t.justAbove.teamId);
-            if (!above?.lineup?.length) return <TeamLineup lineup={t.lineup} nflGames={nflGames} />;
-            return <div className="dw-vs">
+            const toggle = <LiveToggle liveOnly={liveOnly} onChange={setLiveOnly} />;
+            if (!above?.lineup?.length) return <>{toggle}<TeamLineup lineup={t.lineup} nflGames={nflGames} liveOnly={liveOnly} /></>;
+            return <div className="dw-vs">{toggle}
               <p className="dw-vs-note">Next to <b>{above.team}</b>, the team that finishes just above them in {Math.round(t.justAbove.share)}% of simulations.</p>
               <div className="dw-vs-cols">
-                <div><strong className="dw-vs-head">{t.team}</strong><TeamLineup lineup={t.lineup} nflGames={nflGames} /></div>
-                <div><strong className="dw-vs-head">{above.team}</strong><TeamLineup lineup={above.lineup} nflGames={nflGames} /></div>
+                <div><strong className="dw-vs-head">{t.team}</strong><TeamLineup lineup={t.lineup} nflGames={nflGames} liveOnly={liveOnly} /></div>
+                <div><strong className="dw-vs-head">{above.team}</strong><TeamLineup lineup={above.lineup} nflGames={nflGames} liveOnly={liveOnly} /></div>
               </div>
             </div>;
           })() : null}

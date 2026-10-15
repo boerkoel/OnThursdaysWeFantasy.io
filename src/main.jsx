@@ -16,7 +16,7 @@ import TeamCards from "./components/TeamCards.jsx";
 import TopTrades from "./components/TopTrades.jsx";
 import { DeathWatch } from "./components/DeathWatch.jsx";
 import SwingChart, { tippingPoint } from "./components/SwingChart.jsx";
-import MatchupLineup from "./components/MatchupLineup.jsx";
+import MatchupLineup, { LiveToggle, useLiveOnly } from "./components/MatchupLineup.jsx";
 import RafflePodium from "./components/RafflePodium.jsx";
 import PrimetimeWatch from "./components/PrimetimeWatch.jsx";
 import Sheet from "./components/Sheet.jsx";
@@ -319,6 +319,20 @@ function App() {
     go("scores");
   };
   const leagueScale = outcomeScale(scores.filter(x => x.projection?.dist && x.projection.dist.p90 > x.projection.dist.p10));
+  // Primetime view: each matchup row expands to its live players and key plays.
+  const [primetimeView, setPrimetimeView] = useState(() => { try { return localStorage.getItem("primetimeView") === "1"; } catch { return false; } });
+  useEffect(() => { try { localStorage.setItem("primetimeView", primetimeView ? "1" : "0"); } catch {} }, [primetimeView]);
+  const [liveOnly, setLiveOnly] = useLiveOnly();
+  const renderPrimetime = matchupId => {
+    const pair = pairOf(matchupId);
+    if (!pair) return null;
+    const [a, b] = pair;
+    const plays = keyPlaysFor(matchupId).slice(0, 3);
+    return <div className="primetime-expand">
+      <MatchupLineup a={a} b={b} nflGames={scoreboard.nflGames || []} liveOnly />
+      {plays.length ? <ul className="primetime-plays">{plays.map((play, i) => <li key={i}><b>{playLabel(play)}</b> {playText(play)}{momentumLine(play) ? <em> ⚡ {momentumLine(play)}</em> : null}</li>)}</ul> : null}
+    </div>;
+  };
   const orderedMatchups = [...matchupIds].sort((x, y) => (y === myMatchupId) - (x === myMatchupId) || isFollowed(y) - isFollowed(x));
   const renderMatchupRow = (matchupId, mine = false) => {
     const pair = pairOf(matchupId);
@@ -367,7 +381,7 @@ function App() {
           ].filter(Boolean)
         })} />
       </div>
-      {view === "lineup" ? <MatchupLineup a={a} b={b} nflGames={scoreboard.nflGames || []} /> : <div className="sheet-details">
+      {view === "lineup" ? <><LiveToggle liveOnly={liveOnly} onChange={setLiveOnly} /><MatchupLineup a={a} b={b} nflGames={scoreboard.nflGames || []} liveOnly={liveOnly} /></> : <div className="sheet-details">
         {seriesLine(a.teamId, b.teamId) ? <p className="rivalry-line">⚔️ {seriesLine(a.teamId, b.teamId)}</p> : null}
         <SwingChart points={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} teamId={a.teamId} teamName={a.team} opponentName={b.team}
           plays={keyPlays.filter(p => p.momentum?.shift >= BIG_SWING)} crossings />
@@ -448,9 +462,13 @@ function App() {
       {renderMyTeam()}
       <PrimetimeWatch scores={scores} nflGames={scoreboard.nflGames || []} guillotine={Number(guillotine.week) === Number(scoreboard.week) ? guillotine : null} logos={teamLogos} week={scoreboard.week} />
       <section id="scores" className="section">
-        <div className="section-heading"><div><span className="section-kicker">RIGHT NOW</span><h2>Week {scoreboard.week} Scores</h2></div><button type="button" className={status === "LIVE" ? "live-pill is-live" : "live-pill"} onClick={refresher.run} title="Refresh now">● {status} ↻</button></div>
+        <div className="section-heading"><div><span className="section-kicker">RIGHT NOW</span><h2>Week {scoreboard.week} Scores</h2></div>
+          <span className="scores-actions">
+            <button type="button" className={primetimeView ? "primetime-toggle on" : "primetime-toggle"} aria-pressed={primetimeView} onClick={() => setPrimetimeView(!primetimeView)} title="Expand each matchup to the players live right now and its key plays">📺 Primetime view</button>
+            <button type="button" className={status === "LIVE" ? "live-pill is-live" : "live-pill"} onClick={refresher.run} title="Refresh now">● {status} ↻</button>
+          </span></div>
         <div className="matchup-list">
-          {orderedMatchups.filter(id => id !== myMatchupId).map(id => renderMatchupRow(id))}
+          {orderedMatchups.filter(id => id !== myMatchupId).map(id => primetimeView ? <React.Fragment key={id}>{renderMatchupRow(id)}{renderPrimetime(id)}</React.Fragment> : renderMatchupRow(id))}
         </div>
       </section>
       <RafflePodium scores={scores} logos={teamLogos} week={scoreboard.week} final={Boolean(currentWeekComplete)}
@@ -471,7 +489,7 @@ function App() {
             <div className={"score-row " + (projectedMedianEdgeTeams.has(s.teamId) ? "median-near" : Number(s.aboveMedianProbability) > 50 ? "median-above" : s.aboveMedianProbability != null ? "median-below" : "")}><span className="rank">{i + 1}</span><span className="score-team"><TeamLogo src={teamLogos[s.teamId]} />{s.team}{projectedMedianEdgeTeams.has(s.teamId) ? <em className="median-near-label">NEAR MEDIAN</em> : null}</span><span className="score-opponent">vs {s.opponent}</span><strong className={["score-primary", scoreSort === "projected" ? "projected-score" : "", flashingScores.has(s.teamId) ? "score-flash" : ""].join(" ").trim()}>{scoreSort === "wins" ? (expectedWins(s) != null ? expectedWins(s).toFixed(2) : "—") : money(scoreSort === "projected" ? s.projectionAverage : s.score)}</strong>{scoreSort === "wins" ? <span className="score-projection">H2H {pct(s.winProbability)}<em className="score-probability">ABOVE MEDIAN {pct(s.aboveMedianProbability)}</em></span> : <span className="score-projection">{scoreSort === "projected" ? "ACT " + money(s.score) : "PROJ "}{scoreSort === "projected" ? "" : (s.projectionTrend === "up" ? "↑ " : s.projectionTrend === "down" ? "↓ " : "")}{scoreSort === "projected" ? "" : (s.projectionAverage != null ? money(s.projectionAverage) : "—")}<em className="score-probability">ABOVE MEDIAN {pct(s.aboveMedianProbability)}</em></span>}{leagueScale ? <span className="score-dist"><OutcomeBar dist={s.projection?.dist} espn={Number(s.projection?.espn)} lo={leagueScale.lo} hi={leagueScale.hi} width={110} /></span> : null}</div>
           </React.Fragment>)}
         </div>
-        <p className="median-note">Projections are ours: ESPN, RotoWire and FantasyPros averaged, with injuries and likely lineup moves simulated (the bar on wide screens: band = middle half of outcomes, line = 80%, ◆ = ESPN). The projected median is the median of those projections. Odds of finishing above the median come from simulating the rest of the week, where the league median moves with every team’s result. Highlighted in yellow: the teams projected just above and just below the median, plus any team with a {NEAR_MEDIAN_MIN}–{NEAR_MEDIAN_MAX}% chance.</p>
+        <p className="median-note">Projections are ours: ESPN, Sleeper (RotoWire) and FantasyPros averaged, with injuries and likely lineup moves simulated (the bar on wide screens: band = middle half of outcomes, line = 80%, ◆ = ESPN). The projected median is the median of those projections. Odds of finishing above the median come from simulating the rest of the week, where the league median moves with every team’s result. Highlighted in yellow: the teams projected just above and just below the median, plus any team with a {NEAR_MEDIAN_MIN}–{NEAR_MEDIAN_MAX}% chance.</p>
       </section>
       <AccuracyScorecard scorecard={scoreboard.scorecard} />
       </> : null}

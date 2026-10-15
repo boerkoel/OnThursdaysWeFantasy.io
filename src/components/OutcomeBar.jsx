@@ -47,7 +47,7 @@ export function MatchupOutcomes({ teams }) {
           <span className="mo-nums"><b>{money(d.mean)}</b> <small>80%: {money(d.p10)}–{money(d.p90)}{gap != null && Math.abs(gap) >= 3 ? ` · ESPN ${money(espn)}` : ""}</small></span>
         </div>;
       })}
-      <p className="mo-legend">Bold tick: our projection (ESPN, RotoWire and FantasyPros averaged, with injuries and likely lineup moves simulated). Band: middle half of outcomes; line: 80% of outcomes ({teams.map(t => `${t.team} ±${money(spread(t) / 2)}`).join(", ")}). ◆ ESPN's projection.</p>
+      <p className="mo-legend">Bold tick: our projection (ESPN, Sleeper (RotoWire) and FantasyPros averaged, with injuries and likely lineup moves simulated). Band: middle half of outcomes; line: 80% of outcomes ({teams.map(t => `${t.team} ±${money(spread(t) / 2)}`).join(", ")}). ◆ ESPN's projection.</p>
     </div>
   );
 }

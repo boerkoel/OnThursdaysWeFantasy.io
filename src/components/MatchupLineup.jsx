@@ -1,4 +1,29 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+
+// "Live" lineups: only players whose NFL game is in progress. One shared
+// setting (remembered on this device) so every lineup view follows it.
+const LIVE_KEY = "lineupLiveOnly";
+export function useLiveOnly() {
+  const read = () => { try { return localStorage.getItem(LIVE_KEY) === "1"; } catch { return false; } };
+  const [liveOnly, setLiveOnly] = useState(read);
+  useEffect(() => {
+    const sync = () => setLiveOnly(read());
+    window.addEventListener("lineup-live-only", sync);
+    return () => window.removeEventListener("lineup-live-only", sync);
+  }, []);
+  const set = on => { try { localStorage.setItem(LIVE_KEY, on ? "1" : "0"); } catch {} window.dispatchEvent(new Event("lineup-live-only")); };
+  return [liveOnly, set];
+}
+export function LiveToggle({ liveOnly, onChange }) {
+  return <div className="lineup-filter" role="group" aria-label="Which players to show">
+    <button type="button" className={liveOnly ? "" : "active"} onClick={() => onChange(false)}>All</button>
+    <button type="button" className={liveOnly ? "active" : ""} onClick={() => onChange(true)}>Live now</button>
+  </div>;
+}
+const isLive = (player, nflGames) => {
+  const game = player && nflGames.find(g => (g.teamIds || []).includes(player.proTeamId));
+  return Boolean(game && game.state === "in");
+};
 
 // ESPN-style lineup table inside an expanded matchup card: both teams'
 // starters side by side, slot by slot. Bench players appear only when they
@@ -53,12 +78,13 @@ function Row({ label, left, right, nflGames, highlight }) {
   </div>;
 }
 
-export default function MatchupLineup({ a, b, nflGames = [] }) {
+export default function MatchupLineup({ a, b, nflGames = [], liveOnly = false }) {
   if (!a.lineup || !b.lineup) return null;
   const rows = [];
   for (const slot of SLOT_ORDER) {
-    const left = a.lineup.starters.filter(p => p.slot === slot);
-    const right = b.lineup.starters.filter(p => p.slot === slot);
+    const live = p => !liveOnly || isLive(p, nflGames);
+    const left = a.lineup.starters.filter(p => p.slot === slot && live(p));
+    const right = b.lineup.starters.filter(p => p.slot === slot && live(p));
     for (let i = 0; i < Math.max(left.length, right.length); i++) {
       rows.push(<Row key={slot + "-" + i} label={SLOT_LABELS[slot]} left={left[i]} right={right[i]} nflGames={nflGames} />);
     }
@@ -75,6 +101,9 @@ export default function MatchupLineup({ a, b, nflGames = [] }) {
       {flipped ? <em>😱 would have beaten {opp.team}</em> : null}
     </div>;
   };
+  if (liveOnly) return <div className="matchup-lineup" aria-label="Live players">
+    {rows.length ? rows : <p className="lineup-none">Nobody in this matchup is playing right now.</p>}
+  </div>;
   return <div className="matchup-lineup" aria-label="Lineups">
     {rows}
     {benchLeft.length || benchRight.length ? <>
@@ -87,9 +116,11 @@ export default function MatchupLineup({ a, b, nflGames = [] }) {
 }
 
 // One team's starters (the Death Watch cards): slot, player and game, points.
-export function TeamLineup({ lineup = [], nflGames = [] }) {
-  const rows = SLOT_ORDER.flatMap(slot => lineup.filter(p => p.slot === slot));
-  const other = lineup.filter(p => !SLOT_ORDER.includes(p.slot));
+export function TeamLineup({ lineup = [], nflGames = [], liveOnly = false }) {
+  const shown = liveOnly ? lineup.filter(p => isLive(p, nflGames)) : lineup;
+  const rows = SLOT_ORDER.flatMap(slot => shown.filter(p => p.slot === slot));
+  const other = shown.filter(p => !SLOT_ORDER.includes(p.slot));
+  if (liveOnly && !shown.length) return <p className="lineup-none">Nobody playing right now.</p>;
   return <div className="team-lineup" aria-label="Lineup">
     {[...rows, ...other].map(p => {
       const game = nflGames.find(g => (g.teamIds || []).includes(p.proTeamId));
