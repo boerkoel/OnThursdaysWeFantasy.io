@@ -41,6 +41,26 @@ export function addShrewdSwapStory(add) {
     "🧠 SHREWD SWAP: " + name(d.fromTeamId) + " swapped " + d.player + " for " + d.added.player + " — " + pts(d.added.points) + " vs " + pts(d.points) + "."
   ),72 + Math.min(d.added.points - d.points, 30) / 2, {decisive: swapDecides(d.fromTeamId, d.added.points - d.points)});
 }
+// ---- Drop regret -------------------------------------------------------------
+// From drop-history.json: the player who has scored the most since a team
+// let him go (25+ points), and where he is now.
+export const dropHistory = await readJson(`${DATA}/drop-history.json`).catch(() => null);
+export const DROP_REGRET_MIN = 25;
+export function addDropRegretStory(add) {
+  const d = (dropHistory?.drops || []).find(x => teamNames.has(x.fromTeamId) && x.nowOnTeamId !== x.fromTeamId && x.pointsSince >= DROP_REGRET_MIN);
+  if (!d) return;
+  const where = d.nowOnTeamId && teamNames.has(d.nowOnTeamId) ? " Now he's helping " + name(d.nowOnTeamId) + "." : !d.nowOnTeamId ? " And he's still on waivers." : "";
+  const per = d.games > 1 ? " (" + (d.pointsSince / d.games).toFixed(1) + " a week)" : "";
+  const avgBefore = d.gamesBefore ? d.pointsBefore / d.gamesBefore : null, avgAfter = d.games ? d.pointsSince / d.games : 0;
+  // The turnaround version when he was quiet before the cut and hot since.
+  const turned = avgBefore != null && avgAfter >= 2 * avgBefore && avgAfter - avgBefore >= 6;
+  add("DROP REGRET",fit(
+    ...(turned ? ["🗑️ DROP REGRET: " + d.player + " averaged " + avgBefore.toFixed(1) + " before " + name(d.fromTeamId) + " cut him in Week " + d.dropWeek + ". Since: " + avgAfter.toFixed(1) + " a week." + where] : []),
+    "🗑️ DROP REGRET: Since " + name(d.fromTeamId) + " cut " + d.player + " in Week " + d.dropWeek + ", he's put up " + pts(d.pointsSince) + per + "." + where,
+    "🗑️ DROP REGRET: " + name(d.fromTeamId) + " cut " + d.player + " in Week " + d.dropWeek + ". Since then: " + pts(d.pointsSince) + "." + where,
+    "🗑️ DROP REGRET: " + name(d.fromTeamId) + " cut " + surname(d.player) + "; he's scored " + pts(d.pointsSince) + " since."
+  ),64 + Math.min(16, (d.pointsSince - DROP_REGRET_MIN) / 3));
+}
 export function addMiscueStory(add) {
   if (Number(dropsData?.week) !== currentWeek) return;
   const played = swapPlayed;

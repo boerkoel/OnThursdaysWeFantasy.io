@@ -429,7 +429,7 @@ function App() {
           {chip("PLAYOFFS", odds?.playoffOdds)}
           {chip("TITLE", odds?.titleOdds)}
         </div>
-        <div className="matchup-list">{renderMatchupRow(myMatchupId, true)}</div>
+        <div className="matchup-list">{renderMatchupRow(myMatchupId, true)}{primetimeView ? renderPrimetime(myMatchupId) : null}</div>
       </section>
     );
   };

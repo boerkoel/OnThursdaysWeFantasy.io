@@ -108,3 +108,53 @@ const waivers = claims.map(c => {
 }).filter(Boolean);
 await writeFile(WAIVERS_OUT, JSON.stringify({ week, updatedAt: new Date().toISOString(), claims: waivers }, null, 2) + "\n");
 console.log(`Waivers: ${waivers.filter(c => c.won).length} claims won, ${waivers.filter(c => !c.won).length} lost, in the last 4 days.`);
+
+// ---- Drop history: every drop this season and what the player has scored
+// since (league scoring), for the League Wire's DROP REGRET story. Rebuilt
+// each run from every week's transactions, so nothing is lost between runs.
+// A drop counts the week it happened when it was processed Tuesday or
+// Wednesday (Eastern), before that week's games; otherwise from the next week.
+const HISTORY_OUT = process.env.DROP_HISTORY_PATH || "data/current/drop-history.json";
+try {
+  const allWeeks = Array.from({ length: week }, (_, i) => i + 1);
+  const txByWeek = await Promise.all(allWeeks.map(w => fetchJson(`${base}?view=mTransactions2&scoringPeriodId=${w}`).then(d => d.transactions || []).catch(() => [])));
+  const history = new Map();   // playerId -> latest drop
+  txByWeek.flat().filter(t => t.status === "EXECUTED").forEach(t => {
+    for (const item of t.items || []) {
+      if (item.type !== "DROP" || !(Number(item.playerId) > 0)) continue;
+      const at = Number(t.processDate);
+      if (!Number.isFinite(at) || at <= 0) continue;
+      const prev = history.get(Number(item.playerId));
+      if (prev && prev.at > at) continue;
+      const weekday = new Date(at).toLocaleDateString("en-US", { weekday: "short", timeZone: "America/New_York" });
+      const period = Number(t.scoringPeriodId) || week;
+      history.set(Number(item.playerId), { playerId: Number(item.playerId), fromTeamId: Number(item.fromTeamId), at,
+        droppedAt: new Date(at).toISOString(), dropWeek: period, firstWeek: ["Tue", "Wed"].includes(weekday) ? period : period + 1 });
+    }
+  });
+  const ids = [...history.keys()];
+  const pointsByWeek = new Map(ids.map(id => [id, {}]));
+  const info = new Map();
+  for (const w of allWeeks) {
+    const wanted = ids;   // every week, so we have his average before the drop too
+    if (!wanted.length) continue;
+    const data = await fetchJson(`${base}?view=kona_player_info&scoringPeriodId=${w}`, { "X-Fantasy-Filter": JSON.stringify({ players: { filterIds: { value: wanted } } }) });
+    for (const entry of data.players || []) {
+      const p = entry.player || {}, id = Number(p.id);
+      const pts = Number((p.stats || []).find(s => Number(s.scoringPeriodId) === w && Number(s.statSourceId) === 0 && Number(s.statSplitTypeId) === 1)?.appliedTotal);
+      if (Number.isFinite(pts)) pointsByWeek.get(id)[w] = Math.round(pts * 100) / 100;
+      if (w === week || !info.has(id)) info.set(id, { player: p.fullName, position: POSITIONS[Number(p.defaultPositionId)] || "", proTeamId: Number(p.proTeamId), nowOnTeamId: Number(entry.onTeamId) || null });
+    }
+  }
+  const out = [...history.values()].map(({ at, ...d }) => {
+    const all = pointsByWeek.get(d.playerId) || {};
+    const after = Object.entries(all).filter(([w]) => Number(w) >= d.firstWeek), before = Object.entries(all).filter(([w]) => Number(w) < d.firstWeek);
+    const sum = xs => Math.round(xs.reduce((a, [, v]) => a + v, 0) * 100) / 100;
+    return { ...d, ...(info.get(d.playerId) || {}), pointsByWeek: all, pointsSince: sum(after), games: after.length,
+      pointsBefore: sum(before), gamesBefore: before.length };
+  }).filter(d => d.player).sort((a, b) => b.pointsSince - a.pointsSince);
+  await writeFile(HISTORY_OUT, JSON.stringify({ week, updatedAt: new Date().toISOString(), drops: out }, null, 2) + "\n");
+  console.log(`Drop history: ${out.length} players dropped this season; most since: ${out.slice(0, 3).map(d => `${d.player} ${d.pointsSince}`).join(", ") || "none"}.`);
+} catch (error) {
+  console.warn(`Drop history skipped: ${error.message}`);
+}

@@ -19,7 +19,8 @@ import { interleave, weekHeadlines, weekInReview } from "./wire/review.js";
 import { addRosterStories } from "./wire/roster.js";
 import { addPracticeReportStory, addTrendingStory } from "./wire/sleeper.js";
 import { addStockWatchStory } from "./wire/stock.js";
-import { addMiscueStory, addShrewdSwapStory } from "./wire/swaps.js";
+import { addMiscueStory, addShrewdSwapStory, addDropRegretStory } from "./wire/swaps.js";
+import { addAbandonedStory, addWaiverMvpStory } from "./wire/ledger.js";
 import { addSwingStories } from "./wire/swings.js";
 import { addTradeStory } from "./wire/trades.js";
 import { addWaiverStories } from "./wire/waivers.js";
@@ -145,6 +146,9 @@ async function buildMarqueeStories() {
   try { addLongTermRegretStory(add); } catch (error) { console.warn("League Wire: long-term regret failed: " + error.message); }
   try { addTradeStory(add); } catch (error) { console.warn("League Wire: trade story failed: " + error.message); }
   try { await addObituaryStory(add); } catch (error) { console.warn("League Wire: obituary story failed: " + error.message); }
+  try { addDropRegretStory(add); } catch (error) { console.warn("League Wire: drop regret failed: " + error.message); }
+  try { addAbandonedStory(add); } catch (error) { console.warn("League Wire: points abandoned failed: " + error.message); }
+  try { await addWaiverMvpStory(add); } catch (error) { console.warn("League Wire: waiver MVP failed: " + error.message); }
   try { addRosterStories(add); } catch (error) { console.warn("League Wire: roster stories failed: " + error.message); }
   addSwingStories(add, matchupStates);
   addRaffleStories(add, previousScores);
