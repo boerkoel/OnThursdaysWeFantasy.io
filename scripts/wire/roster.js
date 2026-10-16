@@ -100,7 +100,6 @@ export function addRosterStories(add) {
   // Bargain bin: the bench least rostered across ESPN (average % rostered),
   // with injured bench spots and position pile-ups called out. Needs a real gap.
   const binned = reports.filter(r => r.benchOwned != null && r.bench.filter(p => !p.out).length >= 3).sort((a, b) => a.benchOwned - b.benchOwned);
-  console.log("League Wire: healthy-bench % rostered:", binned.map(r => `${r.team} ${Math.round(r.benchOwned)}%`).join(", "));
   const bin = binned[0], next = binned[1];
   if (bin && next && bin.benchOwned <= 45 && next.benchOwned - bin.benchOwned >= 5) {
     const record = (() => { const t = (teamData.teams || []).find(x => Number(x.id) === bin.teamId); const r = t?.record?.overall; return r ? ` (${r.wins}-${r.losses})` : ""; })();
@@ -128,8 +127,6 @@ export function addRosterStories(add) {
     });
     return {...r, hurt, extra, weight: hurt.length + extra.reduce((sum, x) => sum + x.count - ONESIE_KEEP[{QB:1, TE:4, K:5, "D/ST":16}[x.label]], 0)};
   }).sort((a, b) => b.weight - a.weight);
-  console.log("League Wire: dead weight:", dead.map(r => `${r.team} ${r.weight}`).join(", "));
-  for (const t of (rosterData.teams || []).filter(t => name(Number(t.id)) === "Ramosverse")) console.log("League Wire: Ramosverse roster:", (t.roster?.entries || []).map(e => { const p = e.playerPoolEntry?.player || {}; return `${p.lastName} slot${e.lineupSlotId} pos${p.defaultPositionId} ${p.injuryStatus || "ACTIVE"} ${Math.round(p.ownership?.percentOwned)}%`; }).join(", "));
   const dw = dead[0];
   if (dw && dw.weight >= 3 && dw.weight > (dead[1]?.weight || 0)) {
     const record = (() => { const t = (teamData.teams || []).find(x => Number(x.id) === dw.teamId); const r = t?.record?.overall; return r ? ` (${r.wins}-${r.losses})` : ""; })();
@@ -139,6 +136,26 @@ export function addRosterStories(add) {
       "🧱 DEAD WEIGHT: " + dw.team + record + "'s bench: " + listNames(parts) + ".",
       "🧱 DEAD WEIGHT: " + dw.team + " is carrying " + listNames(parts.slice(0, 1)) + "."
     ),(pregame ? 63 : 33) + dw.weight);
+  }
+  // Deep cuts: the starting lineup least rostered across ESPN (average %),
+  // naming its deepest cuts and any widely rostered healthy player benched.
+  const lineups = (rosterData.teams || []).map(t => {
+    const entries = (t.roster?.entries || []).filter(e => e.playerPoolEntry?.player);
+    const owned = e => Number(e.playerPoolEntry.player.ownership?.percentOwned);
+    const starters = entries.filter(e => ![BENCH_SLOT, 21].includes(Number(e.lineupSlotId)) && Number(e.playerPoolEntry.player.defaultPositionId) !== 16 && Number.isFinite(owned(e)));
+    const benchedStars = entries.filter(e => Number(e.lineupSlotId) === BENCH_SLOT && owned(e) >= 60 && !OUT_STATUSES.has(e.playerPoolEntry.player.injuryStatus || "ACTIVE"));
+    const last = e => (e.playerPoolEntry.player.lastName || e.playerPoolEntry.player.fullName);
+    return {teamId:Number(t.id), team:name(Number(t.id)), avg: starters.length ? starters.reduce((a, e) => a + owned(e), 0) / starters.length : 100,
+      cuts: starters.filter(e => owned(e) < 25).sort((a, b) => owned(a) - owned(b)).map(e => last(e) + " (" + Math.round(owned(e)) + "%)"),
+      benched: benchedStars.sort((a, b) => owned(b) - owned(a)).map(e => last(e) + " (" + Math.round(owned(e)) + "%)")};
+  }).sort((a, b) => a.avg - b.avg);
+  const dc = lineups[0];
+  if (dc && dc.cuts.length >= 2 && (lineups[1]?.avg ?? 100) - dc.avg >= 4) {
+    add("DEEP CUTS",fit(
+      "🎸 DEEP CUTS: " + dc.team + " is starting " + listNames(dc.cuts.slice(0, 3)) + (dc.benched.length ? " while " + listNames(dc.benched.slice(0, 2)) + " sit" + (dc.benched.length === 1 ? "s" : "") : "") + ". % = rostered across ESPN.",
+      "🎸 DEEP CUTS: " + dc.team + " is starting " + listNames(dc.cuts.slice(0, 3)) + (dc.benched.length ? ", benching " + dc.benched[0] : "") + ".",
+      "🎸 DEEP CUTS: " + dc.team + " is starting " + listNames(dc.cuts.slice(0, 2)) + "."
+    ),(pregame ? 62 : 32) + Math.min(8, (lineups[1].avg - dc.avg) / 2));
   }
   // Thin ice: no healthy backup at RB or WR (or already a hole in the
   // lineup). The bold team already got its depth called out.
