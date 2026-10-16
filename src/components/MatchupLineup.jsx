@@ -20,6 +20,26 @@ export function LiveToggle({ liveOnly, onChange }) {
     <button type="button" className={liveOnly ? "active" : ""} onClick={() => onChange(true)}>Live now</button>
   </div>;
 }
+// Pace: how a player who has kicked off is doing against his projection so
+// far: projection x the share of his game played (quarter and clock; a final
+// game counts in full). Returns "up", "down" or null, with a tooltip.
+const PACE_RATIO = 0.25, PACE_POINTS = 3;
+export function paceOf(player, nflGames) {
+  const game = player && nflGames.find(g => (g.teamIds || []).includes(player.proTeamId));
+  const proj = Number(player?.projection), actual = Number(player?.actual) || 0;
+  if (!game || game.state === "pre" || !(proj > 0)) return null;
+  let share = 1;
+  if (!game.completed) {
+    const period = Math.min(Number(game.period) || 1, 4), left = Math.max(0, Number(game.clock) || 0);
+    share = Math.min(1, Math.max(0.05, ((period - 1) * 900 + (900 - Math.min(left, 900))) / 3600));
+  }
+  const expected = proj * share, gap = actual - expected;
+  if (Math.abs(gap) < PACE_POINTS || Math.abs(gap) < PACE_RATIO * expected) return null;
+  const tip = `${actual.toFixed(1)} pts vs ${expected.toFixed(1)} expected ${game.completed ? "(projection " + proj.toFixed(1) + ")" : "by now (" + Math.round(share * 100) + "% of his game played, projection " + proj.toFixed(1) + ")"}`;
+  return { dir: gap > 0 ? "up" : "down", tip };
+}
+const PaceMark = ({ pace }) => pace ? <span className={"pace " + pace.dir} title={pace.tip} aria-label={pace.dir === "up" ? "outpacing his projection" : "behind his projection"}>{pace.dir === "up" ? "↑" : "↓"}</span> : null;
+
 const isLive = (player, nflGames) => {
   const game = player && nflGames.find(g => (g.teamIds || []).includes(player.proTeamId));
   return Boolean(game && game.state === "in");
@@ -62,7 +82,7 @@ function PlayerCell({ player, side, nflGames, highlight }) {
       <small>{gameLine(player.proTeamId, nflGames)}</small>
     </div>;
     points = <div className={"lineup-points " + side + (highlight ? " regret" : "")}>
-      <b>{started ? money(player.actual) : "-"}</b>
+      <b>{started ? money(player.actual) : "-"}{started ? <PaceMark pace={paceOf(player, nflGames)} /> : null}</b>
       <small>{player.projection != null ? money(player.projection) : ""}</small>
     </div>;
   }
@@ -132,7 +152,7 @@ export function TeamLineup({ lineup = [], nflGames = [], liveOnly = false }) {
           <small>{gameLine(p.proTeamId, nflGames)}</small>
         </div>
         <div className="lineup-points left">
-          <b>{started ? money(p.actual) : "-"}</b>
+          <b>{started ? money(p.actual) : "-"}{started ? <PaceMark pace={paceOf(p, nflGames)} /> : null}</b>
           <small>{p.projection != null ? money(p.projection) : ""}</small>
         </div>
       </div>;
