@@ -1,5 +1,6 @@
 import { BENCH_SLOT, IR_SLOT } from "../lib/lineup.js";
-import { DATA, currentWeek, fit, name, pts, readJson, surname, teamNames } from "./context.js";
+import { DATA, currentWeek, fit, name, pts, readJson, rosterData, surname, teamNames } from "./context.js";
+import { draftData } from "./roster.js";
 import { dropHistory } from "./swaps.js";
 
 // League Wire: season ledgers of roster moves.
@@ -7,11 +8,14 @@ import { dropHistory } from "./swaps.js";
 //   (drop-history.json, fetch-drops.js).
 // - WAIVER WIRE MVP: the team whose pickups (waiver claims and free agents)
 //   have scored the most while in its starting lineup, week by week
-//   (mRoster-week-N.json from fetch-espn.js: each week's lineup slot,
-//   how the player was acquired, and his points).
+//   (mRoster-week-N.json from fetch-espn.js). Past weeks' rosters don't say
+//   how a player was acquired, so a pickup is a starter the team didn't
+//   draft, minus anyone its current roster marks as a trade.
 const ABANDONED_MIN = 60;
 const WAIVER_MVP_MIN = 40;
-const PICKUP_TYPES = new Set(["WAIVER", "ADD", "FREEAGENT"]);
+const drafted = new Set((draftData?.draftDetail?.picks || []).map(p => `${p.teamId}:${p.playerId}`));
+const traded = new Set((rosterData.teams || []).flatMap(t => (t.roster?.entries || [])
+  .filter(e => String(e.acquisitionType || "").toUpperCase() === "TRADE").map(e => `${t.id}:${e.playerId}`)));
 
 export function addAbandonedStory(add) {
   const byTeam = new Map();
@@ -38,7 +42,8 @@ export async function addWaiverMvpStory(add) {
     for (const t of roster?.teams || []) {
       for (const e of t.roster?.entries || []) {
         const slot = Number(e.lineupSlotId), p = e.playerPoolEntry?.player;
-        if (!p || slot === BENCH_SLOT || slot === IR_SLOT || !PICKUP_TYPES.has(String(e.acquisitionType || "").toUpperCase())) continue;
+        const key = `${t.id}:${e.playerId}`;
+        if (!p || slot === BENCH_SLOT || slot === IR_SLOT || drafted.has(key) || traded.has(key)) continue;
         const pts_ = Number((p.stats || []).find(s => Number(s.scoringPeriodId) === w && Number(s.statSourceId) === 0 && Number(s.statSplitTypeId) === 1)?.appliedTotal);
         if (!Number.isFinite(pts_)) continue;
         const rec = byTeam.get(Number(t.id)) || { total: 0, players: new Map() };

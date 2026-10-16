@@ -115,6 +115,30 @@ export function addRosterStories(add) {
       "🗑️ BARGAIN BIN: " + bin.team + "'s bench averages " + Math.round(bin.benchOwned) + "% rostered across ESPN."
     ),(pregame ? 61 : 31) + Math.min(10, (next.benchOwned - bin.benchOwned) / 2));
   }
+  // Dead weight: bench spots doing nothing: injured players hardly anyone
+  // rosters (under 20% across ESPN), and onesies beyond what a team can use
+  // (a 3rd TE or QB, a 2nd kicker or defense).
+  const ONESIE_KEEP = {1:2, 4:2, 5:1, 16:1};
+  const dead = reports.map(r => {
+    const hurt = r.bench.filter(p => p.out && Number.isFinite(p.owned) && p.owned < 20);
+    const extra = Object.entries(ONESIE_KEEP).flatMap(([pos, keep]) => {
+      const all = r.bench.concat([]).filter(p => p.positionId === Number(pos));
+      const onRoster = (rosterData.teams || []).find(t => Number(t.id) === r.teamId)?.roster?.entries?.filter(e => Number(e.playerPoolEntry?.player?.defaultPositionId) === Number(pos)).length || 0;
+      return onRoster > keep ? [{label: ONESIE_LABEL[pos], count: onRoster}] : [];
+    });
+    return {...r, hurt, extra, weight: hurt.length + extra.reduce((sum, x) => sum + x.count - ONESIE_KEEP[{QB:1, TE:4, K:5, "D/ST":16}[x.label]], 0)};
+  }).sort((a, b) => b.weight - a.weight);
+  console.log("League Wire: dead weight:", dead.map(r => `${r.team} ${r.weight}`).join(", "));
+  const dw = dead[0];
+  if (dw && dw.weight >= 3 && dw.weight > (dead[1]?.weight || 0)) {
+    const record = (() => { const t = (teamData.teams || []).find(x => Number(x.id) === dw.teamId); const r = t?.record?.overall; return r ? ` (${r.wins}-${r.losses})` : ""; })();
+    const parts = [...dw.extra.map(x => x.count + " " + x.label + "s"), ...(dw.hurt.length ? [dw.hurt.length + " injured long shot" + (dw.hurt.length === 1 ? "" : "s") + " (" + listNames(dw.hurt.slice(0, 2).map(p => p.lastName + " " + Math.round(p.owned) + "%")) + ")"] : [])];
+    add("DEAD WEIGHT",fit(
+      "🧱 DEAD WEIGHT: " + dw.team + record + " needs help and is clogging its bench with " + listNames(parts) + ".",
+      "🧱 DEAD WEIGHT: " + dw.team + record + "'s bench: " + listNames(parts) + ".",
+      "🧱 DEAD WEIGHT: " + dw.team + " is carrying " + listNames(parts.slice(0, 1)) + "."
+    ),(pregame ? 63 : 33) + dw.weight);
+  }
   // Thin ice: no healthy backup at RB or WR (or already a hole in the
   // lineup). The bold team already got its depth called out.
   const thin = reports.filter(r => r !== bold).flatMap(r => r.thin.map(x => ({...x, team:r.team})))
