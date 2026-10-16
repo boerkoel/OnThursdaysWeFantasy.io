@@ -129,6 +129,7 @@ export function addRosterStories(add) {
     return {...r, hurt, extra, weight: hurt.length + extra.reduce((sum, x) => sum + x.count - ONESIE_KEEP[{QB:1, TE:4, K:5, "D/ST":16}[x.label]], 0)};
   }).sort((a, b) => b.weight - a.weight);
   console.log("League Wire: dead weight:", dead.map(r => `${r.team} ${r.weight}`).join(", "));
+  for (const r of dead.slice(0, 2)) console.log("League Wire: bench of " + r.team + ":", r.bench.map(p => `${p.lastName} pos${p.positionId} ${p.out ? "OUT" : "ok"} ${Math.round(p.owned)}%`).join(", "));
   const dw = dead[0];
   if (dw && dw.weight >= 3 && dw.weight > (dead[1]?.weight || 0)) {
     const record = (() => { const t = (teamData.teams || []).find(x => Number(x.id) === dw.teamId); const r = t?.record?.overall; return r ? ` (${r.wins}-${r.losses})` : ""; })();
