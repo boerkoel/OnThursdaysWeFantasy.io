@@ -49,6 +49,7 @@ export async function addWaiverMvpStory(add) {
     }
   }
   const ranked = [...byTeam].filter(([id]) => teamNames.has(id)).sort((a, b) => b[1].total - a[1].total);
+  console.log("League Wire: pickup points started by team:", ranked.map(([id, r]) => `${name(id)} ${Math.round(r.total)}`).join(", ") || "none (no weekly rosters?)");
   const [teamId, top] = ranked[0] || [];
   if (!top || top.total < WAIVER_MVP_MIN) return;
   const best = [...top.players].sort((a, b) => b[1] - a[1]).slice(0, 2);

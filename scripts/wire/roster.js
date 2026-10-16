@@ -60,8 +60,9 @@ export function rosterReport(t) {
     quirks.push({weight:2, text:(healthyAt.length ? "just " + healthyAt.length : "no") + " healthy " + label + (healthyAt.length === 1 ? "" : "s")});
   }
   quirks.sort((a, b) => b.weight - a.weight);
-  // Bench quality: how widely its players are rostered across ESPN leagues.
-  const ownedBench = bench.filter(p => Number.isFinite(p.owned));
+  // Bench quality: how widely its healthy players are rostered across ESPN
+  // leagues (the depth a team can actually use; injured spots called out apart).
+  const ownedBench = bench.filter(p => !p.out && Number.isFinite(p.owned));
   const benchOwned = ownedBench.length ? ownedBench.reduce((sum, p) => sum + p.owned, 0) / ownedBench.length : null;
   const scrubs = ownedBench.filter(p => p.owned < 25).sort((a, b) => a.owned - b.owned);
   return {teamId:Number(t.id), team:name(Number(t.id)), injured, injuryValue, quirks, thin, boldness:quirks.reduce((sum, q) => sum + q.weight, 0),
@@ -98,18 +99,19 @@ export function addRosterStories(add) {
 
   // Bargain bin: the bench least rostered across ESPN (average % rostered),
   // with injured bench spots and position pile-ups called out. Needs a real gap.
-  const binned = reports.filter(r => r.benchOwned != null && r.bench.length >= 4).sort((a, b) => a.benchOwned - b.benchOwned);
+  const binned = reports.filter(r => r.benchOwned != null && r.bench.filter(p => !p.out).length >= 3).sort((a, b) => a.benchOwned - b.benchOwned);
+  console.log("League Wire: healthy-bench % rostered:", binned.map(r => `${r.team} ${Math.round(r.benchOwned)}%`).join(", "));
   const bin = binned[0], next = binned[1];
   if (bin && next && bin.benchOwned <= 45 && next.benchOwned - bin.benchOwned >= 5) {
     const record = (() => { const t = (teamData.teams || []).find(x => Number(x.id) === bin.teamId); const r = t?.record?.overall; return r ? ` (${r.wins}-${r.losses})` : ""; })();
     const extras = [
-      bin.benchOut.length ? bin.benchOut.length + " of them hurt" : "",
+      bin.benchOut.length ? "plus " + bin.benchOut.length + " injured bench spot" + (bin.benchOut.length === 1 ? "" : "s") : "",
       ...bin.quirks.filter(q => /TEs|QBs|kickers|defenses/.test(q.text)).slice(0, 1).map(q => q.text)
     ].filter(Boolean);
     const names = listNames(bin.scrubs.slice(0, 2).map(p => p.lastName + " (" + Math.round(p.owned) + "%)"));
     add("BARGAIN BIN",fit(
-      "🗑️ BARGAIN BIN: " + bin.team + record + " has the league's least-wanted bench, " + Math.round(bin.benchOwned) + "% rostered across ESPN on average" + (extras.length ? ", " + listNames(extras) : "") + (names ? ". Featuring " + names : "") + ".",
-      "🗑️ BARGAIN BIN: " + bin.team + record + "'s bench averages " + Math.round(bin.benchOwned) + "% rostered across ESPN" + (extras.length ? ", " + listNames(extras) : "") + ".",
+      "🗑️ BARGAIN BIN: " + bin.team + record + " has the league's least-wanted healthy bench, " + Math.round(bin.benchOwned) + "% rostered across ESPN on average" + (extras.length ? ", " + listNames(extras) : "") + (names ? ". Featuring " + names : "") + ".",
+      "🗑️ BARGAIN BIN: " + bin.team + record + "'s healthy bench averages " + Math.round(bin.benchOwned) + "% rostered across ESPN" + (extras.length ? ", " + listNames(extras) : "") + ".",
       "🗑️ BARGAIN BIN: " + bin.team + "'s bench averages " + Math.round(bin.benchOwned) + "% rostered across ESPN."
     ),(pregame ? 61 : 31) + Math.min(10, (next.benchOwned - bin.benchOwned) / 2));
   }
