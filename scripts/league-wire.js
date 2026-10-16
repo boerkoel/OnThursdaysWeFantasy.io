@@ -40,6 +40,8 @@ async function buildMarqueeStories() {
     ? Number(previousScoreboard.projectedMedian ?? previousScoreboard.median)
     : null;
   const add = (type, text, score, flags = {}) => {
+    // Season-ledger and roster stories rotate in and out; log them so a run shows their text.
+    if (["DEEP CUTS", "WAIVER WIRE MVP", "DROP REGRET", "POINTS ABANDONED", "BARGAIN BIN", "DEAD WEIGHT"].includes(type)) console.log(`League Wire candidate (${Math.round(score)}): ${text}`);
     if (text.length > STORY_MAX_CHARS) console.warn("League Wire: " + type + " runs " + text.length + " chars (budget " + STORY_MAX_CHARS + "): " + text);
     stories.push({type, text, score:Number.isFinite(score) ? round(score) : 0, ...flags});
   };
