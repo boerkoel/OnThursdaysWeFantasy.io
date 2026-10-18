@@ -193,11 +193,41 @@ export default function SurvivorTab({ nflGames = [], nflWeek = null }) {
     const n = hw.week, picks = hw.picks;
     const field = picks.reduce((sum, p) => sum + p.count, 0) || 1;
     const name = t => TEAM_NAMES[t] || t;
+    // Live games this week: a "lost" pick isn't settled until its game is final.
+    const current = nflWeek == null || Number(nflWeek) === Number(n);
+    const gameFor = team => {
+      if (!current) return null;
+      for (const g of nflGames || []) {
+        const t = (g.teams || []).find(x => feedTeam(x.abbrev) === team), o = (g.teams || []).find(x => feedTeam(x.abbrev) !== team);
+        if (t && o) return { g, us: Number(t.score) || 0, them: Number(o.score) || 0, opp: feedTeam(o.abbrev) };
+      }
+      return null;
+    };
+    const live = team => { const x = gameFor(team); return x && !x.g.completed && x.g.state === "in" ? x : null; };
+    const settledLoss = p => p.result === "lost" && !live(p.team);
+    const score = x => `${x.us}–${x.them}`;
     const chalk = picks[0];
-    if (chalk) highlights.push({ icon: "🐑", title: "Chalk check", text: `${pct(chalk.count / field * 100)} of the pool rode the ${name(chalk.team)}`
-      + (chalk.result === "won" ? " and the herd lives on." : chalk.result === "lost" ? ". The herd went over the cliff." : ". Fingers crossed.") });
-    const bloodbath = picks.filter(p => p.result === "lost").sort((a, b) => b.count - a.count)[0];
+    if (chalk) {
+      const lg = live(chalk.team);
+      highlights.push({ icon: "🐑", title: "Chalk check", text: `${pct(chalk.count / field * 100)} of the pool rode the ${name(chalk.team)}`
+        + (chalk.result === "won" ? " and the herd lives on."
+          : lg && lg.us < lg.them ? `, who trail ${name(lg.opp)} ${score(lg)}. The herd could be in trouble.`
+          : settledLoss(chalk) ? ". The herd went over the cliff." : ". Fingers crossed.") });
+    }
+    const bloodbath = picks.filter(settledLoss).sort((a, b) => b.count - a.count)[0];
     if (bloodbath) highlights.push({ icon: "🩸", title: "Bloodbath", text: `The ${name(bloodbath.team)} took out ${bloodbath.count} ${bloodbath.count === 1 ? "entry" : "entries"}.` });
+    // Trending the wrong way: picks whose team is behind in a game that's still going.
+    const trailing = picks.filter(p => p.count > 0 && live(p.team) && live(p.team).us < live(p.team).them)
+      .sort((a, b) => b.count - a.count);
+    const worst = trailing[0];
+    if (worst && (!bloodbath || worst.count > bloodbath.count)) {
+      const x = live(worst.team);
+      highlights.push({ icon: "🩸", title: "Could be a bloodbath", text: `${worst.count} ${worst.count === 1 ? "entry is" : "entries are"} on the ${name(worst.team)}, down ${score(x)} to the ${name(x.opp)}${x.g.detail ? ` (${x.g.detail})` : ""}.` });
+    }
+    if (trailing.length) highlights.push({ icon: "📉", title: "Trending the wrong way", text: trailing.map(p => {
+      const x = live(p.team);
+      return `${name(p.team)} trail ${x.opp} ${score(x)} (${p.count} ${p.count === 1 ? "entry" : "entries"})`;
+    }).join(" · ") + ". These picks could be in trouble." });
     const pickers = team => (feed.entries || []).filter(e => e.picks?.[n]?.team === team).map(e => e.user);
     const wolves = picks.filter(p => p.count === 1 && p.result === "won");
     const wolfPack = new Map();
