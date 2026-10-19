@@ -1,6 +1,6 @@
 {
   "week": 6,
-  "updatedAt": "2026-10-19T05:19:58.631Z",
+  "updatedAt": "2026-10-19T14:11:25.157Z",
   "plays": [
     {
       "id": "401873007-4018730074937-4241389",
@@ -1516,7 +1516,7 @@
       "playerId": 4595348,
       "player": "Malik Nabers",
       "points": 2.3,
-      "text": "J.McCarthy pass short right to M.Nabers ran ob at NYG 32 for 13 yards.",
+      "text": "J.McCarthy pass short right to M.Nabers ran ob at NYG 32 for 13 yards (Q.Riley).",
       "clock": "3:34",
       "period": 4,
       "wallclock": "2026-10-18T20:07:20Z",
@@ -1538,9 +1538,9 @@
       "fantasyTeamId": 12,
       "playerId": 4685720,
       "player": "Bryce Young",
-      "points": 4.76,
-      "text": "B.Young pass deep middle to T.Tremble for 19 yards, TOUCHDOWN.PENALTY on CAR-T.Tremble, Taunting, 15 yards, enforced between downs. R.Fitzgerald extra point is No Good, Wide Right, Center-J.Jansen, Holder-S.Martin.",
-      "clock": "6:39",
+      "points": 2.9,
+      "text": "Tommy Tremble 19 Yd pass from Bryce Young (Ryan Fitzgerald PAT failed)",
+      "clock": "6:33",
       "period": 4,
       "wallclock": "2026-10-18T20:06:46Z",
       "momentum": {
@@ -1654,7 +1654,7 @@
       "playerId": 4595348,
       "player": "Malik Nabers",
       "points": 3.7,
-      "text": "J.McCarthy pass deep middle to M.Nabers to NO 13 for 27 yards (D.Stutsman).",
+      "text": "J.McCarthy pass deep middle to M.Nabers to NO 13 for 27 yards (D.Stutsman; J.Blackmon).",
       "clock": "8:24",
       "period": 4,
       "wallclock": "2026-10-18T19:48:21Z",
@@ -2689,7 +2689,7 @@
       "playerId": 4685472,
       "player": "Tetairoa McMillan",
       "points": 3.1,
-      "text": "(Shotgun) B.Young pass deep right to T.McMillan pushed ob at CAR 41 for 21 yards.\nPenalty on PHI-A.Mukuba, Illegal Contact, declined.",
+      "text": "B.Young pass deep right to T.McMillan pushed ob at CAR 41 for 21 yards.Penalty on PHI-A.Mukuba, Illegal Contact, declined.",
       "clock": "9:02",
       "period": 1,
       "wallclock": "2026-10-18T17:20:16Z",
@@ -4416,6 +4416,20 @@
     },
     {
       "eventId": "401873004",
+      "text": "T.Allgeier up the middle to LA 24 for 5 yards (A.Donald). LA-P.Ford was injured during the play.",
+      "clock": "0:41",
+      "period": 4,
+      "wallclock": "2026-10-18T22:57:03Z",
+      "id": "401873004-4018730044032-i4373626-m",
+      "status": "injured",
+      "playerId": 4373626,
+      "player": "Tyler Allgeier",
+      "league": "main",
+      "teamId": 10,
+      "matchupId": 33
+    },
+    {
+      "eventId": "401873004",
       "text": "(Shotgun) M.Stafford pass short middle to K.Williams to ARZ 6 for 7 yards (J.Gibbens). LA-D.Adams was injured during the play.",
       "clock": "1:30",
       "period": 4,
@@ -4567,6 +4581,34 @@
       "league": "main",
       "teamId": 3,
       "matchupId": 33
+    },
+    {
+      "eventId": "401873000",
+      "text": "(Shotgun) J.McCarthy pass incomplete short left to I.Likely (J.Sanker) [C.Young]. NO-Q.Riley was injured during the play.",
+      "clock": "0:12",
+      "period": 4,
+      "wallclock": "2026-10-18T20:23:56Z",
+      "id": "401873000-4018730005058-i4361050-m",
+      "status": "injured",
+      "playerId": 4361050,
+      "player": "Isaiah Likely",
+      "league": "main",
+      "teamId": 10,
+      "matchupId": 33
+    },
+    {
+      "eventId": "401873000",
+      "text": "(Shotgun) J.McCarthy pass incomplete short left to I.Likely (J.Sanker) [C.Young]. NO-Q.Riley was injured during the play.",
+      "clock": "0:12",
+      "period": 4,
+      "wallclock": "2026-10-18T20:23:56Z",
+      "id": "401873000-4018730005058-i4361050-g",
+      "status": "injured",
+      "playerId": 4361050,
+      "player": "Isaiah Likely",
+      "league": "guillotine",
+      "teamId": 7,
+      "matchupId": null
     },
     {
       "eventId": "401872998",
