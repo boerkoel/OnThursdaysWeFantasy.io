@@ -20,11 +20,12 @@ import MatchupLineup, { LiveToggle, useLiveOnly } from "./components/MatchupLine
 import RafflePodium from "./components/RafflePodium.jsx";
 import PrimetimeWatch from "./components/PrimetimeWatch.jsx";
 import Sheet from "./components/Sheet.jsx";
-import SurvivorTab from "./components/SurvivorTab.jsx";
+import SurvivorTab, { useSurvivorFeed } from "./components/SurvivorTab.jsx";
 import RecordBook from "./components/RecordBook.jsx";
 import Notifications, { useFollowedTeams } from "./components/Notifications.jsx";
 import { seriesLine } from "./lib/recordBook.js";
 import { useMyTeam, useTabs } from "./lib/tabs.js";
+import managerLinks from "./data/manager-links.json";
 import { BackToTop, SectionNav, TabBar } from "./components/Navigation.jsx";
 import { AccuracyScorecard, MatchupOutcomes, OutcomeBar, outcomeScale } from "./components/OutcomeBar.jsx";
 
@@ -141,6 +142,7 @@ function App() {
   const refresher = useRefresh(live.refresh, scoreboard.lastUpdated);
   const flashingScores = useChangedScores(scores);
   const [tab, goToTab] = useTabs();
+  const { feed: survivorFeed } = useSurvivorFeed();   // for the pinned team's survivor line
   const [myTeamId, setMyTeamId] = useMyTeam();
   const matchupIds = [...new Set(scores.map(s => s.matchupId))];
   const myScore = scores.find(s => Number(s.teamId) === Number(myTeamId)) || null;
@@ -407,6 +409,48 @@ function App() {
   // Notification settings live in a sheet behind the header's bell.
   const [notifyOpen, setNotifyOpen] = useState(false);
 
+  // The same manager's other contests, at a glance: guillotine team and survivor entries.
+  // Links live in src/data/manager-links.json (main-league team id -> guillotine team, Splash handles).
+  const renderOtherContests = teamId => {
+    const link = managerLinks[String(teamId)];
+    if (!link) return null;
+    const lines = [];
+    if (link.guillotine != null) {
+      const gid = Number(link.guillotine);
+      const chopped = (guillotine.chopped || []).find(c => Number(c.teamId) === gid);
+      const alive = (guillotine.teams || []).filter(t => t.projected != null).sort((a, b) => b.projected - a.projected);
+      const k = alive.findIndex(t => Number(t.teamId) === gid);
+      if (chopped) lines.push({ key: "g", icon: "🪓", go: "death-watch", text: <><b>{chopped.team}</b> · chopped Week {chopped.week}</> });
+      else if (k >= 0) {
+        const t = alive[k], odds = Number(t.chopProbability) || 0;
+        lines.push({ key: "g", icon: "🪓", go: "death-watch", text: <><b>{t.team}</b> · {k + 1} of {alive.length} this week · {odds >= 99.5 ? "doomed" : odds < 0.5 ? "safe" : `${Math.round(odds)}% chop odds`}</> });
+      }
+    }
+    if (link.splash?.length && survivorFeed) {
+      const n = survivorFeed.contest?.currentWeek;
+      const mine = (survivorFeed.entries || []).filter(e => link.splash.includes(e.user));
+      if (mine.length) {
+        const games = scoreboard.nflGames || [];
+        const ESPN = { WAS: "WSH", JAX: "JAX" };
+        const gameOf = team => games.find(g => (g.teams || []).some(t => t.abbrev === (ESPN[team] || team)));
+        const counts = {};
+        for (const e of mine) { const p = e.picks?.[n]; if (p) (counts[p.team] ||= { team: p.team, n: 0, result: p.result }).n++; }
+        const picks = Object.values(counts).map(p => {
+          const g = gameOf(p.team), me = g?.teams?.find(t => t.abbrev === (ESPN[p.team] || p.team)), opp = g?.teams?.find(t => t !== me);
+          const final = g?.completed;
+          const mark = p.result === "won" && final !== false ? "✓" : p.result === "lost" && final ? "✗"
+            : g?.state === "in" && me && opp && Number(me.score) < Number(opp.score) ? `⏳ down ${me.score}–${opp.score}` : "⏳";
+          return `${p.team}${p.n > 1 ? " ×" + p.n : ""} ${mark}`;
+        });
+        const aliveN = mine.filter(e => e.alive).length;
+        lines.push({ key: "s", icon: "🛡️", go: "survivor", text: <><b>Survivor</b> · {aliveN} of {mine.length} {mine.length === 1 ? "entry" : "entries"} alive{picks.length ? <> · Week {n}: {picks.join(", ")}</> : null}</> });
+      }
+    }
+    if (!lines.length) return null;
+    return <div className="my-others">{lines.map(l => <button type="button" key={l.key} className="my-other" onClick={() => goToTab(l.go)}>
+      <span className="my-other-icon">{l.icon}</span><span>{l.text}</span><span className="my-other-go">›</span></button>)}</div>;
+  };
+
   // "My team": pinned at the top of Live with the key odds and the matchup card.
   const renderMyTeam = () => {
     const picker = <select value={myTeamId || ""} onChange={e => setMyTeamId(Number(e.target.value) || null)} aria-label="Your team">
@@ -422,6 +466,12 @@ function App() {
       <section className="my-team" id="my-team">
         <div className="my-team-head"><span className="section-kicker">📌 YOUR MATCHUP</span>{picker}</div>
         <div className="my-chips">
+          {(() => {   // record and place (H2H + median wins), same order as Standings
+            const rows = (teamsData.teams || []).map(t => t.standings).filter(Boolean)
+              .sort((a, b) => b.wins - a.wins || b.pointsFor - a.pointsFor);
+            const i = rows.findIndex(r => Number(r.id) === Number(myScore.teamId));
+            return i < 0 ? null : <span className="my-chip" title="H2H + median record"><small>RECORD</small><b>{rows[i].wins}-{rows[i].losses} · {i + 1}{["st", "nd", "rd"][i] || "th"}</b></span>;
+          })()}
           {chip("TO WIN", myScore.winProbability)}
           {chip("ABOVE MEDIAN", myScore.aboveMedianProbability)}
           {expectedWins(myScore) != null ? <span className="my-chip" title="H2H win odds + above-median odds"><small>EXP. WINS</small><b>{expectedWins(myScore).toFixed(2)}</b></span> : null}
@@ -429,6 +479,7 @@ function App() {
           {chip("PLAYOFFS", odds?.playoffOdds)}
           {chip("TITLE", odds?.titleOdds)}
         </div>
+        {renderOtherContests(myScore.teamId)}
         <div className="matchup-list">{renderMatchupRow(myMatchupId, true)}{primetimeView ? renderPrimetime(myMatchupId) : null}</div>
       </section>
     );

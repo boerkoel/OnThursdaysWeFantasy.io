@@ -541,6 +541,11 @@
 .my-chip{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border:1px solid #30332d;border-radius:10px;background:#10110f}
 .my-chip small{color:#8b8e86;font-size:10px;font-weight:800;letter-spacing:.08em}
 .my-chip b{font-size:16px;color:#dfe9c7}
+.my-others{display:flex;flex-direction:column;gap:6px;margin:0 0 10px}
+.my-other{display:flex;align-items:center;gap:8px;width:100%;padding:7px 10px;border:1px solid #30332d;border-radius:10px;background:#10110f;color:#c9ccc2;font:inherit;font-size:13px;text-align:left;cursor:pointer}
+.my-other b{color:#f7f7f2}
+.my-other-icon{width:20px;text-align:center}
+.my-other-go{margin-left:auto;color:#8b8e86}
 .matchups.single{grid-template-columns:1fr}
 .matchup.featured{border-color:#4a533e}
 .matchup-details{grid-column:1 / -1;display:grid;gap:10px;min-width:0}
