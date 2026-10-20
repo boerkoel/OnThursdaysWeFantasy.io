@@ -457,8 +457,15 @@ try {
     : /return is doubtful|doubtful to return/i.test(segment) ? "doubtful"
     : /return is questionable|questionable to return/i.test(segment) ? "questionable"
     : /injured/i.test(segment) ? "injured" : null;
+  // Each game's plays (text without injury notes, wallclock), to spot an
+  // injured player back in action when ESPN never posts "returned".
+  const actionByEvent = new Map();
   for (const event of relevantGames) {
     const plays = await getPlays(event.id);
+    actionByEvent.set(String(event.id), plays.map(play => ({
+      text: String(play.shortText || play.text || "").split(/\*\*/)[0].trim(),
+      at: Date.parse(play.wallclock || play.modified || "")
+    })).filter(a => a.text && Number.isFinite(a.at)));
     console.log(`NFL game ${event.id}: received ${plays.length} plays`);
 
     const eventTeamIds = new Set(
@@ -616,6 +623,14 @@ try {
 
   // Injury updates for the week, newest first (small: a few per game).
   const injuryById = new Map([...injuries, ...previousInjuries].map(i => [i.id, i]));
+  // Back in: named in a later play of the same game.
+  const returnedBefore = new Map(previousInjuries.filter(i => i.returnedAt).map(i => [i.id, i.returnedAt]));
+  for (const [id, injury] of injuryById) {
+    if (returnedBefore.has(id)) { injuryById.set(id, { ...injury, returnedAt: returnedBefore.get(id) }); continue; }
+    const hurt = Date.parse(injury.wallclock || "");
+    const back = (actionByEvent.get(String(injury.eventId)) || []).find(a => a.at > hurt && playerNameMatches(a.text, injury));
+    if (back) injuryById.set(id, { ...injury, returnedAt: new Date(back.at).toISOString() });
+  }
   const injuryList = [...injuryById.values()].sort((a, b) => new Date(b.wallclock || 0) - new Date(a.wallclock || 0)).slice(0, 80);
 
   await writeFile("data/current/live-plays.json", JSON.stringify({

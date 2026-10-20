@@ -20,7 +20,7 @@ export function addInjuryStories(add) {
   const clamp = p => Math.min(0.9999, Math.max(0.0001, p));
   const candidates = [];
   for (const i of latest.values()) {
-    if (!INJURY_STATUS_TEXT[i.status] || !i.wallclock || clockNow() - Date.parse(i.wallclock) > INJURY_MAX_AGE_MS) continue;
+    if (!INJURY_STATUS_TEXT[i.status] || i.returnedAt || !i.wallclock || clockNow() - Date.parse(i.wallclock) > INJURY_MAX_AGE_MS) continue;
     const who = surname(i.player);
     if (i.league === "main") {
       const team = currentScores.find(s => s.teamId === Number(i.teamId));
