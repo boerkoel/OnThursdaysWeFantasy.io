@@ -94,7 +94,7 @@ But nobody expected the end to come this way.
 
 While attempting to wheel the guillotine across the street, Billy tragically failed to look both ways. One freak accident later, his fantasy life was over.
 
-Billy thought his tight shorts were flaunting a full package. Turns out, his Moose Knuckle was just an illusion — a bulge of false hope, much like his playoff prospects. The irony? He survived weeks of fantasy football torture, only to get decapitated by a Purdy boy making a pass.
+Billy thought his tight shorts were flaunting a full package. Turns out, his Moose Knuckle was just an illusion — a bulge of false hope, much like his playoff prospects. The irony? He survived weeks of fantasy football torture, only to get decapitated by a very Purdy person making a pass.
 
 Love abandoned him. Henry couldn’t carry him. Hurts was hurt. Saquon was gone. And Brock Bowers couldn’t build a bridge back to the living.
 
