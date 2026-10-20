@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "currentWeek": 6,
+  "currentWeek": 7,
   "weeks": [
     {
       "week": 1,
@@ -723,6 +723,150 @@
         "winnerScore": 151.12,
         "loserScore": 79.48,
         "margin": 71.64
+      }
+    },
+    {
+      "week": 6,
+      "recap": [
+        {
+          "type": "HIGH SCORE",
+          "text": "🔥 Beautiful Dark Twisted Fantasy dropped 170.24 points — the week's highest score."
+        },
+        {
+          "type": "CLOSEST MATCHUP",
+          "text": "⚔️ TDsMaGee edged Mr. Action Jackson by just 11.28 points."
+        },
+        {
+          "type": "INSTANT REGRET",
+          "text": "🤦 TDsMaGee would have finished above the median by starting RJ Harvey (14.60) over Wan'Dale Robinson (5.20)."
+        },
+        {
+          "type": "BIGGEST REGRET",
+          "text": "🪑 Brock You Like a Hurricane left 28.34 points on the bench with Trevor Lawrence."
+        },
+        {
+          "type": "TOUGH LUCK",
+          "text": "😬 Ruffing the Passer scored 130.14 and still took the L."
+        },
+        {
+          "type": "BLOWOUT",
+          "text": "💥 Ramosverse beat Kirbo Crushers 121.48-70.86 (50.62 points)."
+        }
+      ],
+      "regrets": [
+        {
+          "teamId": 3,
+          "team": "Kyle Tucker",
+          "matchupId": 33,
+          "benchPlayer": "Denzel Boston",
+          "benchPoints": 2.5,
+          "starter": "Rashee Rice",
+          "starterPoints": 0,
+          "gain": 2.5,
+          "flips": [
+            "median"
+          ]
+        },
+        {
+          "teamId": 2,
+          "team": "TDsMaGee",
+          "matchupId": 36,
+          "benchPlayer": "RJ Harvey",
+          "benchPoints": 14.6,
+          "starter": "Wan'Dale Robinson",
+          "starterPoints": 5.2,
+          "gain": 9.4,
+          "flips": [
+            "median"
+          ]
+        }
+      ],
+      "matchups": [
+        {
+          "id": 31,
+          "week": 6,
+          "homeTeamId": 12,
+          "awayTeamId": 7,
+          "homeScore": 170.24,
+          "awayScore": 130.14,
+          "margin": 40.10000000000002,
+          "winner": "HOME",
+          "completed": true
+        },
+        {
+          "id": 32,
+          "week": 6,
+          "homeTeamId": 1,
+          "awayTeamId": 4,
+          "homeScore": 121.48,
+          "awayScore": 70.86,
+          "margin": 50.620000000000005,
+          "winner": "HOME",
+          "completed": true
+        },
+        {
+          "id": 33,
+          "week": 6,
+          "homeTeamId": 10,
+          "awayTeamId": 3,
+          "homeScore": 98.26,
+          "awayScore": 115.88,
+          "margin": 17.61999999999999,
+          "winner": "AWAY",
+          "completed": true
+        },
+        {
+          "id": 34,
+          "week": 6,
+          "homeTeamId": 5,
+          "awayTeamId": 6,
+          "homeScore": 118.22,
+          "awayScore": 103.6,
+          "margin": 14.620000000000005,
+          "winner": "HOME",
+          "completed": true
+        },
+        {
+          "id": 35,
+          "week": 6,
+          "homeTeamId": 9,
+          "awayTeamId": 11,
+          "homeScore": 119.38,
+          "awayScore": 144.3,
+          "margin": 24.920000000000016,
+          "winner": "AWAY",
+          "completed": true
+        },
+        {
+          "id": 36,
+          "week": 6,
+          "homeTeamId": 2,
+          "awayTeamId": 8,
+          "homeScore": 115.4,
+          "awayScore": 104.12,
+          "margin": 11.280000000000001,
+          "winner": "HOME",
+          "completed": true
+        }
+      ],
+      "highestScore": {
+        "week": 6,
+        "teamId": 12,
+        "team": "Beautiful Dark Twisted Fantasy",
+        "opponentId": 7,
+        "opponent": "Ruffing the Passer",
+        "score": 170.24,
+        "result": "W"
+      },
+      "largestBlowout": {
+        "week": 6,
+        "winnerTeamId": 1,
+        "winner": "Ramosverse",
+        "loserTeamId": 4,
+        "loser": "Kirbo Crushers",
+        "winnerScore": 121.48,
+        "loserScore": 70.86,
+        "margin": 50.62
       }
     }
   ]
