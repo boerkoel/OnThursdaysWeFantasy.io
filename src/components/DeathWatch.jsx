@@ -246,12 +246,14 @@ export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
           <p className="dw-left">{leftLine(t)}</p>
           {t.lineup?.length ? <button type="button" className="dw-lineup-toggle" aria-expanded={openLineups.has(t.teamId)} onClick={() => toggleLineup(t.teamId)}>{openLineups.has(t.teamId) ? "Hide lineup ▴" : "Lineup ▾"}</button> : null}
           {openLineups.has(t.teamId) ? (() => {
-            // Side by side with the team that most often finishes just above them.
-            const above = t.justAbove && guillotine.teams.find(o => o.teamId === t.justAbove.teamId);
+            // The chop is a two-team race: the favorite sits next to the runner-up, everyone else next to the favorite.
+            const above = i === 0 ? guillotine.teams[1] : guillotine.teams[0];
             const toggle = <LiveToggle liveOnly={liveOnly} onChange={setLiveOnly} />;
             if (!above?.lineup?.length) return <>{toggle}<TeamLineup lineup={t.lineup} nflGames={nflGames} liveOnly={liveOnly} /></>;
             return <div className="dw-vs">{toggle}
-              <p className="dw-vs-note">Next to <b>{above.team}</b>, the team that finishes just above them in {Math.round(t.justAbove.share)}% of simulations.</p>
+              <p className="dw-vs-note">{i === 0
+                ? <>Next to <b>{above.team}</b>, the next most likely to be chopped. Outscore them to stay alive.</>
+                : <>Next to <b>{above.team}</b>, the most likely to be chopped. Stay ahead of them to stay alive.</>}</p>
               <div className="dw-vs-cols">
                 <div><strong className="dw-vs-head">{t.team}</strong><TeamLineup lineup={t.lineup} nflGames={nflGames} liveOnly={liveOnly} /></div>
                 <div><strong className="dw-vs-head">{above.team}</strong><TeamLineup lineup={above.lineup} nflGames={nflGames} liveOnly={liveOnly} /></div>
