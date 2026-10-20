@@ -88,25 +88,23 @@ Rest in pieces, Team Name. Billy, next time try naming your kid before you elimi
 ## Moose Knucklers
 Billy Got Kittled.
 
-Billy Halverson saw it coming. “My team’s been circling the drain for weeks now,” he admitted last night.
+Billy Halverson saw it coming. “My team’s been circling the drain for weeks now,” he admitted in his final hours.
 
 But nobody expected the end to come this way.
 
 While attempting to wheel the guillotine across the street, Billy tragically failed to look both ways. One freak accident later, his fantasy life was over.
 
-The irony? He survived weeks of fantasy football torture, only to get decapitated by a Purdy boy making a pass.
+Billy thought his tight shorts were flaunting a full package. Turns out, his Moose Knuckle was just an illusion — a bulge of false hope, much like his playoff prospects. The irony? He survived weeks of fantasy football torture, only to get decapitated by a Purdy boy making a pass.
 
-Love abandoned him. Henry couldn't carry him. Hurts was hurt. Saquon was gone. And when the chips were down, Brock Bowers couldn't build a bridge back to the living.
+Love abandoned him. Henry couldn’t carry him. Hurts was hurt. Saquon was gone. And Brock Bowers couldn’t build a bridge back to the living.
 
-As for the cause of death? A tight end.
+And while Billy was busy showing off his own tight pants, it was Joe’s tight end stole the show. George didn’t just catch a pass — he Kittled Billy’s chances. One catch, one kill, one less team in the league.
 
-Billy may have worn tight shorts that left his Moose Knuckle impossible to ignore, but let's face it: Joe's tight end was what finally Kittled him. George Kittle didn't just catch a pass. He delivered the Kittle coup de grâce.
-
-Billy's teaching career may continue, but his fantasy career has been officially dismissed.
+The teacher has officially been schooled.
 
 Rest in pieces, Moose Knucklers.
 
-The team is dead. The guillotine is in the shop. And Joe's tight end is still getting talked about in the teachers' lounge.
+The team is dead. The guillotine is in the shop. And Joe’s tight end is now the talk of the teacher's lounge.
 
 Class dismissed. ☠️
 
