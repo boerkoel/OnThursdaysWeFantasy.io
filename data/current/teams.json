@@ -736,11 +736,11 @@
               "medianWinsAdded": 0,
               "winsAdded": 0,
               "mutualTrade": {
-                "playerId": 4568490,
-                "player": "RJ Harvey",
-                "position": "RB",
+                "playerId": 2576925,
+                "player": "Darren Waller",
+                "position": "TE",
                 "startRate": 0,
-                "boost": 25.9,
+                "boost": 0.3,
                 "h2hWinsAdded": 0,
                 "medianWinsAdded": 0,
                 "winsAdded": 0
@@ -770,16 +770,7 @@
               "h2hWinsAdded": 0,
               "medianWinsAdded": 0,
               "winsAdded": 0,
-              "mutualTrade": {
-                "playerId": 4568490,
-                "player": "RJ Harvey",
-                "position": "RB",
-                "startRate": 0,
-                "boost": 27,
-                "h2hWinsAdded": 0,
-                "medianWinsAdded": 0,
-                "winsAdded": 0
-              },
+              "mutualTrade": null,
               "otherNeeds": [
                 {
                   "position": "DST",
@@ -810,11 +801,11 @@
               "medianWinsAdded": 0,
               "winsAdded": 0,
               "mutualTrade": {
-                "playerId": 4568490,
-                "player": "RJ Harvey",
-                "position": "RB",
+                "playerId": 2576925,
+                "player": "Darren Waller",
+                "position": "TE",
                 "startRate": 0,
-                "boost": 20.5,
+                "boost": 3.1,
                 "h2hWinsAdded": 0,
                 "medianWinsAdded": 0,
                 "winsAdded": 0
@@ -952,39 +943,7 @@
             "perspective": "A"
           }
         ],
-        "longTermRegrets": [
-          {
-            "playerId": 4568490,
-            "player": "RJ Harvey",
-            "position": "RB",
-            "startedWeeks": 0,
-            "rosteredWeeks": 6,
-            "weeks": [
-              1,
-              3,
-              4,
-              6
-            ],
-            "points": 27.5,
-            "h2hWins": 1,
-            "medianWins": 2,
-            "winsAdded": 3
-          },
-          {
-            "playerId": 4360689,
-            "player": "Tyler Shough",
-            "position": "QB",
-            "startedWeeks": 2,
-            "rosteredWeeks": 4,
-            "weeks": [
-              6
-            ],
-            "points": 4.96,
-            "h2hWins": 0,
-            "medianWins": 1,
-            "winsAdded": 1
-          }
-        ],
+        "longTermRegrets": [],
         "waiverTargets": [
           {
             "playerId": 3117256,
@@ -1876,41 +1835,6 @@
           "partners": [],
           "targets": [
             {
-              "playerId": 4568490,
-              "player": "RJ Harvey",
-              "position": "RB",
-              "startRate": 0,
-              "rosteredWeeks": 6,
-              "startedWeeks": 0,
-              "boost": 25.9,
-              "teamId": 2,
-              "team": "TDsMaGee",
-              "h2hWinsAdded": 0,
-              "medianWinsAdded": 0,
-              "winsAdded": 0,
-              "mutualTrade": {
-                "playerId": 3916433,
-                "player": "Jakobi Meyers",
-                "position": "WR",
-                "startRate": 33.33,
-                "boost": 20.1,
-                "h2hWinsAdded": 0,
-                "medianWinsAdded": 0,
-                "winsAdded": 0
-              },
-              "otherNeeds": [
-                {
-                  "position": "TE",
-                  "percent": -86.05
-                },
-                {
-                  "position": "K",
-                  "percent": -24.87
-                }
-              ],
-              "needsMatch": []
-            },
-            {
               "playerId": 4036133,
               "player": "T.J. Hockenson",
               "position": "TE",
@@ -1972,6 +1896,32 @@
                 {
                   "position": "DST",
                   "percent": -31.19
+                }
+              ],
+              "needsMatch": []
+            },
+            {
+              "playerId": 3121422,
+              "player": "Terry McLaurin",
+              "position": "WR",
+              "startRate": 16.67,
+              "rosteredWeeks": 6,
+              "startedWeeks": 1,
+              "boost": 18.6,
+              "teamId": 9,
+              "team": "The Mahomies",
+              "h2hWinsAdded": 0,
+              "medianWinsAdded": 0,
+              "winsAdded": 0,
+              "mutualTrade": null,
+              "otherNeeds": [
+                {
+                  "position": "DST",
+                  "percent": -25.69
+                },
+                {
+                  "position": "WR",
+                  "percent": -16.31
                 }
               ],
               "needsMatch": []
@@ -3075,15 +3025,15 @@
               ]
             },
             {
-              "playerId": 4568490,
-              "player": "RJ Harvey",
-              "position": "RB",
-              "startRate": 0,
+              "playerId": 3916433,
+              "player": "Jakobi Meyers",
+              "position": "WR",
+              "startRate": 33.33,
               "rosteredWeeks": 6,
-              "startedWeeks": 0,
-              "boost": 26.9,
-              "teamId": 2,
-              "team": "TDsMaGee",
+              "startedWeeks": 2,
+              "boost": 24.9,
+              "teamId": 4,
+              "team": "Kirbo Crushers",
               "h2hWinsAdded": 1,
               "medianWinsAdded": 1,
               "winsAdded": 2,
@@ -3092,23 +3042,23 @@
                 "player": "Brenton Strange",
                 "position": "TE",
                 "startRate": 0,
-                "boost": 43.8,
+                "boost": 22.4,
                 "h2hWinsAdded": 0,
                 "medianWinsAdded": 0,
                 "winsAdded": 0
               },
               "otherNeeds": [
                 {
-                  "position": "TE",
-                  "percent": -86.05
+                  "position": "DST",
+                  "percent": -64.22
                 },
                 {
-                  "position": "K",
-                  "percent": -24.87
+                  "position": "QB",
+                  "percent": -24.02
                 }
               ],
               "needsMatch": [
-                "K"
+                "QB"
               ]
             }
           ]
@@ -3562,43 +3512,6 @@
           ],
           "targets": [
             {
-              "playerId": 4568490,
-              "player": "RJ Harvey",
-              "position": "RB",
-              "startRate": 0,
-              "rosteredWeeks": 6,
-              "startedWeeks": 0,
-              "boost": 27,
-              "teamId": 2,
-              "team": "TDsMaGee",
-              "h2hWinsAdded": 0,
-              "medianWinsAdded": 0,
-              "winsAdded": 0,
-              "mutualTrade": {
-                "playerId": 15818,
-                "player": "Keenan Allen",
-                "position": "WR",
-                "startRate": 0,
-                "boost": 19.82,
-                "h2hWinsAdded": 0,
-                "medianWinsAdded": 0,
-                "winsAdded": 0
-              },
-              "otherNeeds": [
-                {
-                  "position": "TE",
-                  "percent": -86.05
-                },
-                {
-                  "position": "K",
-                  "percent": -24.87
-                }
-              ],
-              "needsMatch": [
-                "TE"
-              ]
-            },
-            {
               "playerId": 4575131,
               "player": "Jacory Croskey-Merritt",
               "position": "RB",
@@ -3660,6 +3573,37 @@
                 {
                   "position": "QB",
                   "percent": -16.41
+                }
+              ],
+              "needsMatch": []
+            },
+            {
+              "playerId": 4241985,
+              "player": "J.K. Dobbins",
+              "position": "RB",
+              "startRate": 16.67,
+              "rosteredWeeks": 6,
+              "startedWeeks": 1,
+              "boost": 17.2,
+              "teamId": 5,
+              "team": "49er Faith-Fool",
+              "h2hWinsAdded": 0,
+              "medianWinsAdded": 0,
+              "winsAdded": 0,
+              "mutualTrade": {
+                "playerId": 15818,
+                "player": "Keenan Allen",
+                "position": "WR",
+                "startRate": 0,
+                "boost": 27.1,
+                "h2hWinsAdded": 0,
+                "medianWinsAdded": 0,
+                "winsAdded": 0
+              },
+              "otherNeeds": [
+                {
+                  "position": "DST",
+                  "percent": -66.97
                 }
               ],
               "needsMatch": []
@@ -3988,11 +3932,11 @@
               "medianWinsAdded": 0,
               "winsAdded": 1,
               "mutualTrade": {
-                "playerId": 3929645,
-                "player": "Juwan Johnson",
-                "position": "TE",
-                "startRate": 33.33,
-                "boost": 15.7,
+                "playerId": 3054850,
+                "player": "Alvin Kamara",
+                "position": "RB",
+                "startRate": 75,
+                "boost": 5.9,
                 "h2hWinsAdded": 0,
                 "medianWinsAdded": 0,
                 "winsAdded": 0
@@ -4029,11 +3973,11 @@
               "medianWinsAdded": 0,
               "winsAdded": 0,
               "mutualTrade": {
-                "playerId": 3929645,
-                "player": "Juwan Johnson",
-                "position": "TE",
-                "startRate": 33.33,
-                "boost": 16.6,
+                "playerId": 3054850,
+                "player": "Alvin Kamara",
+                "position": "RB",
+                "startRate": 75,
+                "boost": 7.9,
                 "h2hWinsAdded": 0,
                 "medianWinsAdded": 0,
                 "winsAdded": 0
@@ -4053,41 +3997,35 @@
               ]
             },
             {
-              "playerId": 4568490,
-              "player": "RJ Harvey",
-              "position": "RB",
+              "playerId": 4430539,
+              "player": "Brenton Strange",
+              "position": "TE",
               "startRate": 0,
               "rosteredWeeks": 6,
               "startedWeeks": 0,
-              "boost": 8.9,
-              "teamId": 2,
-              "team": "TDsMaGee",
-              "h2hWinsAdded": 0,
-              "medianWinsAdded": 0,
-              "winsAdded": 0,
+              "boost": 15.7,
+              "teamId": 6,
+              "team": "Claremont In Yo Stace!",
+              "h2hWinsAdded": 1,
+              "medianWinsAdded": 1,
+              "winsAdded": 2,
               "mutualTrade": {
-                "playerId": 3929645,
-                "player": "Juwan Johnson",
-                "position": "TE",
-                "startRate": 33.33,
-                "boost": 32.1,
-                "h2hWinsAdded": 0,
-                "medianWinsAdded": 0,
-                "winsAdded": 0
+                "playerId": 3054850,
+                "player": "Alvin Kamara",
+                "position": "RB",
+                "startRate": 75,
+                "boost": 13.1,
+                "h2hWinsAdded": 1,
+                "medianWinsAdded": 1,
+                "winsAdded": 2
               },
               "otherNeeds": [
                 {
-                  "position": "TE",
-                  "percent": -86.05
-                },
-                {
-                  "position": "K",
-                  "percent": -24.87
+                  "position": "DST",
+                  "percent": -31.19
                 }
               ],
-              "needsMatch": [
-                "TE"
-              ]
+              "needsMatch": []
             }
           ]
         },
@@ -4546,36 +4484,32 @@
               "needsMatch": []
             },
             {
-              "playerId": 4568490,
-              "player": "RJ Harvey",
+              "playerId": 4575131,
+              "player": "Jacory Croskey-Merritt",
               "position": "RB",
               "startRate": 0,
               "rosteredWeeks": 6,
               "startedWeeks": 0,
-              "boost": 20.5,
-              "teamId": 2,
-              "team": "TDsMaGee",
-              "h2hWinsAdded": 0,
-              "medianWinsAdded": 0,
-              "winsAdded": 0,
+              "boost": 17.1,
+              "teamId": 6,
+              "team": "Claremont In Yo Stace!",
+              "h2hWinsAdded": 1,
+              "medianWinsAdded": 1,
+              "winsAdded": 2,
               "mutualTrade": {
                 "playerId": 3121422,
                 "player": "Terry McLaurin",
                 "position": "WR",
                 "startRate": 16.67,
-                "boost": 14.92,
+                "boost": 11.4,
                 "h2hWinsAdded": 0,
                 "medianWinsAdded": 0,
                 "winsAdded": 0
               },
               "otherNeeds": [
                 {
-                  "position": "TE",
-                  "percent": -86.05
-                },
-                {
-                  "position": "K",
-                  "percent": -24.87
+                  "position": "DST",
+                  "percent": -31.19
                 }
               ],
               "needsMatch": []
@@ -5522,43 +5456,6 @@
               ]
             },
             {
-              "playerId": 4568490,
-              "player": "RJ Harvey",
-              "position": "RB",
-              "startRate": 0,
-              "rosteredWeeks": 6,
-              "startedWeeks": 0,
-              "boost": 21.6,
-              "teamId": 2,
-              "team": "TDsMaGee",
-              "h2hWinsAdded": 0,
-              "medianWinsAdded": 0,
-              "winsAdded": 0,
-              "mutualTrade": {
-                "playerId": 4870795,
-                "player": "Makai Lemon",
-                "position": "WR",
-                "startRate": 0,
-                "boost": 1.02,
-                "h2hWinsAdded": 0,
-                "medianWinsAdded": 0,
-                "winsAdded": 0
-              },
-              "otherNeeds": [
-                {
-                  "position": "TE",
-                  "percent": -86.05
-                },
-                {
-                  "position": "K",
-                  "percent": -24.87
-                }
-              ],
-              "needsMatch": [
-                "TE"
-              ]
-            },
-            {
               "playerId": 3916433,
               "player": "Jakobi Meyers",
               "position": "WR",
@@ -5580,6 +5477,34 @@
                 {
                   "position": "QB",
                   "percent": -24.02
+                }
+              ],
+              "needsMatch": [
+                "DST"
+              ]
+            },
+            {
+              "playerId": 3121422,
+              "player": "Terry McLaurin",
+              "position": "WR",
+              "startRate": 16.67,
+              "rosteredWeeks": 6,
+              "startedWeeks": 1,
+              "boost": 20.2,
+              "teamId": 9,
+              "team": "The Mahomies",
+              "h2hWinsAdded": 0,
+              "medianWinsAdded": 0,
+              "winsAdded": 0,
+              "mutualTrade": null,
+              "otherNeeds": [
+                {
+                  "position": "DST",
+                  "percent": -25.69
+                },
+                {
+                  "position": "WR",
+                  "percent": -16.31
                 }
               ],
               "needsMatch": [
