@@ -1,5 +1,90 @@
 {
   "week": 7,
-  "updatedAt": "2026-10-20T13:34:46.994Z",
-  "claims": []
+  "updatedAt": "2026-10-21T13:03:54.672Z",
+  "claims": [
+    {
+      "teamId": 11,
+      "won": true,
+      "status": "EXECUTED",
+      "processedAt": "2026-10-21T07:18:08.882Z",
+      "playerId": 4723820,
+      "droppedPlayerId": null,
+      "player": "Omar Cooper Jr.",
+      "position": "WR",
+      "projection": 7.45,
+      "dropped": null
+    },
+    {
+      "teamId": 5,
+      "won": false,
+      "status": "FAILED_INVALIDPLAYERSOURCE",
+      "processedAt": "2026-10-21T07:18:08.882Z",
+      "playerId": 4360248,
+      "droppedPlayerId": 3912547,
+      "player": "Kyle Pitts Sr.",
+      "position": "TE",
+      "projection": 9.85,
+      "dropped": "Sam Darnold"
+    },
+    {
+      "teamId": 11,
+      "won": false,
+      "status": "FAILED_PLAYERALREADYDROPPED",
+      "processedAt": "2026-10-21T07:18:08.883Z",
+      "playerId": 4241474,
+      "droppedPlayerId": null,
+      "player": "Brian Robinson Jr.",
+      "position": "RB",
+      "projection": 6.17,
+      "dropped": null
+    },
+    {
+      "teamId": 12,
+      "won": true,
+      "status": "EXECUTED",
+      "processedAt": "2026-10-21T07:18:08.787Z",
+      "playerId": 4360248,
+      "droppedPlayerId": 3116406,
+      "player": "Kyle Pitts Sr.",
+      "position": "TE",
+      "projection": 9.85,
+      "dropped": "Tyreek Hill"
+    },
+    {
+      "teamId": 11,
+      "won": false,
+      "status": "FAILED_INVALIDPLAYERSOURCE",
+      "processedAt": "2026-10-21T07:18:08.883Z",
+      "playerId": 4567104,
+      "droppedPlayerId": 3055899,
+      "player": "Will Reichard",
+      "position": "K",
+      "projection": 11.55,
+      "dropped": "Harrison Butker"
+    },
+    {
+      "teamId": 5,
+      "won": true,
+      "status": "EXECUTED",
+      "processedAt": "2026-10-21T07:18:08.882Z",
+      "playerId": 4567104,
+      "droppedPlayerId": 4034949,
+      "player": "Will Reichard",
+      "position": "K",
+      "projection": 11.55,
+      "dropped": "Eddy Pineiro"
+    },
+    {
+      "teamId": 11,
+      "won": false,
+      "status": "FAILED_PLAYERALREADYDROPPED",
+      "processedAt": "2026-10-21T07:18:08.883Z",
+      "playerId": 4586312,
+      "droppedPlayerId": null,
+      "player": "Jaylin Noel",
+      "position": "WR",
+      "projection": 7.41,
+      "dropped": null
+    }
+  ]
 }
