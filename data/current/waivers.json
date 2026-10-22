@@ -1,6 +1,6 @@
 {
   "week": 7,
-  "updatedAt": "2026-10-21T20:53:55.669Z",
+  "updatedAt": "2026-10-22T13:48:25.466Z",
   "claims": [
     {
       "teamId": 11,
@@ -15,18 +15,6 @@
       "dropped": null
     },
     {
-      "teamId": 5,
-      "won": false,
-      "status": "FAILED_INVALIDPLAYERSOURCE",
-      "processedAt": "2026-10-21T07:18:08.882Z",
-      "playerId": 4360248,
-      "droppedPlayerId": 3912547,
-      "player": "Kyle Pitts Sr.",
-      "position": "TE",
-      "projection": 9.85,
-      "dropped": "Sam Darnold"
-    },
-    {
       "teamId": 11,
       "won": false,
       "status": "FAILED_PLAYERALREADYDROPPED",
@@ -37,6 +25,30 @@
       "position": "RB",
       "projection": 6.17,
       "dropped": null
+    },
+    {
+      "teamId": 5,
+      "won": true,
+      "status": "EXECUTED",
+      "processedAt": "2026-10-21T07:18:08.882Z",
+      "playerId": 4567104,
+      "droppedPlayerId": 4034949,
+      "player": "Will Reichard",
+      "position": "K",
+      "projection": 11.55,
+      "dropped": "Eddy Pineiro"
+    },
+    {
+      "teamId": 5,
+      "won": false,
+      "status": "FAILED_INVALIDPLAYERSOURCE",
+      "processedAt": "2026-10-21T07:18:08.882Z",
+      "playerId": 4360248,
+      "droppedPlayerId": 3912547,
+      "player": "Kyle Pitts Sr.",
+      "position": "TE",
+      "projection": 9.85,
+      "dropped": "Sam Darnold"
     },
     {
       "teamId": 12,
@@ -61,18 +73,6 @@
       "position": "K",
       "projection": 11.55,
       "dropped": "Harrison Butker"
-    },
-    {
-      "teamId": 5,
-      "won": true,
-      "status": "EXECUTED",
-      "processedAt": "2026-10-21T07:18:08.882Z",
-      "playerId": 4567104,
-      "droppedPlayerId": 4034949,
-      "player": "Will Reichard",
-      "position": "K",
-      "projection": 11.55,
-      "dropped": "Eddy Pineiro"
     },
     {
       "teamId": 11,
