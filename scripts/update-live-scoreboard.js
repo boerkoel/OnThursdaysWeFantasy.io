@@ -531,6 +531,15 @@ if (!finals && currentWeekMatchups.length && currentWeekMatchups.every(m => m.co
   }));
 }
 archive.weeks = { ...(archive.weeks || {}), [currentWeek]: { ...prevWeek, winHistory: thin(winHistory), plays: swingPlays, forecasts, ...(finals ? { finals } : {}) } };
+// ESPN marks a week's matchups completed only when it rolls over to the next
+// week, so earlier weeks with forecasts get their finals from the schedule.
+for (const [key, wk] of Object.entries(archive.weeks)) {
+  const games = matchups.filter(m => m.week === Number(key));
+  if (wk.finals || !wk.forecasts || Number(key) >= currentWeek || !games.length || !games.every(m => m.completed)) continue;
+  const scores = games.flatMap(m => [[m.homeTeamId, m.homeScore, m.awayScore], [m.awayTeamId, m.awayScore, m.homeScore]]);
+  const finalMedian = medianOf(scores.map(([, score]) => score));
+  archive.weeks[key] = { ...wk, finals: Object.fromEntries(scores.map(([id, score, opp]) => [id, { score, won: score > opp, above: score > finalMedian }])) };
+}
 // Graded so far: average projection miss (points) and Brier scores for odds (lower is better).
 const scorecard = {};
 for (const when of ["thu", "sun"]) {
