@@ -93,7 +93,8 @@ function GamesSection({ feed, games, pot }) {
       const by = inPlay.filter(e => pickOf(e)?.team === team);
       const who = {};
       for (const e of by) who[e.user] = (who[e.user] || 0) + 1;
-      return { team, score: g.state === "pre" ? null : t.score, count: by.length, who: Object.entries(who).sort((a, b) => b[1] - a[1]) };
+      return { team, score: g.state === "pre" ? null : t.score, count: by.length, who: Object.entries(who).sort((a, b) => b[1] - a[1]),
+        chance: g.completed || t.winChance == null ? null : Number(t.winChance) };
     };
     const a = side(away), h = side(home);
     const winner = g.completed ? (a.score > h.score ? a.team : h.score > a.score ? h.team : null) : null;
@@ -103,7 +104,7 @@ function GamesSection({ feed, games, pot }) {
   const status = g => g.completed ? "Final" : g.state === "in" ? (g.detail || "Live") : g.detail || "";
   const sideCell = (x, winner, completed) => <div className={"sv-game-side" + (completed && winner && winner !== x.team ? " lost" : completed && winner === x.team ? " won" : "")}>
     <img src={logo(x.team)} alt="" loading="lazy" /><b>{x.team}</b>{x.score != null && x.score !== "" ? <span className="sv-game-score">{x.score}</span> : null}
-    <span className="sv-game-picks">{x.count ? <>{x.count} {x.count === 1 ? "entry" : "entries"} · {pct(revealed ? x.count / revealed * 100 : 0)}</> : "no picks"}</span>
+    <span className="sv-game-picks">{x.chance != null ? <span className={"sv-game-odds" + (x.chance >= 0.5 ? " fav" : "")} title="Chance to win: ESPN's live win probability in game, the betting line before kickoff">{Math.round(x.chance * 100)}% to win</span> : null}{x.count ? <>{x.count} {x.count === 1 ? "entry" : "entries"} · {pct(revealed ? x.count / revealed * 100 : 0)}</> : "no picks"}</span>
     {x.who.length ? <small>{x.who.map(([u, k]) => k > 1 ? `${u} ×${k}` : u).join(", ")}</small> : null}
   </div>;
   return <section id="survivor-games" className="section">
@@ -129,7 +130,10 @@ function GamesSection({ feed, games, pot }) {
       })}
     </div>
     {rows.some(r => !(r.a.count + r.h.count > 0 || r.g.state !== "pre")) ? <p className="sv-game-later"><b>Not kicked off yet:</b> {rows.filter(r => !(r.a.count + r.h.count > 0 || r.g.state !== "pre"))
-      .sort((x, y) => String(x.g.kickoff).localeCompare(String(y.g.kickoff))).map(r => `${r.a.team} @ ${r.h.team}`).join(" · ")}</p> : null}
+      .sort((x, y) => String(x.g.kickoff).localeCompare(String(y.g.kickoff))).map(r => {
+        const fav = r.a.chance != null && r.h.chance != null ? (r.a.chance >= r.h.chance ? r.a : r.h) : null;
+        return `${r.a.team} @ ${r.h.team}${fav ? ` (${fav.team} ${Math.round(fav.chance * 100)}%)` : ""}`;
+      }).join(" · ")}</p> : null}
     <p className="median-note">Picks show once their game kicks off. Rooting interests use the same money model as Managers: every live entry gets an equal share of the {dollars(pot)} pot, so a game moves a manager's value both through their own entries and through everyone else's. Picks that haven't been revealed yet are assumed to survive.</p>
   </section>;
 }
