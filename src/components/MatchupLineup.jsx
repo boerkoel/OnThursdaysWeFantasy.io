@@ -167,8 +167,8 @@ export function VsLineups({ a, b, note, nflGames = [] }) {
   return <div className="dw-vs"><LiveToggle liveOnly={liveOnly} onChange={setLiveOnly} />
     {note ? <p className="dw-vs-note">{note}</p> : null}
     <div className="dw-vs-cols">
-      <div><strong className="dw-vs-head">{a.team}</strong><TeamLineup lineup={a.lineup?.starters || []} nflGames={nflGames} liveOnly={liveOnly} /></div>
-      <div><strong className="dw-vs-head">{b.team}</strong><TeamLineup lineup={b.lineup?.starters || []} nflGames={nflGames} liveOnly={liveOnly} /></div>
+      <div><strong className="dw-vs-head" title={a.team}>{a.team}</strong><TeamLineup lineup={a.lineup?.starters || []} nflGames={nflGames} liveOnly={liveOnly} /></div>
+      <div><strong className="dw-vs-head" title={b.team}>{b.team}</strong><TeamLineup lineup={b.lineup?.starters || []} nflGames={nflGames} liveOnly={liveOnly} /></div>
     </div>
   </div>;
 }

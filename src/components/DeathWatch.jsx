@@ -255,8 +255,8 @@ export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
                 ? <>Next to <b>{above.team}</b>, the next most likely to be chopped. Outscore them to stay alive.</>
                 : <>Next to <b>{above.team}</b>, the most likely to be chopped. Stay ahead of them to stay alive.</>}</p>
               <div className="dw-vs-cols">
-                <div><strong className="dw-vs-head">{t.team}</strong><TeamLineup lineup={t.lineup} nflGames={nflGames} liveOnly={liveOnly} /></div>
-                <div><strong className="dw-vs-head">{above.team}</strong><TeamLineup lineup={above.lineup} nflGames={nflGames} liveOnly={liveOnly} /></div>
+                <div><strong className="dw-vs-head" title={t.team}>{t.team}</strong><TeamLineup lineup={t.lineup} nflGames={nflGames} liveOnly={liveOnly} /></div>
+                <div><strong className="dw-vs-head" title={above.team}>{above.team}</strong><TeamLineup lineup={above.lineup} nflGames={nflGames} liveOnly={liveOnly} /></div>
               </div>
             </div>;
           })() : null}

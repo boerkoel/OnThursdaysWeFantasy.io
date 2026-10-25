@@ -1014,7 +1014,7 @@ section,details,.odds-block{scroll-margin-top:72px}
 /* Death Watch: lineup side by side with the team just above. */
 .dw-vs-note{margin:6px 0;font-size:12px;color:#a9ac9f}
 .dw-vs-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
-.dw-vs-head{display:block;font-size:12px;margin:2px 0 4px}
+.dw-vs-head{display:block;font-size:12px;margin:2px 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}   /* one line, so both lineups start level */
 @media(max-width:480px){.dw-vs-cols{gap:6px;font-size:12px}}
 
 /* Outcome distributions: our projection, its spread, and ESPN's marker. */
