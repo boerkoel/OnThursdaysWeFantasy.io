@@ -18,7 +18,7 @@ import ReportCards from "./components/ReportCards.jsx";
 import reportCards from "../data/current/report-cards.json";
 import { DeathWatch } from "./components/DeathWatch.jsx";
 import SwingChart, { tippingPoint } from "./components/SwingChart.jsx";
-import MatchupLineup, { LiveToggle, useLiveOnly } from "./components/MatchupLineup.jsx";
+import MatchupLineup, { LiveToggle, VsLineups, useLiveOnly } from "./components/MatchupLineup.jsx";
 import RafflePodium from "./components/RafflePodium.jsx";
 import PrimetimeWatch from "./components/PrimetimeWatch.jsx";
 import Sheet from "./components/Sheet.jsx";
@@ -166,6 +166,7 @@ function App() {
   const livePlayFeed = live.livePlays;
   const scores = scoreboard.scores || [];
   const [scoreSort, setScoreSort] = useState("current");
+  const [medianVs, setMedianVs] = useState(false);   // the median race, head to head
   const status = gameState(scoreboard);
   const refresher = useRefresh(live.refresh, scoreboard.lastUpdated);
   const flashingScores = useChangedScores(scores);
@@ -571,6 +572,17 @@ function App() {
             <div className={"score-row " + (projectedMedianEdgeTeams.has(s.teamId) ? "median-near" : Number(s.aboveMedianProbability) > 50 ? "median-above" : s.aboveMedianProbability != null ? "median-below" : "")}><span className="rank">{i + 1}</span><span className="score-team"><TeamLogo src={teamLogos[s.teamId]} />{s.team}{projectedMedianEdgeTeams.has(s.teamId) ? <em className="median-near-label">NEAR MEDIAN</em> : null}</span><span className="score-opponent">vs {s.opponent}</span><strong className={["score-primary", scoreSort === "projected" ? "projected-score" : "", flashingScores.has(s.teamId) ? "score-flash" : ""].join(" ").trim()}>{scoreSort === "wins" ? (expectedWins(s) != null ? expectedWins(s).toFixed(2) : "—") : money(scoreSort === "projected" ? s.projectionAverage : s.score)}</strong>{scoreSort === "wins" ? <span className="score-projection">H2H {pct(s.winProbability)}<em className="score-probability">ABOVE MEDIAN {pct(s.aboveMedianProbability)}</em></span> : <span className="score-projection">{scoreSort === "projected" ? "ACT " + money(s.score) : "PROJ "}{scoreSort === "projected" ? "" : (s.projectionTrend === "up" ? "↑ " : s.projectionTrend === "down" ? "↓ " : "")}{scoreSort === "projected" ? "" : (s.projectionAverage != null ? money(s.projectionAverage) : "—")}<em className="score-probability">ABOVE MEDIAN {pct(s.aboveMedianProbability)}</em></span>}{leagueScale ? <span className="score-dist"><OutcomeBar dist={s.projection?.dist} espn={Number(s.projection?.espn)} lo={leagueScale.lo} hi={leagueScale.hi} width={110} /></span> : null}</div>
           </React.Fragment>)}
         </div>
+        {(() => {   // the median race: the teams projected just above and just below the line, head to head
+          const byProj = [...scores].filter(s => s.projectionAverage != null && s.lineup?.starters?.length).sort((x, y) => Number(y.projectionAverage) - Number(x.projectionAverage));
+          const half = Math.floor(byProj.length / 2);
+          const above = byProj[half - 1], below = byProj[half];
+          if (!above || !below || scores.every(s => Number(s.aboveMedianProbability) === 0 || Number(s.aboveMedianProbability) === 100)) return null;
+          return <>
+            <button type="button" className="section-toggle" aria-expanded={medianVs} onClick={() => setMedianVs(v => !v)}>{medianVs ? "Hide the median race ▴" : "Who's on the median line ▾"}</button>
+            {medianVs ? <VsLineups a={above} b={below} nflGames={scoreboard.nflGames || []}
+              note={<>Projected just above the median: <b>{above.team}</b> ({money(above.projectionAverage)}, {pct(above.aboveMedianProbability)} to finish above). Just below: <b>{below.team}</b> ({money(below.projectionAverage)}, {pct(below.aboveMedianProbability)}).</>} /> : null}
+          </>;
+        })()}
         <p className="median-note">Projections are ours: ESPN, Sleeper (RotoWire) and FantasyPros averaged, with injuries and likely lineup moves simulated (the bar on wide screens: band = middle half of outcomes, line = 80%, ◆ = ESPN). The projected median is the median of those projections. Odds of finishing above the median come from simulating the rest of the week, where the league median moves with every team’s result. Highlighted in yellow: the teams projected just above and just below the median, plus any team with a {NEAR_MEDIAN_MIN}–{NEAR_MEDIAN_MAX}% chance.</p>
       </section>
       <AccuracyScorecard scorecard={scoreboard.scorecard} />

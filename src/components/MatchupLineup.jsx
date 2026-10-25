@@ -159,3 +159,16 @@ export function TeamLineup({ lineup = [], nflGames = [], liveOnly = false }) {
     })}
   </div>;
 }
+
+// Two teams' lineups side by side (Death Watch, ticket race, median race),
+// with the All / Live now filter and a note on why they're paired.
+export function VsLineups({ a, b, note, nflGames = [] }) {
+  const [liveOnly, setLiveOnly] = useLiveOnly();
+  return <div className="dw-vs"><LiveToggle liveOnly={liveOnly} onChange={setLiveOnly} />
+    {note ? <p className="dw-vs-note">{note}</p> : null}
+    <div className="dw-vs-cols">
+      <div><strong className="dw-vs-head">{a.team}</strong><TeamLineup lineup={a.lineup?.starters || []} nflGames={nflGames} liveOnly={liveOnly} /></div>
+      <div><strong className="dw-vs-head">{b.team}</strong><TeamLineup lineup={b.lineup?.starters || []} nflGames={nflGames} liveOnly={liveOnly} /></div>
+    </div>
+  </div>;
+}
