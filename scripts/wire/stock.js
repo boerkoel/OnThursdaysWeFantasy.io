@@ -6,10 +6,10 @@ import { currentScores, currentWeek, fit, name, pct, pickLine, possessive, seaso
 // Playoff odds movers: this week so far (from the start-of-week snapshot in
 // season-odds.json), and last week's final moves in the week in review.
 export const STOCK_MIN_MOVE = 10;
-export function stockMovers(start, end, names = id => name(Number(id))) {
+export function stockMovers(start, end, names = id => name(Number(id)), min = STOCK_MIN_MOVE) {
   return Object.keys(end || {}).filter(id => start?.[id] && Number.isFinite(start[id].playoffOdds) && Number.isFinite(end[id].playoffOdds))
     .map(id => ({team: names(id), from: start[id].playoffOdds, to: end[id].playoffOdds, move: end[id].playoffOdds - start[id].playoffOdds}))
-    .filter(x => Math.abs(x.move) >= STOCK_MIN_MOVE).sort((a, b) => b.move - a.move);
+    .filter(x => Math.abs(x.move) >= min).sort((a, b) => b.move - a.move);
 }
 // Up to two stories: the biggest riser and the biggest faller.
 export function stockLines(movers, label) {
@@ -27,10 +27,30 @@ export function stockLines(movers, label) {
   ]);
   return [up && "📈 " + label + ": " + upText, down && "📉 " + label + ": " + downText].filter(Boolean);
 }
+// While the week is on (Jim, 2026-10-25): smaller moves count (6+ pts), tied
+// to the week's results so far: expected wins = H2H win odds + odds of beating
+// the median (out of 2).
+export const LIVE_STOCK_MIN_MOVE = 6;
 export function addStockWatchStory(add) {
   if (Number(seasonOddsData?.week) !== currentWeek || currentScores.every(s => Number(s.score) === 0)) return;
-  stockLines(stockMovers(seasonOddsData.weekStart, Object.fromEntries((seasonOddsData.teams || []).map(t => [String(t.teamId), t]))), "STOCK WATCH")
-    .forEach((text, i) => add("STOCK WATCH", text, 66 - i));
+  const movers = stockMovers(seasonOddsData.weekStart, Object.fromEntries((seasonOddsData.teams || []).map(t => [String(t.teamId), t])),
+    id => id, LIVE_STOCK_MIN_MOVE);
+  const ew = id => { const s = currentScores.find(x => x.teamId === Number(id)); return s && s.winProbability != null ? (Number(s.winProbability) + Number(s.aboveMedianProbability || 0)) / 100 : null; };
+  const up = movers[0]?.move > 0 ? movers[0] : null, down = movers.at(-1)?.move < 0 ? movers.at(-1) : null;
+  if (up) {
+    const e = ew(up.team);
+    add("STOCK WATCH", fit(
+      `📈 STOCK WATCH: ${possessive(name(Number(up.team)))} results this week${e != null ? ` (${e.toFixed(1)} expected wins of 2)` : ""} have boosted their playoff odds ${Math.round(up.move)} pts, from ${pct(up.from)} to ${pct(up.to)}.`,
+      `📈 STOCK WATCH: ${name(Number(up.team))}: playoff odds ${pct(up.from)} → ${pct(up.to)} on this week's results.`
+    ), 68 + Math.min(up.move, 20) / 2);
+  }
+  if (down) {
+    const e = ew(down.team);
+    add("STOCK WATCH", fit(
+      `📉 STOCK WATCH: ${possessive(name(Number(down.team)))} week${e != null ? ` (${e.toFixed(1)} expected wins of 2)` : ""} has cost them ${Math.round(-down.move)} pts of playoff odds, from ${pct(down.from)} to ${pct(down.to)}.`,
+      `📉 STOCK WATCH: ${name(Number(down.team))}: playoff odds ${pct(down.from)} → ${pct(down.to)} on this week's results.`
+    ), 67 + Math.min(-down.move, 20) / 2);
+  }
 }
 
 // ---- Playoff swing (Jim, 2026-10-25: prioritize it) ------------------------------
