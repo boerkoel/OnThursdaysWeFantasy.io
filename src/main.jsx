@@ -14,6 +14,8 @@ import LeagueWire from "./components/LeagueWire.jsx";
 import { useRefresh } from "./components/PullToRefresh.jsx";
 import TeamCards from "./components/TeamCards.jsx";
 import TopTrades from "./components/TopTrades.jsx";
+import ReportCards from "./components/ReportCards.jsx";
+import reportCards from "../data/current/report-cards.json";
 import { DeathWatch } from "./components/DeathWatch.jsx";
 import SwingChart, { tippingPoint } from "./components/SwingChart.jsx";
 import MatchupLineup, { LiveToggle, useLiveOnly } from "./components/MatchupLineup.jsx";
@@ -340,6 +342,7 @@ function App() {
     if (/TRADE|SWAP|LONG-TERM REGRET/.test(type)) return go("trades");
     if (/RAFFLE/.test(type)) return go("raffle");
     if (/TITLE ODDS|TOILET BOWL|PLAYOFF SWING|CLINCH|STOCK|STANDINGS/.test(type)) return go("standings-odds");
+    if (/REPORT CARD/.test(type)) return go("report-cards");
     if (/SURVIVOR SCARE/.test(type)) return go("survivor-games");
     if (/SURVIVOR/.test(type)) return go("survivor-picks");
     if (/MEDIAN/.test(type)) return go("scoreboard");
@@ -703,6 +706,7 @@ function App() {
       </> : null}
 
       {tab === "league" ? <>
+      <ReportCards cards={reportCards} logos={teamLogos} />
       <section id="history" className="section">
         <div className="section-heading">
           <div><span className="section-kicker">THE SEASON SO FAR</span><h2>Weekly History</h2></div>

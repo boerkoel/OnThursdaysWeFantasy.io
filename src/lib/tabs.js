@@ -17,7 +17,7 @@ export const TAB_SECTIONS = {
   live: [["my-team", "My team"], ["primetime", "Tonight"], ["scores", "Scores"], ["ticket-race", "Ticket race"], ["scoreboard", "Median"], ["accuracy", "Accuracy"]],
   standings: [["standings-odds", "Standings"], ["playoffs", "Playoffs"], ["ultimate-loser", "Ultimate Loser"], ["raffle", "Raffle"]],
   "death-watch": [["death-watch", "At risk"], ["survival", "Survival odds"], ["rip", "RIP"]],
-  league: [["history", "History"], ["awards", "Awards"], ["record-book", "Record Book"], ["rivalries", "Rivalries"]],
+  league: [["report-cards", "Report cards"], ["history", "History"], ["awards", "Awards"], ["record-book", "Record Book"], ["rivalries", "Rivalries"]],
   teams: [["trades", "Trades"], ["teams", "Team cards"]],
   survivor: [["survivor", "Pool"], ["survivor-games", "Games"], ["survivor-picks", "Picks"], ["survivor-managers", "Managers"], ["survivor-teams", "Teams left"], ["survivor-standings", "Entries"]]
 };
@@ -25,7 +25,7 @@ export const SECTION_TAB = {
   scores: "live", accuracy: "live", primetime: "live", "ticket-race": "live", scoreboard: "live", "my-team": "live",
   "standings-odds": "standings", playoffs: "standings", "ultimate-loser": "standings", raffle: "standings",
   rip: "death-watch", survival: "death-watch",
-  history: "league", awards: "league", "record-book": "league", rivalries: "league",
+  "report-cards": "league", history: "league", awards: "league", "record-book": "league", rivalries: "league",
   trades: "teams",
   "survivor-games": "survivor", "survivor-picks": "survivor", "survivor-managers": "survivor", "survivor-teams": "survivor", "survivor-standings": "survivor"
 };

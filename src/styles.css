@@ -1059,3 +1059,19 @@ section,details,.odds-block{scroll-margin-top:72px}
 .seed-up,.seed-down{font-size:10px;margin-left:3px;font-weight:700}
 .seed-up{color:#7fd17f}.seed-down{color:#e66767}
 .week-wins{color:#8b8e86;font-size:10px}
+
+/* Report cards (League tab) */
+.report-cards{border:1px solid #30332d;border-radius:16px;overflow-x:auto}
+.rc-row{display:grid;grid-template-columns:minmax(150px,1.6fr) 58px repeat(8,minmax(46px,1fr));gap:8px;align-items:center;padding:10px 14px;border:0;border-bottom:1px solid #242620;background:none;color:inherit;font:inherit;text-align:center;width:100%;min-width:640px;cursor:pointer}
+.rc-row.head{cursor:default;color:#8b8e86;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.rc-row.head span[title]{cursor:help}
+.rc-row strong{display:flex;align-items:center;gap:8px;min-width:0;text-align:left;font-size:14px}
+.rc-row strong span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rc-row.open{background:#ffffff08}
+.grade{display:inline-block;min-width:30px;padding:2px 6px;border-radius:8px;font-weight:800;font-size:13px;background:#ffffff0a;color:#c7c9c1}
+.grade.big{font-size:18px;min-width:44px;padding:4px 8px}
+.grade.g-a{background:#2c4a2a;color:#a9e39c}.grade.g-b{background:#2d3b25;color:#cfe3a7}.grade.g-c{background:#463c1f;color:#efd27a}.grade.g-d{background:#4a2423;color:#f2a3a0}
+.rc-detail{padding:10px 16px 14px;border-bottom:1px solid #242620;font-size:13px;color:#c7c9c1;min-width:640px}
+.rc-detail ul{margin:0;padding-left:0;list-style:none;display:grid;gap:6px}
+.rc-weeks{margin:10px 0 0;color:#8b8e86;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.rc-weeks .grade{font-size:11px;min-width:24px;padding:1px 4px}

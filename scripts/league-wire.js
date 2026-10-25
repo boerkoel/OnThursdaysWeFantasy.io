@@ -13,6 +13,7 @@ import { addNewsStories } from "./wire/news.js";
 import { addObituaryStory } from "./wire/obits.js";
 import { addPickupStories } from "./wire/pickups.js";
 import { addLongTermRegretStory } from "./wire/regrets.js";
+import { addReportCardStory, addReportCardWatchStory } from "./wire/report-cards.js";
 import { addPrimetimeStories } from "./wire/primetime.js";
 import { addRaffleStories } from "./wire/raffle.js";
 import { interleave, weekHeadlines, weekInReview } from "./wire/review.js";
@@ -142,6 +143,7 @@ async function buildMarqueeStories() {
   const falling=currentScores.filter(s=>s.projectionTrend==="down").sort((a,b)=>Number(a.projectionAverage)-Number(b.projectionAverage))[0];
   if(falling) add("STOCK FALLING","📉 Stock falling: " + possessive(falling.team) + " ESPN projection is trending down.",20);
   addLineupMistakeStories(add, matchupStates, regrets);
+  try { addReportCardStory(add); addReportCardWatchStory(add, regrets); } catch (error) { console.warn("League Wire: report cards failed: " + error.message); }
   addDeathWatchStory(add);
   try { addWaiverStories(add); } catch (error) { console.warn("League Wire: waiver stories failed: " + error.message); }
   try { addFaabStories(add); } catch (error) { console.warn("League Wire: FAAB stories failed: " + error.message); }
