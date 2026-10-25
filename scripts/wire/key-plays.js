@@ -31,6 +31,7 @@ export async function buildKeyPlays(pregameNews = []) {
 // the week's list is kept in marquee.json and each run adds what's new (ids
 // keep it from repeating). No points, so they never become chart markers.
 const PREGAME_NEWS_MAX = 40;
+const newsId = (playerId, headline) => `news-${playerId}-` + String(headline).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 export async function pregameNewsPlays() {
   const previous = await readJson(`${DATA}/marquee.json`).catch(() => null);
   const kept = Number(previous?.week) === currentWeek ? previous.pregameNews || [] : [];
@@ -41,13 +42,19 @@ export async function pregameNewsPlays() {
     const starter = starters.get(Number(named.id));
     const game = starter && nflGameByProTeam.get(Number(starter.p.proTeamId));
     if (!game || game.state !== "pre" || Date.parse(n.published) >= Date.parse(game.kickoff)) continue;
-    found.push(entry(starter.s, starter.p, { id: `news-${named.id}-${Date.parse(n.published)}`, news: "headline",
+    // Keyed by headline, not publish time: ESPN re-publishes an updated article
+    // with a new timestamp, and that's still the same story.
+    found.push(entry(starter.s, starter.p, { id: newsId(named.id, n.headline), news: "headline",
       text: n.headline.replace(/[.!?]+$/, ""), wallclock: n.published }));
   }
   for (const { s, p } of newlyRuledOut()) {
     found.push(entry(s, p, { id: `out-${p.id}`, news: "out", text: "ruled out before kickoff", wallclock: new Date(clockNow()).toISOString() }));
   }
-  const byId = new Map(kept.map(n => [n.id, n]));
-  for (const n of found) if (!byId.has(n.id)) byId.set(n.id, n);
+  // Re-key earlier entries the same way (older runs keyed news by publish time), newest kept.
+  const byId = new Map();
+  for (const n of [...found, ...kept].sort((a, b) => Date.parse(b.wallclock) - Date.parse(a.wallclock))) {
+    const id = n.news === "headline" ? newsId(n.playerId, n.text) : n.id;
+    if (!byId.has(id)) byId.set(id, { ...n, id });
+  }
   return [...byId.values()].sort((a, b) => Date.parse(b.wallclock) - Date.parse(a.wallclock)).slice(0, PREGAME_NEWS_MAX);
 }

@@ -65,5 +65,11 @@ for (const [handle, source] of INSIDERS) {
   }
 }
 
+// ESPN re-publishes updated articles: one item per headline, the newest.
+const seenHeadlines = new Set();
+const unique = items.sort((a, b) => Date.parse(b.published) - Date.parse(a.published))
+  .filter(i => { const k = i.headline.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim(); return !seenHeadlines.has(k) && seenHeadlines.add(k); });
+items.length = 0;
+items.push(...unique);
 await writeFile(OUT, JSON.stringify({ updatedAt: new Date().toISOString(), items }, null, 2) + "\n");
 console.log(`News: ${items.length} player headlines in the last 48 hours (${insiderCount} from insiders on Bluesky).`);
