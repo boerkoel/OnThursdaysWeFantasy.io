@@ -1075,3 +1075,5 @@ section,details,.odds-block{scroll-margin-top:72px}
 .rc-detail ul{margin:0;padding-left:0;list-style:none;display:grid;gap:6px}
 .rc-weeks{margin:10px 0 0;color:#8b8e86;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .rc-weeks .grade{font-size:11px;min-width:24px;padding:1px 4px}
+/* A card showing two lineups side by side takes the whole row on wide screens (names stay readable). */
+@media(min-width:801px){.award-grid .award-card:has(.dw-vs){grid-column:1/-1}}
