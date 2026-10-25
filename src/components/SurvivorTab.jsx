@@ -61,6 +61,16 @@ const feedTeam = a => FEED_ABBR[a] || a;
 
 // This week's games with the pool's revealed picks on each side, and each
 // manager's expected value (the tab's equal-share model) if either side wins.
+// A strip of field, away end zone on the left and home on the right (as the card reads), with the ball at the spot.
+function Field({ drive, homeHasBall }) {
+  const at = drive.yardLine == null ? null : 100 - drive.yardLine;   // percent from the left; yardLine counts from the home goal line
+  return <div className={"sv-field" + (drive.redZone ? " red" : "")} title={drive.text}>
+    <div className="sv-field-strip"><span className="ez" /><span className="ez" />
+      {at != null ? <span className="sv-field-ball" style={{ left: `calc(8% + ${at * 0.84}%)` }}>{homeHasBall ? "◀" : "▶"}</span> : null}</div>
+    {drive.text ? <small>{drive.text}{drive.redZone ? " · red zone" : ""}</small> : null}
+  </div>;
+}
+
 function GamesSection({ feed, games, pot }) {
   const n = feed.contest?.currentWeek;
   const entries = feed.entries || [];
@@ -93,7 +103,7 @@ function GamesSection({ feed, games, pot }) {
       const by = inPlay.filter(e => pickOf(e)?.team === team);
       const who = {};
       for (const e of by) who[e.user] = (who[e.user] || 0) + 1;
-      return { team, score: g.state === "pre" ? null : t.score, count: by.length, who: Object.entries(who).sort((a, b) => b[1] - a[1]),
+      return { team, ball: g.drive?.possession === t.id, score: g.state === "pre" ? null : t.score, count: by.length, who: Object.entries(who).sort((a, b) => b[1] - a[1]),
         chance: g.completed || t.winChance == null ? null : Number(t.winChance) };
     };
     const a = side(away), h = side(home);
@@ -103,7 +113,7 @@ function GamesSection({ feed, games, pot }) {
   if (!rows.length) return null;
   const status = g => g.completed ? "Final" : g.state === "in" ? (g.detail || "Live") : g.detail || "";
   const sideCell = (x, winner, completed) => <div className={"sv-game-side" + (completed && winner && winner !== x.team ? " lost" : completed && winner === x.team ? " won" : "")}>
-    <img src={logo(x.team)} alt="" loading="lazy" /><b>{x.team}</b>{x.score != null && x.score !== "" ? <span className="sv-game-score">{x.score}</span> : null}
+    <img src={logo(x.team)} alt="" loading="lazy" /><b>{x.team}{x.ball ? <span className="sv-ball" title="Has the ball"> 🏈</span> : null}</b>{x.score != null && x.score !== "" ? <span className="sv-game-score">{x.score}</span> : null}
     <span className="sv-game-picks">{x.chance != null ? <span className={"sv-game-odds" + (x.chance >= 0.5 ? " fav" : "")} title="Chance to win: ESPN's live win probability in game, the betting line before kickoff">{Math.round(x.chance * 100)}% to win</span> : null}{x.count ? <>{x.count} {x.count === 1 ? "entry" : "entries"} · {pct(revealed ? x.count / revealed * 100 : 0)}</> : "no picks"}</span>
     {x.who.length ? <small>{x.who.map(([u, k]) => k > 1 ? `${u} ×${k}` : u).join(", ")}</small> : null}
   </div>;
@@ -120,6 +130,7 @@ function GamesSection({ feed, games, pot }) {
         return <div className={"sv-game" + (g.state === "in" ? " live" : "") + (g.completed ? " final" : "")} key={g.id}>
           <div className="sv-game-head"><span>{status(g)}</span></div>
           <div className="sv-game-sides">{sideCell(a, winner, g.completed)}<span className="sv-game-at">@</span>{sideCell(h, winner, g.completed)}</div>
+          {g.drive ? <Field drive={g.drive} homeHasBall={h.ball} /> : null}
           {movers.length ? <details className="sv-root">
             <summary>{g.completed ? "What it meant" : "Rooting interests"} · {movers.length} {movers.length === 1 ? "manager" : "managers"}</summary>
             <div className="sv-root-row head"><span>Manager</span><span>If {a.team} wins</span><span>If {h.team} wins</span><span>Root for</span></div>

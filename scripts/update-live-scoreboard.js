@@ -134,6 +134,9 @@ for (const event of nflWeek?.events || []) {
     period: gameScriptInputs(competition).period,
     clock: gameScriptInputs(competition).clock,
     teamIds: (competition.competitors || []).map(c => Number(c.team?.id)).filter(Number.isFinite),
+    // Who has the ball and where (Survivor game cards). yardLine counts from the home team's goal line.
+    drive: (() => { const s = competition.situation; return status?.state === "in" && s?.possession
+      ? { possession: Number(s.possession), text: s.downDistanceText || s.possessionText || "", yardLine: Number.isFinite(s.yardLine) ? s.yardLine : null, redZone: s.isRedZone === true } : null; })(),
     // For the matchup cards' lineups: "@CLE 24-27 Final".
     teams: (competition.competitors || []).map(c => ({ id: Number(c.team?.id), abbrev: c.team?.abbreviation || "", score: Number(c.score) || 0, home: c.homeAway === "home",
       winChance: (() => { const w = winChances(competition, status?.state); return w ? Math.round(1000 * w[c.homeAway === "home" ? "home" : "away"]) / 1000 : null; })() }))

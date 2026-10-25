@@ -1080,3 +1080,8 @@ section,details,.odds-block{scroll-margin-top:72px}
 .sv-topline{margin:4px 0 12px;font-size:15px;color:#c7c9c1}.sv-topline b{color:#f2f0e8;font-size:18px}.sv-topline small{color:#8b8e86;font-size:12px}
 .sv-root-row>b:first-child{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}   /* long Splash handles */
 .sv-game-odds{display:inline-block;margin-right:6px;font-size:11px;font-weight:700;color:#8b8e86;padding:1px 6px;border-radius:999px;background:#ffffff0a}.sv-game-odds.fav{color:#cfe3a7}
+.sv-ball{font-size:12px}
+.sv-field{margin-top:8px}.sv-field small{display:block;margin-top:3px;font-size:11px;color:#a9ac9f}.sv-field.red small{color:#e58a86}
+.sv-field-strip{position:relative;height:10px;border-radius:3px;background:repeating-linear-gradient(90deg,#24301d 0 8.4%,#2a3822 8.4% 16.8%)}
+.sv-field-strip .ez{position:absolute;top:0;bottom:0;width:8%;background:#3a4530}.sv-field-strip .ez:first-child{left:0;border-radius:3px 0 0 3px}.sv-field-strip .ez:nth-child(2){right:0;border-radius:0 3px 3px 0}
+.sv-field-ball{position:absolute;top:50%;transform:translate(-50%,-50%);font-size:9px;line-height:1;color:#f2c14e}
