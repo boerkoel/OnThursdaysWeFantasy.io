@@ -44,7 +44,7 @@ export function addNewsStories(add) {
     .sort((a, b) => b.weight - a.weight || Date.parse(b.n.published) - Date.parse(a.n.published))[0];
   if (news) {
     const { n, r } = news;
-    const headline = n.headline.replace(/[.!?]+$/, "");
+    const headline = (n.source ? n.source.split(" ").pop() + ": " : "") + n.headline.replace(/[.!?…]+$/, "");
     const whose = `${possessive(name(r.teamId))} ${r.starter ? "starting " : ""}${r.pos}`.trim();
     const quip = pickLine("news:" + n.headline, ["Take note", "Developing", "Phones are buzzing"]);
     add("NEWS", fit(
