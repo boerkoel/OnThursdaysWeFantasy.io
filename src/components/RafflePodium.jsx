@@ -90,12 +90,8 @@ export default function RafflePodium({ scores, logos, week, final, history, play
           {swing ? <p className="dw-insight">🎲 {swing}</p> : null}
           <p className="dw-left">{leftLine}</p>
           {s.lineup?.starters?.length ? <button type="button" className="dw-lineup-toggle" aria-expanded={openLineups.has(s.teamId)} onClick={() => toggle(s.teamId)}>{openLineups.has(s.teamId) ? "Hide lineup ▴" : "Lineup ▾"}</button> : null}
-          {openLineups.has(s.teamId) ? (() => {
-            // The race is head to head: the favorite next to #2, everyone else next to the favorite.
-            const other = i === 0 ? top[1] : top[0];
-            return <VsLineups a={s} b={other} nflGames={nflGames}
-              note={i === 0 ? <>Next to <b>{other.team}</b>, the next most likely to take the ticket.</> : <>Next to <b>{other.team}</b>, the ticket favorite.</>} />;
-          })() : null}
+          {openLineups.has(s.teamId) ? <VsLineups a={top[0]} b={top[1]} nflGames={nflGames}
+            note={<>The race for the ticket, head to head: <b>{top[0].team}</b> (favorite) vs <b>{top[1].team}</b>.</>} /> : null}
         </article>)}
       </div>
       <ChopChart history={history} teams={chartTeams} plays={racePlays} title="TICKET ODDS · THIS WEEK'S CONTENDERS" swingText={ticketSwing} colors={MEDAL_COLORS} ariaLabel="Ticket odds over the week for the top three teams" />
