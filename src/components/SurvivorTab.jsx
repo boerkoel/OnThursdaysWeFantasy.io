@@ -172,9 +172,31 @@ export default function SurvivorTab({ nflGames = [], nflWeek = null }) {
   const fee = Number(c.entryFee) || ENTRY_FEE;
   const pot = Number(c.prizePool) || fee * total;
   const perAlive = c.alive ? pot / c.alive : 0;
+  // Live: each entry's chance to survive this week from its pick's win chance
+  // (ESPN's in-game win probability, the moneyline before kickoff). Picks not
+  // revealed yet count as surviving and are flagged.
+  const n = Number(c.currentWeek);
+  const thisWeek = nflWeek == null || Number(nflWeek) === n;
+  const chanceOf = team => {
+    if (!thisWeek) return null;
+    for (const g of nflGames || []) {
+      const t = (g.teams || []).find(x => feedTeam(x.abbrev) === team);
+      if (t && t.winChance != null) return Number(t.winChance);
+    }
+    return null;
+  };
+  const expectedLeft = m => {
+    let exp = 0, hidden = 0;
+    for (const e of m.entries.filter(e => e.alive || e.eliminatedWeek === n)) {
+      const p = e.picks?.[n];
+      if (!p) { hidden++; exp += 1; continue; }
+      exp += p.result === "won" ? 1 : p.result === "lost" ? 0 : chanceOf(p.team) ?? 1;
+    }
+    return { exp, hidden };
+  };
   const ledger = managers.map(m => {
     const invested = m.entries.length * fee, ev = m.alive * perAlive;
-    return { ...m, invested, ev, roi: invested ? (ev - invested) / invested * 100 : 0 };
+    return { ...m, invested, ev, roi: invested ? (ev - invested) / invested * 100 : 0, left: expectedLeft(m) };
   }).sort((a, b) => b.ev - a.ev || b.picksWon / (b.picksGraded || 1) - a.picksWon / (a.picksGraded || 1) || a.user.localeCompare(b.user));
 
   // Teams left: how many live entries can still pick each team (no team
@@ -216,8 +238,10 @@ export default function SurvivorTab({ nflGames = [], nflWeek = null }) {
     }
     const bloodbath = picks.filter(settledLoss).sort((a, b) => b.count - a.count)[0];
     if (bloodbath) highlights.push({ icon: "🩸", title: "Bloodbath", text: `The ${name(bloodbath.team)} took out ${bloodbath.count} ${bloodbath.count === 1 ? "entry" : "entries"}.` });
-    // Trending the wrong way: picks whose team is behind in a game that's still going.
-    const trailing = picks.filter(p => p.count > 0 && live(p.team) && live(p.team).us < live(p.team).them)
+    // Trending the wrong way: picks in a game still going whose team is under
+    // 50% to win (ESPN's live win probability), or trailing if that's missing.
+    const winNow = team => { const x = live(team); const t = x && (x.g.teams || []).find(y => feedTeam(y.abbrev) === team); return t?.winChance ?? null; };
+    const trailing = picks.filter(p => p.count > 0 && live(p.team) && (winNow(p.team) != null ? winNow(p.team) < 0.5 : live(p.team).us < live(p.team).them))
       .sort((a, b) => b.count - a.count);
     const worst = trailing[0];
     if (worst && (!bloodbath || worst.count > bloodbath.count)) {
@@ -226,7 +250,8 @@ export default function SurvivorTab({ nflGames = [], nflWeek = null }) {
     }
     if (trailing.length) highlights.push({ icon: "📉", title: "Trending the wrong way", text: trailing.map(p => {
       const x = live(p.team);
-      return `${name(p.team)} trail ${x.opp} ${score(x)} (${p.count} ${p.count === 1 ? "entry" : "entries"})`;
+      const w = winNow(p.team);
+      return `${name(p.team)} ${x.us < x.them ? "trail" : x.us > x.them ? "lead" : "tied with"} ${x.opp} ${score(x)}${w != null ? `, ${pct(w * 100)} to win` : ""} (${p.count} ${p.count === 1 ? "entry" : "entries"})`;
     }).join(" · ") + ". These picks could be in trouble." });
     const pickers = team => (feed.entries || []).filter(e => e.picks?.[n]?.team === team).map(e => e.user);
     const wolves = picks.filter(p => p.count === 1 && p.result === "won");
@@ -293,19 +318,21 @@ export default function SurvivorTab({ nflGames = [], nflWeek = null }) {
       <div className="section-heading"><div><span className="section-kicker">THE PORTFOLIOS</span><h2>Managers</h2></div>
         <span className="record-count">{dollars(pot)} POT · {dollars(perAlive)} / LIVE ENTRY</span></div>
       <div className="sv-ledger">
-        <div className="sv-ledger-row head"><span>Manager</span><span>Alive</span><span>Won</span>
+        <div className="sv-ledger-row head"><span>Manager</span><span>Alive</span>
+          <span title={`Expected entries still alive after Week ${n}: each revealed pick counts its live chance to win (ESPN's in-game win probability, the betting line before kickoff); picks not revealed yet count as surviving (*)`}>Wk {n} ⓘ</span><span>Won</span>
           <span title={`Expected value = (manager's entries remaining ÷ all entries remaining) × the ${dollars(pot)} pot`}>Exp. value ⓘ</span>
           <span title="Expected ROI = (expected value − buy-ins) ÷ buy-ins">Exp. ROI ⓘ</span></div>
         {ledger.map(m => <div className={"sv-ledger-row" + (m.alive ? "" : " out")} key={m.user}>
           <b className="sv-ledger-name">{m.user}</b>
           <span className="sv-ledger-alive"><b>{m.alive}</b>/{m.entries.length}
             <i className="sv-dots">{m.entries.map(e => <i key={e.id} className={e.alive ? "alive" : "out"} />)}</i></span>
+          <span title={m.left.hidden ? `${m.left.hidden} pick${m.left.hidden > 1 ? "s" : ""} not revealed yet, counted as surviving` : undefined}>{m.alive || m.left.exp ? m.left.exp.toFixed(1) : "—"}{m.left.hidden ? "*" : ""}</span>
           <span>{m.picksGraded ? `${pct(m.picksWon / m.picksGraded * 100)}` : "—"}<small>{m.picksGraded ? ` ${m.picksWon}/${m.picksGraded}` : ""}</small></span>
           <span className="sv-ledger-ev">{dollars(m.ev)}<small> of {dollars(m.invested)}</small></span>
           <b className={"sv-ledger-roi " + (m.roi > 0.5 ? "up" : m.roi < -0.5 ? "down" : "")}>{m.roi > 0 ? "+" : m.roi < 0 ? "−" : ""}{Math.abs(m.roi).toFixed(0)}%</b>
         </div>)}
       </div>
-      <p className="median-note">Expected value = (manager's entries remaining ÷ all {c.alive} entries remaining) × the {dollars(pot)} pot ({dollars(fee)} × {total} entries). Expected ROI = (expected value − buy-ins) ÷ buy-ins. Every live entry counts equally; picks won counts graded picks across all entries.</p>
+      <p className="median-note">Expected value = (manager's entries remaining ÷ all {c.alive} entries remaining) × the {dollars(pot)} pot ({dollars(fee)} × {total} entries). Expected ROI = (expected value − buy-ins) ÷ buy-ins. Every live entry counts equally; picks won counts graded picks across all entries. Wk {n} = expected entries left after this week, live from each pick's chance to win; * = picks not revealed yet, counted as surviving.</p>
     </section>
 
     <section id="survivor-teams" className="section">

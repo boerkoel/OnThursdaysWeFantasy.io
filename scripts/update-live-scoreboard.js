@@ -99,6 +99,23 @@ async function fetchNflWeek(week) {
 
 const nflWeek = await fetchNflWeek(currentWeek);
 
+// Each side's chance to win an NFL game (Survivor tab, League Wire): ESPN's
+// live win probability in game, the sportsbook moneyline before kickoff (vig
+// removed), 1/0 once final.
+const american = v => { const n = Number(String(v ?? "").replace("+", "")); return Number.isFinite(n) && n !== 0 ? (n > 0 ? 100 / (n + 100) : -n / (-n + 100)) : null; };
+function winChances(competition, state) {
+  const sides = competition.competitors || [];
+  const home = sides.find(c => c.homeAway === "home"), away = sides.find(c => c.homeAway === "away");
+  if (!home || !away) return null;
+  if (state === "post") return { home: home.winner ? 1 : 0, away: away.winner ? 1 : 0 };
+  const live = competition.situation?.lastPlay?.probability;
+  if (state === "in" && Number.isFinite(live?.homeWinPercentage)) return { home: live.homeWinPercentage, away: live.awayWinPercentage };
+  const ml = competition.odds?.[0]?.moneyline;
+  const h = american(ml?.home?.current?.odds ?? ml?.home?.close?.odds ?? ml?.home?.open?.odds);
+  const a = american(ml?.away?.current?.odds ?? ml?.away?.close?.odds ?? ml?.away?.open?.odds);
+  return h && a ? { home: h / (h + a), away: a / (h + a) } : null;
+}
+
 const nflGamesByTeam = new Map();
 // Published in scoreboard.json so the League Wire can focus on current games.
 const nflGames = [];
@@ -118,7 +135,8 @@ for (const event of nflWeek?.events || []) {
     clock: gameScriptInputs(competition).clock,
     teamIds: (competition.competitors || []).map(c => Number(c.team?.id)).filter(Number.isFinite),
     // For the matchup cards' lineups: "@CLE 24-27 Final".
-    teams: (competition.competitors || []).map(c => ({ id: Number(c.team?.id), abbrev: c.team?.abbreviation || "", score: Number(c.score) || 0, home: c.homeAway === "home" }))
+    teams: (competition.competitors || []).map(c => ({ id: Number(c.team?.id), abbrev: c.team?.abbreviation || "", score: Number(c.score) || 0, home: c.homeAway === "home",
+      winChance: (() => { const w = winChances(competition, status?.state); return w ? Math.round(1000 * w[c.homeAway === "home" ? "home" : "away"]) / 1000 : null; })() }))
   };
   nflGames.push(game);
   for (const teamId of game.teamIds) nflGamesByTeam.set(teamId, game);
