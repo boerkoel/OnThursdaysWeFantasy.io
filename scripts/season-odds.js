@@ -114,7 +114,7 @@ function addWeek(table, weekGames, scoreByTeam) {
 
 const rng = seededRng([currentWeek, [...base.values()], scoreboard?.lastUpdated || null]);
 const normal = () => Math.sqrt(-2 * Math.log(Math.max(rng(), 1e-12))) * Math.cos(2 * Math.PI * rng());
-const counts = new Map(teamIds.map(id => [id, { playoffs: 0, bye: 0, seedSum: 0, pointsSum: 0, raffle: 0, title: 0, ultimateLoser: 0 }]));
+const counts = new Map(teamIds.map(id => [id, { playoffs: 0, bye: 0, top: 0, last: 0, seedSum: 0, pointsSum: 0, raffle: 0, title: 0, ultimateLoser: 0 }]));
 
 // Postseason, simulated in full each run. Championship: #3v#6 and #4v#5 in
 // week 15, then #1 plays the lowest remaining seed and #2 the other, final in
@@ -160,7 +160,9 @@ function simulatePostseason(seedOrder) {
 // This week's matchups, for the League Wire's PLAYOFF SWING: each team's
 // playoff odds in the simulations where the home team wins vs loses.
 const thisWeekGames = remainingWeeks.includes(currentWeek) ? games.filter(g => g.week === currentWeek) : [];
-const cond = thisWeekGames.map(() => [{ n: 0, home: 0, away: 0 }, { n: 0, home: 0, away: 0 }]);   // [away won, home won]
+// Also the #1 and last seeds, for CLINCH WATCH.
+const bucket = () => ({ n: 0, home: 0, away: 0, homeTop: 0, awayTop: 0, homeLast: 0, awayLast: 0 });
+const cond = thisWeekGames.map(() => [bucket(), bucket()]);   // [away won, home won]
 
 for (let sim = 0; sim < SIMULATIONS; sim++) {
   const table = new Map([...base].map(([id, row]) => [id, { ...row }]));
@@ -181,16 +183,23 @@ for (let sim = 0; sim < SIMULATIONS; sim++) {
     const c = counts.get(id);
     if (index < playoffTeamCount) c.playoffs++;
     if (index < byeCount) c.bye++;
+    if (index === 0) c.top++;
+    if (index === order.length - 1) c.last++;
     c.seedSum += index + 1;
     c.pointsSum += row.pointsFor;
   });
   if (thisWeek) {
     const inPlayoffs = new Set(order.slice(0, playoffTeamCount).map(([id]) => id));
+    const top = order[0][0], last = order[order.length - 1][0];
     thisWeekGames.forEach((g, i) => {
       const c = cond[i][thisWeek.get(g.home) > thisWeek.get(g.away) ? 1 : 0];
       c.n++;
       if (inPlayoffs.has(g.home)) c.home++;
       if (inPlayoffs.has(g.away)) c.away++;
+      if (top === g.home) c.homeTop++;
+      if (top === g.away) c.awayTop++;
+      if (last === g.home) c.homeLast++;
+      if (last === g.away) c.awayLast++;
     });
   }
   const totalTickets = [...table.values()].reduce((a, r) => a + r.tickets, 0);
@@ -214,6 +223,8 @@ const teams = teamIds.map(id => {
     averageSeed: round(c.seedSum / SIMULATIONS),
     playoffOdds: odds(c.playoffs),
     byeOdds: odds(c.bye),
+    topSeedOdds: odds(c.top),
+    lastSeedOdds: odds(c.last),
     // Share of simulations each team ends as champion / Ultimate Loser; each
     // column sums to 100%.
     titleOdds: bracketFits ? round(c.title / SIMULATIONS * 100) : null,
@@ -253,7 +264,10 @@ await writeFile("data/current/season-odds.json", JSON.stringify({
     const pct = (x, n) => n ? round(x / n * 100) : null;
     return { home: g.home, away: g.away, homeWins: round(won.n / SIMULATIONS * 100),
       ifHomeWins: { home: pct(won.home, won.n), away: pct(won.away, won.n) },
-      ifAwayWins: { home: pct(lost.home, lost.n), away: pct(lost.away, lost.n) } };
+      ifAwayWins: { home: pct(lost.home, lost.n), away: pct(lost.away, lost.n) },
+      // #1 seed and last seed by who wins
+      top: { ifHomeWins: { home: pct(won.homeTop, won.n), away: pct(won.awayTop, won.n) }, ifAwayWins: { home: pct(lost.homeTop, lost.n), away: pct(lost.awayTop, lost.n) } },
+      last: { ifHomeWins: { home: pct(won.homeLast, won.n), away: pct(won.awayLast, won.n) }, ifAwayWins: { home: pct(lost.homeLast, lost.n), away: pct(lost.awayLast, lost.n) } } };
   })
 }, null, 2) + "\n");
 

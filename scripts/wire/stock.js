@@ -57,3 +57,44 @@ export function addPlayoffSwingStory(add) {
     "🎯 PLAYOFF SWING: " + name(g.home) + " vs " + name(g.away) + ". Playoff odds with a win / loss: " + name(g.home) + " " + pct(g.ifHomeWins.home) + " / " + pct(g.ifAwayWins.home) + ", " + name(g.away) + " " + pct(g.ifAwayWins.away) + " / " + pct(g.ifHomeWins.away) + "."
   ), 86 + Math.min(g.swing - SWING_MIN, 30) / 10);   // Jim: always in the top 8
 }
+
+// ---- Clinch watch (Jim, 2026-10-25) -------------------------------------------
+// Seeds go by points, so nothing is mathematically certain with weeks left;
+// 99.5% in the season simulation counts as "all but". Stories, best first:
+// - a team that can all but lock up a spot with a win (or lose it with a loss)
+//   this week: the #1 seed, a playoff spot, or last place;
+// - a team that has all but locked one up already.
+export const LOCK = 99.5;
+export function addClinchStory(add) {
+  if (Number(seasonOddsData?.week) !== currentWeek) return;
+  const teams = new Map((seasonOddsData.teams || []).map(t => [t.teamId, t]));
+  const open = id => { const s = currentScores.find(x => x.teamId === Number(id)); const p = Number(s?.winProbability); return !s || (p > 1 && p < 99); };
+  const out = [];
+  for (const g of seasonOddsData.matchupLeverage || []) {
+    if (!g.top || !open(g.home)) continue;
+    for (const [id, side, other] of [[g.home, "home", "away"], [g.away, "away", "home"]]) {
+      const t = teams.get(id);
+      if (!t) continue;
+      const win = side === "home" ? "ifHomeWins" : "ifAwayWins", lose = side === "home" ? "ifAwayWins" : "ifHomeWins";
+      const opp = name(g[other]);
+      const checks = [
+        ["#1 seed", t.topSeedOdds, g.top[win][side], g.top[lose][side], 90, "lock up the #1 seed"],
+        ["playoffs", t.playoffOdds, g[win][side], g[lose][side], 86, "all but clinch a playoff spot"],
+        ["last", t.lastSeedOdds, g.last[lose][side], g.last[win][side], 84, "be all but locked into last place"]
+      ];
+      for (const [what, now, ifGood, ifBad, score, phrase] of checks) {
+        if (now == null || ifGood == null || now >= LOCK) continue;
+        if (what === "last") {   // ifGood here = with a loss
+          if (ifGood >= LOCK) out.push({ score, text: `🔒 CLINCH WATCH: ${name(id)} could ${phrase} with a loss to ${opp} (${pct(ifGood)} with a loss, ${pct(ifBad)} with a win).` });
+        } else if (ifGood >= LOCK) {
+          out.push({ score, text: `🔒 CLINCH WATCH: ${name(id)} can ${phrase} with a win over ${opp} (${pct(ifGood)} with a win, ${pct(ifBad)} with a loss).` });
+        }
+      }
+    }
+  }
+  for (const t of teams.values()) {
+    if (t.topSeedOdds >= LOCK) out.push({ score: 70, text: `🔒 CLINCH WATCH: ${name(t.teamId)} has all but locked up the #1 seed (${pct(t.topSeedOdds)}).` });
+    if (t.lastSeedOdds >= LOCK) out.push({ score: 68, text: `🪦 CLINCH WATCH: ${name(t.teamId)} is all but locked into last place (${pct(t.lastSeedOdds)}).` });
+  }
+  out.sort((a, b) => b.score - a.score).slice(0, 2).forEach(x => add("CLINCH WATCH", x.text, x.score));
+}
