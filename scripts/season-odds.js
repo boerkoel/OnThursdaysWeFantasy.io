@@ -161,7 +161,7 @@ function simulatePostseason(seedOrder) {
 // playoff odds in the simulations where the home team wins vs loses.
 const thisWeekGames = remainingWeeks.includes(currentWeek) ? games.filter(g => g.week === currentWeek) : [];
 // Also the #1 and last seeds, for CLINCH WATCH.
-const bucket = () => ({ n: 0, home: 0, away: 0, homeTop: 0, awayTop: 0, homeLast: 0, awayLast: 0 });
+const bucket = () => ({ n: 0, home: 0, away: 0, homeTop: 0, awayTop: 0, homeLast: 0, awayLast: 0, homeBye: 0, awayBye: 0 });
 const cond = thisWeekGames.map(() => [bucket(), bucket()]);   // [away won, home won]
 
 for (let sim = 0; sim < SIMULATIONS; sim++) {
@@ -191,6 +191,7 @@ for (let sim = 0; sim < SIMULATIONS; sim++) {
   if (thisWeek) {
     const inPlayoffs = new Set(order.slice(0, playoffTeamCount).map(([id]) => id));
     const top = order[0][0], last = order[order.length - 1][0];
+    const inBye = new Set(order.slice(0, byeCount).map(([id]) => id));
     thisWeekGames.forEach((g, i) => {
       const c = cond[i][thisWeek.get(g.home) > thisWeek.get(g.away) ? 1 : 0];
       c.n++;
@@ -200,6 +201,8 @@ for (let sim = 0; sim < SIMULATIONS; sim++) {
       if (top === g.away) c.awayTop++;
       if (last === g.home) c.homeLast++;
       if (last === g.away) c.awayLast++;
+      if (inBye.has(g.home)) c.homeBye++;
+      if (inBye.has(g.away)) c.awayBye++;
     });
   }
   const totalTickets = [...table.values()].reduce((a, r) => a + r.tickets, 0);
@@ -236,7 +239,7 @@ const teams = teamIds.map(id => {
 // Odds snapshots for the League Wire's STOCK REPORT: each team's odds at the
 // start of this week (carried through the week), and last week's start and
 // end (saved when the week rolls over).
-const snapshotOf = list => Object.fromEntries(list.map(t => [String(t.teamId), { playoffOdds: t.playoffOdds, titleOdds: t.titleOdds, ultimateLoserOdds: t.ultimateLoserOdds }]));
+const snapshotOf = list => Object.fromEntries(list.map(t => [String(t.teamId), { playoffOdds: t.playoffOdds, titleOdds: t.titleOdds, ultimateLoserOdds: t.ultimateLoserOdds, byeOdds: t.byeOdds }]));
 const previousOdds = await readFile("data/current/season-odds.json", "utf8").then(JSON.parse).catch(() => null);
 let weekStart, lastWeek = previousOdds?.lastWeek || null;
 if (previousOdds && Number(previousOdds.week) === currentWeek) {
@@ -267,7 +270,8 @@ await writeFile("data/current/season-odds.json", JSON.stringify({
       ifAwayWins: { home: pct(lost.home, lost.n), away: pct(lost.away, lost.n) },
       // #1 seed and last seed by who wins
       top: { ifHomeWins: { home: pct(won.homeTop, won.n), away: pct(won.awayTop, won.n) }, ifAwayWins: { home: pct(lost.homeTop, lost.n), away: pct(lost.awayTop, lost.n) } },
-      last: { ifHomeWins: { home: pct(won.homeLast, won.n), away: pct(won.awayLast, won.n) }, ifAwayWins: { home: pct(lost.homeLast, lost.n), away: pct(lost.awayLast, lost.n) } } };
+      last: { ifHomeWins: { home: pct(won.homeLast, won.n), away: pct(won.awayLast, won.n) }, ifAwayWins: { home: pct(lost.homeLast, lost.n), away: pct(lost.awayLast, lost.n) } },
+      bye: { ifHomeWins: { home: pct(won.homeBye, won.n), away: pct(won.awayBye, won.n) }, ifAwayWins: { home: pct(lost.homeBye, lost.n), away: pct(lost.awayBye, lost.n) } } };
   })
 }, null, 2) + "\n");
 

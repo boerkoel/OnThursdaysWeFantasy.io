@@ -20,7 +20,7 @@ import { addRaffleStories } from "./wire/raffle.js";
 import { interleave, weekHeadlines, weekInReview } from "./wire/review.js";
 import { addRosterStories } from "./wire/roster.js";
 import { addPracticeReportStory, addTrendingStory } from "./wire/sleeper.js";
-import { addClinchStory, addLiveStandingsStory, addPlayoffSwingStory, addStockWatchStory } from "./wire/stock.js";
+import { addByeWatchStory, addClinchStory, addLiveStandingsStory, addPlayoffSwingStory, addStockWatchStory } from "./wire/stock.js";
 import { addSurvivorOddsStory, addSurvivorPicksStory, addSurvivorScareStory } from "./wire/survivor.js";
 import { addMiscueStory, addShrewdSwapStory, addDropRegretStory } from "./wire/swaps.js";
 import { addAbandonedStory, addWaiverMvpStory } from "./wire/ledger.js";
@@ -177,6 +177,7 @@ async function buildMarqueeStories() {
   try { addStockWatchStory(add); } catch (error) { console.warn("League Wire: stock watch failed: " + error.message); }
   try { addPlayoffSwingStory(add); } catch (error) { console.warn("League Wire: playoff swing failed: " + error.message); }
   try { addClinchStory(add); } catch (error) { console.warn("League Wire: clinch watch failed: " + error.message); }
+  try { addByeWatchStory(add); } catch (error) { console.warn("League Wire: bye watch failed: " + error.message); }
   try { addLiveStandingsStory(add); } catch (error) { console.warn("League Wire: live standings failed: " + error.message); }
   try { addSurvivorPicksStory(add); addSurvivorScareStory(add); addSurvivorOddsStory(add); } catch (error) { console.warn("League Wire: survivor failed: " + error.message); }
 

@@ -342,7 +342,7 @@ function App() {
     if (/DEATH WATCH|FAAB|SHOPPING SPREE|TUG-OF-WAR|GREAT ESCAPE|THIN ICE/.test(type) || (gTeam && !named(scores.map(x => ({ name: x.team }))))) return go(gTeam ? `dw-${gTeam.id}` : "death-watch");
     if (/TRADE|SWAP|LONG-TERM REGRET/.test(type)) return go("trades");
     if (/RAFFLE/.test(type)) return go("raffle");
-    if (/TITLE ODDS|TOILET BOWL|PLAYOFF SWING|CLINCH|STOCK|STANDINGS/.test(type)) return go("standings-odds");
+    if (/TITLE ODDS|TOILET BOWL|PLAYOFF SWING|CLINCH|BYE WATCH|STOCK|STANDINGS/.test(type)) return go("standings-odds");
     if (/REPORT CARD/.test(type)) return go("report-cards");
     if (/SURVIVOR SCARE/.test(type)) return go("survivor-games");
     if (/SURVIVOR/.test(type)) return go("survivor-picks");

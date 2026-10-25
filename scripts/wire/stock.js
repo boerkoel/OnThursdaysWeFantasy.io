@@ -119,6 +119,37 @@ export function addClinchStory(add) {
   out.sort((a, b) => b.score - a.score).slice(0, 2).forEach(x => add("CLINCH WATCH", x.text, x.score));
 }
 
+// ---- Bye watch (Jim, 2026-10-25: "will the wire announce when a team is eliminated from winning the bye?") ----
+// The top 2 seeds get byes. Seeds go by points, so nothing is mathematically certain: "out" = under 0.5%.
+// - a team that falls out of the bye race this week (had ≥0.5% at the start of the week);
+// - a team still in it whose game this week decides it: a loss all but ends it.
+export const BYE_OUT = 0.5;
+export function addByeWatchStory(add) {
+  if (Number(seasonOddsData?.week) !== currentWeek) return;
+  const start = seasonOddsData.weekStart || {};
+  const open = id => { const s = currentScores.find(x => x.teamId === Number(id)); const p = Number(s?.winProbability); return !s || (p > 1 && p < 99); };
+  const teams = new Map((seasonOddsData.teams || []).map(t => [t.teamId, t]));
+  const out = [];
+  // Snapshots before 2026-10-25 lack byeOdds: then only the team just under the line counts as newly out.
+  const justOut = Math.max(...[...teams.values()].map(t => t.byeOdds).filter(x => x != null && x < BYE_OUT));
+  for (const t of teams.values()) {
+    const was = start[String(t.teamId)]?.byeOdds;
+    if (t.byeOdds != null && t.byeOdds < BYE_OUT && (was == null ? t.byeOdds === justOut : was >= BYE_OUT))
+      out.push({ score: 74, text: `🚪 BYE WATCH: ${name(t.teamId)} is all but out of the race for a first-round bye (${pct(t.byeOdds)}${was != null ? `, from ${pct(was)} at the start of the week` : ""}).` });
+  }
+  for (const g of seasonOddsData.matchupLeverage || []) {
+    if (!g.bye || !open(g.home)) continue;
+    for (const [id, side, other] of [[g.home, "home", "away"], [g.away, "away", "home"]]) {
+      const t = teams.get(id), win = side === "home" ? "ifHomeWins" : "ifAwayWins", lose = side === "home" ? "ifAwayWins" : "ifHomeWins";
+      const ifWin = g.bye[win][side], ifLose = g.bye[lose][side];
+      if (!t || t.byeOdds < BYE_OUT || ifWin == null || ifLose == null) continue;
+      if (ifLose < BYE_OUT && ifWin >= 5)
+        out.push({ score: 78, text: `🚪 BYE WATCH: ${name(id)} needs to beat ${name(g[other])} to stay in the bye race (${pct(ifWin)} with a win, ${pct(ifLose)} with a loss).` });
+    }
+  }
+  out.sort((a, b) => b.score - a.score).slice(0, 2).forEach(x => add("BYE WATCH", x.text, x.score));
+}
+
 // ---- Live standings (Jim, 2026-10-25: point people at the Standings tab) -----
 // Seeds go by points: this week's points so far re-rank them. The biggest
 // climber and faller (2+ spots), and anyone crossing the playoff line.
