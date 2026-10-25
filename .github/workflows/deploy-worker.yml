@@ -12,6 +12,7 @@ on:
       - main
     paths:
       - "worker/**"
+      - "src/data/manager-links.json"   # bundled into the worker (manager alerts)
       - ".github/workflows/deploy-worker.yml"
   workflow_dispatch:
 

@@ -17,6 +17,9 @@
 import { generateVapidKeys, sendPush } from "./webpush.js";
 import { splashProbe, survivorFeed } from "./splash.js";
 import { LiveStore, publishLive, readLive, serveLive } from "./live.js";
+// Main-league team -> the same manager's guillotine team and Splash handles:
+// following a team follows its manager's other contests too.
+import managerLinks from "../../src/data/manager-links.json";
 
 export { LiveStore };
 
@@ -26,6 +29,9 @@ const ALLOWED_ORIGINS = ["https://boerkoel.github.io", "http://localhost:4173", 
 // Only real browser push services may be stored as endpoints.
 const PUSH_HOSTS = [/\.push\.apple\.com$/, /(^|\.)fcm\.googleapis\.com$/, /(^|\.)push\.services\.mozilla\.com$/, /\.notify\.windows\.com$/];
 const TEAM_ALERT_GAP_MS = 5 * 60 * 1000;
+const SURVIVOR_SCARE = 0.4;     // a pick under this live win chance
+const CHOP_ALERT_MOVE = 20;     // guillotine chop-odds move worth an alert (pts)
+const WIN_SWING_ALERT = 30;     // matchup win-odds swing worth an alert (pts)
 const MAX_ALERTS_PER_PHONE_PER_RUN = 3;
 // /refresh starts a live update only when the published data is older than
 // this, and at most once per gap (a run takes ~2 minutes to publish).
@@ -180,7 +186,7 @@ async function requestLiveUpdate(env) {
 
 // ---- Finding what's new --------------------------------------------------------
 
-function findEvents(live, state) {
+export function findEvents(live, state) {   // exported for tests
   const events = [];
   const scoreboard = live.scoreboard || {};
   const week = Number(scoreboard.week);
@@ -195,12 +201,17 @@ function findEvents(live, state) {
     scoreboardUpdated: scoreboard.lastUpdated || null,
     chopLeader: null, chopped: [],
     guillotineWeek: Number(live.guillotine?.week),
-    lastSent: state?.lastSent || {}
+    lastSent: state?.lastSent || {},
+    // Manager alerts: what was last sent for each.
+    svSent: [], chopAlerted: {}, winAlerted: {}
   };
   // A new week (or the very first run) only records a baseline.
   const baseline = !state || state.week !== week;
   const previous = baseline ? {} : state;
   next.sentWire = [...(previous.sentWire || [])];
+  next.svSent = [...(previous.svSent || [])];
+  next.chopAlerted = { ...(previous.chopAlerted || {}) };
+  next.winAlerted = { ...(previous.winAlerted || {}) };
   next.chopBlockSent = [...(previous.chopBlockSent || [])];
 
   const byMatchup = new Map();
@@ -232,6 +243,20 @@ function findEvents(live, state) {
       const other = fav === a ? b : a;
       events.push({ id: `fav-${matchupId}-${favorite}-${scoreboard.lastUpdated}`, topics, tag,
         title: "📈 New favorite", body: `${fav.team} is now ${Math.round(fav.winProbability)}% to beat ${other.team}.` });
+    }
+
+    // A big swing in win odds since the last alert about it (lead changes and
+    // new favorites have their own alerts).
+    for (const [t, o] of [[a, b], [b, a]]) {
+      const p = Number(t.winProbability);
+      if (!Number.isFinite(p)) continue;
+      const last = previous.winAlerted?.[t.teamId];
+      if (last == null || baseline) { next.winAlerted[t.teamId] = p; continue; }
+      if (!final && Math.abs(p - last) >= WIN_SWING_ALERT) {
+        next.winAlerted[t.teamId] = p;
+        events.push({ id: `swing-${t.teamId}-${scoreboard.lastUpdated}`, topics: [`team:${t.teamId}`], tag: `matchup-${matchupId}`,
+          title: p > last ? "📈 Momentum" : "📉 Momentum", body: `${t.team} went from ${Math.round(last)}% to ${Math.round(p)}% to beat ${o.team} (${t.score.toFixed(2)}–${o.score.toFixed(2)}).` });
+      }
     }
 
     if (final) next.finals.push(matchupId);
@@ -276,7 +301,75 @@ function findEvents(live, state) {
         title: "🪓 Chopped", body: `${t.team} is out of ${guillotine.leagueName || "the guillotine league"} with ${Number(t.score).toFixed(2)} pts.` });
     }
   }
+  managerEvents(live, week, baseline, previous, next, events);
   return { events, next };
+}
+
+// Alerts about a followed team's manager in their other contests: survivor
+// entries (Splash) and their guillotine team. Sent to phones following the
+// main-league team (topic team:<id>).
+function managerEvents(live, week, baseline, previous, next, events) {
+  const games = live.scoreboard?.nflGames || [];
+  const feed = live.survivor;
+  const FEED_ABBR = { WSH: "WAS", JAC: "JAX", LA: "LAR" };
+  const gameOf = team => {
+    for (const g of games) {
+      const us = (g.teams || []).find(x => (FEED_ABBR[x.abbrev] || x.abbrev) === team), them = (g.teams || []).find(x => x !== us);
+      if (us && them) return { g, us, them };
+    }
+    return null;
+  };
+  const svWeek = Number(feed?.contest?.currentWeek);
+  for (const [teamId, link] of Object.entries(managerLinks)) {
+    if (!link || typeof link !== "object") continue;
+    const topics = [`team:${teamId}`];
+    // Survivor: this week's revealed picks of this manager's entries, by team.
+    const handles = new Set((link.splash || []).map(h => h.toLowerCase()));
+    if (handles.size && feed && svWeek === week) {
+      const mine = (feed.entries || []).filter(e => handles.has(String(e.user).toLowerCase()) && e.picks?.[svWeek]);
+      const byTeam = new Map();
+      for (const e of mine) byTeam.set(e.picks[svWeek].team, [...(byTeam.get(e.picks[svWeek].team) || []), e]);
+      for (const [team, list] of byTeam) {
+        const n = list.length, entries = n === 1 ? "entry" : "entries";
+        const result = list[0].picks[svWeek].result;
+        const key = k => `${svWeek}|${teamId}|${team}|${k}`;
+        if (result === "won" || result === "lost") {
+          if (!next.svSent.includes(key(result))) {
+            next.svSent.push(key(result));
+            if (!baseline) {
+              const alive = (feed.entries || []).filter(e => handles.has(String(e.user).toLowerCase()) && e.alive).length;
+              events.push({ id: `sv-${key(result)}`, topics, tag: `survivor-${teamId}`, urgent: true,
+                title: result === "won" ? "✅ Survivor" : "💀 Survivor",
+                body: result === "won" ? `${team} won: ${n} ${entries} through Week ${svWeek} (${alive} alive).` : `${team} lost: ${n} ${entries} out (${alive} alive).` });
+            }
+          }
+          continue;
+        }
+        const gm = gameOf(team);
+        const w = gm?.us.winChance;
+        if (gm && gm.g.state === "in" && w != null && w < SURVIVOR_SCARE && !next.svSent.includes(key("scare"))) {
+          next.svSent.push(key("scare"));
+          if (!baseline) events.push({ id: `sv-${key("scare")}`, topics, tag: `survivor-${teamId}`,
+            title: "😬 Survivor scare", body: `${team} is down to ${Math.round(w * 100)}% to win (${gm.us.score}–${gm.them.score}, ${gm.g.detail}). ${n} ${entries} on the line.` });
+        }
+      }
+    }
+    // Guillotine: this manager's team's chop odds moving 20+ pts, or crossing 50%.
+    const g = (live.guillotine?.teams || []).find(t => Number(t.teamId) === Number(link.guillotine));
+    if (g && Number.isFinite(Number(g.chopProbability))) {
+      const p = Number(g.chopProbability), k = `${live.guillotine.week}|${g.teamId}`;
+      const last = previous.chopAlerted?.[k];
+      if (last == null || baseline) next.chopAlerted[k] = p;
+      else if (p < 100 && (Math.abs(p - last) >= CHOP_ALERT_MOVE || (p >= 50) !== (last >= 50))) {
+        next.chopAlerted[k] = p;
+        events.push({ id: `chop-${k}-${live.guillotine.lastUpdated}`, topics, tag: `guillotine-${g.teamId}`,
+          title: p > last ? "🪓 Death Watch" : "😮‍💨 Death Watch",
+          body: `${g.team}: chop odds ${Math.round(last)}% → ${Math.round(p)}%${p >= 50 ? ". On the chopping block." : p < last ? ". Breathing easier." : "."}` });
+      }
+    }
+  }
+  next.svSent = next.svSent.slice(-300);
+  for (const k of Object.keys(next.chopAlerted)) if (!k.startsWith(`${live.guillotine?.week}|`)) delete next.chopAlerted[k];
 }
 
 function wants(prefs, topic) {
@@ -295,6 +388,8 @@ async function checkForAlerts(env) {
   // lot of "new" news, and then again when the newer data returns: skip it.
   if (state?.scoreboardUpdated && Date.parse(live.scoreboard?.lastUpdated) < Date.parse(state.scoreboardUpdated)) return;
 
+  // Survivor picks for manager alerts (the feed is cached; a failure just skips them).
+  live.survivor = await survivorFeed(env).catch(() => null);
   const { events, next } = findEvents(live, state);
   if (events.length) {
     const vapid = await vapidKeys(env);

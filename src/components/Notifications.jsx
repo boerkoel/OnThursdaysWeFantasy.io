@@ -95,7 +95,7 @@ export default function Notifications({ teams, asPanel = false }) {
         <label><input type="checkbox" checked={prefs.wire} onChange={e => update({ ...prefs, wire: e.target.checked })} /> League Wire highlights <small>lead changes, comebacks, momentum shifts, raffle flips, instant regret…</small></label>
         <label><input type="checkbox" checked={prefs.deathWatch} onChange={e => update({ ...prefs, deathWatch: e.target.checked })} /> Death Watch <small>a new team on the chopping block, and every chop</small></label>
       </div>
-      <p className="notify-subhead">Follow matchups <small>lead changes, new favorites and finals for these teams' games</small></p>
+      <p className="notify-subhead">Follow managers <small>their matchup (lead changes, new favorites, big momentum swings, finals), plus their survivor entries (a pick in trouble, every result) and their guillotine team (chop odds on the move)</small></p>
       <div className="notify-teams">
         {teams.map(t => <label key={t.id} className={prefs.teams.includes(t.id) ? "selected" : ""}>
           <input type="checkbox" checked={prefs.teams.includes(t.id)} onChange={() => toggleTeam(t.id)} />
