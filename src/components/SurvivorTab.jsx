@@ -145,7 +145,7 @@ function GamesSection({ feed, games, pot }) {
         const fav = r.a.chance != null && r.h.chance != null ? (r.a.chance >= r.h.chance ? r.a : r.h) : null;
         return `${r.a.team} @ ${r.h.team}${fav ? ` (${fav.team} ${Math.round(fav.chance * 100)}%)` : ""}`;
       }).join(" · ")}</p> : null}
-    <p className="median-note">Picks show once their game kicks off. Rooting interests use the same money model as Managers: every live entry gets an equal share of the {dollars(pot)} pot, so a game moves a manager's value both through their own entries and through everyone else's. Picks that haven't been revealed yet are assumed to survive.</p>
+    <p className="median-note">Picks show once their game kicks off. Rooting interests use the same money model as Managers: every live entry gets an equal share of the {dollars(pot)} pot, so a game moves a manager's value both through their own entries and through everyone else's. Picks that haven't been revealed yet are assumed to survive here.</p>
   </section>;
 }
 
@@ -154,6 +154,7 @@ export default function SurvivorTab({ nflGames = [], nflWeek = null }) {
   const weeks = feed?.weeks || [];
   const lockedWeeks = weeks.filter(w => w.locked);
   const [selectedWeek, setSelectedWeek] = useState(null);
+  const [ledgerLive, setLedgerLive] = useState(true);
   const week = lockedWeeks.find(w => w.week === selectedWeek) || lockedWeeks[lockedWeeks.length - 1] || null;
 
   // Managers with their entries, live entries first.
@@ -207,17 +208,60 @@ export default function SurvivorTab({ nflGames = [], nflWeek = null }) {
   // Splash marks a pick "lost" while its team trails mid-game: trust a result only once the game is final.
   const gameOfTeam = team => (nflGames || []).find(g => (g.teams || []).some(x => feedTeam(x.abbrev) === team));
   const settledPick = p => (p?.result === "won" || p?.result === "lost") && (!thisWeek || (gameOfTeam(p.team)?.completed ?? true));
+  // A hidden pick must be on a game that hasn't kicked off (picks show at kickoff). Model it as one of the
+  // entry's unused teams in those games, weighted toward favorites (win chance ^ 8: a 80% team is ~10x a 60% one).
+  const hiddenOptions = e => {
+    if (!thisWeek) return [];
+    const used = new Set(Object.values(e.picks || {}).map(p => p.team));
+    const opts = (nflGames || []).filter(g => g.state === "pre").flatMap(g => (g.teams || []).map(t => ({ team: feedTeam(t.abbrev), p: t.winChance == null ? null : Number(t.winChance) })))
+      .filter(o => o.p != null && !used.has(o.team));
+    const total = opts.reduce((a, o) => a + o.p ** 8, 0);
+    return total ? opts.map(o => ({ ...o, w: o.p ** 8 / total })) : [];
+  };
+  const hiddenChance = e => { const o = hiddenOptions(e); return o.length ? o.reduce((a, x) => a + x.w * x.p, 0) : null; };
   const expectedLeft = m => {
     let exp = 0, hidden = 0;
     for (const e of m.entries.filter(e => e.alive || e.eliminatedWeek === n)) {
       const p = e.picks?.[n];
-      if (!p) { hidden++; exp += 1; continue; }
+      if (!p) { hidden++; exp += hiddenChance(e) ?? 1; continue; }
       exp += settledPick(p) ? (p.result === "won" ? 1 : 0) : chanceOf(p.team) ?? 1;
     }
     return { exp, hidden };
   };
+  // This week, simulated (Jim, 2026-10-25): each game is drawn once from its live win chance, so entries on the same
+  // team live or die together; hidden picks are drawn from hiddenOptions. Gives the topline's likely range and the
+  // ledger's Live value (each manager's average share of the pot, everyone revived if every entry loses).
+  const weekSim = (() => {
+    const inPlay = (feed.entries || []).filter(e => e.alive || e.eliminatedWeek === n);
+    if (!thisWeek || !inPlay.length) return null;
+    const lost = inPlay.filter(e => settledPick(e.picks?.[n]) && e.picks[n].result === "lost").length;
+    const graded = inPlay.filter(e => settledPick(e.picks?.[n])).length;
+    const hidden = inPlay.filter(e => !e.picks?.[n]).length;
+    const games = new Map((nflGames || []).flatMap(g => (g.teams || []).map(t => [feedTeam(t.abbrev), g])));
+    const plan = inPlay.map(e => { const p = e.picks?.[n]; return !p ? { opts: hiddenOptions(e) } : settledPick(p) ? { fixed: p.result === "won" } : { team: p.team }; });
+    let seed = 7; const rand = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
+    const SIMS = 2000, counts = [], value = {};
+    for (let s = 0; s < SIMS; s++) {
+      const winner = new Map();
+      const wins = team => {
+        const g = games.get(team);
+        if (!g) return true;
+        if (!winner.has(g.id)) { const [h, a] = [g.teams.find(t => t.home), g.teams.find(t => !t.home)]; winner.set(g.id, feedTeam(rand() < (h.winChance ?? 0.5) ? h.abbrev : a.abbrev)); }
+        return winner.get(g.id) === team;
+      };
+      const pick = opts => { let r = rand(); for (const o of opts) if ((r -= o.w) < 0) return o.team; return opts[opts.length - 1].team; };
+      let alive = inPlay.filter((e, i) => { const x = plan[i]; return x.fixed != null ? x.fixed : x.team ? wins(x.team) : !x.opts.length || wins(pick(x.opts)); });
+      counts.push(alive.length);
+      if (!alive.length) alive = inPlay;
+      for (const e of alive) value[e.user] = (value[e.user] || 0) + pot / alive.length / SIMS;
+    }
+    counts.sort((a, b) => a - b);
+    return { total: inPlay.length, lost, hidden, final: graded === inPlay.length, exp: counts.reduce((a, b) => a + b, 0) / SIMS,
+      lo: counts[Math.floor(SIMS * 0.1)], hi: counts[Math.floor(SIMS * 0.9)], value };
+  })();
+  const showLive = ledgerLive && weekSim && !weekSim.final;
   const ledger = managers.map(m => {
-    const invested = m.entries.length * fee, ev = m.alive * perAlive;
+    const invested = m.entries.length * fee, ev = showLive ? weekSim.value[m.user] || 0 : m.alive * perAlive;
     return { ...m, invested, ev, roi: invested ? (ev - invested) / invested * 100 : 0, left: expectedLeft(m) };
   }).sort((a, b) => b.ev - a.ev || b.picksWon / (b.picksGraded || 1) - a.picksWon / (a.picksGraded || 1) || a.user.localeCompare(b.user));
 
@@ -302,17 +346,10 @@ export default function SurvivorTab({ nflGames = [], nflWeek = null }) {
     <section id="survivor" className="section">
       <div className="section-heading"><div><span className="section-kicker">{(c.name || "Survivor pool").toUpperCase()} · SPLASH SPORTS</span><h2>Week {c.currentWeek} Survivor</h2></div>
         <span className="record-count">{c.alive} OF {total} ALIVE</span></div>
-      {(() => {   // topline (Jim, 2026-10-25): entries in play this week and how many the odds expect to survive
-        // Revealed picks only; hidden ones are mentioned, not counted.
-        const inPlay = (feed.entries || []).filter(e => e.alive || e.eliminatedWeek === n);
-        const shown = inPlay.filter(e => e.picks?.[n]), hidden = inPlay.length - shown.length;
-        const exp = shown.reduce((a, e) => { const p = e.picks[n]; return a + (settledPick(p) ? (p.result === "won" ? 1 : 0) : chanceOf(p.team) ?? 1); }, 0);
-        const graded = shown.filter(e => settledPick(e.picks[n])).length;
-        if (!thisWeek || !shown.length) return null;
-        return <p className="sv-topline">{graded === inPlay.length
-          ? <><b>{Math.round(exp)}</b> of {inPlay.length} entries survived Week {n}.</>
-          : <><b>{shown.length}</b> {shown.length === 1 ? "entry" : "entries"} in play. The odds expect <b>{exp.toFixed(1)}</b> to survive{hidden ? <small> ({hidden} more {hidden === 1 ? "pick" : "picks"} still hidden until kickoff)</small> : null}.</>}</p>;
-      })()}
+      {weekSim ? <p className="sv-topline">{weekSim.final   // topline (Jim, 2026-10-25): entries still standing and how many the odds expect to survive
+        ? <><b>{weekSim.total - weekSim.lost}</b> of {weekSim.total} entries survived Week {n}.</>
+        : <><b>{weekSim.total - weekSim.lost}</b> of {weekSim.total} entries still standing{weekSim.lost ? ` (${weekSim.lost} lost)` : ""}. The odds expect <b>{weekSim.exp.toFixed(1)}</b> to survive Week {n}{weekSim.lo !== weekSim.hi ? ` (likely ${weekSim.lo}–${weekSim.hi})` : ""}.
+          {weekSim.hidden ? <small> Includes {weekSim.hidden} hidden {weekSim.hidden === 1 ? "pick" : "picks"}, modeled as favorites among each entry's unused teams in games that haven't kicked off.</small> : null}</>}</p> : null}
       <div className="sv-survival" aria-label={`${c.alive} entries alive, ${c.eliminated} eliminated`}>
         <span className="alive" style={{ flexGrow: c.alive || 0 }} />
         <span className="out" style={{ flexGrow: c.eliminated || 0 }} />
@@ -348,24 +385,29 @@ export default function SurvivorTab({ nflGames = [], nflWeek = null }) {
     </section>
 
     <section id="survivor-managers" className="section">
-      <div className="section-heading"><div><span className="section-kicker">THE PORTFOLIOS</span><h2>Managers</h2></div>
+      <div className="section-heading"><div><span className="section-kicker">THE PORTFOLIOS</span><h2>Managers
+        {weekSim && !weekSim.final ? <span className="standings-live-toggle">
+          <button type="button" className={ledgerLive ? "active" : ""} onClick={() => setLedgerLive(true)}>Live</button>
+          <button type="button" className={ledgerLive ? "" : "active"} onClick={() => setLedgerLive(false)}>As it stands</button>
+        </span> : null}</h2></div>
         <span className="record-count">{dollars(pot)} POT · {dollars(perAlive)} / LIVE ENTRY</span></div>
       <div className="sv-ledger">
         <div className="sv-ledger-row head"><span>Manager</span><span>Alive</span>
-          <span title={`Expected entries still alive after Week ${n}: each revealed pick counts its live chance to win (ESPN's in-game win probability, the betting line before kickoff); picks not revealed yet count as surviving (*)`}>Wk {n} ⓘ</span><span>Won</span>
+          <span title={`Expected entries still alive after Week ${n}: each revealed pick counts its live chance to win (ESPN's in-game win probability, the betting line before kickoff); picks not revealed yet are modeled as favorites among the entry's unused teams in games that haven't kicked off (*)`}>Wk {n} ⓘ</span><span>Won</span>
           <span title={`Expected value = (manager's entries remaining ÷ all entries remaining) × the ${dollars(pot)} pot`}>Exp. value ⓘ</span>
           <span title="Expected ROI = (expected value − buy-ins) ÷ buy-ins">Exp. ROI ⓘ</span></div>
         {ledger.map(m => <div className={"sv-ledger-row" + (m.alive ? "" : " out")} key={m.user}>
           <b className="sv-ledger-name">{m.user}</b>
           <span className="sv-ledger-alive"><b>{m.alive}</b>/{m.entries.length}
             <i className="sv-dots">{m.entries.map(e => <i key={e.id} className={e.alive ? "alive" : "out"} />)}</i></span>
-          <span title={m.left.hidden ? `${m.left.hidden} pick${m.left.hidden > 1 ? "s" : ""} not revealed yet, counted as surviving` : undefined}>{m.alive || m.left.exp ? m.left.exp.toFixed(1) : "—"}{m.left.hidden ? "*" : ""}</span>
+          <span title={m.left.hidden ? `${m.left.hidden} pick${m.left.hidden > 1 ? "s" : ""} not revealed yet, modeled` : undefined}>{m.alive || m.left.exp ? m.left.exp.toFixed(1) : "—"}{m.left.hidden ? "*" : ""}</span>
           <span>{m.picksGraded ? `${pct(m.picksWon / m.picksGraded * 100)}` : "—"}<small>{m.picksGraded ? ` ${m.picksWon}/${m.picksGraded}` : ""}</small></span>
           <span className="sv-ledger-ev">{dollars(m.ev)}<small> of {dollars(m.invested)}</small></span>
           <b className={"sv-ledger-roi " + (m.roi > 0.5 ? "up" : m.roi < -0.5 ? "down" : "")}>{m.roi > 0 ? "+" : m.roi < 0 ? "−" : ""}{Math.abs(m.roi).toFixed(0)}%</b>
         </div>)}
       </div>
-      <p className="median-note">Expected value = (manager's entries remaining ÷ all {c.alive} entries remaining) × the {dollars(pot)} pot ({dollars(fee)} × {total} entries). Expected ROI = (expected value − buy-ins) ÷ buy-ins. Every live entry counts equally; picks won counts graded picks across all entries. Wk {n} = expected entries left after this week, live from each pick's chance to win; * = picks not revealed yet, counted as surviving.</p>
+      {showLive ? <p className="median-note"><b>Live:</b> expected value averages each manager's share of the pot over 2,000 simulations of this week's games (live win chances; hidden picks modeled), so it moves with every game in action. Switch to As it stands for the current count.</p> : null}
+      <p className="median-note">Expected value = (manager's entries remaining ÷ all {c.alive} entries remaining) × the {dollars(pot)} pot ({dollars(fee)} × {total} entries). Expected ROI = (expected value − buy-ins) ÷ buy-ins. Every live entry counts equally; picks won counts graded picks across all entries. Wk {n} = expected entries left after this week, live from each pick's chance to win; * = includes picks not revealed yet, modeled as favorites among each entry's unused teams in games that haven't kicked off.</p>
     </section>
 
     <section id="survivor-teams" className="section">
