@@ -36,6 +36,7 @@ for (const t of roster.teams || []) for (const e of t.roster?.entries || []) {
 }
 const escape = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const matchers = [...players].map(([id, full]) => ({ id, name: full, re: new RegExp("\\b" + escape(full) + "\\b") }));
+const STATUS = /\b(out|ruled|inactive|questionable|doubtful|probable|expected to (?:play|start|return)|unlikely|will (?:play|start|miss|return)|IR|injured reserve|activated|active roster|return|practice|limited|surgery|torn|tear|sprain|strain|concussion|suspend|traded|trade|released|waived|signed|benched|start)\b/i;
 let insiderCount = 0;
 for (const [handle, source] of INSIDERS) {
   try {
@@ -52,8 +53,11 @@ for (const [handle, source] of INSIDERS) {
       const parts = text.split(/(?<!\b(?:vs|Jr|Sr|St|No)\.)(?<=[.!?])\s+|\s+—\s+|^—\s+/).map(x => x.replace(/^[—–-]\s*/, "").trim()).filter(Boolean);
       const sentence = parts.find(x => named.some(n => x.includes(n.name))) || parts[0] || text;
       const clean = sentence.replace(/^Significant transactions:\s*/i, "");
-      items.push({ headline: clean.length > 150 ? clean.slice(0, 147).replace(/\s+\S*$/, "") + "…" : clean, published: rec.createdAt, source,
-        players: named.filter(n => clean.includes(n.name)).length ? named.filter(n => clean.includes(n.name)) : named });
+      // Only players the news is about: a status word after the name, in the same sentence
+      // (not "…told to leave a meeting by QB Patrick Mahomes").
+      const about = named.filter(n => clean.includes(n.name) && STATUS.test(clean.slice(clean.indexOf(n.name) + n.name.length)));
+      if (!about.length) continue;
+      items.push({ headline: clean.length > 150 ? clean.slice(0, 147).replace(/\s+\S*$/, "") + "…" : clean, published: rec.createdAt, source, players: about });
       insiderCount++;
     }
   } catch (error) {
