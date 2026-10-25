@@ -331,7 +331,9 @@ function managerEvents(live, week, baseline, previous, next, events) {
       for (const e of mine) byTeam.set(e.picks[svWeek].team, [...(byTeam.get(e.picks[svWeek].team) || []), e]);
       for (const [team, list] of byTeam) {
         const n = list.length, entries = n === 1 ? "entry" : "entries";
-        const result = list[0].picks[svWeek].result;
+        // Splash marks a pick "lost" while its team trails: a result counts once the game is final.
+        const gm0 = gameOf(team);
+        const result = gm0 && !gm0.g.completed ? "pending" : list[0].picks[svWeek].result;
         const key = k => `${svWeek}|${teamId}|${team}|${k}`;
         if (result === "won" || result === "lost") {
           if (!next.svSent.includes(key(result))) {

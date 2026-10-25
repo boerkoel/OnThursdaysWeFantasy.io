@@ -20,6 +20,10 @@ const entries = feed?.entries || [];
 const revealed = week !== currentWeek ? [] : entries.map(e => ({ user: e.user, pick: e.picks?.[week] })).filter(x => x.pick);
 const plural = (n, one, many = one + "s") => `${n} ${n === 1 ? one : many}`;
 
+// Splash marks a pick "lost" while its team trails, mid-game: a result only
+// counts once the game is final (or isn't on this week's slate).
+const settled = p => (p?.result === "won" || p?.result === "lost") && (gameOf(p.team)?.g.completed ?? true);
+
 function gameOf(t) {
   for (const g of nflGames) {
     const us = (g.teams || []).find(x => team(x.abbrev) === t), them = (g.teams || []).find(x => team(x.abbrev) !== t);
@@ -55,7 +59,7 @@ export function addSurvivorScareStory(add) {
   const risky = [];
   const counted = new Map();
   for (const x of revealed) {
-    if (x.pick.result && x.pick.result !== "pending") continue;
+    if (settled(x.pick)) continue;
     const gm = gameOf(x.pick.team);
     if (!gm || gm.g.state !== "in" || gm.us.winChance == null || gm.us.winChance >= SCARE_BELOW) continue;
     counted.set(x.pick.team, [...(counted.get(x.pick.team) || []), x.user]);
@@ -73,4 +77,31 @@ export function addSurvivorScareStory(add) {
     `😬 SURVIVOR SCARE: ${r.t} ${Math.round(r.us.winChance * 100)}% to win (${score}). ${plural(r.users.length, "entry", "entries")} on the brink: ${who}.`,
     `😬 SURVIVOR SCARE: ${r.t} ${Math.round(r.us.winChance * 100)}% to win; ${plural(r.users.length, "entry", "entries")} at risk.`
   ), 85 + Math.min(r.users.length, 10));
+}
+
+// SURVIVOR ODDS (Jim, 2026-10-25): entries in play this week vs how many the
+// odds expect to survive (each revealed pick at its live win chance; hidden
+// picks count as surviving). Runs while results are still open and the
+// expected toll is real (a quarter of the field or more).
+export function addSurvivorOddsStory(add) {
+  if (week !== currentWeek) return;
+  const inPlay = entries.filter(e => e.alive || e.eliminatedWeek === week);
+  if (!inPlay.length) return;
+  // Revealed picks only (hidden ones are mentioned, not counted).
+  let exp = 0, hidden = 0, open = 0;
+  for (const e of inPlay) {
+    const p = e.picks?.[week];
+    if (!p) { hidden++; continue; }
+    if (settled(p)) { exp += p.result === "won" ? 1 : 0; continue; }
+    open++;
+    const w = gameOf(p.team)?.us.winChance;
+    exp += w ?? 1;
+  }
+  const n = inPlay.length - hidden;
+  if (!open || !n || exp / n > 0.75) return;
+  const lead = pickLine("svodds" + week, ["🛡️ SURVIVOR ODDS", "🛡️ SURVIVOR MATH", "🛡️ BRACE FOR IMPACT"]);
+  add("SURVIVOR ODDS", fit(
+    `${lead}: ${plural(n, "entry", "entries")} in play this week, and the odds expect only ${exp.toFixed(1)} to survive.${hidden ? ` (${plural(hidden, "more pick")} still hidden.)` : ""}`,
+    `${lead}: ${n} in play, ${exp.toFixed(1)} expected to survive.`
+  ), 70 + Math.round((1 - exp / n) * 20));
 }

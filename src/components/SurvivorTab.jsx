@@ -70,14 +70,17 @@ function GamesSection({ feed, games, pot }) {
   const revealed = inPlay.filter(pickOf).length;
   const users = [...new Set(inPlay.map(e => e.user))];
   // Expected value per manager when the given teams lose (their entries are out).
-  const valueIf = losers => {
+  // open: this game's teams, judged by `losers` even once graded (a final's "what it meant").
+  const valueIf = (losers, open = new Set()) => {
     const survives = e => {
       const p = pickOf(e);
-      if (p?.result === "lost") return false;
+      // A "lost" only counts once that game is final (Splash marks trailing picks lost mid-game).
+      const final = (games || []).find(g => (g.teams || []).some(x => feedTeam(x.abbrev) === p?.team))?.completed ?? true;
+      if (p?.result === "lost" && final && !open.has(p.team)) return false;
       return !(p && losers.has(p.team));
     };
     let alive = inPlay.filter(survives);
-    if (!alive.length) alive = inPlay.filter(e => pickOf(e)?.result !== "lost");   // everyone lost: auto-revive
+    if (!alive.length) alive = inPlay.filter(e => pickOf(e)?.result !== "lost" || open.has(pickOf(e)?.team));   // everyone lost: auto-revive
     const per = alive.length ? pot / alive.length : 0;
     return Object.fromEntries(users.map(u => [u, alive.filter(e => e.user === u).length * per]));
   };
@@ -109,14 +112,15 @@ function GamesSection({ feed, games, pot }) {
     <div className="sv-games">
       {rows.filter(r => r.a.count + r.h.count > 0 || r.g.state !== "pre").map(({ g, a, h, winner }) => {
         const swing = a.count || h.count;
-        const ifA = swing ? valueIf(new Set([h.team])) : null, ifH = swing ? valueIf(new Set([a.team])) : null;
+        const both = new Set([a.team, h.team]);
+        const ifA = swing ? valueIf(new Set([h.team]), both) : null, ifH = swing ? valueIf(new Set([a.team]), both) : null;
         const movers = swing ? users.map(u => ({ u, now: now[u], a: ifA[u], h: ifH[u] }))
           .filter(m => Math.abs(m.a - m.h) >= 0.5).sort((x, y) => Math.abs(y.a - y.h) - Math.abs(x.a - x.h)) : [];
         return <div className={"sv-game" + (g.state === "in" ? " live" : "") + (g.completed ? " final" : "")} key={g.id}>
           <div className="sv-game-head"><span>{status(g)}</span></div>
           <div className="sv-game-sides">{sideCell(a, winner, g.completed)}<span className="sv-game-at">@</span>{sideCell(h, winner, g.completed)}</div>
-          {movers.length && !g.completed ? <details className="sv-root">
-            <summary>Rooting interests · {movers.length} {movers.length === 1 ? "manager" : "managers"}</summary>
+          {movers.length ? <details className="sv-root">
+            <summary>{g.completed ? "What it meant" : "Rooting interests"} · {movers.length} {movers.length === 1 ? "manager" : "managers"}</summary>
             <div className="sv-root-row head"><span>Manager</span><span>If {a.team} wins</span><span>If {h.team} wins</span><span>Root for</span></div>
             {movers.map(m => <div className="sv-root-row" key={m.u}><b>{m.u}</b><span>{dollars(m.a)}</span><span>{dollars(m.h)}</span>
               <b className={m.a > m.h ? "up" : "down"}>{m.a > m.h ? a.team : h.team}</b></div>)}
@@ -185,12 +189,15 @@ export default function SurvivorTab({ nflGames = [], nflWeek = null }) {
     }
     return null;
   };
+  // Splash marks a pick "lost" while its team trails mid-game: trust a result only once the game is final.
+  const gameOfTeam = team => (nflGames || []).find(g => (g.teams || []).some(x => feedTeam(x.abbrev) === team));
+  const settledPick = p => (p?.result === "won" || p?.result === "lost") && (!thisWeek || (gameOfTeam(p.team)?.completed ?? true));
   const expectedLeft = m => {
     let exp = 0, hidden = 0;
     for (const e of m.entries.filter(e => e.alive || e.eliminatedWeek === n)) {
       const p = e.picks?.[n];
       if (!p) { hidden++; exp += 1; continue; }
-      exp += p.result === "won" ? 1 : p.result === "lost" ? 0 : chanceOf(p.team) ?? 1;
+      exp += settledPick(p) ? (p.result === "won" ? 1 : 0) : chanceOf(p.team) ?? 1;
     }
     return { exp, hidden };
   };
@@ -280,6 +287,17 @@ export default function SurvivorTab({ nflGames = [], nflWeek = null }) {
     <section id="survivor" className="section">
       <div className="section-heading"><div><span className="section-kicker">{(c.name || "Survivor pool").toUpperCase()} · SPLASH SPORTS</span><h2>Week {c.currentWeek} Survivor</h2></div>
         <span className="record-count">{c.alive} OF {total} ALIVE</span></div>
+      {(() => {   // topline (Jim, 2026-10-25): entries in play this week and how many the odds expect to survive
+        // Revealed picks only; hidden ones are mentioned, not counted.
+        const inPlay = (feed.entries || []).filter(e => e.alive || e.eliminatedWeek === n);
+        const shown = inPlay.filter(e => e.picks?.[n]), hidden = inPlay.length - shown.length;
+        const exp = shown.reduce((a, e) => { const p = e.picks[n]; return a + (settledPick(p) ? (p.result === "won" ? 1 : 0) : chanceOf(p.team) ?? 1); }, 0);
+        const graded = shown.filter(e => settledPick(e.picks[n])).length;
+        if (!thisWeek || !shown.length) return null;
+        return <p className="sv-topline">{graded === inPlay.length
+          ? <><b>{Math.round(exp)}</b> of {inPlay.length} entries survived Week {n}.</>
+          : <><b>{shown.length}</b> {shown.length === 1 ? "entry" : "entries"} in play. The odds expect <b>{exp.toFixed(1)}</b> to survive{hidden ? <small> ({hidden} more {hidden === 1 ? "pick" : "picks"} still hidden until kickoff)</small> : null}.</>}</p>;
+      })()}
       <div className="sv-survival" aria-label={`${c.alive} entries alive, ${c.eliminated} eliminated`}>
         <span className="alive" style={{ flexGrow: c.alive || 0 }} />
         <span className="out" style={{ flexGrow: c.eliminated || 0 }} />
