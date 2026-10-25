@@ -51,7 +51,7 @@ for (const g of [...liveSchedule, ...boxscoreSchedule]) {
   for (const side of [g.home, g.away]) {
     if (!side?.teamId) continue;
     const playerTotal = (side.rosterForCurrentScoringPeriod?.entries || [])
-      .filter(entry => Number(entry.lineupSlotId) !== 20)
+      .filter(entry => Number(entry.lineupSlotId) !== 20 && Number(entry.lineupSlotId) !== 21)   // bench and IR don't count
       .reduce((sum, entry) => sum + Number(entry.playerPoolEntry?.appliedStatTotal ?? 0), 0);
     const reportedLive = Number(side.totalPointsLive);
     const reportedTotal = Number(side.totalPoints);

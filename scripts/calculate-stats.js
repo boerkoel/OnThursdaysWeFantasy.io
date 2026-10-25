@@ -660,7 +660,7 @@ function lineupEfficiency(weeklyTeam, actualPointsOverride = null, excludedPlaye
 
   const rosterActualPoints = round(
     entries
-      .filter(e => Number(e.lineupSlotId) !== 20)
+      .filter(e => Number(e.lineupSlotId) !== 20 && Number(e.lineupSlotId) !== 21)
       .reduce((sum, e) => sum + scoreOf(e), 0)
   );
   const actualPoints = Number.isFinite(Number(actualPointsOverride))
