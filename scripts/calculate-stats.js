@@ -1367,6 +1367,10 @@ const helpsTeam = impact =>
   
       if (trades.length) {
         const topTrades = trades.slice(0,3);
+        // Season-long swaps pile up more wins, so keep the best one that would
+        // have started a month ago too (Jim, 2026-10-25).
+        const recentTrade = trades.find(t => t.basis?.window !== "season" && !topTrades.includes(t));
+        if (recentTrade) topTrades.push(recentTrade);
         winWinTradesByTeam.get(teamAId).push(...topTrades.map(t => ({...t, perspective:"A"})));
         winWinTradesByTeam.get(teamBId).push(...topTrades.map(t => ({
           ...t,
@@ -1502,12 +1506,14 @@ for (const teamId of teams.keys()) {
   const multi = (multiTradesByTeam.get(Number(teamId)) || []).sort((a,b) =>
     Math.min(b.yourWinsAdded,b.theirWinsAdded) - Math.min(a.yourWinsAdded,a.theirWinsAdded) ||
     (b.yourBoost+b.theirBoost) - (a.yourBoost+a.theirBoost)).slice(0,1);
-  winWinTradesByTeam.set(Number(teamId), [...unique.values()]
+  const ranked = [...unique.values()]
     .sort((a,b) =>
       Math.max(b.yourWinsAdded,b.theirWinsAdded) - Math.max(a.yourWinsAdded,a.theirWinsAdded) ||
       (b.yourBoost+b.theirBoost) - (a.yourBoost+a.theirBoost)
-    )
-    .slice(0,3).concat(multi));
+    );
+  // ...plus the best swap from a month ago if the season-long ones crowd it out.
+  const recentExtra = ranked.slice(3).filter(t => t.basis?.window !== "season").slice(0,1);
+  winWinTradesByTeam.set(Number(teamId), ranked.slice(0,3).concat(recentExtra, multi));
 }
 
 // Waiver targets: current free agents who would have added wins. Compares the

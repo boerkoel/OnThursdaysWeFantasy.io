@@ -27,17 +27,39 @@ export function topTrades(teams) {
   return out;
 }
 
+// Swaps that would have started a month ago ("last 4 weeks" view): fewer weeks,
+// so fewer wins; shown separately with a lower bar (Jim, 2026-10-25).
+const MAX_RECENT = 3;
+export function recentTrades(teams, exclude = []) {
+  const used = new Set(exclude.flatMap(t => [...(t.givePlayers || [t.givePlayer]), ...(t.getPlayers || [t.getPlayer])]));
+  const all = (teams || []).flatMap(t => (t.profileAnalytics?.winWinTrades || [])
+    .filter(x => x.perspective === "A" && x.basis?.window && x.basis.window !== "season").map(x => ({ ...x, teamId: t.id, team: t.name })))
+    .filter(t => Math.min(t.yourWinsAdded, t.theirWinsAdded) >= 0.5)
+    .sort((a, b) => Math.min(b.yourWinsAdded, b.theirWinsAdded) - Math.min(a.yourWinsAdded, a.theirWinsAdded) ||
+      (b.yourBoost + b.theirBoost) - (a.yourBoost + a.theirBoost));
+  const out = [];
+  for (const t of all) {
+    const names = [...(t.givePlayers || [t.givePlayer]), ...(t.getPlayers || [t.getPlayer])];
+    if (names.some(n => used.has(n))) continue;
+    names.forEach(n => used.add(n));
+    out.push(t);
+    if (out.length === MAX_RECENT) break;
+  }
+  return out;
+}
+
 const wins = n => `+${n} win${Number(n) === 1 ? "" : "s"}`;
 const players = (list, single) => (list || [single]).join(" + ");
 
 export default function TopTrades({ teams, week }) {
   const trades = topTrades(teams);
-  if (!trades.length) return null;
+  const recent = recentTrades(teams, trades);
+  if (!trades.length && !recent.length) return null;
   const logoOf = id => (teams || []).find(t => Number(t.id) === Number(id))?.logo;
   const share = () => ({
     kicker: `Week ${week} · Win-win trades`,
     title: "🔁 Trades that should have happened",
-    lines: trades.flatMap(t => [
+    lines: [...trades, ...recent].flatMap(t => [
       { text: `${t.team} ⇄ ${t.otherTeam} (${t.kind ? t.kind + ", " : ""}${basisTag(t.basis)})`, size: 26, color: "accent", weight: 800, gap: 24 },
       { text: `If they'd swapped ${t.fromWeek ? `back in Week ${t.fromWeek}` : "earlier this season"}:`, size: 21, gap: 6 },
       { text: `${t.team} gets ${players(t.getPlayers, t.getPlayer)}: ${wins(t.yourWinsAdded)}`, size: 23, color: "ink", gap: 4 },
@@ -52,7 +74,7 @@ export default function TopTrades({ teams, week }) {
       </div>
       <p className="team-cards-intro">If these teams had swapped these players back then, both would be ahead today: the wins each would have added, replaying the weeks with optimal lineups or the lineups ESPN's projections would have set. Hindsight, not a promise about what happens next.</p>
       <div className="top-trades">
-        {trades.map(t => <article className="top-trade" key={t.teamId + ":" + t.givePlayerId + ":" + t.getPlayerId}>
+        {[...trades, ...recent].map(t => <article className="top-trade" key={t.teamId + ":" + t.givePlayerId + ":" + t.getPlayerId}>
           <span className="top-trade-kind">{t.kind ? `${t.kind} · ` : ""}{basisTag(t.basis)}</span>
           <p className="top-trade-when">If they'd swapped {t.fromWeek ? `back in Week ${t.fromWeek}` : "earlier this season"}:</p>
           {[[t.team, t.teamId, t.getPlayers || [t.getPlayer], t.yourWinsAdded, t.yourBoost], [t.otherTeam, t.otherTeamId, t.givePlayers || [t.givePlayer], t.theirWinsAdded, t.theirBoost]]
