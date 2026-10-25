@@ -1,7 +1,7 @@
 {
  "source": "FantasyPros Are They Playing?",
  "url": "https://www.fantasypros.com/nfl/myplaybook/are-they-playing.php",
- "fetchedAt": "2026-10-24T12:39:04.954Z",
+ "fetchedAt": "2026-10-25T12:17:57.222Z",
  "players": [
   {
    "name": "Puka Nacua",
@@ -68,7 +68,7 @@
    "team": "GB",
    "position": "WR",
    "status": "",
-   "chance": 0.96608,
+   "chance": 1,
    "practices": [
     "Limit",
     "Limit",
@@ -116,7 +116,7 @@
    "team": "GB",
    "position": "WR",
    "status": "",
-   "chance": 0.94329,
+   "chance": 1,
    "practices": [
     "Limit",
     "Limit",
@@ -127,7 +127,7 @@
    "name": "Lamar Jackson",
    "team": "BAL",
    "position": "QB",
-   "status": "Q",
+   "status": "O",
    "chance": 0.35093,
    "practices": [
     "Limit",
@@ -140,11 +140,11 @@
    "team": "PHI",
    "position": "RB",
    "status": "Q",
-   "chance": 0.62707,
+   "chance": 0.74786,
    "practices": [
     "Limit",
     "Limit",
-    null
+    "Full"
    ]
   },
   {
@@ -156,7 +156,7 @@
    "practices": [
     "Limit",
     "Full",
-    null
+    "Full"
    ]
   },
   {
@@ -199,12 +199,12 @@
    "name": "DeVonta Smith",
    "team": "PHI",
    "position": "WR",
-   "status": "Q",
-   "chance": 0.24372,
+   "status": "O",
+   "chance": 0,
    "practices": [
     "DNP",
     "DNP",
-    null
+    "DNP"
    ]
   },
   {
@@ -332,7 +332,7 @@
    "team": "GB",
    "position": "QB",
    "status": "",
-   "chance": 0.99,
+   "chance": 1,
    "practices": [
     "Limit",
     "Full",
@@ -344,7 +344,7 @@
    "team": "MIN",
    "position": "RB",
    "status": "Q",
-   "chance": 0.71417,
+   "chance": 0.95,
    "practices": [
     "Full",
     "Full",
@@ -400,6 +400,18 @@
    ]
   },
   {
+   "name": "Jordyn Tyson",
+   "team": "NO",
+   "position": "WR",
+   "status": "O",
+   "chance": null,
+   "practices": [
+    null,
+    null,
+    null
+   ]
+  },
+  {
    "name": "Tyler Shough",
    "team": "NO",
    "position": "QB",
@@ -451,12 +463,12 @@
    "name": "Dontayvion Wicks",
    "team": "PHI",
    "position": "WR",
-   "status": "Q",
-   "chance": 0.53917,
+   "status": "O",
+   "chance": 0,
    "practices": [
     "DNP",
     "DNP",
-    null
+    "DNP"
    ]
   },
   {
@@ -511,12 +523,12 @@
    "name": "Dallas Goedert",
    "team": "PHI",
    "position": "TE",
-   "status": "Q",
-   "chance": 0.27544,
+   "status": "",
+   "chance": 1,
    "practices": [
     "DNP",
     "DNP",
-    null
+    "Full"
    ]
   },
   {
@@ -560,7 +572,7 @@
    "team": "PIT",
    "position": "RB",
    "status": "Q",
-   "chance": 0.72929,
+   "chance": 0.73628,
    "practices": [
     "Limit",
     "Limit",
@@ -704,7 +716,7 @@
    "team": "DEN",
    "position": "RB",
    "status": "Q",
-   "chance": 0.67658,
+   "chance": 0.95,
    "practices": [
     "Full",
     "Full",
@@ -872,7 +884,7 @@
    "team": "SF",
    "position": "WR",
    "status": "Q",
-   "chance": 0.708,
+   "chance": 0.95,
    "practices": [
     "Full",
     "Full",
@@ -1015,12 +1027,12 @@
    "name": "Eli Stowers",
    "team": "PHI",
    "position": "TE",
-   "status": "",
-   "chance": 0.46302,
+   "status": "Q",
+   "chance": 0.44591,
    "practices": [
     "Full",
     "Full",
-    null
+    "Full"
    ]
   },
   {
@@ -1032,7 +1044,7 @@
    "practices": [
     "--",
     "--",
-    null
+    "--"
    ]
   },
   {
@@ -1063,7 +1075,7 @@
    "name": "Theo Johnson",
    "team": "NYG",
    "position": "TE",
-   "status": "D",
+   "status": "O",
    "chance": 0.01442,
    "practices": [
     "Limit",
@@ -1076,7 +1088,7 @@
    "team": "GB",
    "position": "WR",
    "status": "",
-   "chance": 0.92128,
+   "chance": 1,
    "practices": [
     "Limit",
     "Limit",
@@ -1208,18 +1220,18 @@
    "team": "PHI",
    "position": "WR",
    "status": "",
-   "chance": 0.85339,
+   "chance": 1,
    "practices": [
     "Full",
     "Full",
-    null
+    "Full"
    ]
   },
   {
    "name": "Brashard Smith",
    "team": "KC",
    "position": "RB",
-   "status": "O",
+   "status": "IR",
    "chance": 0,
    "practices": [
     "--",
@@ -1232,6 +1244,18 @@
    "team": "SF",
    "position": "WR",
    "status": "IR",
+   "chance": null,
+   "practices": [
+    null,
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Eli Heidenreich",
+   "team": "PIT",
+   "position": "RB",
+   "status": "O",
    "chance": null,
    "practices": [
     null,
@@ -1339,12 +1363,12 @@
    "name": "KaVontae Turpin",
    "team": "DAL",
    "position": "WR",
-   "status": "Q",
-   "chance": 0.10034,
+   "status": "O",
+   "chance": 0,
    "practices": [
     "DNP",
     "DNP",
-    null
+    "DNP"
    ]
   },
   {
@@ -1464,7 +1488,7 @@
    "practices": [
     "--",
     "--",
-    null
+    "--"
    ]
   },
   {
@@ -1549,6 +1573,18 @@
     "--",
     "Limit",
     "Full"
+   ]
+  },
+  {
+   "name": "Zach Wilson",
+   "team": "NO",
+   "position": "QB",
+   "status": "O",
+   "chance": null,
+   "practices": [
+    null,
+    null,
+    null
    ]
   },
   {
@@ -1759,7 +1795,7 @@
    "name": "Tyler Badie",
    "team": "DEN",
    "position": "RB",
-   "status": "O",
+   "status": "IR",
    "chance": 0,
    "practices": [
     "DNP",
@@ -1831,12 +1867,12 @@
    "name": "Grant Calcaterra",
    "team": "PHI",
    "position": "TE",
-   "status": "",
-   "chance": 0.82016,
+   "status": "Q",
+   "chance": 0.62249,
    "practices": [
     "Full",
     "Full",
-    null
+    "Full"
    ]
   },
   {
@@ -1856,10 +1892,22 @@
    "team": "PHI",
    "position": "WR",
    "status": "",
-   "chance": 0.8741,
+   "chance": 1,
    "practices": [
     "Full",
     "Full",
+    "Full"
+   ]
+  },
+  {
+   "name": "Drew Allar",
+   "team": "PIT",
+   "position": "QB",
+   "status": "O",
+   "chance": null,
+   "practices": [
+    null,
+    null,
     null
    ]
   },
@@ -1984,6 +2032,18 @@
    ]
   },
   {
+   "name": "Will Howard",
+   "team": "PIT",
+   "position": "QB",
+   "status": "O",
+   "chance": null,
+   "practices": [
+    null,
+    null,
+    null
+   ]
+  },
+  {
    "name": "Kendrick Law",
    "team": "DET",
    "position": "WR",
@@ -2060,6 +2120,18 @@
    "team": "LV",
    "position": "RB",
    "status": "IR",
+   "chance": null,
+   "practices": [
+    null,
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Treyton Welch",
+   "team": "NO",
+   "position": "TE",
+   "status": "O",
    "chance": null,
    "practices": [
     null,
