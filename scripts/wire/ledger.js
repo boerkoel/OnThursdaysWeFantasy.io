@@ -1,17 +1,17 @@
 import { BENCH_SLOT, IR_SLOT } from "../lib/lineup.js";
 import { DATA, currentWeek, fit, name, pts, readJson, rosterData, surname, teamNames } from "./context.js";
 import { draftData } from "./roster.js";
-import { dropHistory } from "./swaps.js";
+import { RECENT_DROP_WEEKS, dropHistory, recentDrop } from "./swaps.js";
 
 // League Wire: season ledgers of roster moves.
-// - POINTS ABANDONED: the team whose dropped players have scored the most since
-//   (drop-history.json, fetch-drops.js).
+// - POINTS ABANDONED: the team whose players cut in the last few weeks have
+//   scored the most since (drop-history.json, fetch-drops.js).
 // - WAIVER WIRE MVP: the team whose pickups (waiver claims and free agents)
 //   have scored the most while in its starting lineup, week by week
 //   (mRoster-week-N.json from fetch-espn.js). Past weeks' rosters don't say
 //   how a player was acquired, so a pickup is a starter the team didn't
 //   draft, minus anyone its current roster marks as a trade.
-const ABANDONED_MIN = 60;
+const ABANDONED_MIN = 40;   // over the last few weeks of cuts
 const WAIVER_MVP_MIN = 40;
 const drafted = new Set((draftData?.draftDetail?.picks || []).map(p => `${p.teamId}:${p.playerId}`));
 const traded = new Set((rosterData.teams || []).flatMap(t => (t.roster?.entries || [])
@@ -20,7 +20,7 @@ const traded = new Set((rosterData.teams || []).flatMap(t => (t.roster?.entries 
 export function addAbandonedStory(add) {
   const byTeam = new Map();
   for (const d of dropHistory?.drops || []) {
-    if (!teamNames.has(d.fromTeamId) || d.nowOnTeamId === d.fromTeamId || !(d.pointsSince > 0)) continue;
+    if (!teamNames.has(d.fromTeamId) || d.nowOnTeamId === d.fromTeamId || !(d.pointsSince > 0) || !recentDrop(d)) continue;
     const t = byTeam.get(d.fromTeamId) || { total: 0, players: [] };
     t.total += d.pointsSince; t.players.push(d);
     byTeam.set(d.fromTeamId, t);
@@ -29,7 +29,7 @@ export function addAbandonedStory(add) {
   if (!top || top.total < ABANDONED_MIN) return;
   const best = top.players.sort((a, b) => b.pointsSince - a.pointsSince).slice(0, 2);
   add("POINTS ABANDONED", fit(
-    "🚮 POINTS ABANDONED: Players " + name(teamId) + " has cut this season have scored " + pts(top.total) + " since, led by " + best.map(d => surname(d.player) + " (" + pts(d.pointsSince) + ")").join(" and ") + ".",
+    "🚮 POINTS ABANDONED: Players " + name(teamId) + " has cut in the last " + RECENT_DROP_WEEKS + " weeks have scored " + pts(top.total) + " since, led by " + best.map(d => surname(d.player) + " (" + pts(d.pointsSince) + ")").join(" and ") + ".",
     "🚮 POINTS ABANDONED: " + name(teamId) + "'s castoffs have scored " + pts(top.total) + " since being cut, led by " + surname(best[0].player) + ".",
     "🚮 POINTS ABANDONED: " + name(teamId) + "'s castoffs: " + pts(top.total) + " since."
   ), 58 + Math.min(12, (top.total - ABANDONED_MIN) / 10));

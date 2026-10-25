@@ -157,8 +157,14 @@ function simulatePostseason(seedOrder) {
   return { champion, ultimateLoser };
 }
 
+// This week's matchups, for the League Wire's PLAYOFF SWING: each team's
+// playoff odds in the simulations where the home team wins vs loses.
+const thisWeekGames = remainingWeeks.includes(currentWeek) ? games.filter(g => g.week === currentWeek) : [];
+const cond = thisWeekGames.map(() => [{ n: 0, home: 0, away: 0 }, { n: 0, home: 0, away: 0 }]);   // [away won, home won]
+
 for (let sim = 0; sim < SIMULATIONS; sim++) {
   const table = new Map([...base].map(([id, row]) => [id, { ...row }]));
+  let thisWeek = null;
   for (const week of remainingWeeks) {
     const weekGames = games.filter(g => g.week === week);
     const scores = new Map();
@@ -167,6 +173,7 @@ for (let sim = 0; sim < SIMULATIONS; sim++) {
       scores.set(id, live ? Math.max(live.floor - 10, live.mean + live.sd * normal()) : simulateScore(id, week));
     }
     addWeek(table, weekGames, scores);
+    if (week === currentWeek) thisWeek = scores;
   }
   const order = [...table.entries()].sort(([, a], [, b]) =>
     seedByPoints ? b.pointsFor - a.pointsFor : b.wins - a.wins || b.pointsFor - a.pointsFor);
@@ -177,6 +184,15 @@ for (let sim = 0; sim < SIMULATIONS; sim++) {
     c.seedSum += index + 1;
     c.pointsSum += row.pointsFor;
   });
+  if (thisWeek) {
+    const inPlayoffs = new Set(order.slice(0, playoffTeamCount).map(([id]) => id));
+    thisWeekGames.forEach((g, i) => {
+      const c = cond[i][thisWeek.get(g.home) > thisWeek.get(g.away) ? 1 : 0];
+      c.n++;
+      if (inPlayoffs.has(g.home)) c.home++;
+      if (inPlayoffs.has(g.away)) c.away++;
+    });
+  }
   const totalTickets = [...table.values()].reduce((a, r) => a + r.tickets, 0);
   if (totalTickets) for (const [id, row] of table) counts.get(id).raffle += row.tickets / totalTickets;
   if (bracketFits) {
@@ -230,7 +246,15 @@ await writeFile("data/current/season-odds.json", JSON.stringify({
   playoffTeamCount,
   teams,
   weekStart,
-  lastWeek
+  lastWeek,
+  // Playoff odds for both teams in each of this week's games, by who wins.
+  matchupLeverage: thisWeekGames.map((g, i) => {
+    const [lost, won] = cond[i];
+    const pct = (x, n) => n ? round(x / n * 100) : null;
+    return { home: g.home, away: g.away, homeWins: round(won.n / SIMULATIONS * 100),
+      ifHomeWins: { home: pct(won.home, won.n), away: pct(won.away, won.n) },
+      ifAwayWins: { home: pct(lost.home, lost.n), away: pct(lost.away, lost.n) } };
+  })
 }, null, 2) + "\n");
 
 console.log(`Season odds: ${remainingWeeks.length} weeks left; playoff odds ${teams.map(t => `${t.team.split(" ")[0]} ${t.playoffOdds}%`).join(", ")}.`);

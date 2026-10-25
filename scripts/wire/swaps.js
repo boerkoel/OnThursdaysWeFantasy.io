@@ -43,11 +43,15 @@ export function addShrewdSwapStory(add) {
 }
 // ---- Drop regret -------------------------------------------------------------
 // From drop-history.json: the player who has scored the most since a team
-// let him go (25+ points), and where he is now.
+// let him go (25+ points), and where he is now. Only cuts from the last few
+// weeks, so one old drop doesn't headline all season (Jim, 2026-10-25: the
+// Maye story turned into a pile-on).
 export const dropHistory = await readJson(`${DATA}/drop-history.json`).catch(() => null);
 export const DROP_REGRET_MIN = 25;
+export const RECENT_DROP_WEEKS = 3;
+export const recentDrop = d => Number(d.dropWeek) > currentWeek - RECENT_DROP_WEEKS;
 export function addDropRegretStory(add) {
-  const d = (dropHistory?.drops || []).find(x => teamNames.has(x.fromTeamId) && x.nowOnTeamId !== x.fromTeamId && x.pointsSince >= DROP_REGRET_MIN);
+  const d = (dropHistory?.drops || []).find(x => teamNames.has(x.fromTeamId) && x.nowOnTeamId !== x.fromTeamId && x.pointsSince >= DROP_REGRET_MIN && recentDrop(x));
   if (!d) return;
   const where = d.nowOnTeamId && teamNames.has(d.nowOnTeamId) ? " Now he's helping " + name(d.nowOnTeamId) + "." : !d.nowOnTeamId ? " And he's still on waivers." : "";
   const per = d.games > 1 ? " (" + (d.pointsSince / d.games).toFixed(1) + " a week)" : "";

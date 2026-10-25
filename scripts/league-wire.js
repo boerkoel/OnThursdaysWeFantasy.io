@@ -18,7 +18,7 @@ import { addRaffleStories } from "./wire/raffle.js";
 import { interleave, weekHeadlines, weekInReview } from "./wire/review.js";
 import { addRosterStories } from "./wire/roster.js";
 import { addPracticeReportStory, addTrendingStory } from "./wire/sleeper.js";
-import { addStockWatchStory } from "./wire/stock.js";
+import { addPlayoffSwingStory, addStockWatchStory } from "./wire/stock.js";
 import { addMiscueStory, addShrewdSwapStory, addDropRegretStory } from "./wire/swaps.js";
 import { addAbandonedStory, addWaiverMvpStory } from "./wire/ledger.js";
 import { addSwingStories } from "./wire/swings.js";
@@ -170,6 +170,7 @@ async function buildMarqueeStories() {
   try { addByeStories(add); } catch (error) { console.warn("League Wire: bye stories failed: " + error.message); }
   try { addZombieStories(add); } catch (error) { console.warn("League Wire: zombie starters failed: " + error.message); }
   try { addStockWatchStory(add); } catch (error) { console.warn("League Wire: stock watch failed: " + error.message); }
+  try { addPlayoffSwingStory(add); } catch (error) { console.warn("League Wire: playoff swing failed: " + error.message); }
 
   const biggestLead=matchupStates.filter(x=>!x.m.completed).sort((a,b)=>b.diff-a.diff)[0];
   // Only while the trailing team still has a real chance (decided matchups

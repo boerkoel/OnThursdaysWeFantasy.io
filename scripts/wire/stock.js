@@ -1,5 +1,5 @@
 import { round } from "../lib/simulation.js";
-import { currentScores, currentWeek, name, pct, pickLine, possessive, seasonOddsData } from "./context.js";
+import { currentScores, currentWeek, fit, name, pct, pickLine, possessive, seasonOddsData } from "./context.js";
 
 // League Wire: playoff odds movers.
 // ---- Stock report ------------------------------------------------------------
@@ -31,4 +31,29 @@ export function addStockWatchStory(add) {
   if (Number(seasonOddsData?.week) !== currentWeek || currentScores.every(s => Number(s.score) === 0)) return;
   stockLines(stockMovers(seasonOddsData.weekStart, Object.fromEntries((seasonOddsData.teams || []).map(t => [String(t.teamId), t]))), "STOCK WATCH")
     .forEach((text, i) => add("STOCK WATCH", text, 66 - i));
+}
+
+// ---- Playoff swing (Jim, 2026-10-25: prioritize it) ------------------------------
+// This week's game whose result moves the playoff race most: the change in
+// both teams' playoff odds between winning and losing (season-odds.json
+// matchupLeverage). Runs until the game is decided.
+export const SWING_MIN = 15;
+export function addPlayoffSwingStory(add) {
+  if (Number(seasonOddsData?.week) !== currentWeek) return;
+  const open = id => { const s = currentScores.find(x => x.teamId === Number(id)); const p = Number(s?.winProbability); return !s || (p > 1 && p < 99); };
+  const games = (seasonOddsData.matchupLeverage || []).filter(g => g.ifHomeWins?.home != null && g.ifAwayWins?.home != null && open(g.home))
+    .map(g => ({ ...g, swing: Math.abs(g.ifHomeWins.home - g.ifAwayWins.home) + Math.abs(g.ifHomeWins.away - g.ifAwayWins.away) }))
+    .sort((a, b) => b.swing - a.swing);
+  const g = games[0];
+  if (!g || g.swing < SWING_MIN) return;
+  const side = (id, win, lose) => `${name(id)} ${pct(win)} with a win, ${pct(lose)} with a loss`;
+  const lead = pickLine("swing" + g.home + g.away, [
+    `${name(g.home)} vs ${name(g.away)} is the game of the week for the playoff race.`,
+    `No matchup moves the playoff picture more than ${name(g.home)} vs ${name(g.away)}.`,
+    `The playoff race runs through ${name(g.home)} vs ${name(g.away)} this week.`
+  ]);
+  add("PLAYOFF SWING", fit(
+    "🎯 PLAYOFF SWING: " + lead + " Playoff odds: " + side(g.home, g.ifHomeWins.home, g.ifAwayWins.home) + "; " + side(g.away, g.ifAwayWins.away, g.ifHomeWins.away) + ".",
+    "🎯 PLAYOFF SWING: " + name(g.home) + " vs " + name(g.away) + ". Playoff odds with a win / loss: " + name(g.home) + " " + pct(g.ifHomeWins.home) + " / " + pct(g.ifAwayWins.home) + ", " + name(g.away) + " " + pct(g.ifAwayWins.away) + " / " + pct(g.ifHomeWins.away) + "."
+  ), 86 + Math.min(g.swing - SWING_MIN, 30) / 10);   // Jim: always in the top 8
 }
