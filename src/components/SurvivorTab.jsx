@@ -122,7 +122,7 @@ function GamesSection({ feed, games, pot }) {
           {movers.length ? <details className="sv-root">
             <summary>{g.completed ? "What it meant" : "Rooting interests"} · {movers.length} {movers.length === 1 ? "manager" : "managers"}</summary>
             <div className="sv-root-row head"><span>Manager</span><span>If {a.team} wins</span><span>If {h.team} wins</span><span>Root for</span></div>
-            {movers.map(m => <div className="sv-root-row" key={m.u}><b>{m.u}</b><span>{dollars(m.a)}</span><span>{dollars(m.h)}</span>
+            {movers.map(m => <div className="sv-root-row" key={m.u}><b title={m.u}>{m.u}</b><span>{dollars(m.a)}</span><span>{dollars(m.h)}</span>
               <b className={m.a > m.h ? "up" : "down"}>{m.a > m.h ? a.team : h.team}</b></div>)}
           </details> : null}
         </div>;

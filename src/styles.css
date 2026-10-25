@@ -1078,3 +1078,4 @@ section,details,.odds-block{scroll-margin-top:72px}
 /* A card showing two lineups side by side takes the whole row on wide screens (names stay readable). */
 @media(min-width:801px){.award-grid .award-card:has(.dw-vs){grid-column:1/-1}}
 .sv-topline{margin:4px 0 12px;font-size:15px;color:#c7c9c1}.sv-topline b{color:#f2f0e8;font-size:18px}.sv-topline small{color:#8b8e86;font-size:12px}
+.sv-root-row>b:first-child{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}   /* long Splash handles */
