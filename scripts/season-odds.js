@@ -114,7 +114,7 @@ function addWeek(table, weekGames, scoreByTeam) {
 
 const rng = seededRng([currentWeek, [...base.values()], scoreboard?.lastUpdated || null]);
 const normal = () => Math.sqrt(-2 * Math.log(Math.max(rng(), 1e-12))) * Math.cos(2 * Math.PI * rng());
-const counts = new Map(teamIds.map(id => [id, { playoffs: 0, bye: 0, top: 0, last: 0, seedSum: 0, pointsSum: 0, raffle: 0, title: 0, ultimateLoser: 0 }]));
+const counts = new Map(teamIds.map(id => [id, { playoffs: 0, bye: 0, top: 0, last: 0, seedSum: 0, pointsSum: 0, raffle: 0, title: 0, second: 0, third: 0, ultimateLoser: 0 }]));
 
 // Postseason, simulated in full each run. Championship: #3v#6 and #4v#5 in
 // week 15, then #1 plays the lowest remaining seed and #2 the other, final in
@@ -141,9 +141,10 @@ function simulatePostseason(seedOrder) {
   const [winner36, loser36] = play(seedOrder[2], seedOrder[5], qfWeek, false);
   const [winner45, loser45] = play(seedOrder[3], seedOrder[4], qfWeek, false);
   const lowestFirst = [winner36, winner45].sort((a, b) => seedOf(b) - seedOf(a));
-  const [finalist1] = play(seedOrder[0], lowestFirst[0], qfWeek + 1, false);
-  const [finalist2] = play(seedOrder[1], lowestFirst[1], qfWeek + 1, false);
-  const [champion] = play(finalist1, finalist2, qfWeek + 2, false);
+  const [finalist1, semiLoser1] = play(seedOrder[0], lowestFirst[0], qfWeek + 1, false);
+  const [finalist2, semiLoser2] = play(seedOrder[1], lowestFirst[1], qfWeek + 1, false);
+  const [champion, runnerUp] = play(finalist1, finalist2, qfWeek + 2, false);
+  const [third] = play(semiLoser1, semiLoser2, qfWeek + 2, false);   // third-place game, same week as the final
 
   const playoffLosers = [loser36, loser45].sort((a, b) => seedOf(b) - seedOf(a));
   const ultimate = [...seedOrder.slice(6).reverse(), ...playoffLosers];
@@ -154,7 +155,7 @@ function simulatePostseason(seedOrder) {
   const [semi1] = play(reseeded[0], reseeded[3], ulWeek + 1, true);
   const [semi2] = play(reseeded[1], reseeded[2], ulWeek + 1, true);
   const [ultimateLoser] = play(semi1, semi2, ulWeek + 2, true);
-  return { champion, ultimateLoser };
+  return { champion, runnerUp, third, ultimateLoser };
 }
 
 // This week's matchups, for the League Wire's PLAYOFF SWING: each team's
@@ -208,8 +209,10 @@ for (let sim = 0; sim < SIMULATIONS; sim++) {
   const totalTickets = [...table.values()].reduce((a, r) => a + r.tickets, 0);
   if (totalTickets) for (const [id, row] of table) counts.get(id).raffle += row.tickets / totalTickets;
   if (bracketFits) {
-    const { champion, ultimateLoser } = simulatePostseason(order.map(([id]) => id));
+    const { champion, runnerUp, third, ultimateLoser } = simulatePostseason(order.map(([id]) => id));
     counts.get(champion).title++;
+    counts.get(runnerUp).second++;
+    counts.get(third).third++;
     counts.get(ultimateLoser).ultimateLoser++;
   }
 }
@@ -231,6 +234,9 @@ const teams = teamIds.map(id => {
     // Share of simulations each team ends as champion / Ultimate Loser; each
     // column sums to 100%.
     titleOdds: bracketFits ? round(c.title / SIMULATIONS * 100) : null,
+    // 2nd and 3rd place (payouts, for Expected winnings on the pinned card)
+    secondOdds: bracketFits ? round(c.second / SIMULATIONS * 100) : null,
+    thirdOdds: bracketFits ? round(c.third / SIMULATIONS * 100) : null,
     ultimateLoserOdds: bracketFits ? round(c.ultimateLoser / SIMULATIONS * 100) : null,
     raffleOdds: round(c.raffle / SIMULATIONS * 100)
   };

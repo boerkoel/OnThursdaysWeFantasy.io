@@ -22,7 +22,7 @@ import MatchupLineup, { LiveToggle, VsLineups, useLiveOnly } from "./components/
 import RafflePodium from "./components/RafflePodium.jsx";
 import PrimetimeWatch from "./components/PrimetimeWatch.jsx";
 import Sheet from "./components/Sheet.jsx";
-import SurvivorTab, { useSurvivorFeed } from "./components/SurvivorTab.jsx";
+import SurvivorTab, { survivorModel, useSurvivorFeed } from "./components/SurvivorTab.jsx";
 import RecordBook from "./components/RecordBook.jsx";
 import Notifications, { useFollowedTeams } from "./components/Notifications.jsx";
 import { seriesLine } from "./lib/recordBook.js";
@@ -33,11 +33,12 @@ import { AccuracyScorecard, MatchupOutcomes, OutcomeBar, outcomeScale } from "./
 
 // Standings and rest-of-season odds in one sortable table: current seed and
 // record (standings.json, playoffs.json) plus simulated odds (season-odds.js).
+const wl = x => Math.abs(x - Math.round(x)) < 1e-9 ? String(Math.round(x)) : x.toFixed(1);   // whole once decided
 const STANDINGS_COLUMNS = [
   { key: "seed", label: "Seed", value: r => r.seed, ascending: true },
   { key: "team", label: "Team" },
   { key: "record", label: "W-L", value: r => r.winPct, show: r => r.weekWins != null
-    ? <>{r.wins.toFixed(1)}-{r.losses.toFixed(1)}<small className="week-wins"> +{r.weekWins.toFixed(1)}</small></>
+    ? <>{wl(r.wins)}-{wl(r.losses)}<small className="week-wins"> +{wl(r.weekWins)}</small></>
     : `${r.wins}-${r.losses}${r.ties ? `-${r.ties}` : ""}` },
   { key: "pointsFor", label: "PF", value: r => r.pointsFor, show: r => money(r.pointsFor) },
   { key: "projected", label: "Proj. PF", value: r => r.projectedPointsFor, show: r => r.projectedPointsFor != null ? money(r.projectedPointsFor) : "—" },
@@ -48,6 +49,10 @@ const STANDINGS_COLUMNS = [
   { key: "raffle", label: "Raffle", value: r => r.raffleOdds, odds: true, tip: "Chance of winning the end-of-season raffle" }
 ];
 
+// Prize money (Playoffs bracket and raffle).
+const PAYOUTS = { first: 375, second: 225, third: 100, raffle: 100 };
+const LOCKED_PCT = 99.5;   // a result this sure counts as decided
+
 function StandingsTable({ seasonOdds, logos, liveScores = [], week }) {
   const [sortKey, setSortKey] = useState("seed");
   // Live (Jim, 2026-10-25): this week counted as it stands, with expected wins
@@ -56,21 +61,26 @@ function StandingsTable({ seasonOdds, logos, liveScores = [], week }) {
   const scoreById = new Map(liveScores.map(s => [Number(s.teamId), s]));
   const weekInStandings = (standingsData.standings || []).some(t => Number(t.games) >= Number(week));
   const canLive = !weekInStandings && liveScores.some(s => Number(s.score) > 0);
-  const [liveMode, setLiveMode] = useState(true);
-  const isLive = canLive && liveMode;
+  const [liveMode, setLiveMode] = useState("live");   // live | stands | before
+  const isLive = canLive && liveMode !== "before", stands = liveMode === "stands";
   const oddsById = new Map((seasonOdds?.teams || []).map(t => [t.teamId, t]));
   const seedById = new Map([...(playoffs.seeds || []), ...(playoffs.nonPlayoffTeams || [])].map(s => [s.teamId, s.seed]));
   let rows = (standingsData.standings || []).map(t => {
     const s = scoreById.get(Number(t.id));
-    const ew = s && s.winProbability != null && s.aboveMedianProbability != null ? (Number(s.winProbability) + Number(s.aboveMedianProbability)) / 100 : null;
+    // A result counts as decided once it's statistically locked (≥99.5% or ≤0.5%, Jim 2026-10-25). Live adds the
+    // odds of whatever is still open; As it stands counts decided results only.
+    const games = s && s.winProbability != null && s.aboveMedianProbability != null ? [Number(s.winProbability), Number(s.aboveMedianProbability)] : null;
+    const locked = p => p >= LOCKED_PCT ? 1 : p <= 100 - LOCKED_PCT ? 0 : null;
+    const ew = games ? games.reduce((a, p) => a + (locked(p) ?? (stands ? 0 : p / 100)), 0) : null;
+    const decided = games ? (stands ? games.filter(p => locked(p) != null).length : 2) : 0;
     const live = isLive && ew != null;
     return {
       ...(oddsById.get(t.id) || {}),
       teamId: t.id,
       team: t.name,
       seed: seedById.get(t.id) ?? 99,
-      wins: live ? t.wins + ew : t.wins, losses: live ? t.losses + 2 - ew : t.losses, ties: t.ties,
-      winPct: live ? (t.wins + ew) / Math.max(1, t.wins + t.losses + 2) : t.winPct,
+      wins: live ? t.wins + ew : t.wins, losses: live ? t.losses + decided - ew : t.losses, ties: t.ties,
+      winPct: live ? (t.wins + ew) / Math.max(1, t.wins + t.losses + decided) : t.winPct,
       pointsFor: live ? t.pointsFor + Number(s.score || 0) : t.pointsFor,
       weekWins: live ? ew : null
     };
@@ -88,10 +98,11 @@ function StandingsTable({ seasonOdds, logos, liveScores = [], week }) {
     <div className="odds-block" id="standings">
       <h3 className="survival-heading">Standings &amp; odds
         {canLive ? <span className="standings-live-toggle">
-          <button type="button" className={isLive ? "active" : ""} onClick={() => setLiveMode(true)}>Live</button>
-          <button type="button" className={isLive ? "" : "active"} onClick={() => setLiveMode(false)}>Before this week</button>
+          {[["live", "Live"], ["stands", "As it stands"], ["before", "Before this week"]].map(([k, label]) =>
+            <button type="button" key={k} className={liveMode === k ? "active" : ""} onClick={() => setLiveMode(k)}>{label}</button>)}
         </span> : null}</h3>
-      {isLive ? <p className="median-note"><b>Live:</b> Week {week} counted as it stands. W-L adds each team's expected wins this week (head-to-head win odds + odds of beating the median, out of 2), PF adds points so far, and seeds are re-ranked by points. ▲▼ = seed change since the week began.</p> : null}
+      {isLive && !stands ? <p className="median-note"><b>Live:</b> Week {week} counted as it goes. W-L adds each team's expected wins this week (head-to-head and beating the median, out of 2): a result counts in full once it's locked (99.5%+ either way), the rest at its odds. PF adds points so far, and seeds are re-ranked by points. ▲▼ = seed change since the week began.</p> : null}
+      {isLive && stands ? <p className="median-note"><b>As it stands:</b> W-L adds only this week's results that are locked (99.5%+ either way, head-to-head or the median); open games don't count yet. PF adds points so far, and seeds are re-ranked by points. ▲▼ = seed change since the week began.</p> : null}
       <p className="median-note">Seeds are by total points; the top {playoffs.playoffTeamCount || 6} make the playoffs and the top 2 get byes. Odds come from {Number(seasonOdds?.simulations || 0).toLocaleString()} simulations of the rest of the season, including both postseason brackets, using each team's scoring so far and live projections for the week in progress. Title and Ultimate Loser odds each add up to 100%. Click a column to sort.</p>
       <div className="survival-table odds-table">
         <div className="odds-row survival-header">
@@ -483,6 +494,32 @@ function App() {
       <span className="my-other-icon">{l.icon}</span><span>{l.text}</span><span className="my-other-go">›</span></button>)}</div>;
   };
 
+  // Expected winnings (Jim, 2026-10-25): league payouts × finish odds, the raffle prize × raffle odds, and the
+  // manager's Splash entries' live share of the survivor pot. One pill each, plus the total.
+  const renderExpectedWinnings = (teamId, odds) => {
+    const pills = [];
+    if (odds?.titleOdds != null) {
+      const v = PAYOUTS.first * odds.titleOdds / 100 + PAYOUTS.second * (odds.secondOdds || 0) / 100 + PAYOUTS.third * (odds.thirdOdds || 0) / 100;
+      pills.push({ key: "league", label: "🏆 League", v, tip: `$${PAYOUTS.first} × ${pct(odds.titleOdds)} title + $${PAYOUTS.second} × ${pct(odds.secondOdds)} 2nd + $${PAYOUTS.third} × ${pct(odds.thirdOdds)} 3rd` });
+    }
+    if (odds?.raffleOdds != null) pills.push({ key: "raffle", label: "🎟️ Raffle", v: PAYOUTS.raffle * odds.raffleOdds / 100, tip: `$${PAYOUTS.raffle} × ${pct(odds.raffleOdds)} raffle odds` });
+    const handles = managerLinks[String(teamId)]?.splash || [];
+    if (handles.length && survivorFeed) {
+      const m = survivorModel(survivorFeed, scoreboard.nflGames || [], Number(scoreboard.week));
+      const live = m.sim && !m.sim.final, value = live ? m.sim.value : m.stands;
+      const mine = (survivorFeed.entries || []).filter(e => handles.includes(e.user));
+      const v = m.sim ? handles.reduce((a, h) => a + (value[h] || 0), 0)
+        : mine.filter(e => e.alive).length * m.pot / Math.max(1, Number(survivorFeed.contest?.alive) || 1);
+      pills.push({ key: "survivor", label: "🛡️ Survivor", v, tip: `Share of the $${Math.round(m.pot)} pot: every live entry gets an equal share${live ? ", averaged over simulations of this week's games" : ""}` });
+    }
+    if (!pills.length) return null;
+    const usd = v => `$${v >= 100 ? Math.round(v) : v.toFixed(2)}`;
+    return <div className="my-winnings" title="Expected winnings: each prize × your chance of winning it">
+      <span className="my-winnings-total"><small>EXP. WINNINGS</small><b>{usd(pills.reduce((a, p) => a + p.v, 0))}</b></span>
+      {pills.map(p => <span className="my-winnings-pill" key={p.key} title={p.tip}>{p.label} <b>{usd(p.v)}</b></span>)}
+    </div>;
+  };
+
   // "My team": pinned at the top of Live with the key odds and the matchup card.
   const renderMyTeam = () => {
     const picker = <select value={myTeamId || ""} onChange={e => setMyTeamId(Number(e.target.value) || null)} aria-label="Your team">
@@ -511,6 +548,7 @@ function App() {
           {chip("PLAYOFFS", odds?.playoffOdds)}
           {chip("TITLE", odds?.titleOdds)}
         </div>
+        {renderExpectedWinnings(myScore.teamId, odds)}
         {renderOtherContests(myScore.teamId)}
         <div className="matchup-list">{renderMatchupRow(myMatchupId, true)}{primetimeView ? renderPrimetime(myMatchupId) : null}</div>
       </section>
@@ -637,9 +675,9 @@ function App() {
             <BracketGame note="WINNER TAKES 3RD" top={{ label: "SF LOSER", team: "Semifinal loser" }} bottom={{ label: "SF LOSER", team: "Semifinal loser" }} />
           </div>
           <div className="championship-payouts">
-            <strong>1st: $375</strong>
-            <strong>2nd: $225</strong>
-            <strong>3rd: $100</strong>
+            <strong>1st: ${PAYOUTS.first}</strong>
+            <strong>2nd: ${PAYOUTS.second}</strong>
+            <strong>3rd: ${PAYOUTS.third}</strong>
           </div>
         </div>
       </section>
