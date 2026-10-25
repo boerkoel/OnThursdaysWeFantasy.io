@@ -1,5 +1,5 @@
 import { round } from "../lib/simulation.js";
-import { currentScores, currentWeek, fit, name, pct, pickLine, possessive, seasonOddsData } from "./context.js";
+import { currentScores, currentWeek, fit, name, pct, pickLine, possessive, seasonOddsData, standingsData } from "./context.js";
 
 // League Wire: playoff odds movers.
 // ---- Stock report ------------------------------------------------------------
@@ -97,4 +97,29 @@ export function addClinchStory(add) {
     if (t.lastSeedOdds >= LOCK) out.push({ score: 68, text: `🪦 CLINCH WATCH: ${name(t.teamId)} is all but locked into last place (${pct(t.lastSeedOdds)}).` });
   }
   out.sort((a, b) => b.score - a.score).slice(0, 2).forEach(x => add("CLINCH WATCH", x.text, x.score));
+}
+
+// ---- Live standings (Jim, 2026-10-25: point people at the Standings tab) -----
+// Seeds go by points: this week's points so far re-rank them. The biggest
+// climber and faller (2+ spots), and anyone crossing the playoff line.
+export const LIVE_SEED_MOVE = 2;
+export function addLiveStandingsStory(add) {
+  const table = standingsData?.standings || [];
+  if (!table.length || table.some(t => Number(t.games) >= currentWeek) || currentScores.every(s => !(Number(s.score) > 0))) return;
+  const cut = Number(seasonOddsData?.playoffTeamCount) || 6;
+  const scoreOf = id => Number(currentScores.find(s => s.teamId === Number(id))?.score || 0);
+  const before = [...table].sort((a, b) => b.pointsFor - a.pointsFor).map(t => t.id);
+  const now = [...table].sort((a, b) => (b.pointsFor + scoreOf(b.id)) - (a.pointsFor + scoreOf(a.id))).map(t => t.id);
+  const moves = table.map(t => ({ id: t.id, from: before.indexOf(t.id) + 1, to: now.indexOf(t.id) + 1 }))
+    .map(m => ({ ...m, move: m.from - m.to, crosses: (m.from > cut) !== (m.to > cut) }));
+  const ord = n => n + (n % 10 === 1 && n !== 11 ? "st" : n % 10 === 2 && n !== 12 ? "nd" : n % 10 === 3 && n !== 13 ? "rd" : "th");
+  const lines = [];
+  const into = moves.filter(m => m.crosses && m.to <= cut).sort((a, b) => b.move - a.move)[0];
+  const outOf = moves.filter(m => m.crosses && m.to > cut).sort((a, b) => a.move - b.move)[0];
+  if (into) lines.push([82, `📊 LIVE STANDINGS: As it stands, ${name(into.id)} would climb from ${ord(into.from)} into a playoff spot (${ord(into.to)})${outOf ? `, bumping ${name(outOf.id)} to ${ord(outOf.to)}` : ""}. Seeds go by points; check the Standings tab's live view.`]);
+  const up = moves.filter(m => m.move >= LIVE_SEED_MOVE && m !== into).sort((a, b) => b.move - a.move)[0];
+  const down = moves.filter(m => -m.move >= LIVE_SEED_MOVE && m !== outOf).sort((a, b) => a.move - b.move)[0];
+  if (up) lines.push([74, `📈 LIVE STANDINGS: ${name(up.id)} is up ${up.move} spots this week, from ${ord(up.from)} to ${ord(up.to)} as it stands.`]);
+  if (down) lines.push([73, `📉 LIVE STANDINGS: ${name(down.id)} is sliding, from ${ord(down.from)} to ${ord(down.to)} as it stands.`]);
+  lines.slice(0, 2).forEach(([score, text]) => add("LIVE STANDINGS", fit(text, text.replace(" Seeds go by points; check the Standings tab's live view.", "")), score));
 }
