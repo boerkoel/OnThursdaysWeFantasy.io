@@ -80,6 +80,14 @@ jobs:
         run: node scripts/calculate-stats.js
       - name: Grade report cards
         run: node scripts/report-cards.js
+      # Trades, the site's trade suggestions and this login's own offers, and
+      # what each side has scored since (League Wire TRADE TAUNT).
+      - name: Update trade log
+        continue-on-error: true
+        env:
+          ESPN_S2: ${{ secrets.ESPN_S2 }}
+          ESPN_SWID: ${{ secrets.ESPN_SWID }}
+        run: node scripts/trade-log.js
       # Recent drops and how those players are doing (MANAGER MISCUE story).
       - name: Fetch recent drops
         continue-on-error: true

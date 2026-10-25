@@ -1477,6 +1477,7 @@ const multiTradesByTeam = new Map([...teams.keys()].map(teamId => [Number(teamId
           kind:`${mine.length}-for-${theirs.length}`,
           otherTeamId:otherId, otherTeam:teams.get(otherId)?.name || `Team ${otherId}`,
           givePlayerId:g.PlayerId, givePlayer:g.Player, givePosition:g.Position, giveRosRank:g.RosRank, givePlayers:g.Players,
+          givePlayerIds:mine.map(p => Number(p.playerId)), getPlayerIds:theirs.map(p => Number(p.playerId)),   // trade-log.js
           getPlayerId:r.PlayerId, getPlayer:r.Player, getPosition:r.Position, getRosRank:r.RosRank, getPlayers:r.Players,
           yourBoost:my.boost, yourH2hWinsAdded:my.h2hWinsAdded, yourMedianWinsAdded:my.medianWinsAdded, yourWinsAdded:my.winsAdded,
           theirBoost:other.boost, theirH2hWinsAdded:other.h2hWinsAdded, theirMedianWinsAdded:other.medianWinsAdded, theirWinsAdded:other.winsAdded,
