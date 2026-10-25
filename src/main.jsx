@@ -34,7 +34,9 @@ import { AccuracyScorecard, MatchupOutcomes, OutcomeBar, outcomeScale } from "./
 const STANDINGS_COLUMNS = [
   { key: "seed", label: "Seed", value: r => r.seed, ascending: true },
   { key: "team", label: "Team" },
-  { key: "record", label: "W-L", value: r => r.winPct, show: r => `${r.wins}-${r.losses}${r.ties ? `-${r.ties}` : ""}` },
+  { key: "record", label: "W-L", value: r => r.winPct, show: r => r.weekWins != null
+    ? <>{r.wins.toFixed(1)}-{r.losses.toFixed(1)}<small className="week-wins"> +{r.weekWins.toFixed(1)}</small></>
+    : `${r.wins}-${r.losses}${r.ties ? `-${r.ties}` : ""}` },
   { key: "pointsFor", label: "PF", value: r => r.pointsFor, show: r => money(r.pointsFor) },
   { key: "projected", label: "Proj. PF", value: r => r.projectedPointsFor, show: r => r.projectedPointsFor != null ? money(r.projectedPointsFor) : "—" },
   { key: "playoffs", label: "Playoffs", value: r => r.playoffOdds, odds: true, highlight: true },
@@ -44,18 +46,37 @@ const STANDINGS_COLUMNS = [
   { key: "raffle", label: "Raffle", value: r => r.raffleOdds, odds: true, tip: "Chance of winning the end-of-season raffle" }
 ];
 
-function StandingsTable({ seasonOdds, logos }) {
+function StandingsTable({ seasonOdds, logos, liveScores = [], week }) {
   const [sortKey, setSortKey] = useState("seed");
+  // Live (Jim, 2026-10-25): this week counted as it stands, with expected wins
+  // (H2H win odds + above-median odds) and points so far; seeds re-ranked by
+  // points. Only while the week is in progress and not yet in standings.json.
+  const scoreById = new Map(liveScores.map(s => [Number(s.teamId), s]));
+  const weekInStandings = (standingsData.standings || []).some(t => Number(t.games) >= Number(week));
+  const canLive = !weekInStandings && liveScores.some(s => Number(s.score) > 0);
+  const [liveMode, setLiveMode] = useState(true);
+  const isLive = canLive && liveMode;
   const oddsById = new Map((seasonOdds?.teams || []).map(t => [t.teamId, t]));
   const seedById = new Map([...(playoffs.seeds || []), ...(playoffs.nonPlayoffTeams || [])].map(s => [s.teamId, s.seed]));
-  const rows = (standingsData.standings || []).map(t => ({
-    ...(oddsById.get(t.id) || {}),
-    teamId: t.id,
-    team: t.name,
-    seed: seedById.get(t.id) ?? 99,
-    wins: t.wins, losses: t.losses, ties: t.ties, winPct: t.winPct,
-    pointsFor: t.pointsFor
-  }));
+  let rows = (standingsData.standings || []).map(t => {
+    const s = scoreById.get(Number(t.id));
+    const ew = s && s.winProbability != null && s.aboveMedianProbability != null ? (Number(s.winProbability) + Number(s.aboveMedianProbability)) / 100 : null;
+    const live = isLive && ew != null;
+    return {
+      ...(oddsById.get(t.id) || {}),
+      teamId: t.id,
+      team: t.name,
+      seed: seedById.get(t.id) ?? 99,
+      wins: live ? t.wins + ew : t.wins, losses: live ? t.losses + 2 - ew : t.losses, ties: t.ties,
+      winPct: live ? (t.wins + ew) / Math.max(1, t.wins + t.losses + 2) : t.winPct,
+      pointsFor: live ? t.pointsFor + Number(s.score || 0) : t.pointsFor,
+      weekWins: live ? ew : null
+    };
+  });
+  if (isLive) {   // seeds are by points
+    const order = [...rows].sort((a, b) => b.pointsFor - a.pointsFor);
+    rows = rows.map(r => ({ ...r, liveSeed: order.indexOf(r) + 1, seed: order.indexOf(r) + 1, oldSeed: r.seed }));
+  }
   const column = STANDINGS_COLUMNS.find(c => c.key === sortKey);
   const sorted = [...rows].sort((a, b) => {
     const diff = (column.value(a) ?? -1) - (column.value(b) ?? -1);
@@ -63,7 +84,12 @@ function StandingsTable({ seasonOdds, logos }) {
   });
   return (
     <div className="odds-block" id="standings">
-      <h3 className="survival-heading">Standings &amp; odds</h3>
+      <h3 className="survival-heading">Standings &amp; odds
+        {canLive ? <span className="standings-live-toggle">
+          <button type="button" className={isLive ? "active" : ""} onClick={() => setLiveMode(true)}>Live</button>
+          <button type="button" className={isLive ? "" : "active"} onClick={() => setLiveMode(false)}>Before this week</button>
+        </span> : null}</h3>
+      {isLive ? <p className="median-note"><b>Live:</b> Week {week} counted as it stands. W-L adds each team's expected wins this week (head-to-head win odds + odds of beating the median, out of 2), PF adds points so far, and seeds are re-ranked by points. ▲▼ = seed change since the week began.</p> : null}
       <p className="median-note">Seeds are by total points; the top {playoffs.playoffTeamCount || 6} make the playoffs and the top 2 get byes. Odds come from {Number(seasonOdds?.simulations || 0).toLocaleString()} simulations of the rest of the season, including both postseason brackets, using each team's scoring so far and live projections for the week in progress. Title and Ultimate Loser odds each add up to 100%. Click a column to sort.</p>
       <div className="survival-table odds-table">
         <div className="odds-row survival-header">
@@ -72,7 +98,7 @@ function StandingsTable({ seasonOdds, logos }) {
             : <span key={c.key}>{c.label}</span>)}
         </div>
         {sorted.map(r => <div className={r.seed <= (playoffs.playoffTeamCount || 6) ? "odds-row in-playoffs" : "odds-row"} key={r.teamId}>
-          <span>{r.seed === 99 ? "—" : r.seed}{r.seed <= 2 ? <em className="bye-badge">BYE</em> : null}</span>
+          <span>{r.seed === 99 ? "—" : r.seed}{r.seed <= 2 ? <em className="bye-badge">BYE</em> : null}{r.oldSeed && r.oldSeed !== 99 && r.oldSeed !== r.seed ? <small className={r.oldSeed > r.seed ? "seed-up" : "seed-down"}>{r.oldSeed > r.seed ? "▲" : "▼"}{Math.abs(r.oldSeed - r.seed)}</small> : null}</span>
           <strong><TeamLogo src={logos[r.teamId]} /><span>{r.team}</span></strong>
           {STANDINGS_COLUMNS.slice(2).map(c => c.highlight
             ? <b key={c.key}>{pct(c.value(r))}</b>
@@ -548,7 +574,7 @@ function App() {
       {tab === "standings" ? <>
       <section id="standings-odds" className="section">
         <div className="section-heading"><div><span className="section-kicker">WEEK {scoreboard.week} · {seasonOddsWeeksLeft} WEEKS LEFT</span><h2>Standings</h2></div></div>
-        <StandingsTable seasonOdds={live.seasonOdds} logos={teamLogos} />
+        <StandingsTable seasonOdds={live.seasonOdds} logos={teamLogos} liveScores={scores} week={scoreboard.week} />
       </section>
       <section id="playoffs" className="section">
         <div className="section-heading">
