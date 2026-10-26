@@ -16,19 +16,19 @@
     },
     {
       "seed": 2,
-      "teamId": 10,
-      "team": "Gibb it to Me Baby",
-      "wins": 8,
-      "losses": 4,
-      "pointsFor": 914.36
-    },
-    {
-      "seed": 3,
       "teamId": 6,
       "team": "Claremont In Yo Stace!",
       "wins": 9,
       "losses": 3,
       "pointsFor": 842.96
+    },
+    {
+      "seed": 3,
+      "teamId": 10,
+      "team": "Gibb it to Me Baby",
+      "wins": 8,
+      "losses": 4,
+      "pointsFor": 914.36
     },
     {
       "seed": 4,
@@ -40,29 +40,29 @@
     },
     {
       "seed": 5,
-      "teamId": 3,
-      "team": "Kyle Tucker",
-      "wins": 6,
-      "losses": 6,
-      "pointsFor": 779.22
-    },
-    {
-      "seed": 6,
-      "teamId": 2,
-      "team": "TDsMaGee",
-      "wins": 5,
-      "losses": 7,
-      "pointsFor": 766.48
-    }
-  ],
-  "nonPlayoffTeams": [
-    {
-      "seed": 7,
       "teamId": 5,
       "team": "49er Faith-Fool",
       "wins": 7,
       "losses": 5,
       "pointsFor": 752.36
+    },
+    {
+      "seed": 6,
+      "teamId": 3,
+      "team": "Kyle Tucker",
+      "wins": 6,
+      "losses": 6,
+      "pointsFor": 779.22
+    }
+  ],
+  "nonPlayoffTeams": [
+    {
+      "seed": 7,
+      "teamId": 2,
+      "team": "TDsMaGee",
+      "wins": 5,
+      "losses": 7,
+      "pointsFor": 766.48
     },
     {
       "seed": 8,
@@ -74,14 +74,6 @@
     },
     {
       "seed": 9,
-      "teamId": 7,
-      "team": "Ruffing the Passer",
-      "wins": 3,
-      "losses": 9,
-      "pointsFor": 710.08
-    },
-    {
-      "seed": 10,
       "teamId": 12,
       "team": "Beautiful Dark Twisted Fantasy",
       "wins": 4,
@@ -89,12 +81,20 @@
       "pointsFor": 696.82
     },
     {
-      "seed": 11,
+      "seed": 10,
       "teamId": 1,
       "team": "Ramosverse",
       "wins": 4,
       "losses": 8,
       "pointsFor": 680.76
+    },
+    {
+      "seed": 11,
+      "teamId": 7,
+      "team": "Ruffing the Passer",
+      "wins": 3,
+      "losses": 9,
+      "pointsFor": 710.08
     },
     {
       "seed": 12,
@@ -112,8 +112,8 @@
       "round": "Quarterfinal",
       "homeSeed": 3,
       "awaySeed": 6,
-      "homeTeam": "Claremont In Yo Stace!",
-      "awayTeam": "TDsMaGee"
+      "homeTeam": "Gibb it to Me Baby",
+      "awayTeam": "Kyle Tucker"
     },
     {
       "id": "qf2",
@@ -122,7 +122,7 @@
       "homeSeed": 4,
       "awaySeed": 5,
       "homeTeam": "Mr. Action Jackson",
-      "awayTeam": "Kyle Tucker"
+      "awayTeam": "49er Faith-Fool"
     },
     {
       "id": "sf1",
@@ -139,7 +139,7 @@
       "round": "Semifinal",
       "homeSeed": 2,
       "homeBye": true,
-      "homeTeam": "Gibb it to Me Baby",
+      "homeTeam": "Claremont In Yo Stace!",
       "awayTeam": null
     },
     {
@@ -173,27 +173,27 @@
       },
       {
         "seed": 2,
-        "teamId": 1,
-        "team": "Ramosverse",
-        "source": "REGULAR_SEASON",
-        "regularSeasonSeed": 11,
-        "pointsFor": 680.76
-      },
-      {
-        "seed": 3,
-        "teamId": 12,
-        "team": "Beautiful Dark Twisted Fantasy",
-        "source": "REGULAR_SEASON",
-        "regularSeasonSeed": 10,
-        "pointsFor": 696.82
-      },
-      {
-        "seed": 4,
         "teamId": 7,
         "team": "Ruffing the Passer",
         "source": "REGULAR_SEASON",
-        "regularSeasonSeed": 9,
+        "regularSeasonSeed": 11,
         "pointsFor": 710.08
+      },
+      {
+        "seed": 3,
+        "teamId": 1,
+        "team": "Ramosverse",
+        "source": "REGULAR_SEASON",
+        "regularSeasonSeed": 10,
+        "pointsFor": 680.76
+      },
+      {
+        "seed": 4,
+        "teamId": 12,
+        "team": "Beautiful Dark Twisted Fantasy",
+        "source": "REGULAR_SEASON",
+        "regularSeasonSeed": 9,
+        "pointsFor": 696.82
       },
       {
         "seed": 5,
@@ -205,11 +205,11 @@
       },
       {
         "seed": 6,
-        "teamId": 5,
-        "team": "49er Faith-Fool",
+        "teamId": 2,
+        "team": "TDsMaGee",
         "source": "REGULAR_SEASON",
         "regularSeasonSeed": 7,
-        "pointsFor": 752.36
+        "pointsFor": 766.48
       },
       {
         "seed": 7,
@@ -245,7 +245,7 @@
         "round": "Quarterfinal",
         "homeSeed": 2,
         "awaySeed": 7,
-        "homeTeam": "Ramosverse",
+        "homeTeam": "Ruffing the Passer",
         "awayTeam": "TBD"
       },
       {
@@ -254,8 +254,8 @@
         "round": "Quarterfinal",
         "homeSeed": 3,
         "awaySeed": 6,
-        "homeTeam": "Beautiful Dark Twisted Fantasy",
-        "awayTeam": "49er Faith-Fool"
+        "homeTeam": "Ramosverse",
+        "awayTeam": "TDsMaGee"
       },
       {
         "id": "ul-qf4",
@@ -263,7 +263,7 @@
         "round": "Quarterfinal",
         "homeSeed": 4,
         "awaySeed": 5,
-        "homeTeam": "Ruffing the Passer",
+        "homeTeam": "Beautiful Dark Twisted Fantasy",
         "awayTeam": "The Mahomies"
       }
     ],
