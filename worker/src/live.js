@@ -25,6 +25,13 @@ export class LiveStore {
     return this.files;
   }
   async fetch(request) {
+    // Small values written on every run (alert state, the survivor feed cache): /kv/<key>. Kept out of KV,
+    // whose free plan allows only 1,000 writes a day (Cloudflare warned at 50% on Sunday 2026-10-25).
+    const kv = new URL(request.url).pathname.match(/^\/kv\/([\w-]+)$/);
+    if (kv) {
+      if (request.method === "PUT") { await this.state.storage.put("kv:" + kv[1], await request.text()); return new Response("ok"); }
+      return new Response((await this.state.storage.get("kv:" + kv[1])) ?? "null", { headers: { "Content-Type": "application/json" } });
+    }
     const files = await this.load();
     if (request.method === "PUT") {
       const { scoreboardUpdated, files: incoming = {} } = await request.json();
@@ -49,6 +56,19 @@ export class LiveStore {
 }
 
 const store = env => env.LIVE.get(env.LIVE.idFromName("live"));
+
+// JSON values in the LiveStore (see /kv/ above), falling back to KV for values saved there before 2026-10-26.
+export async function storeGet(env, key) {
+  if (env.LIVE) {
+    const value = await (await store(env).fetch(`https://live/kv/${key}`)).json();
+    if (value != null) return value;
+  }
+  return env.SUBS.get(key, "json");
+}
+export async function storePut(env, key, value) {
+  if (!env.LIVE) return env.SUBS.put(key, JSON.stringify(value));
+  await store(env).fetch(`https://live/kv/${key}`, { method: "PUT", body: JSON.stringify(value) });
+}
 
 // The live files' text, for the worker's own use (alerts, refresh checks);
 // null when nothing has been published yet.

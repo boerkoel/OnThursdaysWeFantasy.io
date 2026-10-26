@@ -11,12 +11,14 @@
 //   Wire highlights, Death Watch changes) and pushes it to matching phones.
 //
 // KV (SUBS): "vapid" (this service's own key pair, created on first use),
-// "sub:<id>" (one per phone), "state" (what was already seen and sent),
-// "refresh-requested" (when /refresh last started a workflow run).
+// "sub:<id>" (one per phone), "refresh-requested" (when /refresh last started a
+// workflow run). The alert "state" (what was already seen and sent) and the
+// survivor feed cache change every run, so they live in the LiveStore Durable
+// Object instead (storeGet/storePut): KV's free plan allows 1,000 writes a day.
 // Secret GITHUB_TOKEN: a token allowed to run the repo's Actions workflows.
 import { generateVapidKeys, sendPush } from "./webpush.js";
 import { splashProbe, survivorFeed } from "./splash.js";
-import { LiveStore, publishLive, readLive, serveLive } from "./live.js";
+import { LiveStore, publishLive, readLive, serveLive, storeGet, storePut } from "./live.js";
 // Main-league team -> the same manager's guillotine team and Splash handles:
 // following a team follows its manager's other contests too.
 import managerLinks from "../../src/data/manager-links.json";
@@ -383,7 +385,7 @@ function wants(prefs, topic) {
 async function checkForAlerts(env) {
   const live = await latestLive(env);
   if (!live) return;
-  const state = await env.SUBS.get("state", "json");
+  const state = await storeGet(env, "state");
   const updated = [live.scoreboard?.lastUpdated, live.marquee?.lastUpdated, live.guillotine?.lastUpdated].join("|");
   if (state && state.updated === updated) return; // nothing new published
   // An older snapshot republished (two deploys racing) would look like a
@@ -415,5 +417,5 @@ async function checkForAlerts(env) {
     // Forget rate-limit entries older than a day.
     for (const [key, time] of Object.entries(next.lastSent)) if (now - time > 86400000) delete next.lastSent[key];
   }
-  await env.SUBS.put("state", JSON.stringify(next));
+  await storePut(env, "state", next);
 }

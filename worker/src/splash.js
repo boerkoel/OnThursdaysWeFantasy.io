@@ -5,6 +5,8 @@
 // token. Both are seeded once from the SPLASH_ACCESS_TOKEN / SPLASH_REFRESH_TOKEN
 // worker secrets, then kept in KV ("splash-session") and renewed here, since
 // each renewal can hand back a new refresh token.
+import { storeGet, storePut } from "./live.js";
+
 export const CONTEST = "contest_01M3NEWY24GPHGZ5TYKSZ220S6";
 const API = "https://api.splashsports.com/contests-service-v2/api";
 const AUTH = "https://api.auth.splashsports.com";
@@ -246,11 +248,11 @@ async function buildSurvivorFeed(env) {
 }
 
 export async function survivorFeed(env) {
-  const cached = await env.SUBS.get("survivor-feed", "json");
+  const cached = await storeGet(env, "survivor-feed");
   if (cached && Date.now() - Date.parse(cached.contest?.updatedAt) < FEED_MAX_AGE_MS) return cached;
   try {
     const feed = await buildSurvivorFeed(env);
-    await env.SUBS.put("survivor-feed", JSON.stringify(feed));
+    await storePut(env, "survivor-feed", feed);
     return feed;
   } catch (error) {
     // Splash or the session failing: keep serving the last good feed.
