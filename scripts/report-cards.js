@@ -78,14 +78,20 @@ const draftP = percentiles(teams.map(t => per(t, "drafted")));
 const waiverP = percentiles(teams.map(t => per(t, "pickups")));
 // Trades: teams that traded are curved among themselves (C+ to A+). Teams that
 // never traded while win-win trades existed for them (the Trades card's
-// hindsight swaps) get a D or F by the wins they passed up (Jim, 2026-10-25);
-// no helpful trade available = no grade.
+// hindsight swaps) are marked down by the wins they passed up (Jim, 2026-10-25),
+// scaled by need (Jim, 2026-10-25: contenders didn't have to make moves): need =
+// 1 − playoff odds, so a lock stays at a neutral C+ and a team out of it drops to
+// D/F (25 − 8 per win passed up). No helpful trade available = no grade.
 const traders = teams.filter(t => per(t, "trades") > 0);
 const tradersP = percentiles(traders.map(x => per(x, "trades")));
 const tradeScore = new Map(traders.map((t, i) => [t.id, 45 + 0.55 * tradersP[i]]));
 const missedWins = t => Math.max(0, ...(t.profileAnalytics?.winWinTrades || []).filter(x => x.perspective === "A" || x.yourWinsAdded != null)
   .map(x => Number(x.yourWinsAdded) || 0));
-for (const t of teams) if (!tradeScore.has(t.id) && missedWins(t) > 0) tradeScore.set(t.id, Math.max(0, 25 - 8 * missedWins(t)));
+const seasonOdds = await read("data/current/season-odds.json").catch(() => null);
+const NEUTRAL = 46;   // C+ (with room): stood pat, didn't need to move
+const need = t => { const o = (seasonOdds?.teams || []).find(x => Number(x.teamId) === Number(t.id)); return o?.playoffOdds == null ? 1 : 1 - o.playoffOdds / 100; };
+for (const t of teams) if (!tradeScore.has(t.id) && missedWins(t) > 0)
+  tradeScore.set(t.id, NEUTRAL - (NEUTRAL - Math.max(0, 25 - 8 * missedWins(t))) * need(t));
 const season = teams.map((t, i) => {
   const total = haveRosters
     ? 0.35 * scoring[i] + 0.2 * iq[i] + 0.15 * draftP[i] + 0.15 * waiverP[i] + 0.15 * record[i]
@@ -103,7 +109,7 @@ const season = teams.map((t, i) => {
         trades: per(t, "trades") > 0
           ? { grade: letter(tradeScore.get(t.id)), value: round(per(t, "trades"), 2), label: "pts / week started from trade acquisitions", top: best(src.top.trades) }
           : tradeScore.has(t.id)
-            ? { grade: letter(tradeScore.get(t.id)), value: 0, label: `no trades, but passed up a swap worth +${missedWins(t)} win${missedWins(t) === 1 ? "" : "s"}`, missedWins: missedWins(t) }
+            ? { grade: letter(tradeScore.get(t.id)), value: 0, label: `no trades, but passed up a swap worth +${missedWins(t)} win${missedWins(t) === 1 ? "" : "s"}${need(t) < 0.25 ? " (a contender: little need to deal)" : need(t) > 0.75 ? " (and needed the help)" : ""}`, missedWins: missedWins(t), need: round(need(t) * 100) }
             : { grade: null, label: "no trades (none would have helped)" }
       } : {}),
       record: { grade: letter(record[i]), value: `${t.standings?.wins ?? 0}-${t.standings?.losses ?? 0}` }

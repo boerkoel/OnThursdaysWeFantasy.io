@@ -8,17 +8,30 @@ const PARTS = [
   ["startSit", "Start/sit", "Points scored ÷ the best lineup you could have set"],
   ["draft", "Draft", "Points per week started from players you drafted"],
   ["waivers", "Waivers", "Points per week started from pickups"],
-  ["trades", "Trades", "Points per week started from players acquired by trade. No trades while a win-win swap existed (see Trades) earns a D or F"],
+  ["trades", "Trades", "Points per week started from players acquired by trade. No trades while a win-win swap existed (see Trades) marks a team down by the wins passed up, scaled by need: a playoff lock stays at C+, a team out of it gets a D or F"],
   ["record", "Record", "Win % (head-to-head + median)"]
 ];
 const tone = g => !g ? "" : g.startsWith("A") ? "g-a" : g.startsWith("B") ? "g-b" : g.startsWith("C") ? "g-c" : "g-d";
+// Sorting: letters best first, no grade last.
+const LETTERS = ["A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "D-", "F"];
+const rank = g => g ? LETTERS.indexOf(g) : 99;
 const Grade = ({ g, big = false, title }) => <span className={`grade ${tone(g)}${big ? " big" : ""}`} title={title}>{g || "—"}</span>;
 
 export default function ReportCards({ cards, logos = {} }) {
   const [open, setOpen] = useState(null);
+  const [sortKey, setSortKey] = useState("season");
   if (!cards?.season?.length) return null;
   const allTime = new Map((cards.allTime || []).map(a => [a.teamId, a]));
   const parts = PARTS.filter(([k]) => cards.season.some(s => s.parts?.[k]));
+  const keyOf = {
+    team: s => s.team, season: s => -s.score,
+    last: s => { const w = s.weekly[s.weekly.length - 1]; return w ? -w.score : 1; },
+    allTime: s => { const a = allTime.get(s.teamId); return a ? -a.score : 1; }
+  };
+  const sortVal = s => keyOf[sortKey] ? keyOf[sortKey](s) : rank(s.parts?.[sortKey]?.grade);
+  const rows = [...cards.season].sort((a, b) => { const x = sortVal(a), y = sortVal(b);
+    return (typeof x === "string" ? x.localeCompare(y) : x - y) || b.score - a.score; });
+  const head = (k, label, tip) => <button type="button" key={k} title={tip} className={"rc-sort" + (sortKey === k ? " active" : "")} onClick={() => setSortKey(k)}>{label}</button>;
   return (
     <section id="report-cards" className="section">
       <div className="section-heading">
@@ -26,11 +39,11 @@ export default function ReportCards({ cards, logos = {} }) {
       </div>
       <div className="report-cards">
         <div className="rc-row head">
-          <span>Team</span><span title="Season grade">Season</span>
-          {parts.map(([k, label, tip]) => <span key={k} title={tip}>{label}</span>)}
-          <span title="Last week's grade">Last wk</span><span title="All-time grade (record book)">All-time</span>
+          {head("team", "Team")}{head("season", "Season", "Season grade")}
+          {parts.map(([k, label, tip]) => head(k, label, tip))}
+          {head("last", "Last wk", "Last week's grade")}{head("allTime", "All-time", "All-time grade (record book)")}
         </div>
-        {cards.season.map(s => {
+        {rows.map(s => {
           const last = s.weekly[s.weekly.length - 1];
           const at = allTime.get(s.teamId);
           return <React.Fragment key={s.teamId}>
@@ -54,7 +67,7 @@ export default function ReportCards({ cards, logos = {} }) {
           </React.Fragment>;
         })}
       </div>
-      <p className="median-note">Grades are on a curve against the league: roughly the top two earn A's, the bottom two D's or an F. Season: {cards.weights?.season}. Week: {cards.weights?.weekly}. All-time: {cards.weights?.allTime}. Tap a team for the details.</p>
+      <p className="median-note">Grades are on a curve against the league: roughly the top two earn A's, the bottom two D's or an F. Season: {cards.weights?.season}. Week: {cards.weights?.weekly}. All-time: {cards.weights?.allTime}. Tap a column to sort, a team for the details.</p>
     </section>
   );
 }
