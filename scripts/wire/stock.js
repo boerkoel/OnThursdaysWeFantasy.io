@@ -37,19 +37,21 @@ export function addStockWatchStory(add) {
     id => id, LIVE_STOCK_MIN_MOVE);
   const ew = id => { const s = currentScores.find(x => x.teamId === Number(id)); return s && s.winProbability != null ? (Number(s.winProbability) + Number(s.aboveMedianProbability || 0)) / 100 : null; };
   const up = movers[0]?.move > 0 ? movers[0] : null, down = movers.at(-1)?.move < 0 ? movers.at(-1) : null;
-  if (up) {
-    const e = ew(up.team);
+  // Live odds use projected finals, so a move is where a team is headed ("in line to"), not yet banked.
+  const exp = id => { const e = ew(id); return e != null ? ` (${e.toFixed(1)} expected wins of 2)` : ""; };
+  const rise = x => `${name(Number(x.team))} is in line to raise their playoff odds ${Math.round(x.move)} pts this week${exp(x.team)}, ${pct(x.from)} → ${pct(x.to)}`;
+  const fall = (x, joined) => `${name(Number(x.team))} ${joined ? "is dropping" : "is on track to drop"} ${Math.round(-x.move)} pts${joined ? "" : " of playoff odds this week"}${exp(x.team)}, ${pct(x.from)} → ${pct(x.to)}`;
+  if (up && down) {   // Jim, 2026-10-26: one story, both directions
     add("STOCK WATCH", fit(
-      `📈 STOCK WATCH: ${possessive(name(Number(up.team)))} results this week${e != null ? ` (${e.toFixed(1)} expected wins of 2)` : ""} have boosted their playoff odds ${Math.round(up.move)} pts, from ${pct(up.from)} to ${pct(up.to)}.`,
-      `📈 STOCK WATCH: ${name(Number(up.team))}: playoff odds ${pct(up.from)} → ${pct(up.to)} on this week's results.`
-    ), 68 + Math.min(up.move, 20) / 2);
-  }
-  if (down) {
-    const e = ew(down.team);
-    add("STOCK WATCH", fit(
-      `📉 STOCK WATCH: ${possessive(name(Number(down.team)))} week${e != null ? ` (${e.toFixed(1)} expected wins of 2)` : ""} has cost them ${Math.round(-down.move)} pts of playoff odds, from ${pct(down.from)} to ${pct(down.to)}.`,
-      `📉 STOCK WATCH: ${name(Number(down.team))}: playoff odds ${pct(down.from)} → ${pct(down.to)} on this week's results.`
-    ), 67 + Math.min(-down.move, 20) / 2);
+      `📈📉 STOCK WATCH: ${rise(up)}, while ${fall(down, true)}.`,
+      `📈📉 STOCK WATCH: ${name(Number(up.team))} ${pct(up.from)} → ${pct(up.to)} playoff odds; ${name(Number(down.team))} ${pct(down.from)} → ${pct(down.to)}.`
+    ), 70 + Math.min(Math.max(up.move, -down.move), 20) / 2);
+  } else if (up) {
+    add("STOCK WATCH", fit(`📈 STOCK WATCH: ${rise(up)}.`,
+      `📈 STOCK WATCH: ${name(Number(up.team))}: playoff odds ${pct(up.from)} → ${pct(up.to)} on this week's results.`), 68 + Math.min(up.move, 20) / 2);
+  } else if (down) {
+    add("STOCK WATCH", fit(`📉 STOCK WATCH: ${fall(down)}.`,
+      `📉 STOCK WATCH: ${name(Number(down.team))}: playoff odds ${pct(down.from)} → ${pct(down.to)} on this week's results.`), 67 + Math.min(-down.move, 20) / 2);
   }
 }
 

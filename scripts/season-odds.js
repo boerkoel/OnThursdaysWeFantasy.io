@@ -217,6 +217,37 @@ for (let sim = 0; sim < SIMULATIONS; sim++) {
   }
 }
 
+// As it stands (Jim, 2026-10-26): the same simulation with this week frozen at
+// the points scored so far, as if the week ended now. Standings' "As it stands"
+// view shows these odds; "Live" shows the ones above (projected finals).
+let standsCounts = null;
+if (liveWeek) {
+  standsCounts = new Map(teamIds.map(id => [id, { playoffs: 0, bye: 0, title: 0, ultimateLoser: 0, raffle: 0, seedSum: 0, pointsSum: 0 }]));
+  for (let sim = 0; sim < SIMULATIONS; sim++) {
+    const table = new Map([...base].map(([id, row]) => [id, { ...row }]));
+    for (const week of remainingWeeks) {
+      const scores = new Map(teamIds.map(id => [id, week === currentWeek ? liveWeek.get(id)?.floor ?? 0 : simulateScore(id, week)]));
+      addWeek(table, games.filter(g => g.week === week), scores);
+    }
+    const order = [...table.entries()].sort(([, a], [, b]) =>
+      seedByPoints ? b.pointsFor - a.pointsFor : b.wins - a.wins || b.pointsFor - a.pointsFor);
+    order.forEach(([id, row], index) => {
+      const c = standsCounts.get(id);
+      if (index < playoffTeamCount) c.playoffs++;
+      if (index < byeCount) c.bye++;
+      c.seedSum += index + 1;
+      c.pointsSum += row.pointsFor;
+    });
+    const totalTickets = [...table.values()].reduce((a, r) => a + r.tickets, 0);
+    if (totalTickets) for (const [id, row] of table) standsCounts.get(id).raffle += row.tickets / totalTickets;
+    if (bracketFits) {
+      const { champion, ultimateLoser } = simulatePostseason(order.map(([id]) => id));
+      standsCounts.get(champion).title++;
+      standsCounts.get(ultimateLoser).ultimateLoser++;
+    }
+  }
+}
+
 // Once the regular season is over, results are exact.
 const odds = count => remainingWeeks.length ? possibleOdds(count) : round(count / SIMULATIONS * 100);
 const teams = teamIds.map(id => {
@@ -245,7 +276,8 @@ const teams = teamIds.map(id => {
 // Odds snapshots for the League Wire's STOCK REPORT: each team's odds at the
 // start of this week (carried through the week), and last week's start and
 // end (saved when the week rolls over).
-const snapshotOf = list => Object.fromEntries(list.map(t => [String(t.teamId), { playoffOdds: t.playoffOdds, titleOdds: t.titleOdds, ultimateLoserOdds: t.ultimateLoserOdds, byeOdds: t.byeOdds }]));
+const snapshotOf = list => Object.fromEntries(list.map(t => [String(t.teamId), { playoffOdds: t.playoffOdds, titleOdds: t.titleOdds, ultimateLoserOdds: t.ultimateLoserOdds, byeOdds: t.byeOdds,
+  raffleOdds: t.raffleOdds, projectedPointsFor: t.projectedPointsFor, averageSeed: t.averageSeed }]));
 const previousOdds = await readFile("data/current/season-odds.json", "utf8").then(JSON.parse).catch(() => null);
 let weekStart, lastWeek = previousOdds?.lastWeek || null;
 if (previousOdds && Number(previousOdds.week) === currentWeek) {
@@ -267,6 +299,11 @@ await writeFile("data/current/season-odds.json", JSON.stringify({
   teams,
   weekStart,
   lastWeek,
+  // This week frozen at the points so far (null between weeks).
+  asItStands: standsCounts ? Object.fromEntries([...standsCounts].map(([id, c]) => [String(id), {
+    playoffOdds: odds(c.playoffs), byeOdds: odds(c.bye), averageSeed: round(c.seedSum / SIMULATIONS), projectedPointsFor: round(c.pointsSum / SIMULATIONS),
+    titleOdds: bracketFits ? round(c.title / SIMULATIONS * 100) : null, ultimateLoserOdds: bracketFits ? round(c.ultimateLoser / SIMULATIONS * 100) : null,
+    raffleOdds: round(c.raffle / SIMULATIONS * 100) }])) : null,
   // Playoff odds for both teams in each of this week's games, by who wins.
   matchupLeverage: thisWeekGames.map((g, i) => {
     const [lost, won] = cond[i];

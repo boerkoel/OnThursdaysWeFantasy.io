@@ -74,8 +74,14 @@ function StandingsTable({ seasonOdds, logos, liveScores = [], week }) {
     const ew = games ? games.reduce((a, p) => a + (locked(p) ?? (stands ? 0 : p / 100)), 0) : null;
     const decided = games ? (stands ? games.filter(p => locked(p) != null).length : 2) : 0;
     const live = isLive && ew != null;
+    // Odds by view (Jim, 2026-10-26): Live = projected finals, As it stands = the week frozen now,
+    // Before this week = the start-of-week snapshot (fields it lacks show —).
+    const view = liveMode === "before" && canLive ? seasonOdds?.weekStart?.[String(t.id)]
+      : isLive && stands ? seasonOdds?.asItStands?.[String(t.id)] : null;
+    const viewOdds = view ? Object.fromEntries(["playoffOdds", "byeOdds", "titleOdds", "ultimateLoserOdds", "raffleOdds", "projectedPointsFor"].map(k => [k, view[k] ?? null])) : {};
     return {
       ...(oddsById.get(t.id) || {}),
+      ...viewOdds,
       teamId: t.id,
       team: t.name,
       seed: seedById.get(t.id) ?? 99,
@@ -103,7 +109,7 @@ function StandingsTable({ seasonOdds, logos, liveScores = [], week }) {
         </span> : null}</h3>
       {isLive && !stands ? <p className="median-note"><b>Live:</b> Week {week} counted as it goes. W-L adds each team's expected wins this week (head-to-head and beating the median, out of 2): a result counts in full once it's locked (99.5%+ either way), the rest at its odds. PF adds points so far, and seeds are re-ranked by points. ▲▼ = seed change since the week began.</p> : null}
       {isLive && stands ? <p className="median-note"><b>As it stands:</b> W-L adds only this week's results that are locked (99.5%+ either way, head-to-head or the median); open games don't count yet. PF adds points so far, and seeds are re-ranked by points. ▲▼ = seed change since the week began.</p> : null}
-      <p className="median-note">Seeds are by total points; the top {playoffs.playoffTeamCount || 6} make the playoffs and the top 2 get byes. Odds come from {Number(seasonOdds?.simulations || 0).toLocaleString()} simulations of the rest of the season, including both postseason brackets, using each team's scoring so far and live projections for the week in progress. Title and Ultimate Loser odds each add up to 100%. Click a column to sort.</p>
+      <p className="median-note">Seeds are by total points; the top {playoffs.playoffTeamCount || 6} make the playoffs and the top 2 get byes. Odds come from {Number(seasonOdds?.simulations || 0).toLocaleString()} simulations of the rest of the season, including both postseason brackets, using each team's scoring so far and, for the week in progress, live projections (Live), the points so far as if the week ended now (As it stands), or nothing from this week (Before this week). Title and Ultimate Loser odds each add up to 100%. Click a column to sort.</p>
       <div className="survival-table odds-table">
         <div className="odds-row survival-header">
           {STANDINGS_COLUMNS.map(c => c.value
