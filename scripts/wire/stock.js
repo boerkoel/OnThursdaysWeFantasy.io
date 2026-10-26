@@ -81,7 +81,7 @@ export function addPlayoffSwingStory(add) {
 }
 
 // ---- Clinch watch (Jim, 2026-10-25) -------------------------------------------
-// Seeds go by points, so nothing is mathematically certain with weeks left;
+// Seeds go by record (points break ties); this is a simulation, so nothing is certain with weeks left;
 // 99.5% in the season simulation counts as "all but". Stories, best first:
 // - a team that can all but lock up a spot with a win (or lose it with a loss)
 //   this week: the #1 seed, a playoff spot, or last place;
@@ -122,7 +122,7 @@ export function addClinchStory(add) {
 }
 
 // ---- Bye watch (Jim, 2026-10-25: "will the wire announce when a team is eliminated from winning the bye?") ----
-// The top 2 seeds get byes. Seeds go by points, so nothing is mathematically certain: "out" = under 0.5%.
+// The top 2 seeds get byes. Odds come from a simulation, so nothing is certain: "out" = under 0.5%.
 // - a team that falls out of the bye race this week (had ≥0.5% at the start of the week);
 // - a team still in it whose game this week decides it: a loss all but ends it.
 export const BYE_OUT = 0.5;
@@ -153,26 +153,47 @@ export function addByeWatchStory(add) {
 }
 
 // ---- Live standings (Jim, 2026-10-25: point people at the Standings tab) -----
-// Seeds go by points: this week's points so far re-rank them. The biggest
-// climber and faller (2+ spots), and anyone crossing the playoff line.
+// Seeds go by record, points for breaks ties. As it stands = this week's results that are locked (99.5%+ either
+// way, like the Standings tab's As it stands view) plus points so far. The biggest climber and faller (2+ spots),
+// and anyone crossing the playoff line.
 export const LIVE_SEED_MOVE = 2;
 export function addLiveStandingsStory(add) {
   const table = standingsData?.standings || [];
   if (!table.length || table.some(t => Number(t.games) >= currentWeek) || currentScores.every(s => !(Number(s.score) > 0))) return;
   const cut = Number(seasonOddsData?.playoffTeamCount) || 6;
-  const scoreOf = id => Number(currentScores.find(s => s.teamId === Number(id))?.score || 0);
-  const before = [...table].sort((a, b) => b.pointsFor - a.pointsFor).map(t => t.id);
-  const now = [...table].sort((a, b) => (b.pointsFor + scoreOf(b.id)) - (a.pointsFor + scoreOf(a.id))).map(t => t.id);
+  const cur = id => currentScores.find(s => s.teamId === Number(id));
+  const scoreOf = id => Number(cur(id)?.score || 0);
+  const lockedWins = id => { const s = cur(id); return s ? [s.winProbability, s.aboveMedianProbability].filter(p => Number(p) >= LOCK).length : 0; };
+  const before = [...table].sort((a, b) => b.wins - a.wins || b.pointsFor - a.pointsFor).map(t => t.id);
+  const now = [...table].sort((a, b) => (b.wins + lockedWins(b.id)) - (a.wins + lockedWins(a.id)) || (b.pointsFor + scoreOf(b.id)) - (a.pointsFor + scoreOf(a.id))).map(t => t.id);
   const moves = table.map(t => ({ id: t.id, from: before.indexOf(t.id) + 1, to: now.indexOf(t.id) + 1 }))
     .map(m => ({ ...m, move: m.from - m.to, crosses: (m.from > cut) !== (m.to > cut) }));
   const ord = n => n + (n % 10 === 1 && n !== 11 ? "st" : n % 10 === 2 && n !== 12 ? "nd" : n % 10 === 3 && n !== 13 ? "rd" : "th");
   const lines = [];
   const into = moves.filter(m => m.crosses && m.to <= cut).sort((a, b) => b.move - a.move)[0];
   const outOf = moves.filter(m => m.crosses && m.to > cut).sort((a, b) => a.move - b.move)[0];
-  if (into) lines.push([82, `📊 LIVE STANDINGS: As it stands, ${name(into.id)} would climb from ${ord(into.from)} into a playoff spot (${ord(into.to)})${outOf ? `, bumping ${name(outOf.id)} to ${ord(outOf.to)}` : ""}. Seeds go by points; check the Standings tab's live view.`]);
+  if (into) lines.push([82, `📊 LIVE STANDINGS: As it stands, ${name(into.id)} would climb from ${ord(into.from)} into a playoff spot (${ord(into.to)})${outOf ? `, bumping ${name(outOf.id)} to ${ord(outOf.to)}` : ""}. Check the Standings tab's As it stands view.`]);
   const up = moves.filter(m => m.move >= LIVE_SEED_MOVE && m !== into).sort((a, b) => b.move - a.move)[0];
   const down = moves.filter(m => -m.move >= LIVE_SEED_MOVE && m !== outOf).sort((a, b) => a.move - b.move)[0];
   if (up) lines.push([74, `📈 LIVE STANDINGS: ${name(up.id)} is up ${up.move} spots this week, from ${ord(up.from)} to ${ord(up.to)} as it stands.`]);
   if (down) lines.push([73, `📉 LIVE STANDINGS: ${name(down.id)} is sliding, from ${ord(down.from)} to ${ord(down.to)} as it stands.`]);
-  lines.slice(0, 2).forEach(([score, text]) => add("LIVE STANDINGS", fit(text, text.replace(" Seeds go by points; check the Standings tab's live view.", "")), score));
+  lines.slice(0, 2).forEach(([score, text]) => add("LIVE STANDINGS", fit(text, text.replace(" Check the Standings tab's As it stands view.", "")), score));
+}
+
+// ---- Two wins (Jim, 2026-10-26: "what would happen with 2 wins, if it makes a difference") ----
+// The team whose playoff odds swing most between 2 wins this week (H2H + median) and 0, while both are still
+// live (each 5%+ likely) and the gap is 10+ pts. season-odds.json byWins.
+export const TWO_WIN_MIN = 10;
+export function addTwoWinsStory(add) {
+  if (Number(seasonOddsData?.week) !== currentWeek || !seasonOddsData.byWins) return;
+  const best = (seasonOddsData.teams || []).map(t => {
+    const [zero, , two] = seasonOddsData.byWins[String(t.teamId)] || [];
+    return zero && two && zero.chance >= 5 && two.chance >= 5 ? { t, zero, two, gap: two.playoffOdds - zero.playoffOdds } : null;
+  }).filter(x => x && x.gap >= TWO_WIN_MIN).sort((a, b) => b.gap - a.gap)[0];
+  if (!best) return;
+  const { t, zero, two } = best;
+  add("TWO WINS", fit(
+    `🎯 TWO WINS: ${name(t.teamId)} is at ${pct(t.playoffOdds)} to make the playoffs. Winning both this week (head-to-head and the median, ${pct(two.chance)} likely) would lift that to ${pct(two.playoffOdds)}; losing both drops it to ${pct(zero.playoffOdds)}.`,
+    `🎯 TWO WINS: ${name(t.teamId)}: ${pct(two.playoffOdds)} playoff odds with 2 wins this week, ${pct(zero.playoffOdds)} with none (now ${pct(t.playoffOdds)}).`
+  ), 70 + Math.min(best.gap, 30) / 3);
 }

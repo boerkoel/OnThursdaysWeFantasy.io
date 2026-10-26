@@ -220,12 +220,14 @@ const awards={prizePool,...baseAwards,...newAwards};
 
 await mkdir("data/current",{recursive:true});
 const playoffTeamCount = Number(settings.settings?.scheduleSettings?.playoffTeamCount || 6);
+// ESPN's playoffSeedingRule is the TIEBREAKER (TOTAL_POINTS_SCORED here): seeds go by record (H2H + median wins),
+// points for breaks ties (Jim, 2026-10-26).
 const playoffSeedingRule = settings.settings?.scheduleSettings?.playoffSeedingRule || "TOTAL_POINTS_SCORED";
 const playoffReseed = Boolean(settings.settings?.scheduleSettings?.playoffReseed);
 
-const allByPoints = [...standings].sort((a,b)=>b.pointsFor-a.pointsFor || b.wins-a.wins);
-const playoffSeeds = allByPoints.slice(0, playoffTeamCount).map((team,index)=>({...team,seed:index+1}));
-const nonPlayoffTeams = allByPoints.slice(playoffTeamCount).map((team,index)=>({...team,seed:playoffTeamCount+index+1}));
+const allBySeed = [...standings].sort((a,b)=>b.wins-a.wins || a.losses-b.losses || b.pointsFor-a.pointsFor);
+const playoffSeeds = allBySeed.slice(0, playoffTeamCount).map((team,index)=>({...team,seed:index+1}));
+const nonPlayoffTeams = allBySeed.slice(playoffTeamCount).map((team,index)=>({...team,seed:playoffTeamCount+index+1}));
 
 const playoffSeedMap = new Map(playoffSeeds.map(t=>[t.seed,t]));
 const week15Completed = matchups.filter(m=>m.week===15 && m.completed);

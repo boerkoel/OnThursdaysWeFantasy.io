@@ -57,7 +57,7 @@ function StandingsTable({ seasonOdds, logos, liveScores = [], week }) {
   const [sortKey, setSortKey] = useState("seed");
   // Live (Jim, 2026-10-25): this week counted as it stands, with expected wins
   // (H2H win odds + above-median odds) and points so far; seeds re-ranked by
-  // points. Only while the week is in progress and not yet in standings.json.
+  // record (points break ties). Only while the week is in progress and not yet in standings.json.
   const scoreById = new Map(liveScores.map(s => [Number(s.teamId), s]));
   const weekInStandings = (standingsData.standings || []).some(t => Number(t.games) >= Number(week));
   const canLive = !weekInStandings && liveScores.some(s => Number(s.score) > 0);
@@ -91,10 +91,18 @@ function StandingsTable({ seasonOdds, logos, liveScores = [], week }) {
       weekWins: live ? ew : null
     };
   });
-  if (isLive) {   // seeds are by points
-    const order = [...rows].sort((a, b) => b.pointsFor - a.pointsFor);
+  if (isLive) {   // seeds go by record (H2H + median wins), points for breaks ties
+    const order = [...rows].sort((a, b) => b.wins - a.wins || b.pointsFor - a.pointsFor);
     rows = rows.map(r => ({ ...r, liveSeed: order.indexOf(r) + 1, seed: order.indexOf(r) + 1, oldSeed: r.seed }));
   }
+  // What 2 wins this week (H2H + median) would do to the playoff odds (Live view only), shown when it's still
+  // in doubt (5-95% likely) and moves the odds 3+ pts.
+  const twoWins = r => {
+    const list = isLive && !stands ? seasonOdds?.byWins?.[String(r.teamId)] : null, two = list?.[2];
+    if (!two || two.chance < 5 || two.chance > 95 || Math.abs(two.playoffOdds - r.playoffOdds) < 3) return null;
+    const tip = list.map((x, k) => x ? `${k} win${k === 1 ? "" : "s"} (${pct(x.chance)} likely): ${pct(x.playoffOdds)}` : null).filter(Boolean).join(" · ");
+    return <small className="two-wins" title={`Playoff odds by wins this week: ${tip}`}>2W → {pct(two.playoffOdds)}</small>;
+  };
   const column = STANDINGS_COLUMNS.find(c => c.key === sortKey);
   const sorted = [...rows].sort((a, b) => {
     const diff = (column.value(a) ?? -1) - (column.value(b) ?? -1);
@@ -107,9 +115,9 @@ function StandingsTable({ seasonOdds, logos, liveScores = [], week }) {
           {[["live", "Live"], ["stands", "As it stands"], ["before", "Before this week"]].map(([k, label]) =>
             <button type="button" key={k} className={liveMode === k ? "active" : ""} onClick={() => setLiveMode(k)}>{label}</button>)}
         </span> : null}</h3>
-      {isLive && !stands ? <p className="median-note"><b>Live:</b> Week {week} counted as it goes. W-L adds each team's expected wins this week (head-to-head and beating the median, out of 2): a result counts in full once it's locked (99.5%+ either way), the rest at its odds. PF adds points so far, and seeds are re-ranked by points. ▲▼ = seed change since the week began.</p> : null}
-      {isLive && stands ? <p className="median-note"><b>As it stands:</b> W-L adds only this week's results that are locked (99.5%+ either way, head-to-head or the median); open games don't count yet. PF adds points so far, and seeds are re-ranked by points. ▲▼ = seed change since the week began.</p> : null}
-      <p className="median-note">Seeds are by total points; the top {playoffs.playoffTeamCount || 6} make the playoffs and the top 2 get byes. Odds come from {Number(seasonOdds?.simulations || 0).toLocaleString()} simulations of the rest of the season, including both postseason brackets, using each team's scoring so far and, for the week in progress, live projections (Live), the points so far as if the week ended now (As it stands), or nothing from this week (Before this week). Title and Ultimate Loser odds each add up to 100%. Click a column to sort.</p>
+      {isLive && !stands ? <p className="median-note"><b>Live:</b> Week {week} counted as it goes. W-L adds each team's expected wins this week (head-to-head and beating the median, out of 2): a result counts in full once it's locked (99.5%+ either way), the rest at its odds. PF adds points so far, and seeds are re-ranked by that record (points break ties). ▲▼ = seed change since the week began.</p> : null}
+      {isLive && stands ? <p className="median-note"><b>As it stands:</b> W-L adds only this week's results that are locked (99.5%+ either way, head-to-head or the median); open games don't count yet. PF adds points so far, and seeds are re-ranked by that record (points break ties). ▲▼ = seed change since the week began.</p> : null}
+      <p className="median-note">Seeds go by record (head-to-head + median wins), with total points breaking ties; the top {playoffs.playoffTeamCount || 6} make the playoffs and the top 2 get byes. Odds come from {Number(seasonOdds?.simulations || 0).toLocaleString()} simulations of the rest of the season, including both postseason brackets, using each team's scoring so far and, for the week in progress, live projections (Live), the points so far as if the week ended now (As it stands), or nothing from this week (Before this week). Title and Ultimate Loser odds each add up to 100%. Click a column to sort.</p>
       <div className="survival-table odds-table">
         <div className="odds-row survival-header">
           {STANDINGS_COLUMNS.map(c => c.value
@@ -120,7 +128,7 @@ function StandingsTable({ seasonOdds, logos, liveScores = [], week }) {
           <span>{r.seed === 99 ? "—" : r.seed}{r.seed <= 2 ? <em className="bye-badge">BYE</em> : null}{r.oldSeed && r.oldSeed !== 99 && r.oldSeed !== r.seed ? <small className={r.oldSeed > r.seed ? "seed-up" : "seed-down"}>{r.oldSeed > r.seed ? "▲" : "▼"}{Math.abs(r.oldSeed - r.seed)}</small> : null}</span>
           <strong><TeamLogo src={logos[r.teamId]} /><span>{r.team}</span></strong>
           {STANDINGS_COLUMNS.slice(2).map(c => c.highlight
-            ? <b key={c.key}>{pct(c.value(r))}</b>
+            ? <b key={c.key}>{pct(c.value(r))}{twoWins(r)}</b>
             : <span key={c.key}>{c.odds ? pct(c.value(r)) : c.show(r)}</span>)}
         </div>)}
       </div>
@@ -359,7 +367,7 @@ function App() {
     if (/DEATH WATCH|FAAB|SHOPPING SPREE|TUG-OF-WAR|GREAT ESCAPE|THIN ICE/.test(type) || (gTeam && !named(scores.map(x => ({ name: x.team }))))) return go(gTeam ? `dw-${gTeam.id}` : "death-watch");
     if (/TRADE|SWAP|LONG-TERM REGRET/.test(type)) return go("trades");
     if (/RAFFLE/.test(type)) return go("raffle");
-    if (/TITLE ODDS|TOILET BOWL|PLAYOFF SWING|CLINCH|BYE WATCH|STOCK|STANDINGS/.test(type)) return go("standings-odds");
+    if (/TITLE ODDS|TOILET BOWL|PLAYOFF SWING|CLINCH|BYE WATCH|TWO WINS|STOCK|STANDINGS/.test(type)) return go("standings-odds");
     if (/REPORT CARD/.test(type)) return go("report-cards");
     if (/SURVIVOR SCARE/.test(type)) return go("survivor-games");
     if (/SURVIVOR/.test(type)) return go("survivor-picks");
@@ -642,7 +650,7 @@ function App() {
           <div><span className="section-kicker">ROAD TO THE TITLE</span><h2>2026 Playoffs</h2></div>
           <span className="record-count">{playoffs.status === "ACTIVE" ? "PLAYOFFS ACTIVE" : "PROJECTED FROM CURRENT STANDINGS"}</span>
         </div>
-        <p className="playoff-intro">Six teams qualify. Seeding is based on total points scored, with the top two seeds receiving first-round byes. Teams are reseeded after the quarterfinals: the #1 seed plays the lowest remaining seed (dashed lines).</p>
+        <p className="playoff-intro">Six teams qualify. Seeding goes by record (head-to-head plus median wins), with total points breaking ties; the top two seeds get first-round byes. Teams are reseeded after the quarterfinals: the #1 seed plays the lowest remaining seed (dashed lines).</p>
         <div className="bracket">
           <div className="bracket-round reseed-next">
             <div className="bracket-round-title">WEEK 15 · QUARTERFINALS</div>

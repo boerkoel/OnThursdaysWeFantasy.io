@@ -16,7 +16,8 @@ const schedule = settings.settings?.scheduleSettings || {};
 const regularSeasonWeeks = Number(schedule.matchupPeriodCount || 14);
 const playoffTeamCount = Number(schedule.playoffTeamCount || 6);
 const byeCount = 2;
-const seedByPoints = (schedule.playoffSeedingRule || "TOTAL_POINTS_SCORED") === "TOTAL_POINTS_SCORED";
+// Seeds go by record (H2H + median wins); ESPN's playoffSeedingRule (TOTAL_POINTS_SCORED) is the tiebreaker.
+const bySeed = ([, a], [, b]) => b.wins - a.wins || b.pointsFor - a.pointsFor;
 const currentWeek = Number(matchupData.scoringPeriodId || 1);
 
 const teamIds = (teamData.teams || []).map(t => Number(t.id));
@@ -164,6 +165,8 @@ const thisWeekGames = remainingWeeks.includes(currentWeek) ? games.filter(g => g
 // Also the #1 and last seeds, for CLINCH WATCH.
 const bucket = () => ({ n: 0, home: 0, away: 0, homeTop: 0, awayTop: 0, homeLast: 0, awayLast: 0, homeBye: 0, awayBye: 0 });
 const cond = thisWeekGames.map(() => [bucket(), bucket()]);   // [away won, home won]
+// Each team's odds by its wins this week (0, 1 or 2: head-to-head + the median), Jim 2026-10-26: "what would 2 wins do?"
+const byWins = new Map(teamIds.map(id => [id, [0, 1, 2].map(() => ({ n: 0, playoffs: 0, bye: 0 }))]));
 
 for (let sim = 0; sim < SIMULATIONS; sim++) {
   const table = new Map([...base].map(([id, row]) => [id, { ...row }]));
@@ -178,8 +181,7 @@ for (let sim = 0; sim < SIMULATIONS; sim++) {
     addWeek(table, weekGames, scores);
     if (week === currentWeek) thisWeek = scores;
   }
-  const order = [...table.entries()].sort(([, a], [, b]) =>
-    seedByPoints ? b.pointsFor - a.pointsFor : b.wins - a.wins || b.pointsFor - a.pointsFor);
+  const order = [...table.entries()].sort(bySeed);
   order.forEach(([id, row], index) => {
     const c = counts.get(id);
     if (index < playoffTeamCount) c.playoffs++;
@@ -193,6 +195,15 @@ for (let sim = 0; sim < SIMULATIONS; sim++) {
     const inPlayoffs = new Set(order.slice(0, playoffTeamCount).map(([id]) => id));
     const top = order[0][0], last = order[order.length - 1][0];
     const inBye = new Set(order.slice(0, byeCount).map(([id]) => id));
+    const sorted = [...thisWeek.values()].sort((a, b) => a - b), mid = sorted.length / 2;
+    const median = sorted.length % 2 ? sorted[Math.floor(mid)] : (sorted[mid - 1] + sorted[mid]) / 2;
+    const h2h = new Map(thisWeekGames.flatMap(g => [[g.home, thisWeek.get(g.home) > thisWeek.get(g.away)], [g.away, thisWeek.get(g.away) > thisWeek.get(g.home)]]));
+    for (const id of teamIds) {
+      const b = byWins.get(id)[(h2h.get(id) ? 1 : 0) + (thisWeek.get(id) > median ? 1 : 0)];
+      b.n++;
+      if (inPlayoffs.has(id)) b.playoffs++;
+      if (inBye.has(id)) b.bye++;
+    }
     thisWeekGames.forEach((g, i) => {
       const c = cond[i][thisWeek.get(g.home) > thisWeek.get(g.away) ? 1 : 0];
       c.n++;
@@ -229,8 +240,7 @@ if (liveWeek) {
       const scores = new Map(teamIds.map(id => [id, week === currentWeek ? liveWeek.get(id)?.floor ?? 0 : simulateScore(id, week)]));
       addWeek(table, games.filter(g => g.week === week), scores);
     }
-    const order = [...table.entries()].sort(([, a], [, b]) =>
-      seedByPoints ? b.pointsFor - a.pointsFor : b.wins - a.wins || b.pointsFor - a.pointsFor);
+    const order = [...table.entries()].sort(bySeed);
     order.forEach(([id, row], index) => {
       const c = standsCounts.get(id);
       if (index < playoffTeamCount) c.playoffs++;
@@ -294,11 +304,14 @@ await writeFile("data/current/season-odds.json", JSON.stringify({
   lastUpdated: new Date().toISOString(),
   simulations: SIMULATIONS,
   remainingWeeks,
-  seeding: seedByPoints ? "points" : "record",
+  seeding: "record, points for breaks ties",
   playoffTeamCount,
   teams,
   weekStart,
   lastWeek,
+  // Odds by wins this week: [0, 1, 2] wins → {playoffOdds, byeOdds, chance}; null where the sims rarely land (<1%).
+  byWins: thisWeekGames.length ? Object.fromEntries([...byWins].map(([id, list]) => [String(id), list.map(b => b.n >= SIMULATIONS / 100
+    ? { chance: round(b.n / SIMULATIONS * 100), playoffOdds: round(b.playoffs / b.n * 100), byeOdds: round(b.bye / b.n * 100) } : null)])) : null,
   // This week frozen at the points so far (null between weeks).
   asItStands: standsCounts ? Object.fromEntries([...standsCounts].map(([id, c]) => [String(id), {
     playoffOdds: odds(c.playoffs), byeOdds: odds(c.bye), averageSeed: round(c.seedSum / SIMULATIONS), projectedPointsFor: round(c.pointsSum / SIMULATIONS),
