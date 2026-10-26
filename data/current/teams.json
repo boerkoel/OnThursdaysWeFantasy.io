@@ -374,6 +374,14 @@
               "Bo Nix",
               "Parker Washington"
             ],
+            "givePlayerIds": [
+              4426338,
+              4432620
+            ],
+            "getPlayerIds": [
+              4569559,
+              4870808
+            ],
             "getPlayerId": "4569559+4870808",
             "getPlayer": "Devaughn Vele + Jeremiyah Love",
             "getPosition": "WR/RB",
@@ -918,6 +926,14 @@
               "Wan'Dale Robinson",
               "Kyren Williams"
             ],
+            "givePlayerIds": [
+              4569587,
+              4430737
+            ],
+            "getPlayerIds": [
+              4430027,
+              4426502
+            ],
             "getPlayerId": "4430027+4426502",
             "getPlayer": "Sam LaPorta + Drake London",
             "getPosition": "TE/WR",
@@ -943,7 +959,23 @@
             "perspective": "A"
           }
         ],
-        "longTermRegrets": [],
+        "longTermRegrets": [
+          {
+            "playerId": 4569587,
+            "player": "Wan'Dale Robinson",
+            "position": "WR",
+            "startedWeeks": 3,
+            "rosteredWeeks": 6,
+            "weeks": [
+              1,
+              3
+            ],
+            "points": 18.5,
+            "h2hWins": 1,
+            "medianWins": 1,
+            "winsAdded": 2
+          }
+        ],
         "waiverTargets": [
           {
             "playerId": 3117256,
@@ -1330,39 +1362,6 @@
               ]
             },
             {
-              "playerId": 4635008,
-              "player": "Keon Coleman",
-              "position": "WR",
-              "startRate": 0,
-              "rosteredWeeks": 2,
-              "startedWeeks": 0,
-              "boost": 16.2,
-              "teamId": 7,
-              "team": "Ruffing the Passer",
-              "h2hWinsAdded": 0,
-              "medianWinsAdded": 0,
-              "winsAdded": 0,
-              "mutualTrade": null,
-              "otherNeeds": [
-                {
-                  "position": "DST",
-                  "percent": -22.94
-                },
-                {
-                  "position": "QB",
-                  "percent": -19.9
-                },
-                {
-                  "position": "WR",
-                  "percent": -15.95
-                }
-              ],
-              "needsMatch": [
-                "DST",
-                "WR"
-              ]
-            },
-            {
               "playerId": 3916433,
               "player": "Jakobi Meyers",
               "position": "WR",
@@ -1375,6 +1374,34 @@
               "h2hWinsAdded": 0,
               "medianWinsAdded": 1,
               "winsAdded": 1,
+              "mutualTrade": null,
+              "otherNeeds": [
+                {
+                  "position": "DST",
+                  "percent": -64.22
+                },
+                {
+                  "position": "QB",
+                  "percent": -24.02
+                }
+              ],
+              "needsMatch": [
+                "DST"
+              ]
+            },
+            {
+              "playerId": 4373678,
+              "player": "Khalil Shakir",
+              "position": "WR",
+              "startRate": 16.67,
+              "rosteredWeeks": 6,
+              "startedWeeks": 1,
+              "boost": 24.8,
+              "teamId": 4,
+              "team": "Kirbo Crushers",
+              "h2hWinsAdded": 0,
+              "medianWinsAdded": 0,
+              "winsAdded": 0,
               "mutualTrade": null,
               "otherNeeds": [
                 {
@@ -1485,6 +1512,14 @@
             "givePlayers": [
               "Rashee Rice",
               "Bhayshul Tuten"
+            ],
+            "givePlayerIds": [
+              4428331,
+              4882093
+            ],
+            "getPlayerIds": [
+              4569173,
+              4426388
             ],
             "getPlayerId": "4569173+4426388",
             "getPlayer": "Rhamondre Stevenson + Jameson Williams",
@@ -1999,6 +2034,14 @@
             "givePlayers": [
               "Dallas Goedert",
               "Josh Downs"
+            ],
+            "givePlayerIds": [
+              3121023,
+              4688813
+            ],
+            "getPlayerIds": [
+              4432710,
+              4685382
             ],
             "getPlayerId": "4432710+4685382",
             "getPlayer": "TreVeyon Henderson + Omarion Hampton",
@@ -2529,6 +2572,14 @@
               "Aaron Jones Sr.",
               "D'Andre Swift"
             ],
+            "givePlayerIds": [
+              3042519,
+              4259545
+            ],
+            "getPlayerIds": [
+              4430027,
+              4426502
+            ],
             "getPlayerId": "4430027+4426502",
             "getPlayer": "Sam LaPorta + Drake London",
             "getPosition": "TE/WR",
@@ -2983,48 +3034,6 @@
               ]
             },
             {
-              "playerId": 4635008,
-              "player": "Keon Coleman",
-              "position": "WR",
-              "startRate": 0,
-              "rosteredWeeks": 2,
-              "startedWeeks": 0,
-              "boost": 9,
-              "teamId": 7,
-              "team": "Ruffing the Passer",
-              "h2hWinsAdded": 1,
-              "medianWinsAdded": 1,
-              "winsAdded": 2,
-              "mutualTrade": {
-                "playerId": 4575131,
-                "player": "Jacory Croskey-Merritt",
-                "position": "RB",
-                "startRate": 0,
-                "boost": 24.2,
-                "h2hWinsAdded": 0,
-                "medianWinsAdded": 0,
-                "winsAdded": 0
-              },
-              "otherNeeds": [
-                {
-                  "position": "DST",
-                  "percent": -22.94
-                },
-                {
-                  "position": "QB",
-                  "percent": -19.9
-                },
-                {
-                  "position": "WR",
-                  "percent": -15.95
-                }
-              ],
-              "needsMatch": [
-                "QB",
-                "WR"
-              ]
-            },
-            {
               "playerId": 3916433,
               "player": "Jakobi Meyers",
               "position": "WR",
@@ -3032,6 +3041,43 @@
               "rosteredWeeks": 6,
               "startedWeeks": 2,
               "boost": 24.9,
+              "teamId": 4,
+              "team": "Kirbo Crushers",
+              "h2hWinsAdded": 1,
+              "medianWinsAdded": 1,
+              "winsAdded": 2,
+              "mutualTrade": {
+                "playerId": 4430539,
+                "player": "Brenton Strange",
+                "position": "TE",
+                "startRate": 0,
+                "boost": 22.4,
+                "h2hWinsAdded": 0,
+                "medianWinsAdded": 0,
+                "winsAdded": 0
+              },
+              "otherNeeds": [
+                {
+                  "position": "DST",
+                  "percent": -64.22
+                },
+                {
+                  "position": "QB",
+                  "percent": -24.02
+                }
+              ],
+              "needsMatch": [
+                "QB"
+              ]
+            },
+            {
+              "playerId": 4373678,
+              "player": "Khalil Shakir",
+              "position": "WR",
+              "startRate": 16.67,
+              "rosteredWeeks": 6,
+              "startedWeeks": 1,
+              "boost": 13.4,
               "teamId": 4,
               "team": "Kirbo Crushers",
               "h2hWinsAdded": 1,
@@ -3102,6 +3148,14 @@
             "givePlayers": [
               "Sam LaPorta",
               "Drake London"
+            ],
+            "givePlayerIds": [
+              4430027,
+              4426502
+            ],
+            "getPlayerIds": [
+              4569587,
+              4430737
             ],
             "getPlayerId": "4569587+4430737",
             "getPlayer": "Wan'Dale Robinson + Kyren Williams",
@@ -4061,6 +4115,14 @@
               "Juwan Johnson",
               "Zay Flowers"
             ],
+            "givePlayerIds": [
+              3929645,
+              4429615
+            ],
+            "getPlayerIds": [
+              3916148,
+              4242335
+            ],
             "getPlayerId": "3916148+4242335",
             "getPlayer": "Tony Pollard + Jonathan Taylor",
             "getPosition": "RB/RB",
@@ -4517,6 +4579,14 @@
               "Ja'Marr Chase",
               "DK Metcalf"
             ],
+            "givePlayerIds": [
+              4362628,
+              4047650
+            ],
+            "getPlayerIds": [
+              4242335,
+              3042519
+            ],
             "getPlayerId": "4242335+3042519",
             "getPlayer": "Jonathan Taylor + Aaron Jones Sr.",
             "getPosition": "RB/RB",
@@ -4909,39 +4979,6 @@
               ]
             },
             {
-              "playerId": 4635008,
-              "player": "Keon Coleman",
-              "position": "WR",
-              "startRate": 0,
-              "rosteredWeeks": 2,
-              "startedWeeks": 0,
-              "boost": 15.9,
-              "teamId": 7,
-              "team": "Ruffing the Passer",
-              "h2hWinsAdded": 1,
-              "medianWinsAdded": 0,
-              "winsAdded": 1,
-              "mutualTrade": null,
-              "otherNeeds": [
-                {
-                  "position": "DST",
-                  "percent": -22.94
-                },
-                {
-                  "position": "QB",
-                  "percent": -19.9
-                },
-                {
-                  "position": "WR",
-                  "percent": -15.95
-                }
-              ],
-              "needsMatch": [
-                "QB",
-                "WR"
-              ]
-            },
-            {
               "playerId": 3916433,
               "player": "Jakobi Meyers",
               "position": "WR",
@@ -4949,6 +4986,34 @@
               "rosteredWeeks": 6,
               "startedWeeks": 2,
               "boost": 30.1,
+              "teamId": 4,
+              "team": "Kirbo Crushers",
+              "h2hWinsAdded": 0,
+              "medianWinsAdded": 0,
+              "winsAdded": 0,
+              "mutualTrade": null,
+              "otherNeeds": [
+                {
+                  "position": "DST",
+                  "percent": -64.22
+                },
+                {
+                  "position": "QB",
+                  "percent": -24.02
+                }
+              ],
+              "needsMatch": [
+                "QB"
+              ]
+            },
+            {
+              "playerId": 4373678,
+              "player": "Khalil Shakir",
+              "position": "WR",
+              "startRate": 16.67,
+              "rosteredWeeks": 6,
+              "startedWeeks": 1,
+              "boost": 16.4,
               "teamId": 4,
               "team": "Kirbo Crushers",
               "h2hWinsAdded": 0,
@@ -5009,6 +5074,13 @@
             "giveRosRank": "1",
             "givePlayers": [
               "Jahmyr Gibbs"
+            ],
+            "givePlayerIds": [
+              4429795
+            ],
+            "getPlayerIds": [
+              4362628,
+              4701936
             ],
             "getPlayerId": "4362628+4701936",
             "getPlayer": "Ja'Marr Chase + Matthew Golden",
@@ -5468,6 +5540,14 @@
             "givePlayers": [
               "Kenneth Walker III",
               "Jaylen Waddle"
+            ],
+            "givePlayerIds": [
+              4567048,
+              4372016
+            ],
+            "getPlayerIds": [
+              4361370,
+              3046779
             ],
             "getPlayerId": "4361370+3046779",
             "getPlayer": "Chris Olave + Jared Goff",

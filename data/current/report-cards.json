@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-25T14:54:06.946Z",
+  "updatedAt": "2026-10-26T10:53:20.633Z",
   "throughWeek": 6,
   "weights": {
     "season": "scoring 35%, start/sit 20%, draft 15%, waivers 15%, record 15% (trades shown, not weighted)",
@@ -10,8 +10,8 @@
     {
       "teamId": 11,
       "team": "Brock You Like a Hurricane",
-      "grade": "A+",
-      "score": 93.6,
+      "grade": "A",
+      "score": 92.3,
       "parts": {
         "scoring": {
           "grade": "A+",
@@ -26,39 +26,40 @@
         },
         "draft": {
           "grade": "A-",
-          "value": 133.81,
+          "value": 128.67,
           "label": "pts / week started from draft picks",
           "top": [
             {
               "player": "Kenneth Walker III",
-              "points": 81.2
+              "points": 151.7
             },
             {
               "player": "Bijan Robinson",
-              "points": 78.7
+              "points": 147.7
             }
           ]
         },
         "waivers": {
-          "grade": "A+",
-          "value": 27.5,
+          "grade": "A",
+          "value": 30.96,
           "label": "pts / week started from pickups",
           "top": [
             {
               "player": "Vikings D/ST",
-              "points": 19
+              "points": 53
             },
             {
-              "player": "Harrison Butker",
-              "points": 17
+              "player": "Drake Maye",
+              "points": 52.24
             }
           ]
         },
         "trades": {
-          "grade": "D",
+          "grade": "C+",
           "value": 0,
-          "label": "no trades, but passed up a swap worth +1 win",
-          "missedWins": 1
+          "label": "no trades, but passed up a swap worth +1 win (a contender: little need to deal)",
+          "missedWins": 1,
+          "need": 0
         },
         "record": {
           "grade": "A+",
@@ -118,7 +119,7 @@
       "teamId": 10,
       "team": "Gibb it to Me Baby",
       "grade": "A-",
-      "score": 83.9,
+      "score": 79.8,
       "parts": {
         "scoring": {
           "grade": "A",
@@ -133,35 +134,40 @@
         },
         "draft": {
           "grade": "A+",
-          "value": 144.76,
+          "value": 139.55,
           "label": "pts / week started from draft picks",
           "top": [
             {
               "player": "Jahmyr Gibbs",
-              "points": 99.3
+              "points": 174
             },
             {
               "player": "Chris Olave",
-              "points": 72.5
+              "points": 128.6
             }
           ]
         },
         "waivers": {
-          "grade": "C-",
-          "value": 3,
+          "grade": "D-",
+          "value": 6.96,
           "label": "pts / week started from pickups",
           "top": [
             {
+              "player": "Jets D/ST",
+              "points": 21
+            },
+            {
               "player": "49ers D/ST",
-              "points": 9
+              "points": 14
             }
           ]
         },
         "trades": {
-          "grade": "D-",
+          "grade": "C+",
           "value": 0,
-          "label": "no trades, but passed up a swap worth +2 wins",
-          "missedWins": 2
+          "label": "no trades, but passed up a swap worth +2 wins (a contender: little need to deal)",
+          "missedWins": 2,
+          "need": 0.5
         },
         "record": {
           "grade": "A-",
@@ -229,8 +235,8 @@
     {
       "teamId": 8,
       "team": "Mr. Action Jackson",
-      "grade": "B+",
-      "score": 74.3,
+      "grade": "A-",
+      "score": 77,
       "parts": {
         "scoring": {
           "grade": "B+",
@@ -244,40 +250,41 @@
           "pointsLeft": 62.7
         },
         "draft": {
-          "grade": "C+",
-          "value": 123.87,
+          "grade": "B",
+          "value": 112.14,
           "label": "pts / week started from draft picks",
           "top": [
             {
-              "player": "Lamar Jackson",
-              "points": 61.2
+              "player": "Zay Flowers",
+              "points": 125.2
             },
             {
               "player": "Ashton Jeanty",
-              "points": 57.3
+              "points": 124
             }
           ]
         },
         "waivers": {
           "grade": "A-",
-          "value": 8.33,
+          "value": 23.49,
           "label": "pts / week started from pickups",
           "top": [
             {
-              "player": "Rashod Bateman",
-              "points": 22.8
+              "player": "Spencer Shrader",
+              "points": 51
             },
             {
-              "player": "Konata Mumpfield",
-              "points": 2.2
+              "player": "Rashod Bateman",
+              "points": 34
             }
           ]
         },
         "trades": {
-          "grade": "D-",
+          "grade": "C",
           "value": 0,
-          "label": "no trades, but passed up a swap worth +2 wins",
-          "missedWins": 2
+          "label": "no trades, but passed up a swap worth +2 wins (a contender: little need to deal)",
+          "missedWins": 2,
+          "need": 10.1
         },
         "record": {
           "grade": "A-",
@@ -345,8 +352,8 @@
     {
       "teamId": 6,
       "team": "Claremont In Yo Stace!",
-      "grade": "B+",
-      "score": 69.3,
+      "grade": "B",
+      "score": 68.6,
       "parts": {
         "scoring": {
           "grade": "A-",
@@ -361,30 +368,40 @@
         },
         "draft": {
           "grade": "A",
-          "value": 139.45,
+          "value": 133.65,
           "label": "pts / week started from draft picks",
           "top": [
             {
               "player": "Josh Allen",
-              "points": 94.94
+              "points": 163.26
             },
             {
-              "player": "Davante Adams",
-              "points": 68.8
+              "player": "Jaylen Warren",
+              "points": 122.5
             }
           ]
         },
         "waivers": {
           "grade": "F",
-          "value": 0,
+          "value": -0.24,
           "label": "pts / week started from pickups",
-          "top": []
+          "top": [
+            {
+              "player": "Roschon Johnson",
+              "points": 1.3
+            },
+            {
+              "player": "Panthers D/ST",
+              "points": -3
+            }
+          ]
         },
         "trades": {
-          "grade": "D-",
+          "grade": "C",
           "value": 0,
-          "label": "no trades, but passed up a swap worth +2 wins",
-          "missedWins": 2
+          "label": "no trades, but passed up a swap worth +2 wins (a contender: little need to deal)",
+          "missedWins": 2,
+          "need": 9.3
         },
         "record": {
           "grade": "A",
@@ -453,7 +470,7 @@
       "teamId": 3,
       "team": "Kyle Tucker",
       "grade": "B",
-      "score": 64.1,
+      "score": 61.4,
       "parts": {
         "scoring": {
           "grade": "B",
@@ -467,36 +484,41 @@
           "pointsLeft": 59.88
         },
         "draft": {
-          "grade": "B+",
-          "value": 132.28,
+          "grade": "C+",
+          "value": 109.59,
           "label": "pts / week started from draft picks",
           "top": [
             {
               "player": "Jaxon Smith-Njigba",
-              "points": 107.06
+              "points": 203.16
             },
             {
-              "player": "Caleb Williams",
-              "points": 44.98
+              "player": "Bucky Irving",
+              "points": 111.6
             }
           ]
         },
         "waivers": {
-          "grade": "B-",
-          "value": 7.3,
+          "grade": "B",
+          "value": 21,
           "label": "pts / week started from pickups",
           "top": [
             {
               "player": "Matthew Stafford",
-              "points": 21.9
+              "points": 95.28
+            },
+            {
+              "player": "Braelon Allen",
+              "points": 32.8
             }
           ]
         },
         "trades": {
-          "grade": "D",
+          "grade": "C",
           "value": 0,
           "label": "no trades, but passed up a swap worth +1 win",
-          "missedWins": 1
+          "missedWins": 1,
+          "need": 27
         },
         "record": {
           "grade": "B-",
@@ -562,122 +584,10 @@
       ]
     },
     {
-      "teamId": 5,
-      "team": "49er Faith-Fool",
-      "grade": "B-",
-      "score": 55.5,
-      "parts": {
-        "scoring": {
-          "grade": "C+",
-          "value": 125.39,
-          "label": "pts / week"
-        },
-        "startSit": {
-          "grade": "B-",
-          "value": 92.2,
-          "label": "% of the best lineup",
-          "pointsLeft": 63.7
-        },
-        "draft": {
-          "grade": "B",
-          "value": 127.73,
-          "label": "pts / week started from draft picks",
-          "top": [
-            {
-              "player": "Jonathan Taylor",
-              "points": 63.5
-            },
-            {
-              "player": "Dak Prescott",
-              "points": 63.1
-            }
-          ]
-        },
-        "waivers": {
-          "grade": "B",
-          "value": 7.67,
-          "label": "pts / week started from pickups",
-          "top": [
-            {
-              "player": "Evan McPherson",
-              "points": 23
-            }
-          ]
-        },
-        "trades": {
-          "grade": "D-",
-          "value": 0,
-          "label": "no trades, but passed up a swap worth +2 wins",
-          "missedWins": 2
-        },
-        "record": {
-          "grade": "B",
-          "value": "7-5"
-        }
-      },
-      "luck": 1.36,
-      "weekly": [
-        {
-          "week": 1,
-          "grade": "C",
-          "score": 40,
-          "points": 144.3,
-          "efficiency": 79.99,
-          "pointsLeft": 36.1,
-          "lostToMistake": false
-        },
-        {
-          "week": 2,
-          "grade": "A+",
-          "score": 94.5,
-          "points": 164.36,
-          "efficiency": 100,
-          "pointsLeft": 0,
-          "lostToMistake": false
-        },
-        {
-          "week": 3,
-          "grade": "C-",
-          "score": 36.4,
-          "points": 107.34,
-          "efficiency": 93.14,
-          "pointsLeft": 7.9,
-          "lostToMistake": false
-        },
-        {
-          "week": 4,
-          "grade": "C",
-          "score": 38.2,
-          "points": 110.7,
-          "efficiency": 90.74,
-          "pointsLeft": 11.3,
-          "lostToMistake": false
-        },
-        {
-          "week": 5,
-          "grade": "C-",
-          "score": 36.4,
-          "points": 107.44,
-          "efficiency": 92.75,
-          "pointsLeft": 8.4,
-          "lostToMistake": false
-        },
-        {
-          "week": 6,
-          "grade": "B+",
-          "score": 70.9,
-          "points": 118.22,
-          "efficiency": 100,
-          "pointsLeft": 0,
-          "lostToMistake": false
-        }
-      ]
-    },
-    {
       "teamId": 2,
       "team": "TDsMaGee",
       "grade": "C+",
-      "score": 48,
+      "score": 50.7,
       "parts": {
         "scoring": {
           "grade": "B-",
@@ -691,36 +601,41 @@
           "pointsLeft": 65.66
         },
         "draft": {
-          "grade": "D",
-          "value": 102.37,
+          "grade": "C-",
+          "value": 102.71,
           "label": "pts / week started from draft picks",
           "top": [
             {
               "player": "Kyren Williams",
-              "points": 53
+              "points": 138.1
             },
             {
               "player": "James Cook III",
-              "points": 52.2
+              "points": 116.6
             }
           ]
         },
         "waivers": {
           "grade": "B+",
-          "value": 7.93,
+          "value": 21.19,
           "label": "pts / week started from pickups",
           "top": [
             {
+              "player": "Emanuel Wilson",
+              "points": 65.9
+            },
+            {
               "player": "Tyler Shough",
-              "points": 23.8
+              "points": 53.56
             }
           ]
         },
         "trades": {
-          "grade": "F",
+          "grade": "D",
           "value": 0,
           "label": "no trades, but passed up a swap worth +4 wins",
-          "missedWins": 4
+          "missedWins": 4,
+          "need": 55.4
         },
         "record": {
           "grade": "C",
@@ -786,6 +701,123 @@
       ]
     },
     {
+      "teamId": 5,
+      "team": "49er Faith-Fool",
+      "grade": "C+",
+      "score": 48.6,
+      "parts": {
+        "scoring": {
+          "grade": "C+",
+          "value": 125.39,
+          "label": "pts / week"
+        },
+        "startSit": {
+          "grade": "B-",
+          "value": 92.2,
+          "label": "% of the best lineup",
+          "pointsLeft": 63.7
+        },
+        "draft": {
+          "grade": "B-",
+          "value": 109.75,
+          "label": "pts / week started from draft picks",
+          "top": [
+            {
+              "player": "Jonathan Taylor",
+              "points": 137.5
+            },
+            {
+              "player": "D'Andre Swift",
+              "points": 123.8
+            }
+          ]
+        },
+        "waivers": {
+          "grade": "D+",
+          "value": 10.16,
+          "label": "pts / week started from pickups",
+          "top": [
+            {
+              "player": "Evan McPherson",
+              "points": 37
+            },
+            {
+              "player": "Hunter Henry",
+              "points": 14.1
+            }
+          ]
+        },
+        "trades": {
+          "grade": "D+",
+          "value": 0,
+          "label": "no trades, but passed up a swap worth +2 wins",
+          "missedWins": 2,
+          "need": 66.5
+        },
+        "record": {
+          "grade": "B",
+          "value": "7-5"
+        }
+      },
+      "luck": 1.36,
+      "weekly": [
+        {
+          "week": 1,
+          "grade": "C",
+          "score": 40,
+          "points": 144.3,
+          "efficiency": 79.99,
+          "pointsLeft": 36.1,
+          "lostToMistake": false
+        },
+        {
+          "week": 2,
+          "grade": "A+",
+          "score": 94.5,
+          "points": 164.36,
+          "efficiency": 100,
+          "pointsLeft": 0,
+          "lostToMistake": false
+        },
+        {
+          "week": 3,
+          "grade": "C-",
+          "score": 36.4,
+          "points": 107.34,
+          "efficiency": 93.14,
+          "pointsLeft": 7.9,
+          "lostToMistake": false
+        },
+        {
+          "week": 4,
+          "grade": "C",
+          "score": 38.2,
+          "points": 110.7,
+          "efficiency": 90.74,
+          "pointsLeft": 11.3,
+          "lostToMistake": false
+        },
+        {
+          "week": 5,
+          "grade": "C-",
+          "score": 36.4,
+          "points": 107.44,
+          "efficiency": 92.75,
+          "pointsLeft": 8.4,
+          "lostToMistake": false
+        },
+        {
+          "week": 6,
+          "grade": "B+",
+          "score": 70.9,
+          "points": 118.22,
+          "efficiency": 100,
+          "pointsLeft": 0,
+          "lostToMistake": false
+        }
+      ]
+    },
+    {
       "teamId": 9,
       "team": "The Mahomies",
       "grade": "C-",
@@ -803,40 +835,41 @@
           "pointsLeft": 95
         },
         "draft": {
-          "grade": "C-",
-          "value": 123.73,
+          "grade": "D",
+          "value": 97.52,
           "label": "pts / week started from draft picks",
           "top": [
             {
-              "player": "Patrick Mahomes",
-              "points": 67.58
+              "player": "Javonte Williams",
+              "points": 109
             },
             {
-              "player": "Ja'Marr Chase",
-              "points": 54.5
+              "player": "Patrick Mahomes",
+              "points": 101.06
             }
           ]
         },
         "waivers": {
-          "grade": "D+",
-          "value": 2.3,
+          "grade": "C+",
+          "value": 18.7,
           "label": "pts / week started from pickups",
           "top": [
             {
               "player": "Devaughn Vele",
-              "points": 6.9
+              "points": 30.5
             },
             {
-              "player": "Bengals D/ST",
-              "points": 0
+              "player": "Jacoby Brissett",
+              "points": 25.28
             }
           ]
         },
         "trades": {
-          "grade": "D-",
+          "grade": "D",
           "value": 0,
-          "label": "no trades, but passed up a swap worth +2 wins",
-          "missedWins": 2
+          "label": "no trades, but passed up a swap worth +2 wins (and needed the help)",
+          "missedWins": 2,
+          "need": 79.6
         },
         "record": {
           "grade": "C",
@@ -904,8 +937,8 @@
     {
       "teamId": 7,
       "team": "Ruffing the Passer",
-      "grade": "D+",
-      "score": 23,
+      "grade": "C-",
+      "score": 31.8,
       "parts": {
         "scoring": {
           "grade": "D+",
@@ -919,25 +952,34 @@
           "pointsLeft": 77.38
         },
         "draft": {
-          "grade": "D+",
-          "value": 120.57,
+          "grade": "B+",
+          "value": 112.23,
           "label": "pts / week started from draft picks",
           "top": [
             {
               "player": "Amon-Ra St. Brown",
-              "points": 76.8
+              "points": 130.4
             },
             {
               "player": "Chuba Hubbard",
-              "points": 53.1
+              "points": 111.1
             }
           ]
         },
         "waivers": {
-          "grade": "F",
-          "value": 0,
+          "grade": "D",
+          "value": 7.16,
           "label": "pts / week started from pickups",
-          "top": []
+          "top": [
+            {
+              "player": "Roman Wilson",
+              "points": 17.4
+            },
+            {
+              "player": "Rashid Shaheed",
+              "points": 11.8
+            }
+          ]
         },
         "trades": {
           "grade": null,
@@ -1010,7 +1052,7 @@
       "teamId": 12,
       "team": "Beautiful Dark Twisted Fantasy",
       "grade": "D+",
-      "score": 22,
+      "score": 27.5,
       "parts": {
         "scoring": {
           "grade": "D",
@@ -1024,36 +1066,41 @@
           "pointsLeft": 90.3
         },
         "draft": {
-          "grade": "F",
-          "value": 77.21,
+          "grade": "D+",
+          "value": 99.86,
           "label": "pts / week started from draft picks",
           "top": [
             {
               "player": "Christian McCaffrey",
-              "points": 58
+              "points": 144
             },
             {
-              "player": "Joe Burrow",
-              "points": 52.92
+              "player": "Malik Nabers",
+              "points": 112.6
             }
           ]
         },
         "waivers": {
-          "grade": "C+",
-          "value": 4.17,
+          "grade": "B-",
+          "value": 20.43,
           "label": "pts / week started from pickups",
           "top": [
             {
               "player": "Pat Freiermuth",
-              "points": 12.5
+              "points": 47.8
+            },
+            {
+              "player": "Bryce Young",
+              "points": 42.3
             }
           ]
         },
         "trades": {
-          "grade": "D",
+          "grade": "D+",
           "value": 0,
-          "label": "no trades, but passed up a swap worth +1 win",
-          "missedWins": 1
+          "label": "no trades, but passed up a swap worth +1 win (and needed the help)",
+          "missedWins": 1,
+          "need": 84.1
         },
         "record": {
           "grade": "D+",
@@ -1136,40 +1183,41 @@
           "pointsLeft": 153.8
         },
         "draft": {
-          "grade": "D-",
-          "value": 97.57,
+          "grade": "F",
+          "value": 77.59,
           "label": "pts / week started from draft picks",
           "top": [
             {
               "player": "Trey McBride",
-              "points": 59.1
+              "points": 132.2
             },
             {
               "player": "Parker Washington",
-              "points": 50.1
+              "points": 93.9
             }
           ]
         },
         "waivers": {
-          "grade": "A",
-          "value": 16.06,
+          "grade": "A+",
+          "value": 38.12,
           "label": "pts / week started from pickups",
           "top": [
             {
-              "player": "Chase McLaughlin",
-              "points": 28
+              "player": "C.J. Stroud",
+              "points": 73.12
             },
             {
-              "player": "C.J. Stroud",
-              "points": 11.68
+              "player": "Chase McLaughlin",
+              "points": 66
             }
           ]
         },
         "trades": {
           "grade": "D",
           "value": 0,
-          "label": "no trades, but passed up a swap worth +1 win",
-          "missedWins": 1
+          "label": "no trades, but passed up a swap worth +1 win (and needed the help)",
+          "missedWins": 1,
+          "need": 89.5
         },
         "record": {
           "grade": "D+",
@@ -1238,7 +1286,7 @@
       "teamId": 4,
       "team": "Kirbo Crushers",
       "grade": "D-",
-      "score": 12.7,
+      "score": 8.6,
       "parts": {
         "scoring": {
           "grade": "F",
@@ -1252,36 +1300,41 @@
           "pointsLeft": 97.2
         },
         "draft": {
-          "grade": "B-",
-          "value": 124.76,
+          "grade": "D-",
+          "value": 93.17,
           "label": "pts / week started from draft picks",
           "top": [
             {
-              "player": "Derrick Henry",
-              "points": 75.9
+              "player": "CeeDee Lamb",
+              "points": 134.1
             },
             {
-              "player": "CeeDee Lamb",
-              "points": 72.9
+              "player": "Derrick Henry",
+              "points": 124.7
             }
           ]
         },
         "waivers": {
-          "grade": "D",
-          "value": 2,
+          "grade": "C-",
+          "value": 11.54,
           "label": "pts / week started from pickups",
           "top": [
             {
-              "player": "Panthers D/ST",
-              "points": 6
+              "player": "Deshaun Watson",
+              "points": 40.88
+            },
+            {
+              "player": "Kenny Gainwell",
+              "points": 19.9
             }
           ]
         },
         "trades": {
           "grade": "F",
           "value": 0,
-          "label": "no trades, but passed up a swap worth +3 wins",
-          "missedWins": 3
+          "label": "no trades, but passed up a swap worth +3 wins (and needed the help)",
+          "missedWins": 3,
+          "need": 96.9
         },
         "record": {
           "grade": "F",
