@@ -1,6 +1,6 @@
 {
   "week": 7,
-  "lastUpdated": "2026-10-26T10:50:48.075Z",
+  "lastUpdated": "2026-10-26T15:09:04.096Z",
   "scores": [
     {
       "teamId": 11,
@@ -474,7 +474,7 @@
         "openSlots": 1,
         "atRisk": [],
         "gain": 0,
-        "reset": 0.07
+        "reset": 0.06
       },
       "aboveMedianProbability": 99.99,
       "topScoreProbability": 1.42,
@@ -642,7 +642,7 @@
         "openSlots": 1,
         "atRisk": [],
         "gain": 0,
-        "reset": 0.07
+        "reset": 0.06
       },
       "aboveMedianProbability": 99.99,
       "topScoreProbability": 0.01,
@@ -789,7 +789,7 @@
         "openSlots": 1,
         "atRisk": [],
         "gain": 0,
-        "reset": 0.07
+        "reset": 0.06
       },
       "aboveMedianProbability": 99.89,
       "topScoreProbability": 0.01,
@@ -1422,7 +1422,7 @@
         "openSlots": 1,
         "atRisk": [],
         "gain": 0,
-        "reset": 0.07
+        "reset": 0.06
       },
       "aboveMedianProbability": 13.78,
       "topScoreProbability": 0.01,
@@ -1610,7 +1610,7 @@
         "openSlots": 1,
         "atRisk": [],
         "gain": 0,
-        "reset": 0.07
+        "reset": 0.06
       },
       "aboveMedianProbability": 11.77,
       "topScoreProbability": 0.01,
@@ -1618,7 +1618,7 @@
       "medianDistanceSd": -0.93,
       "closeToMedian": false,
       "nearMedian": false,
-      "winProbability": 76.65
+      "winProbability": 76.69
     },
     {
       "teamId": 9,
@@ -1757,7 +1757,7 @@
         "openSlots": 1,
         "atRisk": [],
         "gain": 0,
-        "reset": 0.07
+        "reset": 0.06
       },
       "aboveMedianProbability": 12.47,
       "topScoreProbability": 0.02,
@@ -1778,17 +1778,17 @@
       "logo": "https://mystique-api.fantasy.espn.com/apis/v1/domains/lm/images/8ee3dcb0-8150-11f0-8306-0b32d1884cc7",
       "projection": {
         "espn": 91.01,
-        "otwf": 91.16,
+        "otwf": 91.14,
         "dist": {
-          "mean": 91.16,
-          "p10": 71.8,
-          "p25": 80.33,
-          "p50": 90.74,
-          "p75": 101.14,
-          "p90": 110.91
+          "mean": 91.14,
+          "p10": 71.79,
+          "p25": 80.3,
+          "p50": 90.73,
+          "p75": 101.12,
+          "p90": 110.88
         }
       },
-      "projectionAverage": 91.16,
+      "projectionAverage": 91.14,
       "projectionTrend": null,
       "status": "LIVE",
       "lineup": {
@@ -1925,7 +1925,7 @@
         "openSlots": 2,
         "atRisk": [],
         "gain": 0,
-        "reset": 0.07
+        "reset": 0.06
       },
       "aboveMedianProbability": 6.2,
       "topScoreProbability": 0.01,
@@ -1933,7 +1933,7 @@
       "medianDistanceSd": -1.42,
       "closeToMedian": false,
       "nearMedian": false,
-      "winProbability": 23.35
+      "winProbability": 23.31
     }
   ],
   "median": 112.25,
@@ -6946,6 +6946,23 @@
           "3": 99.97,
           "4": 23.35,
           "5": 76.65,
+          "6": 62.4,
+          "7": 100,
+          "8": 0,
+          "9": 0.03,
+          "10": 0,
+          "11": 100,
+          "12": 96.32
+        }
+      },
+      {
+        "t": "2026-10-26T15:09:04.083Z",
+        "p": {
+          "1": 3.68,
+          "2": 37.6,
+          "3": 99.97,
+          "4": 23.31,
+          "5": 76.69,
           "6": 62.4,
           "7": 100,
           "8": 0,
@@ -13203,60 +13220,6 @@
   },
   "projectionHistory": [
     {
-      "timestamp": "2026-10-26T05:18:18.961Z",
-      "week": 7,
-      "scores": [
-        {
-          "teamId": 11,
-          "projection": 157.64
-        },
-        {
-          "teamId": 12,
-          "projection": 145.18
-        },
-        {
-          "teamId": 3,
-          "projection": 143.81
-        },
-        {
-          "teamId": 1,
-          "projection": 136.07
-        },
-        {
-          "teamId": 7,
-          "projection": 131.61
-        },
-        {
-          "teamId": 8,
-          "projection": 113.28
-        },
-        {
-          "teamId": 10,
-          "projection": 111.22
-        },
-        {
-          "teamId": 2,
-          "projection": 100.82
-        },
-        {
-          "teamId": 6,
-          "projection": 104.15
-        },
-        {
-          "teamId": 5,
-          "projection": 104
-        },
-        {
-          "teamId": 9,
-          "projection": 100.94
-        },
-        {
-          "teamId": 4,
-          "projection": 91.16
-        }
-      ]
-    },
-    {
       "timestamp": "2026-10-26T05:18:56.110Z",
       "week": 7,
       "scores": [
@@ -13415,6 +13378,60 @@
         {
           "teamId": 4,
           "projection": 91.16
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-10-26T15:09:04.083Z",
+      "week": 7,
+      "scores": [
+        {
+          "teamId": 11,
+          "projection": 157.64
+        },
+        {
+          "teamId": 12,
+          "projection": 145.18
+        },
+        {
+          "teamId": 3,
+          "projection": 143.81
+        },
+        {
+          "teamId": 1,
+          "projection": 136.07
+        },
+        {
+          "teamId": 7,
+          "projection": 131.61
+        },
+        {
+          "teamId": 8,
+          "projection": 113.28
+        },
+        {
+          "teamId": 10,
+          "projection": 111.22
+        },
+        {
+          "teamId": 2,
+          "projection": 100.82
+        },
+        {
+          "teamId": 6,
+          "projection": 104.15
+        },
+        {
+          "teamId": 5,
+          "projection": 104
+        },
+        {
+          "teamId": 9,
+          "projection": 100.94
+        },
+        {
+          "teamId": 4,
+          "projection": 91.14
         }
       ]
     }
