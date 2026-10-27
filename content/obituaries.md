@@ -108,7 +108,31 @@ The team is dead. The guillotine is in the shop. And Joe’s tight end is now th
 
 Class dismissed. ☠️
 
+## Purdy Good
 
+Purdy Good · Gone for Good
+
+He came. He drafted. He benched all of his best players.
+
+Ben fell 19.40 points short of Jacob. Justin Jefferson (7.9) vanished, Nico Collins (1.6) filed a missing persons report, and the Texans D/ST (2) provided defensive support to absolutely nobody.
+
+The collapse began in Week 3, when Ben misunderstood FAAB and blew his entire $1,000 budget on Chris Olave. A grand for 10.6 points? Wall Street is still investigating. Warren Buffet called tk offer his condolences. 
+
+The final indignity: 73.3 points on the bench. Bucky Irving (28.5), Luther Burden III (23.7), and Cam Skattebo (21.1) could’ve saved him. Instead, Burden carried the points while Ben carried the burden of his own decisions.
+
+Brandon Aubrey (14) sent flowers. Tucker Kraft (13.8) brought the casserole.
+
+Ben called his team Purdy Good—pretty, pretty, pretty good. Turns out, it was pretty, pretty, pretty dead.
+
+Epitaph:
+
+There once was a manager named Ben,
+Who left 73 points on the Ben-ch.
+Jacob took the win,
+Ben’s season caved in—
+Now he’s broke, benched, and done in.
+
+Cause of death: Financial illiteracy and lineup malpractice. 
 
 
 
