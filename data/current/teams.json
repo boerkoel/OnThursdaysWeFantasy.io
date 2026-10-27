@@ -109,8 +109,8 @@
           "points": null,
           "draftPick": 130,
           "round": 11,
-          "rosRank": 273,
-          "valueGap": -143
+          "rosRank": 272,
+          "valueGap": -142
         },
         "boomMachine": {
           "playerId": 4432620,
@@ -284,14 +284,14 @@
               "medianWinsAdded": 0,
               "winsAdded": 0,
               "mutualTrade": {
-                "playerId": 4429023,
-                "player": "MarShawn Lloyd",
-                "position": "RB",
-                "startRate": 66.67,
-                "boost": 8.42,
+                "playerId": 4242355,
+                "player": "Jake Ferguson",
+                "position": "TE",
+                "startRate": 42.86,
+                "boost": 29.2,
                 "h2hWinsAdded": 0,
-                "medianWinsAdded": 0,
-                "winsAdded": 0
+                "medianWinsAdded": 1,
+                "winsAdded": 1
               },
               "otherNeeds": [
                 {
@@ -368,11 +368,11 @@
               "medianWinsAdded": 0,
               "winsAdded": 0,
               "mutualTrade": {
-                "playerId": 4429023,
-                "player": "MarShawn Lloyd",
-                "position": "RB",
-                "startRate": 66.67,
-                "boost": 15.6,
+                "playerId": 4242355,
+                "player": "Jake Ferguson",
+                "position": "TE",
+                "startRate": 42.86,
+                "boost": 16,
                 "h2hWinsAdded": 0,
                 "medianWinsAdded": 0,
                 "winsAdded": 0
@@ -520,7 +520,23 @@
             "perspective": "A"
           }
         ],
-        "longTermRegrets": [],
+        "longTermRegrets": [
+          {
+            "playerId": 4242355,
+            "player": "Jake Ferguson",
+            "position": "TE",
+            "startedWeeks": 3,
+            "rosteredWeeks": 7,
+            "weeks": [
+              2,
+              5
+            ],
+            "points": 17.6,
+            "h2hWins": 0,
+            "medianWins": 1,
+            "winsAdded": 1
+          }
+        ],
         "waiverTargets": [
           {
             "playerId": 4429086,
@@ -719,13 +735,13 @@
           "seasonRank": 1
         },
         "bestDraftValue": {
-          "playerId": 4360761,
-          "player": "Michael Wilson",
+          "playerId": 4430737,
+          "player": "Kyren Williams",
           "points": null,
-          "draftPick": 85,
-          "round": 8,
-          "rosRank": 60,
-          "valueGap": 25
+          "draftPick": 37,
+          "round": 4,
+          "rosRank": 13,
+          "valueGap": 24
         },
         "worstDraftValue": {
           "playerId": 4241457,
@@ -733,8 +749,8 @@
           "points": null,
           "draftPick": 180,
           "round": 15,
-          "rosRank": 395,
-          "valueGap": -215
+          "rosRank": 394,
+          "valueGap": -214
         },
         "boomMachine": {
           "playerId": 4685472,
@@ -752,8 +768,8 @@
           "player": "Michael Wilson",
           "round": 8,
           "draftPick": 85,
-          "rosRank": 60,
-          "valueGap": 25,
+          "rosRank": 61,
+          "valueGap": 24,
           "points": null
         },
         "boomBust": {
@@ -1353,8 +1369,8 @@
           "points": null,
           "draftPick": 77,
           "round": 7,
-          "rosRank": 256,
-          "valueGap": -179
+          "rosRank": 255,
+          "valueGap": -178
         },
         "boomMachine": {
           "playerId": 4430878,
@@ -2685,6 +2701,37 @@
               "needsMatch": []
             },
             {
+              "playerId": 4242355,
+              "player": "Jake Ferguson",
+              "position": "TE",
+              "startRate": 42.86,
+              "rosteredWeeks": 7,
+              "startedWeeks": 3,
+              "boost": 18.2,
+              "teamId": 1,
+              "team": "Ramosverse",
+              "h2hWinsAdded": 0,
+              "medianWinsAdded": 0,
+              "winsAdded": 0,
+              "mutualTrade": {
+                "playerId": 3916148,
+                "player": "Tony Pollard",
+                "position": "RB",
+                "startRate": 28.57,
+                "boost": 54.4,
+                "h2hWinsAdded": 0,
+                "medianWinsAdded": 1,
+                "winsAdded": 1
+              },
+              "otherNeeds": [
+                {
+                  "position": "RB",
+                  "percent": -34.58
+                }
+              ],
+              "needsMatch": []
+            },
+            {
               "playerId": 4429096,
               "player": "Blake Corum",
               "position": "RB",
@@ -2708,45 +2755,6 @@
                 "winsAdded": 0
               },
               "otherNeeds": [],
-              "needsMatch": []
-            },
-            {
-              "playerId": 2576925,
-              "player": "Darren Waller",
-              "position": "TE",
-              "startRate": 0,
-              "rosteredWeeks": 4,
-              "startedWeeks": 0,
-              "boost": 7.1,
-              "teamId": 2,
-              "team": "TDsMaGee",
-              "h2hWinsAdded": 0,
-              "medianWinsAdded": 0,
-              "winsAdded": 0,
-              "mutualTrade": {
-                "playerId": 3916148,
-                "player": "Tony Pollard",
-                "position": "RB",
-                "startRate": 28.57,
-                "boost": 34.9,
-                "h2hWinsAdded": 0,
-                "medianWinsAdded": 1,
-                "winsAdded": 1
-              },
-              "otherNeeds": [
-                {
-                  "position": "TE",
-                  "percent": -83.54
-                },
-                {
-                  "position": "K",
-                  "percent": -22.75
-                },
-                {
-                  "position": "DST",
-                  "percent": -15.38
-                }
-              ],
               "needsMatch": []
             }
           ]
@@ -4495,7 +4503,7 @@
             "getPlayerId": "4360310+4880281",
             "getPlayer": "Trevor Lawrence + Jordyn Tyson",
             "getPosition": "QB/WR",
-            "getRosRank": "54 + #85",
+            "getRosRank": "54 + #86",
             "getPlayers": [
               "Trevor Lawrence",
               "Jordyn Tyson"
