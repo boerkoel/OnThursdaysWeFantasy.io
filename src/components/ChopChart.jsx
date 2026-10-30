@@ -3,10 +3,11 @@ import { money, pct } from "../lib/data.js";
 import PlayMarkers from "./PlayMarkers.jsx";
 
 // Odds race panel (Death Watch chop odds, ticket race odds): the odds of the
-// three teams on the podium over the week,
+// three teams on the podium (every team, once 4 or fewer are left) over the week,
 // one line each, with a 🏈 on each play that moved a team's chop odds 3%+
 // (hover or tap for the play), and those teams' key plays underneath: the
-// 5 most recent, topped up with the week's biggest swings (up to 10).
+// 5 most recent, topped up with the week's biggest swings (up to 10). The
+// y-axis zooms to the range the lines have covered (at least 20 points tall).
 const WIDTH = 300;
 const HEIGHT = 90;
 const PAD = 6;
@@ -15,7 +16,8 @@ const KEY_POINTS = 4;
 const KEY_PLAYS_RECENT = 5;
 const KEY_PLAYS_MAX = 10;
 const KEY_PLAY_MAX_AGE_MS = 5 * 60 * 60 * 1000;
-export const CHOP_COLORS = ["#ef9a96", "#e6c85c", "#9cc3e6"];
+export const CHOP_COLORS = ["#ef9a96", "#e6c85c", "#9cc3e6", "#b8c69b"];
+const ALL_TEAMS_AT = 4;
 
 const newestFirst = (a, b) => Date.parse(b.wallclock) - Date.parse(a.wallclock);
 const chopSwingText = play => play.momentum
@@ -24,8 +26,10 @@ const chopSwingText = play => play.momentum
 
 // The teams whose story the chart tells: the n with the highest odds at any
 // point this week (history plus now), so a team that escaped (or locked it
-// up) stays on the chart with the plays that did it.
+// up) stays on the chart with the plays that did it. With 4 or fewer teams
+// left, all of them.
 export function peakTeams(history, teams, n = 3) {
+  if (teams.length <= ALL_TEAMS_AT) return [...teams].sort((a, b) => (Number(b.value) || 0) - (Number(a.value) || 0));
   const peak = new Map(teams.map(t => [String(t.teamId), Number(t.value) || 0]));
   for (const pt of history || []) for (const [id, v] of Object.entries(pt.p || {})) {
     if (peak.has(id) && Number(v) > peak.get(id)) peak.set(id, Number(v));
@@ -56,9 +60,12 @@ export default function ChopChart({ history, teams, plays, colors = CHOP_COLORS,
   let chart = null;
   if (enoughHistory) {
     const t0 = points[0].t, end = points[points.length - 1].t, span = Math.max(1, end - t0);
-    const top = Math.max(20, Math.ceil(Math.max(...points.flatMap(pt => ids.map(id => Number(pt.p[id]) || 0))) / 10) * 10);
+    const values = points.flatMap(pt => ids.map(id => Number(pt.p[id])).filter(Number.isFinite));
+    let bottom = Math.max(0, Math.floor(Math.min(...values) / 10) * 10);
+    const top = Math.min(100, Math.max(bottom + 20, Math.ceil(Math.max(...values) / 10) * 10));
+    bottom = Math.min(bottom, top - 20);
     const x = t => PAD + ((t - t0) / span) * (WIDTH - 2 * PAD);
-    const y = p => PAD + (1 - p / top) * (HEIGHT - 2 * PAD);
+    const y = p => PAD + (1 - (p - bottom) / (top - bottom)) * (HEIGHT - 2 * PAD);
     const valueAt = (id, t) => Number((points.find(pt => pt.t >= t) || points[points.length - 1]).p[id]);
     const paths = ids.map(id => points.filter(pt => Number.isFinite(Number(pt.p[id])))
       .map((pt, i) => `${i ? "L" : "M"}${x(pt.t).toFixed(1)},${y(Number(pt.p[id])).toFixed(1)}`).join(" "));
@@ -80,11 +87,11 @@ export default function ChopChart({ history, teams, plays, colors = CHOP_COLORS,
       <div className="swing-plot chop-plot">
         <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} preserveAspectRatio="none" role="img" aria-label={ariaLabel}
           onMouseMove={onMove} onMouseLeave={() => setHover(null)} onTouchStart={onMove} onTouchMove={onMove} onTouchEnd={() => setHover(null)}>
-          {[0.25, 0.5, 0.75].map(f => <line key={f} className="swing-midline" x1={PAD} x2={WIDTH - PAD} y1={y(top * f)} y2={y(top * f)} />)}
+          {[0.25, 0.5, 0.75].map(f => <line key={f} className="swing-midline" x1={PAD} x2={WIDTH - PAD} y1={y(bottom + (top - bottom) * f)} y2={y(bottom + (top - bottom) * f)} />)}
           {paths.map((d, i) => <path key={ids[i]} d={d} fill="none" stroke={colorOf[ids[i]]} strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />)}
           {hover ? <line className="swing-crosshair" x1={x(hover.t)} x2={x(hover.t)} y1={PAD} y2={HEIGHT - PAD} vectorEffect="non-scaling-stroke" /> : null}
         </svg>
-        <i className="chop-axis top">{top}%</i><i className="chop-axis bottom">0%</i>
+        <i className="chop-axis top">{top}%</i><i className="chop-axis bottom">{bottom}%</i>
         <PlayMarkers plays={plays.filter(p => Math.abs(p.momentum?.shift || 0) >= BIG_SWING)} t0={t0} end={end} width={WIDTH} height={HEIGHT}
           x={x} y={y} valueAt={(play, t) => valueAt(String(play.teamId), t)} swingText={swingText}
           ringColor={play => colorOf[String(play.teamId)]} subtitle={play => nameOf[String(play.teamId)]} />
