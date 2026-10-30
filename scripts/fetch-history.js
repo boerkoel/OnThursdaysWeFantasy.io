@@ -15,17 +15,18 @@ if (!espnS2 || !swid) throw new Error("Missing ESPN authentication secrets.");
 
 // Recent seasons live at the usual league address; older ones are only served
 // by ESPN's leagueHistory endpoint (which wraps the season in an array).
-async function fetchSeason(season, view, params = {}) {
-  const headers = { Accept: "application/json", "User-Agent": "OnThursdaysWeFantasy/1.0", Cookie: `espn_s2=${espnS2}; SWID=${swid}` };
+async function fetchSeason(season, view, params = {}, filter = null) {
+  const headers = { Accept: "application/json", "User-Agent": "OnThursdaysWeFantasy/1.0", Cookie: `espn_s2=${espnS2}; SWID=${swid}`,
+    ...(filter ? { "X-Fantasy-Filter": JSON.stringify(filter) } : {}) };
   const current = new URL(`https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${season}/segments/0/leagues/${leagueId}`);
-  current.searchParams.set("view", view);
+  for (const v of view.split(",")) current.searchParams.append("view", v);
   for (const [k, v] of Object.entries(params)) current.searchParams.set(k, String(v));
   const response = await fetch(current, { headers });
   if (response.ok) return response.json();
 
   const history = new URL(`https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/leagueHistory/${leagueId}`);
   history.searchParams.set("seasonId", String(season));
-  history.searchParams.set("view", view);
+  for (const v of view.split(",")) history.searchParams.append("view", v);
   for (const [k, v] of Object.entries(params)) history.searchParams.set(k, String(v));
   const fallback = await fetch(history, { headers });
   if (!fallback.ok) throw new Error(`${season} ${view}: ${response.status} ${response.statusText}, then leagueHistory ${fallback.status} ${fallback.statusText}`);
@@ -122,9 +123,15 @@ for (const season of previousSeasons) {
       const roster = await fetchSeason(season, "mRoster", { scoringPeriodId: week });
       let lineups = new Map((roster.teams || []).map(t => [Number(t.id), fromEntries(t.roster?.entries, statPoints)]));
       if (!matches(lineups)) {
-        const box = await fetchSeason(season, "mBoxscore", { scoringPeriodId: week, matchupPeriodId: week }).catch(() => null);
-        const boxLineups = new Map((box?.schedule || []).filter(m => Number(m.matchupPeriodId) === week).flatMap(m => [m.home, m.away]).filter(Boolean)
-          .map(side => [Number(side.teamId), fromEntries(side.rosterForCurrentScoringPeriod?.entries, e => Number(e.playerPoolEntry.appliedStatTotal))]));
+        const box = await fetchSeason(season, "mMatchupScore,mScoreboard,mBoxscore", { scoringPeriodId: week },
+          { schedule: { filterMatchupPeriodIds: { value: [week] } } }).catch(e => { if (week === 1) console.warn(`${season} box scores: ${e.message}`); return null; });
+        const sides = (box?.schedule || []).filter(m => Number(m.matchupPeriodId) === week).flatMap(m => [m.home, m.away]).filter(Boolean);
+        const boxPoints = e => { const v = Number(e.playerPoolEntry.appliedStatTotal); return Number.isFinite(v) ? v : statPoints(e); };
+        const boxLineups = new Map(sides.map(side => [Number(side.teamId), fromEntries((side.rosterForCurrentScoringPeriod || side.rosterForMatchupPeriod)?.entries, boxPoints)]));
+        if (week === 1) {   // what ESPN sent, for checking (no personal details)
+          const t = (roster.teams || [])[0], sum = l => (l || []).reduce((a, x) => a + x.points, 0).toFixed(1);
+          console.log(`${season} week 1: roster entries ${t?.roster?.entries?.length ?? 0}, starters with points ${lineups.get(Number(t?.id))?.length ?? 0} (sum ${sum(lineups.get(Number(t?.id)))} vs score ${scoreOf.get(Number(t?.id))}); box games ${box?.schedule?.length ?? 0}, side keys ${Object.keys(sides[0] || {}).join("/")}, entries ${(sides[0]?.rosterForCurrentScoringPeriod || sides[0]?.rosterForMatchupPeriod)?.entries?.length ?? 0}, sum ${sum(boxLineups.get(Number(sides[0]?.teamId)))} vs ${scoreOf.get(Number(sides[0]?.teamId))}`);
+        }
         if (boxLineups.size && matches(boxLineups)) lineups = boxLineups;
         else { mismatchedWeeks.push(week); continue; }   // left out rather than counted wrong
       }
