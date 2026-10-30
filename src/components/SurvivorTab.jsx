@@ -63,7 +63,7 @@ function TeamChip({ pick, small = false }) {
 // This week's games with the pool's revealed picks on each side, and each
 // manager's expected value (the tab's equal-share model) if either side wins.
 // A strip of field, away end zone on the left and home on the right (as the card reads), with the ball at the spot.
-function Field({ drive, homeHasBall }) {
+export function Field({ drive, homeHasBall }) {
   const at = drive.yardLine == null ? null : 100 - drive.yardLine;   // percent from the left; yardLine counts from the home goal line
   return <div className={"sv-field" + (drive.redZone ? " red" : "")} title={drive.text}>
     <div className="sv-field-strip"><span className="ez" /><span className="ez" />

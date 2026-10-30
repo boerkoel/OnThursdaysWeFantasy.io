@@ -1,19 +1,21 @@
 import { useEffect, useState } from "react";
 
-// The site's six tabs. The address hash picks the tab (#standings, #league,
+// The site's seven tabs (short: the phone tab bar's label, where space is tight). The address hash picks the tab (#standings, #league,
 // ...), so links, the Back button and the home-screen app all work. Older
 // section links (#playoffs, #rip, ...) open the tab that holds that section
 // and scroll to it.
 export const TABS = [
   { id: "live", label: "Live", icon: "🏈" },
+  { id: "games", label: "Games", icon: "🏟️" },
   { id: "standings", label: "Standings", icon: "🏆" },
-  { id: "death-watch", label: "Death Watch", icon: "🪓" },
+  { id: "death-watch", label: "Death Watch", short: "Chop", icon: "🪓" },
   { id: "league", label: "League", icon: "📚" },
   { id: "teams", label: "Teams", icon: "👥" },
   { id: "survivor", label: "Survivor", icon: "🛡️" }
 ];
 // Sections within each tab, for the phone section strip (ids on the page).
 export const TAB_SECTIONS = {
+  games: [],
   live: [["my-team", "My team"], ["primetime", "Tonight"], ["scores", "Scores"], ["ticket-race", "Ticket race"], ["scoreboard", "Median"], ["accuracy", "Accuracy"]],
   standings: [["standings-odds", "Standings"], ["playoffs", "Playoffs"], ["ultimate-loser", "Ultimate Loser"], ["raffle", "Raffle"]],
   "death-watch": [["death-watch", "At risk"], ["survival", "Survival odds"], ["rip", "RIP"]],

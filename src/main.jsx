@@ -23,6 +23,7 @@ import RafflePodium from "./components/RafflePodium.jsx";
 import PrimetimeWatch from "./components/PrimetimeWatch.jsx";
 import Sheet from "./components/Sheet.jsx";
 import SurvivorTab, { survivorModel, useSurvivorFeed } from "./components/SurvivorTab.jsx";
+import GamesTab from "./components/GamesTab.jsx";
 import RecordBook from "./components/RecordBook.jsx";
 import Notifications, { useFollowedTeams } from "./components/Notifications.jsx";
 import { seriesLine } from "./lib/recordBook.js";
@@ -564,6 +565,7 @@ function App() {
         </div>
         {renderExpectedWinnings(myScore.teamId, odds)}
         {renderOtherContests(myScore.teamId)}
+        <a className="my-games-link" href="#games">🏟️ See all my players, game by game →</a>
         <div className="matchup-list">{renderMatchupRow(myMatchupId, true)}{primetimeView ? renderPrimetime(myMatchupId) : null}</div>
       </section>
     );
@@ -869,6 +871,7 @@ function App() {
       </section>
       </> : null}
 
+      {tab === "games" ? <GamesTab scoreboard={scoreboard} guillotine={guillotine} livePlays={livePlayFeed} survivorFeed={survivorFeed} teams={teamsData.teams || []} logos={teamLogos} managerLinks={managerLinks} myTeamId={myTeamId} /> : null}
       {tab === "survivor" ? <SurvivorTab nflGames={scoreboard.nflGames || []} nflWeek={Number(scoreboard.week)} /> : null}
 
       <footer>On Thursdays We Fantasy · 2026 · Officially unofficial.</footer>

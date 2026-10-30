@@ -1095,3 +1095,48 @@ section,details,.odds-block{scroll-margin-top:72px}
 .my-winnings-pill{padding:5px 10px;border:1px solid #30332d;border-radius:999px;background:#10110f;color:#a9ac9f;font-size:12px}.my-winnings-pill b{color:#dfe9c7}
 .rc-sort{font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit;background:none;border:0;padding:0;cursor:pointer}.rc-sort:first-child{text-align:left}.rc-sort.active{color:#dfe9c7}.rc-sort.active::after{content:" ▾"}
 .two-wins{display:block;font-size:10px;font-weight:700;color:#8b8e86;margin-top:1px}
+
+/* Games tab (GamesTab.jsx). */
+.tab-short{display:none}
+@media(max-width:700px){.tab-long{display:none}.tab-short{display:inline}}
+.gm-toggle{margin:0 0 12px}
+.gm-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:10px}
+.gm-card{min-width:0}
+.gm-card{padding:10px 12px;border:1px solid #30332d;border-radius:14px;background:#ffffff06}
+.gm-card.live{border-color:#4a533e}
+.gm-card.final{opacity:.85}
+.gm-head{font-size:10px;font-weight:800;letter-spacing:.08em;color:#8b8e86;text-transform:uppercase}
+.gm-head .live{color:#b8c69b}
+.gm-sides{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin-top:6px}
+.gm-side{display:flex;align-items:center;gap:6px;min-width:0}
+.gm-sides .gm-side:last-child{justify-content:flex-end}
+.gm-side img{width:24px;height:24px}
+.gm-side b{font-size:14px}
+.gm-side.lost{opacity:.55}
+.gm-score{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;color:#f0f3ed}
+.gm-side small{font-size:11px;color:#8b8e86}.gm-side small.fav{color:#b8c69b}
+.gm-at{color:#5f6559;font-size:11px}
+.gm-line{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:6px;font-size:11px;color:#8b8e86}
+.gm-line b{color:#dfe7d7}.gm-line.big b{color:#e6c85c}
+.gm-expand{display:block;width:100%;margin-top:8px;padding:5px 0 0;border:0;border-top:1px solid #292c27;background:none;color:#aeb1a9;font:inherit;font-size:11px;font-weight:800;text-align:left;cursor:pointer}
+.gm-box{margin-top:6px}
+.gm-box-side{margin:6px 0 2px;font-size:10px;font-weight:800;letter-spacing:.08em;color:#8b8e86}
+.gm-player{display:grid;grid-template-columns:1fr auto auto;grid-template-areas:"name owner pts" "name owner proj";column-gap:8px;align-items:center;padding:4px 0;border-bottom:1px solid #22251f;font-size:12px}
+.gm-player-name{grid-area:name;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gm-player-name small{color:#8b8e86;font-size:10px}
+.gm-owner{grid-area:owner;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#aeb1a9;font-size:11px}
+.gm-player strong{grid-area:pts;text-align:right;font-variant-numeric:tabular-nums;color:#f0f3ed}
+.gm-proj{grid-area:proj;text-align:right;color:#7d8078;font-size:10px}
+.gm-player.g .gm-player-name b{color:#ef9a96}
+.gm-riders{margin:6px 0 0;font-size:11px;color:#c7cac1}
+.gm-plays,.gm-feed{margin-top:8px}
+.gm-feed{margin-bottom:12px;padding:10px 12px;border:1px solid #30332d;border-radius:14px}
+.gm-play{display:grid;grid-template-columns:44px 1fr auto;gap:8px;padding:5px 0;border-bottom:1px solid #22251f;font-size:11px;color:#c7cac1}
+.gm-play strong{color:#b8c69b;font-variant-numeric:tabular-nums}.gm-play strong.negative{color:#d96b67}
+.gm-play b{color:#f0f3ed}.gm-play small{color:#7d8078;white-space:nowrap}
+.gm-tag{margin:0 4px;font-style:normal;color:#8b8e86}
+.gm-follow{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+.gm-follow img{width:40px;height:40px;border-radius:50%}
+.gm-follow b{display:block;font-size:15px}.gm-follow small{display:block;color:#aeb1a9;font-size:11px}
+.gm-empty{color:#8b8e86;font-size:13px}
+.my-games-link{display:inline-block;margin:6px 0 2px;color:#b8c69b;font-size:12px;font-weight:800;text-decoration:none}

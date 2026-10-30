@@ -31,7 +31,7 @@ export function TabBar({ tab, onSelect }) {
       {TABS.map(t => (
         <button key={t.id} type="button" className={tab === t.id ? "active" : ""} aria-current={tab === t.id ? "page" : undefined} onClick={() => onSelect(t.id)}>
           <span aria-hidden="true">{t.icon}</span>
-          <small>{t.label}</small>
+          <small>{t.short ? <><span className="tab-long">{t.label}</span><span className="tab-short">{t.short}</span></> : t.label}</small>
         </button>
       ))}
     </nav>
