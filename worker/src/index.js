@@ -8,7 +8,8 @@
 //   and polled by the app (GET); see live.js.
 // - scheduled (every 2 minutes): reads the latest live data, finds
 //   what's new since last time (lead changes, new favorites, finals, League
-//   Wire highlights, Death Watch changes) and pushes it to matching phones.
+//   Wire highlights, Death Watch changes) and pushes it to matching phones;
+//   every 30 minutes also saves this week's betting lines (lines.js, /lines).
 //
 // KV (SUBS): "vapid" (this service's own key pair, created on first use),
 // "sub:<id>" (one per phone), "refresh-requested" (when /refresh last started a
@@ -19,6 +20,7 @@
 import { generateVapidKeys, sendPush } from "./webpush.js";
 import { splashProbe, survivorFeed } from "./splash.js";
 import { LiveStore, publishLive, readLive, serveLive, storeGet, storePut } from "./live.js";
+import { readLines, snapshotLines } from "./lines.js";
 // Main-league team -> the same manager's guillotine team and Splash handles:
 // following a team follows its manager's other contests too.
 import managerLinks from "../../src/data/manager-links.json";
@@ -106,6 +108,8 @@ export default {
       if (request.method === "GET" && pathname === "/splash/probe") return json(await splashProbe(env), 200, origin);
       // The Survivor tab's feed: standings and picks that have locked.
       if (request.method === "GET" && pathname === "/survivor") return json(await survivorFeed(env), 200, origin);
+      // This week's betting lines: opening line and every move since (lines.js).
+      if (request.method === "GET" && pathname === "/lines") return json(await readLines(env), 200, origin);
       if (request.method !== "POST") return json({ error: "Not found" }, 404, origin);
       if (pathname === "/refresh") return json(await requestLiveUpdate(env), 200, origin);
 
@@ -141,6 +145,7 @@ export default {
 
   async scheduled(event, env, ctx) {
     ctx.waitUntil(checkForAlerts(env));
+    ctx.waitUntil(snapshotLines(env).catch(() => null));
   }
 };
 
