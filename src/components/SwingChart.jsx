@@ -7,9 +7,11 @@ import { pct } from "../lib/data.js";
 // instead of a legend; the dashed line marks 50%. Hover (or touch) shows the
 // odds at that moment. A 🏈 marks each play that moved the odds 3%+; hover
 // (or tap) it to see the play. Plays too close together to tell apart share
-// one marker.
+// one marker. The y-axis zooms to the biggest swing so far, kept centered on
+// 50% (so 40–60% fills the chart), never tighter than 40–60%.
 const WIDTH = 300;
-const HEIGHT = 56;
+const HEIGHT = 84;
+const MIN_REACH = 10;
 const PAD = 5;
 
 // The recap's tipping point for a finished matchup: the play that put the
@@ -41,7 +43,8 @@ export default function SwingChart({ points, teamId, teamName, opponentName, pla
   const t0 = series[0].t;
   const span = Math.max(1, series[series.length - 1].t - t0);
   const x = pt => PAD + ((pt.t - t0) / span) * (WIDTH - 2 * PAD);
-  const y = pt => PAD + (1 - pt.p / 100) * (HEIGHT - 2 * PAD);
+  const reach = Math.min(50, Math.max(MIN_REACH, Math.ceil(Math.max(...series.map(pt => Math.abs(pt.p - 50))) * 1.1 / 5) * 5));
+  const y = pt => PAD + (1 - (pt.p - 50 + reach) / (2 * reach)) * (HEIGHT - 2 * PAD);
   const path = series.map((pt, i) => `${i ? "L" : "M"}${x(pt).toFixed(1)},${y(pt).toFixed(1)}`).join(" ");
   const last = series[series.length - 1];
   const low = series.reduce((a, b) => (b.p < a.p ? b : a));
@@ -66,11 +69,12 @@ export default function SwingChart({ points, teamId, teamName, opponentName, pla
         <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} preserveAspectRatio="none" role="img"
           aria-label={`${teamName}'s win odds against ${opponentName} moved between ${Math.round(low.p)}% and ${Math.round(high.p)}% and are ${Math.round(last.p)}% now`}
           onMouseMove={onMove} onMouseLeave={() => setHover(null)} onTouchStart={onMove} onTouchMove={onMove} onTouchEnd={() => setHover(null)}>
-          <line className="swing-midline" x1={PAD} x2={WIDTH - PAD} y1={HEIGHT / 2} y2={HEIGHT / 2} />
+          <line className="swing-midline" x1={PAD} x2={WIDTH - PAD} y1={HEIGHT / 2} y2={HEIGHT / 2} vectorEffect="non-scaling-stroke" />
           <path className="swing-line" d={path} vectorEffect="non-scaling-stroke" />
           {hover ? <line className="swing-crosshair" x1={x(hover)} x2={x(hover)} y1={PAD} y2={HEIGHT - PAD} vectorEffect="non-scaling-stroke" /> : null}
         </svg>
         {/* Marker outside the stretched SVG so it stays round. */}
+        {reach < 50 ? <><span className="swing-axis top">{50 + reach}%</span><span className="swing-axis bottom">{50 - reach}%</span></> : null}
         <span className="swing-dot" style={{ left: `${(x(shown) / WIDTH) * 100}%`, top: `${(y(shown) / HEIGHT) * 100}%` }} />
         {crossings ? series.slice(1).map((pt, i) => {
           // 💥 wherever the line crosses 50%: the other team took over.
