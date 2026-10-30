@@ -89,6 +89,8 @@ for (const season of previousSeasons) {
 // categories). Regular-season weeks only: each week's roster (mRoster with scoringPeriodId) gives the starters
 // and their points; mDraftDetail the draft picks; mTransactions2 the trades (a player counts as a trade
 // acquisition for the team that received him from that week on). Anyone else started was a pickup.
+// ESPN's archive has no weekly lineups for 2022-23 (final rosters only, box scores without rosters): those
+// files are saved with reliable: false so they aren't fetched again, and the report cards skip them.
 // Stores totals and each team's top 2 players per source, no account details.
 const BENCH = 20, IR = 21;
 for (const season of previousSeasons) {
@@ -128,10 +130,6 @@ for (const season of previousSeasons) {
         const sides = (box?.schedule || []).filter(m => Number(m.matchupPeriodId) === week).flatMap(m => [m.home, m.away]).filter(Boolean);
         const boxPoints = e => { const v = Number(e.playerPoolEntry.appliedStatTotal); return Number.isFinite(v) ? v : statPoints(e); };
         const boxLineups = new Map(sides.map(side => [Number(side.teamId), fromEntries((side.rosterForCurrentScoringPeriod || side.rosterForMatchupPeriod)?.entries, boxPoints)]));
-        if (week === 1) {   // what ESPN sent, for checking (no personal details)
-          const t = (roster.teams || [])[0], sum = l => (l || []).reduce((a, x) => a + x.points, 0).toFixed(1);
-          console.log(`${season} week 1: roster entries ${t?.roster?.entries?.length ?? 0}, starters with points ${lineups.get(Number(t?.id))?.length ?? 0} (sum ${sum(lineups.get(Number(t?.id)))} vs score ${scoreOf.get(Number(t?.id))}); box games ${box?.schedule?.length ?? 0}, side keys ${Object.keys(sides[0] || {}).join("/")}, entries ${(sides[0]?.rosterForCurrentScoringPeriod || sides[0]?.rosterForMatchupPeriod)?.entries?.length ?? 0}, sum ${sum(boxLineups.get(Number(sides[0]?.teamId)))} vs ${scoreOf.get(Number(sides[0]?.teamId))}`);
-        }
         if (boxLineups.size && matches(boxLineups)) lineups = boxLineups;
         else { mismatchedWeeks.push(week); continue; }   // left out rather than counted wrong
       }
@@ -156,7 +154,6 @@ for (const season of previousSeasons) {
         drafted: Math.round(r.drafted * 100) / 100, pickups: Math.round(r.pickups * 100) / 100, trades: Math.round(r.trades * 100) / 100,
         top: { drafted: top(r.top.drafted), pickups: top(r.top.pickups), trades: top(r.top.trades) } }; })
     };
-    if (!out.teams.some(t => t.weeks)) throw new Error("no weekly rosters");
     await writeFile(path, JSON.stringify(out) + "\n");
     console.log(`Saved ${season} sources: ${drafted.size} draft picks, ${tradedFrom.size} traded players${tradeData ? "" : " (no transaction data)"}${mismatchedWeeks.length ? `, weeks not matching the scores: ${mismatchedWeeks.join(", ")}` : ""}.`);
   } catch (error) {
