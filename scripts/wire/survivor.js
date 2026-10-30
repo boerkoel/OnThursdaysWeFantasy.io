@@ -1,4 +1,5 @@
 import { currentWeek, fit, nflGames, pickLine, readJson } from "./context.js";
+import { survivorModel } from "../lib/survivor-model.js";
 
 // League Wire: the league's Splash survivor pool (Jim, 2026-10-25).
 // - SURVIVOR PICKS: once this week's picks are revealed (a pick shows once its
@@ -80,28 +81,20 @@ export function addSurvivorScareStory(add) {
 }
 
 // SURVIVOR ODDS (Jim, 2026-10-25): entries in play this week vs how many the
-// odds expect to survive (each revealed pick at its live win chance; hidden
-// picks count as surviving). Runs while results are still open and the
-// expected toll is real (a quarter of the field or more).
+// odds expect to survive, from the Survivor tab's simulation (survivorModel:
+// live win chances, same-team entries drawn together, hidden picks modeled as
+// favorites among each entry's unused teams). Runs while results are still
+// open and the expected toll is real (a quarter of the field or more).
 export function addSurvivorOddsStory(add) {
-  if (week !== currentWeek) return;
-  const inPlay = entries.filter(e => e.alive || e.eliminatedWeek === week);
-  if (!inPlay.length) return;
-  // Revealed picks only (hidden ones are mentioned, not counted).
-  let exp = 0, hidden = 0, open = 0;
-  for (const e of inPlay) {
-    const p = e.picks?.[week];
-    if (!p) { hidden++; continue; }
-    if (settled(p)) { exp += p.result === "won" ? 1 : 0; continue; }
-    open++;
-    const w = gameOf(p.team)?.us.winChance;
-    exp += w ?? 1;
-  }
-  const n = inPlay.length - hidden;
-  if (!open || !n || exp / n > 0.75) return;
+  const sim = survivorModel(feed, nflGames, currentWeek).sim;
+  // Not before kickoff: with every pick still hidden it's all model.
+  if (!sim || sim.final || sim.hidden === sim.total || sim.exp / sim.total > 0.75) return;
+  const standing = sim.total - sim.lost;
+  const range = sim.lo !== sim.hi ? ` (likely ${sim.lo}–${sim.hi})` : "";
   const lead = pickLine("svodds" + week, ["🛡️ SURVIVOR ODDS", "🛡️ SURVIVOR MATH", "🛡️ BRACE FOR IMPACT"]);
   add("SURVIVOR ODDS", fit(
-    `${lead}: ${plural(n, "entry", "entries")} in play this week, and the odds expect only ${exp.toFixed(1)} to survive.${hidden ? ` (${plural(hidden, "more pick")} still hidden.)` : ""}`,
-    `${lead}: ${n} in play, ${exp.toFixed(1)} expected to survive.`
-  ), 70 + Math.round((1 - exp / n) * 20));
+    `${lead}: ${plural(sim.total, "entry", "entries")} in play this week${sim.lost ? `, ${sim.lost} already down` : ""}, and the odds expect only ${sim.exp.toFixed(1)} to survive${range}.${sim.hidden ? ` That counts ${plural(sim.hidden, "pick")} still hidden, modeled as favorites.` : ""}`,
+    `${lead}: ${standing} of ${sim.total} still standing, ${sim.exp.toFixed(1)} expected to survive${range}.`,
+    `${lead}: ${sim.exp.toFixed(1)} of ${sim.total} expected to survive.`
+  ), 70 + Math.round((1 - sim.exp / sim.total) * 20));
 }
