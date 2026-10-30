@@ -101,6 +101,7 @@ for (const season of previousSeasons) {
     const tradedFrom = new Map();   // "team:player" -> first week it counts as a trade
     const totals = new Map(base.teams.map(t => [t.id, { drafted: 0, pickups: 0, trades: 0, weeks: 0, top: { drafted: {}, pickups: {}, trades: {} } }]));
     let tradeData = false;
+    const mismatchedWeeks = [];   // weeks whose lineups don't add up to the real scores
     for (let week = 1; week <= base.regularSeasonWeeks; week++) {
       const tx = await fetchSeason(season, "mTransactions2", { scoringPeriodId: week }).catch(() => null);
       if (tx?.transactions) tradeData = true;
@@ -111,33 +112,46 @@ for (const season of previousSeasons) {
           if (item.toTeamId > 0 && !tradedFrom.has(key)) tradedFrom.set(key, week);
         }
       }
+      // Each team's starters and points this week: the weekly roster, or, when that doesn't add up to the
+      // week's real scores (ESPN's archive can ignore scoringPeriodId and return final rosters), the box scores.
+      const scoreOf = new Map(base.games.filter(g => g.week === week).flatMap(g => [[g.home, g.homeScore], [g.away, g.awayScore]]));
+      const fromEntries = (entries, pointsOf) => (entries || []).filter(e => e.playerPoolEntry?.player && ![BENCH, IR].includes(Number(e.lineupSlotId)))
+        .map(e => ({ id: e.playerId, name: e.playerPoolEntry.player.fullName, points: pointsOf(e) })).filter(x => Number.isFinite(x.points));
+      const statPoints = e => Number((e.playerPoolEntry.player.stats || []).find(x => Number(x.scoringPeriodId) === week && Number(x.statSourceId) === 0 && Number(x.statSplitTypeId) === 1)?.appliedTotal);
+      const matches = lineups => [...scoreOf].every(([id, score]) => Math.abs((lineups.get(id) || []).reduce((a, x) => a + x.points, 0) - score) < 0.6);
       const roster = await fetchSeason(season, "mRoster", { scoringPeriodId: week });
-      for (const team of roster.teams || []) {
-        const rec = totals.get(Number(team.id));
+      let lineups = new Map((roster.teams || []).map(t => [Number(t.id), fromEntries(t.roster?.entries, statPoints)]));
+      if (!matches(lineups)) {
+        const box = await fetchSeason(season, "mBoxscore", { scoringPeriodId: week, matchupPeriodId: week }).catch(() => null);
+        const boxLineups = new Map((box?.schedule || []).filter(m => Number(m.matchupPeriodId) === week).flatMap(m => [m.home, m.away]).filter(Boolean)
+          .map(side => [Number(side.teamId), fromEntries(side.rosterForCurrentScoringPeriod?.entries, e => Number(e.playerPoolEntry.appliedStatTotal))]));
+        if (boxLineups.size && matches(boxLineups)) lineups = boxLineups;
+        else { mismatchedWeeks.push(week); continue; }   // left out rather than counted wrong
+      }
+      for (const [teamId, players] of lineups) {
+        const rec = totals.get(teamId);
         if (!rec) continue;
         rec.weeks++;
-        for (const e of team.roster?.entries || []) {
-          const slot = Number(e.lineupSlotId), p = e.playerPoolEntry?.player;
-          if (!p || slot === BENCH || slot === IR) continue;
-          const points = Number((p.stats || []).find(x => Number(x.scoringPeriodId) === week && Number(x.statSourceId) === 0 && Number(x.statSplitTypeId) === 1)?.appliedTotal);
-          if (!Number.isFinite(points)) continue;
-          const key = `${team.id}:${e.playerId}`;
+        for (const p of players) {
+          const key = `${teamId}:${p.id}`;
           const kind = tradedFrom.has(key) && tradedFrom.get(key) <= week ? "trades" : drafted.has(key) ? "drafted" : "pickups";
-          rec[kind] += points;
-          rec.top[kind][p.fullName] = (rec.top[kind][p.fullName] || 0) + points;
+          rec[kind] += p.points;
+          rec.top[kind][p.name] = (rec.top[kind][p.name] || 0) + p.points;
         }
       }
     }
     const top = m => Object.entries(m).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([player, points]) => ({ player, points: Math.round(points * 100) / 100 }));
     const out = {
-      season, weeks: base.regularSeasonWeeks, tradeData, draftPicks: drafted.size,
+      season, weeks: base.regularSeasonWeeks, tradeData, draftPicks: drafted.size, mismatchedWeeks,
+      // Graded only when nearly every week's lineups match the real scores.
+      reliable: mismatchedWeeks.length <= 1,
       teams: base.teams.map(t => { const r = totals.get(t.id); return { id: t.id, manager: t.manager, weeks: r.weeks,
         drafted: Math.round(r.drafted * 100) / 100, pickups: Math.round(r.pickups * 100) / 100, trades: Math.round(r.trades * 100) / 100,
         top: { drafted: top(r.top.drafted), pickups: top(r.top.pickups), trades: top(r.top.trades) } }; })
     };
     if (!out.teams.some(t => t.weeks)) throw new Error("no weekly rosters");
     await writeFile(path, JSON.stringify(out) + "\n");
-    console.log(`Saved ${season} sources: ${drafted.size} draft picks, ${tradedFrom.size} traded players${tradeData ? "" : " (no transaction data)"}.`);
+    console.log(`Saved ${season} sources: ${drafted.size} draft picks, ${tradedFrom.size} traded players${tradeData ? "" : " (no transaction data)"}${mismatchedWeeks.length ? `, weeks not matching the scores: ${mismatchedWeeks.join(", ")}` : ""}.`);
   } catch (error) {
     console.warn(`Could not save ${season} sources: ${error.message}`);
   }

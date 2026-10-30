@@ -144,6 +144,7 @@ if (book?.managers?.length) {
   };
   for (const file of (await readdir("data/history").catch(() => [])).filter(f => /^sources-\d+\.json$/.test(f)).sort()) {
     const past = await read(`data/history/${file}`);
+    if (past.reliable === false) continue;   // lineups didn't match that season's scores
     for (const t of past.teams || []) if (t.weeks) addTo(canonical(t.manager), t, past.season);
   }
   if (haveRosters) for (const t of teams) {
