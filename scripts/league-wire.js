@@ -22,6 +22,7 @@ import { addRosterStories } from "./wire/roster.js";
 import { addPracticeReportStory, addTrendingStory } from "./wire/sleeper.js";
 import { addByeWatchStory, addClinchStory, addTwoWinsStory, addLiveStandingsStory, addPlayoffSwingStory, addStockWatchStory } from "./wire/stock.js";
 import { addSurvivorOddsStory, addSurvivorPicksStory, addSurvivorScareStory } from "./wire/survivor.js";
+import { addLineMoveStory } from "./wire/lines.js";
 import { addMiscueStory, addShrewdSwapStory, addDropRegretStory } from "./wire/swaps.js";
 import { addAbandonedStory, addWaiverMvpStory } from "./wire/ledger.js";
 import { addSwingStories } from "./wire/swings.js";
@@ -180,6 +181,7 @@ async function buildMarqueeStories() {
   try { addByeWatchStory(add); } catch (error) { console.warn("League Wire: bye watch failed: " + error.message); }
   try { addTwoWinsStory(add); } catch (error) { console.warn("League Wire: two wins failed: " + error.message); }
   try { addLiveStandingsStory(add); } catch (error) { console.warn("League Wire: live standings failed: " + error.message); }
+  try { addLineMoveStory(add); } catch (error) { console.warn("League Wire: line moves failed: " + error.message); }
   try { addSurvivorPicksStory(add); addSurvivorScareStory(add); addSurvivorOddsStory(add); } catch (error) { console.warn("League Wire: survivor failed: " + error.message); }
 
   const biggestLead=matchupStates.filter(x=>!x.m.completed).sort((a,b)=>b.diff-a.diff)[0];

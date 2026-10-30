@@ -370,6 +370,7 @@ function App() {
     if (/RAFFLE/.test(type)) return go("raffle");
     if (/TITLE ODDS|TOILET BOWL|PLAYOFF SWING|CLINCH|BYE WATCH|TWO WINS|STOCK|STANDINGS/.test(type)) return go("standings-odds");
     if (/REPORT CARD/.test(type)) return go("report-cards");
+    if (/LINE MOVE/.test(type)) return go("games");
     if (/SURVIVOR SCARE/.test(type)) return go("survivor-games");
     if (/SURVIVOR/.test(type)) return go("survivor-picks");
     if (/MEDIAN/.test(type)) return go("scoreboard");
