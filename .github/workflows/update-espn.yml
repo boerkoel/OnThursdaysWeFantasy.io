@@ -128,6 +128,10 @@ jobs:
       - name: Build record book
         continue-on-error: true
         run: node scripts/build-record-book.js
+      # Again, now with the new record book and past seasons' sources (all-time grades).
+      - name: Re-grade report cards (all-time)
+        continue-on-error: true
+        run: node scripts/report-cards.js
       # Deploy is started explicitly: pushes made with GITHUB_TOKEN don't
       # trigger workflows, and neither does finishing a run that was started
       # by the live workflow.

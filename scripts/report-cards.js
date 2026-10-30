@@ -8,9 +8,12 @@
 //   expected wins) is shown, not graded.
 // - Weekly: each finished week, score rank 60% + lineup efficiency 40%.
 // - All-time: from the record book, win % 60%, playoff rate 25%, titles 15%.
+//   Plus all-time draft / waivers / trades grades (Jim, 2026-10-29), shown, not
+//   weighted: points per week started from each source over every season
+//   (data/history/sources-YYYY.json from fetch-history.js, plus this season).
 // Reads teams.json (calculate-stats.js) and record-book.json; writes
 // report-cards.json for the Teams tab and the League Wire.
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile, readdir, writeFile } from "node:fs/promises";
 import { letter, percentiles } from "./lib/grades.js";
 import { BENCH_SLOT, IR_SLOT } from "./lib/lineup.js";
 
@@ -128,10 +131,49 @@ if (book?.managers?.length) {
   const po = percentiles(managers.map(m => (m.playoffAppearances || 0) / m.seasons));
   const ti = percentiles(managers.map(m => (m.titles || 0) / m.seasons));
   const byLabel = new Map(managers.map((m, i) => [m.manager, { m, total: 0.6 * wp[i] + 0.25 * po[i] + 0.15 * ti[i] }]));
+  // Category totals by manager: past seasons' sources files plus this season (managers who switched ESPN
+  // accounts counted under their current one, as in the record book).
+  const aliases = (await read("data/history/manager-aliases.json").catch(() => ({}))).aliases || {};
+  const canonical = key => aliases[key] || key;
+  const cat = new Map();
+  const addTo = (key, src, season) => {
+    const c = cat.get(key) || { drafted: 0, pickups: 0, trades: 0, weeks: 0, seasons: [], top: { drafted: [], pickups: [], trades: [] } };
+    c.drafted += src.drafted; c.pickups += src.pickups; c.trades += src.trades; c.weeks += src.weeks; c.seasons.push(season);
+    for (const k of ["drafted", "pickups", "trades"]) c.top[k].push(...(src.top[k] || []).map(x => ({ ...x, season })));
+    cat.set(key, c);
+  };
+  for (const file of (await readdir("data/history").catch(() => [])).filter(f => /^sources-\d+\.json$/.test(f)).sort()) {
+    const past = await read(`data/history/${file}`);
+    for (const t of past.teams || []) if (t.weeks) addTo(canonical(t.manager), t, past.season);
+  }
+  if (haveRosters) for (const t of teams) {
+    const src = sources.get(t.id), key = canonical(book.currentTeamManagers?.[t.id]);
+    if (src?.weeks && key) addTo(key, { ...src, top: { drafted: best(src.top.drafted), pickups: best(src.top.pickups), trades: best(src.top.trades) } }, "this season");
+  }
+  const pastSeasons = new Set([...cat.values()].flatMap(c => c.seasons.filter(x => x !== "this season"))).size;
+  const catKeys = [...cat.keys()];
+  const perWeek = (key, k) => cat.get(key)[k] / Math.max(1, cat.get(key).weeks);
+  const catP = Object.fromEntries(["drafted", "pickups"].map(k => [k, new Map(percentiles(catKeys.map(m => perWeek(m, k))).map((p, i) => [catKeys[i], p]))]));
+  const allTraders = catKeys.filter(m => cat.get(m).trades > 0);
+  const tradeP = new Map(percentiles(allTraders.map(m => perWeek(m, "trades"))).map((p, i) => [allTraders[i], 45 + 0.55 * p]));
+  const bestOf = list => [...list].sort((a, b) => b.points - a.points).slice(0, 2).map(x => ({ player: x.player, points: x.points, season: x.season }));
+  const categories = key => {
+    const c = cat.get(key);
+    if (!c || !pastSeasons || cat.size < 4) return null;   // all-time needs at least one past season
+    return {
+      seasons: c.seasons.length,
+      draft: { grade: letter(catP.drafted.get(key)), value: round(perWeek(key, "drafted"), 2), label: "pts / week started from draft picks", top: bestOf(c.top.drafted) },
+      waivers: { grade: letter(catP.pickups.get(key)), value: round(perWeek(key, "pickups"), 2), label: "pts / week started from pickups", top: bestOf(c.top.pickups) },
+      trades: tradeP.has(key)
+        ? { grade: letter(tradeP.get(key)), value: round(perWeek(key, "trades"), 2), label: "pts / week started from trade acquisitions", top: bestOf(c.top.trades) }
+        : { grade: null, label: "never started a player acquired by trade" }
+    };
+  };
   allTime = Object.entries(book.currentTeamManagers || {}).map(([teamId, key]) => {
     const hit = byLabel.get(labels[key]) || byLabel.get(teams.find(t => String(t.id) === teamId)?.name);
     return hit && { teamId: Number(teamId), manager: hit.m.manager, grade: letter(hit.total), score: round(hit.total),
-      seasons: hit.m.seasons, winPct: hit.m.winPct, titles: hit.m.titles || 0, playoffs: hit.m.playoffAppearances || 0 };
+      seasons: hit.m.seasons, winPct: hit.m.winPct, titles: hit.m.titles || 0, playoffs: hit.m.playoffAppearances || 0,
+      categories: categories(canonical(key)) };
   }).filter(Boolean).sort((a, b) => b.score - a.score);
 }
 

@@ -52,7 +52,7 @@ export default function ReportCards({ cards, logos = {} }) {
               <Grade g={s.grade} big />
               {parts.map(([k]) => <Grade key={k} g={s.parts[k]?.grade} title={s.parts[k]?.label} />)}
               <Grade g={last?.grade} title={last ? `Week ${last.week}: ${last.points} pts, ${last.efficiency}% of the best lineup` : undefined} />
-              <Grade g={at?.grade} title={at ? `${at.seasons} seasons, ${at.winPct}% wins, ${at.titles} title${at.titles === 1 ? "" : "s"}` : undefined} />
+              <Grade g={at?.grade} title={at ? `${at.seasons} seasons, ${at.winPct}% wins, ${at.titles} title${at.titles === 1 ? "" : "s"}${at.categories ? ` · all-time draft ${at.categories.draft.grade}, waivers ${at.categories.waivers.grade}, trades ${at.categories.trades.grade || "—"}` : ""}` : undefined} />
             </button>
             {open === s.teamId ? <div className="rc-detail">
               <ul>
@@ -63,11 +63,15 @@ export default function ReportCards({ cards, logos = {} }) {
               </ul>
               <p className="rc-weeks">Week by week: {s.weekly.map(w => <span key={w.week} title={`${w.points} pts, ${w.efficiency}% of the best lineup${w.lostToMistake ? ", a loss a better lineup would have won" : ""}`}>W{w.week} <Grade g={w.grade} /></span>)}</p>
               {at ? <p className="rc-weeks">All-time: {at.seasons} seasons, {at.winPct}% wins, {at.playoffs} playoff trips, {at.titles} title{at.titles === 1 ? "" : "s"}.</p> : null}
+              {at?.categories ? <ul className="rc-alltime">
+                {[["draft", "Draft"], ["waivers", "Waivers"], ["trades", "Trades"]].map(([k, label]) => { const p = at.categories[k]; return p ? <li key={k}><Grade g={p.grade} /> <b>All-time {label.toLowerCase()}</b> · {p.value ? `${p.value} ${p.label}` : p.label}
+                  {p.top?.length ? ` · best: ${p.top.map(x => `${x.player} (${x.points}, ${x.season})`).join(", ")}` : ""}</li> : null; })}
+              </ul> : null}
             </div> : null}
           </React.Fragment>;
         })}
       </div>
-      <p className="median-note">Grades are on a curve against the league: roughly the top two earn A's, the bottom two D's or an F. Season: {cards.weights?.season}. Week: {cards.weights?.weekly}. All-time: {cards.weights?.allTime}. Tap a column to sort, a team for the details.</p>
+      <p className="median-note">Grades are on a curve against the league: roughly the top two earn A's, the bottom two D's or an F. Season: {cards.weights?.season}. Week: {cards.weights?.weekly}. All-time: {cards.weights?.allTime}; all-time draft, waivers and trades (in a team's details) are points per week started from each source over every season we have rosters for, shown but not weighted. Tap a column to sort, a team for the details.</p>
     </section>
   );
 }
