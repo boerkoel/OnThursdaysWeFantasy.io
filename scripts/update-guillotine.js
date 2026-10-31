@@ -168,7 +168,8 @@ const alive = [...scoreByTeam.values()]
       const weekActual = weeklyStat(player, 0), weekProjection = weeklyStat(player, 1);
       lineup.push({ id: Number(entry.playerId), name: shortName(player), pos: POSITIONS[Number(player.defaultPositionId)] || "", proTeamId: Number(player.proTeamId), slot,
         actual: Number.isFinite(weekActual) ? round(weekActual) : 0, projection: Number.isFinite(weekProjection) ? round(weekProjection) : null,
-        injury: INJURY_SHORT[player.injuryStatus] || null });
+        injury: INJURY_SHORT[player.injuryStatus] || null,
+        owned: Number.isFinite(player.ownership?.percentOwned) ? Math.round(player.ownership.percentOwned) : null });
     }
     // Starters still to play (bye weeks and finished games have nothing left to
     // add), and the lineup model the simulation uses.

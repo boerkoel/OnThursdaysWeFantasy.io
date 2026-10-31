@@ -99,6 +99,17 @@ async function fetchNflWeek(week) {
 
 const nflWeek = await fetchNflWeek(currentWeek);
 
+// Each NFL team's playoff odds from ESPN's FPI projections (Games tab), by ESPN team id.
+const nflPlayoffOdds = await (async () => {
+  try {
+    const r = await fetch("https://site.web.api.espn.com/apis/fitt/v3/sports/football/nfl/powerindex?region=us&lang=en", { headers: { Accept: "application/json", "User-Agent": "OnThursdaysWeFantasy/1.0" }, signal: AbortSignal.timeout(10000) });
+    if (!r.ok) return new Map();
+    const d = await r.json();
+    const i = (d.categories || []).find(c => c.name === "projections")?.names?.indexOf("probmakeplayoffs") ?? -1;
+    return new Map((d.teams || []).map(t => [Number(t.team?.id), Number(t.categories?.find(c => c.name === "projections")?.values?.[i])]).filter(([, v]) => i >= 0 && Number.isFinite(v)));
+  } catch { return new Map(); }
+})();
+
 // Each side's chance to win an NFL game (Survivor tab, League Wire): ESPN's
 // live win probability in game, the sportsbook moneyline before kickoff (vig
 // removed), 1/0 once final.
@@ -139,6 +150,8 @@ for (const event of nflWeek?.events || []) {
       ? { possession: Number(s.possession), text: s.downDistanceText || s.possessionText || "", yardLine: Number.isFinite(s.yardLine) ? s.yardLine : null, redZone: s.isRedZone === true } : null; })(),
     // For the matchup cards' lineups: "@CLE 24-27 Final".
     teams: (competition.competitors || []).map(c => ({ id: Number(c.team?.id), abbrev: c.team?.abbreviation || "", score: Number(c.score) || 0, home: c.homeAway === "home",
+      record: (c.records || []).find(r => r.type === "total")?.summary || null,
+      playoffOdds: nflPlayoffOdds.has(Number(c.team?.id)) ? Math.round(nflPlayoffOdds.get(Number(c.team?.id)) * 10) / 10 : null,
       winChance: (() => { const w = winChances(competition, status?.state); return w ? Math.round(1000 * w[c.homeAway === "home" ? "home" : "away"]) / 1000 : null; })() }))
   };
   nflGames.push(game);
@@ -265,6 +278,7 @@ for (const teamId of teams.keys()) {
         actual: Number.isFinite(actual) ? round(actual) : 0,
         projection: Number.isFinite(projection) ? round(projection) : null,
         injury: INJURY_SHORT[player.injuryStatus] || null,
+        owned: Number.isFinite(player.ownership?.percentOwned) ? Math.round(player.ownership.percentOwned) : null,
         eligibleSlots: (player.eligibleSlots || []).map(Number),
         // No game this week (bye) counts as finished.
         finished: game ? game.completed : nflGames.length > 0

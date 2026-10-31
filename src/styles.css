@@ -1141,3 +1141,11 @@ section,details,.odds-block{scroll-margin-top:72px}
 .gm-empty{color:#8b8e86;font-size:13px}
 .my-games-link{display:inline-block;margin:6px 0 2px;color:#b8c69b;font-size:12px;font-weight:800;text-decoration:none}
 .rc-alltime{margin:6px 0 0}
+.gm-sort{display:flex;flex-wrap:wrap;margin:0 0 12px}
+.gm-head{display:flex;justify-content:space-between;align-items:center}
+.gm-drama{font-size:11px;font-weight:800;letter-spacing:0;color:#aeb1a9;text-transform:none}
+.gm-drama.hot{color:#e6c85c}
+.gm-side-name{display:flex;flex-direction:column;min-width:0;line-height:1.15}
+.gm-side-name small{font-size:10px;color:#8b8e86;white-space:nowrap}
+.gm-sides .gm-side:last-child .gm-side-name{align-items:flex-end}
+.gm-why{margin:6px 0 0;font-size:11px;color:#c7cac1}
