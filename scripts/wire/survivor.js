@@ -19,6 +19,8 @@ const feed = process.env.SURVIVOR_FEED_FILE   // tests: a saved feed
 const week = Number(feed?.contest?.currentWeek);
 const entries = feed?.entries || [];
 const revealed = week !== currentWeek ? [] : entries.map(e => ({ user: e.user, pick: e.picks?.[week] })).filter(x => x.pick);
+// This week's revealed picks as { user, team } (MUST-WATCH's survivor stakes).
+export const survivorPicks = () => revealed.map(x => ({ user: x.user, team: x.pick.team }));
 const plural = (n, one, many = one + "s") => `${n} ${n === 1 ? one : many}`;
 
 // Splash marks a pick "lost" while its team trails, mid-game: a result only

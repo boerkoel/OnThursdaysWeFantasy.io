@@ -289,6 +289,7 @@ for (const teamId of teams.keys()) {
   lineupByTeam.set(teamId, {
     starters: players.filter(p => !p.bench).map(card),
     regretBench: regret.pointsLeft > 0 ? regret.regretBench.map(card) : [],
+    bench: players.filter(p => p.bench).map(card),   // the Games tab's My players view
     pointsLeft: regret.pointsLeft
   });
 }

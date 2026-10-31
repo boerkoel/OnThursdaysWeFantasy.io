@@ -26,6 +26,9 @@ const news = (await readJson(`${DATA}/news.json`).catch(() => null))?.items || [
 
 const spreadText = (s, home, away) => s === 0 ? "a pick'em" : s < 0 ? `${home} −${-s}` : `${away} −${s}`;
 
+// A game's line history, for the drama index (MUST-WATCH).
+export const lineOfGame = g => Number(lines?.week) === currentWeek ? lines.games?.[g.id] || null : null;
+
 export function addLineMoveStory(add) {
   if (Number(lines?.week) !== currentWeek) return;
   const moves = [];

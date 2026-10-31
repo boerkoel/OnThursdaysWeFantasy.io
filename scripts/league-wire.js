@@ -23,6 +23,7 @@ import { addPracticeReportStory, addTrendingStory } from "./wire/sleeper.js";
 import { addByeWatchStory, addClinchStory, addTwoWinsStory, addLiveStandingsStory, addPlayoffSwingStory, addStockWatchStory } from "./wire/stock.js";
 import { addSurvivorOddsStory, addSurvivorPicksStory, addSurvivorScareStory } from "./wire/survivor.js";
 import { addLineMoveStory } from "./wire/lines.js";
+import { addMustWatchStory } from "./wire/must-watch.js";
 import { addMiscueStory, addShrewdSwapStory, addDropRegretStory } from "./wire/swaps.js";
 import { addAbandonedStory, addWaiverMvpStory } from "./wire/ledger.js";
 import { addSwingStories } from "./wire/swings.js";
@@ -181,6 +182,7 @@ async function buildMarqueeStories() {
   try { addByeWatchStory(add); } catch (error) { console.warn("League Wire: bye watch failed: " + error.message); }
   try { addTwoWinsStory(add); } catch (error) { console.warn("League Wire: two wins failed: " + error.message); }
   try { addLiveStandingsStory(add); } catch (error) { console.warn("League Wire: live standings failed: " + error.message); }
+  try { addMustWatchStory(add); } catch (error) { console.warn("League Wire: must-watch failed: " + error.message); }
   try { addLineMoveStory(add); } catch (error) { console.warn("League Wire: line moves failed: " + error.message); }
   try { addSurvivorPicksStory(add); addSurvivorScareStory(add); addSurvivorOddsStory(add); } catch (error) { console.warn("League Wire: survivor failed: " + error.message); }
 
