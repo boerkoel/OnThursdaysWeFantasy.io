@@ -1,6 +1,6 @@
 {
   "week": 8,
-  "lastUpdated": "2026-10-30T15:00:52.066Z",
+  "lastUpdated": "2026-10-31T14:17:07.726Z",
   "scores": [
     {
       "teamId": 7,
@@ -12,19 +12,19 @@
       "opponent": "The Mahomies",
       "logo": "https://mystique-api.fantasy.espn.com/apis/v1/domains/lm/images/7659cbc0-a1cd-11f1-9afc-5feb43d211a1",
       "projection": {
-        "espn": 150.42,
-        "otwf": 144.09,
+        "espn": 122.03,
+        "otwf": 137.24,
         "dist": {
-          "mean": 144.09,
-          "p10": 115.67,
-          "p25": 128.86,
-          "p50": 143.76,
-          "p75": 158.56,
-          "p90": 172.88
+          "mean": 137.24,
+          "p10": 112.27,
+          "p25": 123.37,
+          "p50": 136.73,
+          "p75": 150.72,
+          "p90": 163.01
         }
       },
-      "projectionAverage": 144.09,
-      "projectionTrend": null,
+      "projectionAverage": 137.24,
+      "projectionTrend": "down",
       "status": "LIVE",
       "lineup": {
         "starters": [
@@ -45,7 +45,7 @@
             "proTeamId": 17,
             "slot": 4,
             "actual": 0,
-            "projection": 16.23,
+            "projection": 0,
             "injury": "Q"
           },
           {
@@ -55,7 +55,7 @@
             "proTeamId": 9,
             "slot": 2,
             "actual": 23.2,
-            "projection": 15.29,
+            "projection": 15.3,
             "injury": null
           },
           {
@@ -75,8 +75,8 @@
             "proTeamId": 10,
             "slot": 23,
             "actual": 0,
-            "projection": 12.07,
-            "injury": "Q"
+            "projection": 0,
+            "injury": "O"
           },
           {
             "id": 4241416,
@@ -85,7 +85,7 @@
             "proTeamId": 29,
             "slot": 2,
             "actual": 24.9,
-            "projection": 15.58,
+            "projection": 15.52,
             "injury": null
           },
           {
@@ -125,14 +125,14 @@
             "proTeamId": 28,
             "slot": 16,
             "actual": 0,
-            "projection": 7.03,
+            "projection": 6.94,
             "injury": null
           }
         ],
         "regretBench": [],
         "pointsLeft": 0
       },
-      "projectionSd": 22.04,
+      "projectionSd": 19.73,
       "startersLeft": 7,
       "lineupOutlook": {
         "set": true,
@@ -140,23 +140,26 @@
         "atRisk": [
           {
             "name": "A.J. Brown",
-            "chance": 0.69
+            "chance": 0.71
           },
           {
             "name": "Carnell Tate",
-            "chance": 0.41
+            "chance": 0
           }
         ],
-        "gain": 4.5,
-        "reset": 0.12
+        "gain": 10.2,
+        "newClaims": [
+          "George Holani"
+        ],
+        "reset": 0.63
       },
-      "aboveMedianProbability": 76.95,
-      "topScoreProbability": 10.92,
-      "belowMedianProbability": 23.05,
-      "medianDistanceSd": 0.47,
+      "aboveMedianProbability": 64.81,
+      "topScoreProbability": 5.13,
+      "belowMedianProbability": 35.19,
+      "medianDistanceSd": 0.05,
       "closeToMedian": true,
-      "nearMedian": false,
-      "winProbability": 58.69
+      "nearMedian": true,
+      "winProbability": 47.48
     },
     {
       "teamId": 9,
@@ -168,18 +171,18 @@
       "opponent": "Ruffing the Passer",
       "logo": "https://g.espncdn.com/lm-static/logo-packs/ffl/CrazyHelmets-ToddDetwiler/Helmets_09.svg",
       "projection": {
-        "espn": 137.11,
-        "otwf": 136.39,
+        "espn": 137.4,
+        "otwf": 139.45,
         "dist": {
-          "mean": 136.39,
-          "p10": 101.48,
-          "p25": 117.71,
-          "p50": 136.26,
-          "p75": 154.52,
-          "p90": 171.77
+          "mean": 139.45,
+          "p10": 104.4,
+          "p25": 120.77,
+          "p50": 139.45,
+          "p75": 157.96,
+          "p90": 174.58
         }
       },
-      "projectionAverage": 136.39,
+      "projectionAverage": 139.45,
       "projectionTrend": "up",
       "status": "LIVE",
       "lineup": {
@@ -191,7 +194,7 @@
             "proTeamId": 4,
             "slot": 23,
             "actual": 0,
-            "projection": 22.27,
+            "projection": 22.26,
             "injury": null
           },
           {
@@ -202,7 +205,7 @@
             "slot": 23,
             "actual": 0,
             "projection": 11.72,
-            "injury": "Q"
+            "injury": null
           },
           {
             "id": 4361579,
@@ -211,7 +214,7 @@
             "proTeamId": 6,
             "slot": 2,
             "actual": 0,
-            "projection": 20.26,
+            "projection": 20.53,
             "injury": null
           },
           {
@@ -221,7 +224,7 @@
             "proTeamId": 12,
             "slot": 0,
             "actual": 0,
-            "projection": 14.42,
+            "projection": 14.45,
             "injury": null
           },
           {
@@ -242,7 +245,7 @@
             "slot": 6,
             "actual": 0,
             "projection": 9.38,
-            "injury": "Q"
+            "injury": null
           },
           {
             "id": 4701936,
@@ -251,7 +254,7 @@
             "proTeamId": 9,
             "slot": 4,
             "actual": 20.9,
-            "projection": 15.32,
+            "projection": 15.34,
             "injury": null
           },
           {
@@ -288,31 +291,22 @@
         "regretBench": [],
         "pointsLeft": 0
       },
-      "projectionSd": 27.41,
+      "projectionSd": 27.2,
       "startersLeft": 9,
       "lineupOutlook": {
         "set": true,
         "openSlots": 9,
-        "atRisk": [
-          {
-            "name": "Jeremiyah Love",
-            "chance": 0.69
-          },
-          {
-            "name": "Travis Kelce",
-            "chance": 0.92
-          }
-        ],
-        "gain": 1.6,
-        "reset": 0.12
+        "atRisk": [],
+        "gain": 0,
+        "reset": 0.09
       },
-      "aboveMedianProbability": 62.01,
-      "topScoreProbability": 9.39,
-      "belowMedianProbability": 37.99,
-      "medianDistanceSd": 0.1,
+      "aboveMedianProbability": 64.41,
+      "topScoreProbability": 10.55,
+      "belowMedianProbability": 35.59,
+      "medianDistanceSd": 0.12,
       "closeToMedian": true,
       "nearMedian": true,
-      "winProbability": 41.31
+      "winProbability": 52.52
     },
     {
       "teamId": 11,
@@ -324,19 +318,19 @@
       "opponent": "Claremont In Yo Stace!",
       "logo": "https://mystique-api.fantasy.espn.com/apis/v1/domains/lm/images/add1ddb0-a2f7-11f1-8ef0-19c1af2548f8",
       "projection": {
-        "espn": 152.47,
-        "otwf": 154.04,
+        "espn": 151.21,
+        "otwf": 153.68,
         "dist": {
-          "mean": 154.04,
-          "p10": 114.33,
-          "p25": 132.89,
-          "p50": 153.63,
-          "p75": 175.14,
-          "p90": 194.46
+          "mean": 153.68,
+          "p10": 113.73,
+          "p25": 131.78,
+          "p50": 153.49,
+          "p75": 174.95,
+          "p90": 194.11
         }
       },
-      "projectionAverage": 154.04,
-      "projectionTrend": "up",
+      "projectionAverage": 153.68,
+      "projectionTrend": null,
       "status": "LIVE",
       "lineup": {
         "starters": [
@@ -347,7 +341,7 @@
             "proTeamId": 1,
             "slot": 2,
             "actual": 0,
-            "projection": 20.74,
+            "projection": 20.66,
             "injury": null
           },
           {
@@ -367,7 +361,7 @@
             "proTeamId": 13,
             "slot": 6,
             "actual": 0,
-            "projection": 16.31,
+            "projection": 16.34,
             "injury": null
           },
           {
@@ -377,7 +371,7 @@
             "proTeamId": 4,
             "slot": 4,
             "actual": 0,
-            "projection": 15.76,
+            "projection": 15.75,
             "injury": null
           },
           {
@@ -385,9 +379,9 @@
             "name": "L. Burden III",
             "pos": "WR",
             "proTeamId": 3,
-            "slot": 4,
+            "slot": 23,
             "actual": 0,
-            "projection": 13.61,
+            "projection": 13.59,
             "injury": null
           },
           {
@@ -397,7 +391,7 @@
             "proTeamId": 9,
             "slot": 23,
             "actual": 18.3,
-            "projection": 14.77,
+            "projection": 14.79,
             "injury": "Q"
           },
           {
@@ -417,7 +411,7 @@
             "proTeamId": 17,
             "slot": 0,
             "actual": 0,
-            "projection": 24.05,
+            "projection": 22.87,
             "injury": null
           },
           {
@@ -425,7 +419,7 @@
             "name": "O. Cooper Jr.",
             "pos": "WR",
             "proTeamId": 20,
-            "slot": 23,
+            "slot": 4,
             "actual": 0,
             "projection": 10.62,
             "injury": null
@@ -444,22 +438,22 @@
         "regretBench": [],
         "pointsLeft": 0
       },
-      "projectionSd": 31.06,
+      "projectionSd": 31.19,
       "startersLeft": 9,
       "lineupOutlook": {
-        "set": false,
+        "set": true,
         "openSlots": 9,
         "atRisk": [],
         "gain": 0,
-        "reset": 0.52
+        "reset": 0.09
       },
-      "aboveMedianProbability": 80.18,
-      "topScoreProbability": 28.47,
-      "belowMedianProbability": 19.82,
-      "medianDistanceSd": 0.65,
+      "aboveMedianProbability": 77.96,
+      "topScoreProbability": 26.64,
+      "belowMedianProbability": 22.04,
+      "medianDistanceSd": 0.56,
       "closeToMedian": false,
       "nearMedian": false,
-      "winProbability": 85.12
+      "winProbability": 82.96
     },
     {
       "teamId": 3,
@@ -471,18 +465,18 @@
       "opponent": "Mr. Action Jackson",
       "logo": "https://i.pinimg.com/280x280_RS/3a/d0/a9/3ad0a90c0e668da81c4e76e3fa51fbd0.jpg",
       "projection": {
-        "espn": 134.15,
-        "otwf": 136.22,
+        "espn": 134.84,
+        "otwf": 138.64,
         "dist": {
-          "mean": 136.22,
-          "p10": 99.9,
-          "p25": 116.63,
-          "p50": 135.87,
-          "p75": 155.07,
-          "p90": 172.41
+          "mean": 138.64,
+          "p10": 102.98,
+          "p25": 119.13,
+          "p50": 138.27,
+          "p75": 157.41,
+          "p90": 175.44
         }
       },
-      "projectionAverage": 136.22,
+      "projectionAverage": 138.64,
       "projectionTrend": "up",
       "status": "LIVE",
       "lineup": {
@@ -515,7 +509,7 @@
             "slot": 4,
             "actual": 0,
             "projection": 12.82,
-            "injury": "Q"
+            "injury": null
           },
           {
             "id": 4882093,
@@ -534,7 +528,7 @@
             "proTeamId": 27,
             "slot": 2,
             "actual": 0,
-            "projection": 17.64,
+            "projection": 17.55,
             "injury": null
           },
           {
@@ -544,7 +538,7 @@
             "proTeamId": 3,
             "slot": 0,
             "actual": 0,
-            "projection": 15.78,
+            "projection": 15.7,
             "injury": null
           },
           {
@@ -554,7 +548,7 @@
             "proTeamId": 9,
             "slot": 6,
             "actual": 17.3,
-            "projection": 10.85,
+            "projection": 10.87,
             "injury": null
           },
           {
@@ -564,7 +558,7 @@
             "proTeamId": 7,
             "slot": 16,
             "actual": 0,
-            "projection": 5.08,
+            "projection": 4.98,
             "injury": null
           },
           {
@@ -574,7 +568,7 @@
             "proTeamId": 6,
             "slot": 17,
             "actual": 0,
-            "projection": 10.01,
+            "projection": 10,
             "injury": null
           },
           {
@@ -584,34 +578,29 @@
             "proTeamId": 20,
             "slot": 23,
             "actual": 0,
-            "projection": 10.03,
+            "projection": 10.97,
             "injury": null
           }
         ],
         "regretBench": [],
         "pointsLeft": 0
       },
-      "projectionSd": 28.12,
+      "projectionSd": 28.09,
       "startersLeft": 9,
       "lineupOutlook": {
         "set": true,
         "openSlots": 9,
-        "atRisk": [
-          {
-            "name": "Rashee Rice",
-            "chance": 0.62
-          }
-        ],
-        "gain": 4.6,
-        "reset": 0.12
+        "atRisk": [],
+        "gain": 3.8,
+        "reset": 0.09
       },
-      "aboveMedianProbability": 61.83,
-      "topScoreProbability": 10.07,
-      "belowMedianProbability": 38.17,
+      "aboveMedianProbability": 62.45,
+      "topScoreProbability": 10.78,
+      "belowMedianProbability": 37.55,
       "medianDistanceSd": 0.09,
       "closeToMedian": true,
       "nearMedian": true,
-      "winProbability": 48.77
+      "winProbability": 45.43
     },
     {
       "teamId": 2,
@@ -623,18 +612,18 @@
       "opponent": "Kirbo Crushers",
       "logo": "https://g.espncdn.com/lm-static/logo-packs/ffl/SmackTalk-LeoEspinosa/Boom-10.svg",
       "projection": {
-        "espn": 136.17,
-        "otwf": 134.26,
+        "espn": 136.15,
+        "otwf": 135.37,
         "dist": {
-          "mean": 134.26,
-          "p10": 97.83,
-          "p25": 114.34,
-          "p50": 133.77,
-          "p75": 153.9,
-          "p90": 171.24
+          "mean": 135.37,
+          "p10": 98.06,
+          "p25": 115.17,
+          "p50": 135.28,
+          "p75": 155.08,
+          "p90": 172.63
         }
       },
-      "projectionAverage": 134.26,
+      "projectionAverage": 135.37,
       "projectionTrend": "up",
       "status": "LIVE",
       "lineup": {
@@ -686,7 +675,7 @@
             "proTeamId": 28,
             "slot": 0,
             "actual": 0,
-            "projection": 23.15,
+            "projection": 23.13,
             "injury": null
           },
           {
@@ -697,7 +686,7 @@
             "slot": 4,
             "actual": 0,
             "projection": 12.8,
-            "injury": "Q"
+            "injury": null
           },
           {
             "id": 4887558,
@@ -743,27 +732,22 @@
         "regretBench": [],
         "pointsLeft": 0
       },
-      "projectionSd": 28.56,
+      "projectionSd": 29.02,
       "startersLeft": 9,
       "lineupOutlook": {
         "set": true,
         "openSlots": 9,
-        "atRisk": [
-          {
-            "name": "Michael Wilson",
-            "chance": 0.94
-          }
-        ],
-        "gain": 1.2,
-        "reset": 0.12
+        "atRisk": [],
+        "gain": 1.9,
+        "reset": 0.09
       },
-      "aboveMedianProbability": 58.33,
-      "topScoreProbability": 9.03,
-      "belowMedianProbability": 41.67,
-      "medianDistanceSd": 0.02,
+      "aboveMedianProbability": 58.1,
+      "topScoreProbability": 9.79,
+      "belowMedianProbability": 41.9,
+      "medianDistanceSd": -0.03,
       "closeToMedian": true,
       "nearMedian": true,
-      "winProbability": 64.45
+      "winProbability": 65.44
     },
     {
       "teamId": 5,
@@ -775,19 +759,19 @@
       "opponent": "Ramosverse",
       "logo": "https://g.espncdn.com/lm-static/logo-packs/ffl/TeamKinny-MartinLaksman/TeamKinny-31.svg",
       "projection": {
-        "espn": 131.18,
-        "otwf": 133.19,
+        "espn": 134,
+        "otwf": 137.08,
         "dist": {
-          "mean": 133.19,
-          "p10": 98.21,
-          "p25": 114.93,
-          "p50": 132.64,
-          "p75": 151.54,
-          "p90": 168.36
+          "mean": 137.08,
+          "p10": 101.8,
+          "p25": 117.89,
+          "p50": 136.76,
+          "p75": 155.31,
+          "p90": 172.43
         }
       },
-      "projectionAverage": 133.19,
-      "projectionTrend": null,
+      "projectionAverage": 137.08,
+      "projectionTrend": "up",
       "status": "LIVE",
       "lineup": {
         "starters": [
@@ -808,7 +792,7 @@
             "proTeamId": 4,
             "slot": 2,
             "actual": 0,
-            "projection": 17.21,
+            "projection": 17.2,
             "injury": null
           },
           {
@@ -828,7 +812,7 @@
             "proTeamId": 3,
             "slot": 23,
             "actual": 0,
-            "projection": 13.12,
+            "projection": 14.82,
             "injury": null
           },
           {
@@ -838,7 +822,7 @@
             "proTeamId": 10,
             "slot": 23,
             "actual": 0,
-            "projection": 14.14,
+            "projection": 15.37,
             "injury": null
           },
           {
@@ -848,7 +832,7 @@
             "proTeamId": 6,
             "slot": 0,
             "actual": 0,
-            "projection": 19.83,
+            "projection": 19.84,
             "injury": null
           },
           {
@@ -878,7 +862,7 @@
             "proTeamId": 17,
             "slot": 6,
             "actual": 0,
-            "projection": 10.65,
+            "projection": 10.54,
             "injury": null
           },
           {
@@ -895,22 +879,22 @@
         "regretBench": [],
         "pointsLeft": 0
       },
-      "projectionSd": 27.09,
+      "projectionSd": 27.66,
       "startersLeft": 9,
       "lineupOutlook": {
         "set": true,
         "openSlots": 9,
         "atRisk": [],
         "gain": 0,
-        "reset": 0.12
+        "reset": 0.09
       },
-      "aboveMedianProbability": 57.44,
-      "topScoreProbability": 7.68,
-      "belowMedianProbability": 42.56,
-      "medianDistanceSd": -0.02,
+      "aboveMedianProbability": 60.7,
+      "topScoreProbability": 9.93,
+      "belowMedianProbability": 39.3,
+      "medianDistanceSd": 0.03,
       "closeToMedian": true,
       "nearMedian": true,
-      "winProbability": 66.17
+      "winProbability": 70.22
     },
     {
       "teamId": 6,
@@ -922,19 +906,19 @@
       "opponent": "Brock You Like a Hurricane",
       "logo": "https://g.espncdn.com/lm-static/logo-packs/core/BobsBurgers/Bob_OnModel.svg",
       "projection": {
-        "espn": 109.31,
-        "otwf": 111.58,
+        "espn": 116.22,
+        "otwf": 114.15,
         "dist": {
-          "mean": 111.58,
-          "p10": 78.32,
-          "p25": 94.01,
-          "p50": 111.02,
-          "p75": 129.26,
-          "p90": 145.11
+          "mean": 114.15,
+          "p10": 79.87,
+          "p25": 95.83,
+          "p50": 113.36,
+          "p75": 131.91,
+          "p90": 149.07
         }
       },
-      "projectionAverage": 111.58,
-      "projectionTrend": null,
+      "projectionAverage": 114.15,
+      "projectionTrend": "up",
       "status": "LIVE",
       "lineup": {
         "starters": [
@@ -945,7 +929,7 @@
             "proTeamId": 2,
             "slot": 0,
             "actual": 0,
-            "projection": 24.08,
+            "projection": 24.05,
             "injury": null
           },
           {
@@ -965,7 +949,7 @@
             "proTeamId": 6,
             "slot": 4,
             "actual": 0,
-            "projection": 14.08,
+            "projection": 14.15,
             "injury": "Q"
           },
           {
@@ -1015,7 +999,7 @@
             "proTeamId": 13,
             "slot": 23,
             "actual": 0,
-            "projection": 10.94,
+            "projection": 10.96,
             "injury": null
           },
           {
@@ -1035,14 +1019,14 @@
             "proTeamId": 3,
             "slot": 2,
             "actual": 0,
-            "projection": 0,
+            "projection": 6.85,
             "injury": null
           }
         ],
         "regretBench": [],
         "pointsLeft": 0
       },
-      "projectionSd": 26.12,
+      "projectionSd": 26.66,
       "startersLeft": 8,
       "lineupOutlook": {
         "set": true,
@@ -1050,7 +1034,7 @@
         "atRisk": [
           {
             "name": "George Pickens",
-            "chance": 0.94
+            "chance": 0.92
           },
           {
             "name": "Ka'imi Fairbairn",
@@ -1058,16 +1042,16 @@
             "bye": true
           }
         ],
-        "gain": 0.5,
-        "reset": 0.12
+        "gain": 1.3,
+        "reset": 0.09
       },
-      "aboveMedianProbability": 26.11,
-      "topScoreProbability": 1.54,
-      "belowMedianProbability": 73.89,
-      "medianDistanceSd": -0.85,
+      "aboveMedianProbability": 27.88,
+      "topScoreProbability": 1.67,
+      "belowMedianProbability": 72.12,
+      "medianDistanceSd": -0.83,
       "closeToMedian": false,
       "nearMedian": false,
-      "winProbability": 14.88
+      "winProbability": 17.04
     },
     {
       "teamId": 12,
@@ -1079,18 +1063,18 @@
       "opponent": "Gibb it to Me Baby",
       "logo": "https://g.espncdn.com/lm-static/logo-packs/core/OldTimeMickeyAndFriends/Football_Mickey.svg",
       "projection": {
-        "espn": 107.59,
-        "otwf": 96.63,
+        "espn": 94.79,
+        "otwf": 102.97,
         "dist": {
-          "mean": 96.63,
-          "p10": 68.4,
-          "p25": 80.9,
-          "p50": 96.34,
-          "p75": 111.71,
-          "p90": 125.52
+          "mean": 102.97,
+          "p10": 72.82,
+          "p25": 86.89,
+          "p50": 102.59,
+          "p75": 118.35,
+          "p90": 134.27
         }
       },
-      "projectionAverage": 96.63,
+      "projectionAverage": 102.97,
       "projectionTrend": "up",
       "status": "LIVE",
       "lineup": {
@@ -1102,8 +1086,8 @@
             "proTeamId": 21,
             "slot": 2,
             "actual": 0,
-            "projection": 13.93,
-            "injury": "Q"
+            "projection": 14.19,
+            "injury": null
           },
           {
             "id": 4567750,
@@ -1112,8 +1096,8 @@
             "proTeamId": 27,
             "slot": 4,
             "actual": 0,
-            "projection": 13.05,
-            "injury": "Q"
+            "projection": 0,
+            "injury": "O"
           },
           {
             "id": 4723086,
@@ -1122,8 +1106,8 @@
             "proTeamId": 3,
             "slot": 23,
             "actual": 0,
-            "projection": 11.86,
-            "injury": null
+            "projection": 11.84,
+            "injury": "Q"
           },
           {
             "id": 3915511,
@@ -1199,19 +1183,19 @@
         "regretBench": [],
         "pointsLeft": 0
       },
-      "projectionSd": 22.51,
+      "projectionSd": 24.01,
       "startersLeft": 9,
       "lineupOutlook": {
         "set": true,
         "openSlots": 10,
         "atRisk": [
           {
-            "name": "Saquon Barkley",
-            "chance": 0.08
+            "name": "Emeka Egbuka",
+            "chance": 0
           },
           {
-            "name": "Emeka Egbuka",
-            "chance": 0.66
+            "name": "Colston Loveland",
+            "chance": 0.62
           },
           {
             "name": "Woody Marks",
@@ -1219,19 +1203,19 @@
             "bye": true
           }
         ],
-        "gain": 7.6,
+        "gain": 16.3,
         "newClaims": [
           "Kimani Vidal"
         ],
-        "reset": 0.75
+        "reset": 0.63
       },
-      "aboveMedianProbability": 8.85,
-      "topScoreProbability": 0.19,
-      "belowMedianProbability": 91.15,
-      "medianDistanceSd": -1.65,
+      "aboveMedianProbability": 13.46,
+      "topScoreProbability": 0.48,
+      "belowMedianProbability": 86.54,
+      "medianDistanceSd": -1.39,
       "closeToMedian": false,
       "nearMedian": false,
-      "winProbability": 26.27
+      "winProbability": 30.78
     },
     {
       "teamId": 10,
@@ -1243,19 +1227,19 @@
       "opponent": "Beautiful Dark Twisted Fantasy",
       "logo": "https://mystique-api.fantasy.espn.com/apis/v1/domains/lm/images/a17151a0-a1ca-11f1-9afc-5feb43d211a1",
       "projection": {
-        "espn": 121.58,
-        "otwf": 118.85,
+        "espn": 122.22,
+        "otwf": 121.03,
         "dist": {
-          "mean": 118.85,
-          "p10": 84.87,
-          "p25": 100.78,
-          "p50": 118.27,
-          "p75": 136.76,
-          "p90": 153.61
+          "mean": 121.03,
+          "p10": 86.54,
+          "p25": 102.57,
+          "p50": 120.66,
+          "p75": 138.94,
+          "p90": 155.97
         }
       },
-      "projectionAverage": 118.85,
-      "projectionTrend": null,
+      "projectionAverage": 121.03,
+      "projectionTrend": "up",
       "status": "LIVE",
       "lineup": {
         "starters": [
@@ -1296,7 +1280,7 @@
             "proTeamId": 17,
             "slot": 2,
             "actual": 0,
-            "projection": 13.32,
+            "projection": 13.96,
             "injury": null
           },
           {
@@ -1363,22 +1347,22 @@
         "regretBench": [],
         "pointsLeft": 0
       },
-      "projectionSd": 26.66,
+      "projectionSd": 27,
       "startersLeft": 10,
       "lineupOutlook": {
         "set": true,
         "openSlots": 10,
         "atRisk": [],
         "gain": 0,
-        "reset": 0.12
+        "reset": 0.09
       },
-      "aboveMedianProbability": 35.67,
-      "topScoreProbability": 2.9,
-      "belowMedianProbability": 64.33,
+      "aboveMedianProbability": 37.14,
+      "topScoreProbability": 2.92,
+      "belowMedianProbability": 62.86,
       "medianDistanceSd": -0.56,
       "closeToMedian": false,
       "nearMedian": true,
-      "winProbability": 73.73
+      "winProbability": 69.22
     },
     {
       "teamId": 1,
@@ -1390,19 +1374,19 @@
       "opponent": "49er Faith-Fool",
       "logo": "https://g.espncdn.com/lm-static/logo-packs/ffl/SmackTalk-LeoEspinosa/u_mad_bro-09.svg",
       "projection": {
-        "espn": 117.57,
-        "otwf": 117.71,
+        "espn": 118.2,
+        "otwf": 116.49,
         "dist": {
-          "mean": 117.71,
-          "p10": 84.08,
-          "p25": 99.26,
-          "p50": 117.2,
-          "p75": 135.34,
-          "p90": 151.96
+          "mean": 116.49,
+          "p10": 82.33,
+          "p25": 98.19,
+          "p50": 115.9,
+          "p75": 134.44,
+          "p90": 151.14
         }
       },
-      "projectionAverage": 117.71,
-      "projectionTrend": null,
+      "projectionAverage": 116.49,
+      "projectionTrend": "down",
       "status": "LIVE",
       "lineup": {
         "starters": [
@@ -1503,29 +1487,29 @@
             "proTeamId": 17,
             "slot": 4,
             "actual": 0,
-            "projection": 10.64,
+            "projection": 11.27,
             "injury": null
           }
         ],
         "regretBench": [],
         "pointsLeft": 0
       },
-      "projectionSd": 26.44,
+      "projectionSd": 26.65,
       "startersLeft": 10,
       "lineupOutlook": {
         "set": true,
         "openSlots": 10,
         "atRisk": [],
-        "gain": 1.7,
-        "reset": 0.12
+        "gain": 1.5,
+        "reset": 0.09
       },
-      "aboveMedianProbability": 34.3,
-      "topScoreProbability": 2.44,
-      "belowMedianProbability": 65.7,
-      "medianDistanceSd": -0.61,
+      "aboveMedianProbability": 30.73,
+      "topScoreProbability": 2.08,
+      "belowMedianProbability": 69.27,
+      "medianDistanceSd": -0.74,
       "closeToMedian": false,
       "nearMedian": true,
-      "winProbability": 33.83
+      "winProbability": 29.78
     },
     {
       "teamId": 4,
@@ -1537,19 +1521,19 @@
       "opponent": "TDsMaGee",
       "logo": "https://mystique-api.fantasy.espn.com/apis/v1/domains/lm/images/8ee3dcb0-8150-11f0-8306-0b32d1884cc7",
       "projection": {
-        "espn": 118.89,
-        "otwf": 119.57,
+        "espn": 119.94,
+        "otwf": 119.31,
         "dist": {
-          "mean": 119.57,
-          "p10": 85.15,
-          "p25": 100.55,
-          "p50": 119.17,
-          "p75": 137.53,
-          "p90": 154.78
+          "mean": 119.31,
+          "p10": 84.9,
+          "p25": 100.82,
+          "p50": 118.7,
+          "p75": 137.71,
+          "p90": 154.82
         }
       },
-      "projectionAverage": 119.57,
-      "projectionTrend": "up",
+      "projectionAverage": 119.31,
+      "projectionTrend": null,
       "status": "LIVE",
       "lineup": {
         "starters": [
@@ -1560,7 +1544,7 @@
             "proTeamId": 6,
             "slot": 4,
             "actual": 0,
-            "projection": 20.34,
+            "projection": 20.43,
             "injury": null
           },
           {
@@ -1581,7 +1565,7 @@
             "slot": 23,
             "actual": 0,
             "projection": 10.47,
-            "injury": "Q"
+            "injury": null
           },
           {
             "id": 3121023,
@@ -1590,7 +1574,7 @@
             "proTeamId": 21,
             "slot": 6,
             "actual": 0,
-            "projection": 10.12,
+            "projection": 11.06,
             "injury": null
           },
           {
@@ -1620,7 +1604,7 @@
             "proTeamId": 30,
             "slot": 16,
             "actual": 0,
-            "projection": 7.4,
+            "projection": 7.41,
             "injury": null
           },
           {
@@ -1657,31 +1641,27 @@
         "regretBench": [],
         "pointsLeft": 0
       },
-      "projectionSd": 27.22,
+      "projectionSd": 27.13,
       "startersLeft": 10,
       "lineupOutlook": {
         "set": true,
         "openSlots": 10,
         "atRisk": [
           {
-            "name": "Ladd McConkey",
-            "chance": 0.94
-          },
-          {
             "name": "Jakobi Meyers",
-            "chance": 0.91
+            "chance": 0.59
           }
         ],
-        "gain": 0.3,
-        "reset": 0.12
+        "gain": 3.5,
+        "reset": 0.09
       },
-      "aboveMedianProbability": 36.99,
-      "topScoreProbability": 3.41,
-      "belowMedianProbability": 63.01,
-      "medianDistanceSd": -0.52,
+      "aboveMedianProbability": 35.06,
+      "topScoreProbability": 2.78,
+      "belowMedianProbability": 64.94,
+      "medianDistanceSd": -0.62,
       "closeToMedian": false,
       "nearMedian": true,
-      "winProbability": 35.55
+      "winProbability": 34.56
     },
     {
       "teamId": 8,
@@ -1693,18 +1673,18 @@
       "opponent": "Kyle Tucker",
       "logo": "https://g.espncdn.com/lm-static/logo-packs/ffl/Blockparty-RobbHars/blockplayers-01.svg",
       "projection": {
-        "espn": 147.48,
-        "otwf": 137.64,
+        "espn": 147.5,
+        "otwf": 144.01,
         "dist": {
-          "mean": 137.64,
-          "p10": 95.54,
-          "p25": 114.98,
-          "p50": 136.88,
-          "p75": 159.72,
-          "p90": 180.03
+          "mean": 144.01,
+          "p10": 102.76,
+          "p25": 121.86,
+          "p50": 143.35,
+          "p75": 165.77,
+          "p90": 185.93
         }
       },
-      "projectionAverage": 137.64,
+      "projectionAverage": 144.01,
       "projectionTrend": "up",
       "status": "LIVE",
       "lineup": {
@@ -1726,7 +1706,7 @@
             "proTeamId": 13,
             "slot": 2,
             "actual": 0,
-            "projection": 16.94,
+            "projection": 16.97,
             "injury": null
           },
           {
@@ -1737,7 +1717,7 @@
             "slot": 0,
             "actual": 0,
             "projection": 22.55,
-            "injury": "Q"
+            "injury": null
           },
           {
             "id": 4429615,
@@ -1757,7 +1737,7 @@
             "slot": 6,
             "actual": 0,
             "projection": 11.53,
-            "injury": "Q"
+            "injury": null
           },
           {
             "id": 3915416,
@@ -1787,7 +1767,7 @@
             "slot": 23,
             "actual": 0,
             "projection": 10.35,
-            "injury": "Q"
+            "injury": null
           },
           {
             "id": 4697815,
@@ -1813,43 +1793,31 @@
         "regretBench": [],
         "pointsLeft": 0
       },
-      "projectionSd": 32.9,
+      "projectionSd": 32.23,
       "startersLeft": 10,
       "lineupOutlook": {
         "set": true,
         "openSlots": 10,
         "atRisk": [
           {
-            "name": "Lamar Jackson",
-            "chance": 0.93
-          },
-          {
-            "name": "Tyler Warren",
-            "chance": 0.68
-          },
-          {
             "name": "DJ Moore",
-            "chance": 0.73
-          },
-          {
-            "name": "Malik Washington",
-            "chance": 0.9
+            "chance": 0.82
           }
         ],
         "gain": 0,
-        "reset": 0.12
+        "reset": 0.09
       },
-      "aboveMedianProbability": 61.33,
-      "topScoreProbability": 14.07,
-      "belowMedianProbability": 38.67,
-      "medianDistanceSd": 0.12,
+      "aboveMedianProbability": 67.3,
+      "topScoreProbability": 17.36,
+      "belowMedianProbability": 32.7,
+      "medianDistanceSd": 0.24,
       "closeToMedian": true,
       "nearMedian": true,
-      "winProbability": 51.23
+      "winProbability": 54.57
     }
   ],
   "median": 7.8,
-  "projectedMedian": 133.73,
+  "projectedMedian": 136.23,
   "projectionSources": [
     "ESPN live team projections, with ESPN player projections as fallback"
   ],
@@ -1907,14 +1875,14 @@
           "abbrev": "BUF",
           "score": 0,
           "home": true,
-          "winChance": 0.609
+          "winChance": 0.604
         },
         {
           "id": 33,
           "abbrev": "BAL",
           "score": 0,
           "home": false,
-          "winChance": 0.391
+          "winChance": 0.396
         }
       ]
     },
@@ -2093,14 +2061,14 @@
           "abbrev": "TB",
           "score": 0,
           "home": true,
-          "winChance": null
+          "winChance": 0.551
         },
         {
           "id": 1,
           "abbrev": "ATL",
           "score": 0,
           "home": false,
-          "winChance": null
+          "winChance": 0.449
         }
       ]
     },
@@ -2155,14 +2123,14 @@
           "abbrev": "LAR",
           "score": 0,
           "home": true,
-          "winChance": 0.7
+          "winChance": 0.705
         },
         {
           "id": 24,
           "abbrev": "LAC",
           "score": 0,
           "home": false,
-          "winChance": 0.3
+          "winChance": 0.295
         }
       ]
     },
@@ -6747,6 +6715,23 @@
           "11": 85.12,
           "12": 26.27
         }
+      },
+      {
+        "t": "2026-10-31T14:17:07.717Z",
+        "p": {
+          "1": 29.78,
+          "2": 65.44,
+          "3": 45.43,
+          "4": 34.56,
+          "5": 70.22,
+          "6": 17.04,
+          "7": 47.48,
+          "8": 54.57,
+          "9": 52.52,
+          "10": 69.22,
+          "11": 82.96,
+          "12": 30.78
+        }
       }
     ]
   },
@@ -10645,64 +10630,27 @@
           "11": 28.47,
           "12": 0.19
         }
+      },
+      {
+        "t": "2026-10-31T14:17:07.717Z",
+        "p": {
+          "1": 2.08,
+          "2": 9.79,
+          "3": 10.78,
+          "4": 2.78,
+          "5": 9.93,
+          "6": 1.67,
+          "7": 5.13,
+          "8": 17.36,
+          "9": 10.55,
+          "10": 2.92,
+          "11": 26.64,
+          "12": 0.48
+        }
       }
     ]
   },
   "projectionHistory": [
-    {
-      "timestamp": "2026-10-30T05:13:21.764Z",
-      "week": 8,
-      "scores": [
-        {
-          "teamId": 7,
-          "projection": 144.14
-        },
-        {
-          "teamId": 9,
-          "projection": 135.84
-        },
-        {
-          "teamId": 11,
-          "projection": 153.58
-        },
-        {
-          "teamId": 3,
-          "projection": 135.54
-        },
-        {
-          "teamId": 2,
-          "projection": 133.96
-        },
-        {
-          "teamId": 5,
-          "projection": 133.16
-        },
-        {
-          "teamId": 6,
-          "projection": 111.43
-        },
-        {
-          "teamId": 12,
-          "projection": 95.96
-        },
-        {
-          "teamId": 10,
-          "projection": 118.82
-        },
-        {
-          "teamId": 1,
-          "projection": 117.62
-        },
-        {
-          "teamId": 4,
-          "projection": 119.27
-        },
-        {
-          "teamId": 8,
-          "projection": 136.42
-        }
-      ]
-    },
     {
       "timestamp": "2026-10-30T05:14:00.490Z",
       "week": 8,
@@ -10864,6 +10812,60 @@
           "projection": 137.64
         }
       ]
+    },
+    {
+      "timestamp": "2026-10-31T14:17:07.717Z",
+      "week": 8,
+      "scores": [
+        {
+          "teamId": 7,
+          "projection": 137.24
+        },
+        {
+          "teamId": 9,
+          "projection": 139.45
+        },
+        {
+          "teamId": 11,
+          "projection": 153.68
+        },
+        {
+          "teamId": 3,
+          "projection": 138.64
+        },
+        {
+          "teamId": 2,
+          "projection": 135.37
+        },
+        {
+          "teamId": 5,
+          "projection": 137.08
+        },
+        {
+          "teamId": 6,
+          "projection": 114.15
+        },
+        {
+          "teamId": 12,
+          "projection": 102.97
+        },
+        {
+          "teamId": 10,
+          "projection": 121.03
+        },
+        {
+          "teamId": 1,
+          "projection": 116.49
+        },
+        {
+          "teamId": 4,
+          "projection": 119.31
+        },
+        {
+          "teamId": 8,
+          "projection": 144.01
+        }
+      ]
     }
   ],
   "lineupBaseline": {
@@ -10894,6 +10896,7 @@
       "8": "2026-10-28T12:25:32.214Z",
       "9": "2026-10-27T16:20:18.717Z",
       "10": "2026-10-29T15:11:54.978Z",
+      "11": "2026-10-31T14:17:07.502Z",
       "12": "2026-10-28T12:25:32.214Z"
     }
   },
