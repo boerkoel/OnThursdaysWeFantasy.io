@@ -1,7 +1,7 @@
 {
  "source": "FantasyPros Are They Playing?",
  "url": "https://www.fantasypros.com/nfl/myplaybook/are-they-playing.php",
- "fetchedAt": "2026-10-31T14:17:07.130Z",
+ "fetchedAt": "2026-11-01T14:49:36.096Z",
  "players": [
   {
    "name": "Jahmyr Gibbs",
@@ -20,11 +20,11 @@
    "team": "SEA",
    "position": "WR",
    "status": "",
-   "chance": null,
+   "chance": 1,
    "practices": [
     "DNP",
     "Full",
-    null
+    "Full"
    ]
   },
   {
@@ -116,7 +116,7 @@
    "team": "DAL",
    "position": "WR",
    "status": "Q",
-   "chance": 0.91861,
+   "chance": 0.95,
    "practices": [
     "Limit",
     "Limit",
@@ -139,8 +139,8 @@
    "name": "A.J. Brown",
    "team": "NE",
    "position": "WR",
-   "status": "Q",
-   "chance": 0.70538,
+   "status": "O",
+   "chance": 0.0001,
    "practices": [
     "Limit",
     "DNP",
@@ -296,7 +296,7 @@
    "team": "DEN",
    "position": "WR",
    "status": "Q",
-   "chance": 0.84072,
+   "chance": 0.95,
    "practices": [
     "DNP",
     "Limit",
@@ -331,12 +331,12 @@
    "name": "Kyle Monangai",
    "team": "CHI",
    "position": "RB",
-   "status": "Q",
-   "chance": 0.04063,
+   "status": "O",
+   "chance": 0,
    "practices": [
     "DNP",
     "DNP",
-    null
+    "DNP"
    ]
   },
   {
@@ -344,7 +344,7 @@
    "team": "JAC",
    "position": "WR",
    "status": "Q",
-   "chance": 0.58639,
+   "chance": 0.95,
    "practices": [
     "Limit",
     "Limit",
@@ -355,12 +355,12 @@
    "name": "Colston Loveland",
    "team": "CHI",
    "position": "TE",
-   "status": "Q",
-   "chance": 0.61972,
+   "status": "",
+   "chance": 1,
    "practices": [
     "--",
     "Limit",
-    null
+    "Full"
    ]
   },
   {
@@ -475,8 +475,8 @@
    "name": "TreVeyon Henderson",
    "team": "NE",
    "position": "RB",
-   "status": "Q",
-   "chance": 0.36182,
+   "status": "O",
+   "chance": 0.0001,
    "practices": [
     "--",
     "DNP",
@@ -559,12 +559,12 @@
    "name": "Zach Charbonnet",
    "team": "SEA",
    "position": "RB",
-   "status": "Q",
-   "chance": 0.38691,
+   "status": "",
+   "chance": 1,
    "practices": [
     "Full",
     "Limit",
-    null
+    "Full"
    ]
   },
   {
@@ -616,18 +616,6 @@
    ]
   },
   {
-   "name": "Mark Andrews",
-   "team": "BAL",
-   "position": "TE",
-   "status": "",
-   "chance": 1,
-   "practices": [
-    "Full",
-    "Full",
-    "Full"
-   ]
-  },
-  {
    "name": "Alec Pierce",
    "team": "IND",
    "position": "WR",
@@ -640,15 +628,27 @@
    ]
   },
   {
+   "name": "Mark Andrews",
+   "team": "BAL",
+   "position": "TE",
+   "status": "",
+   "chance": 1,
+   "practices": [
+    "Full",
+    "Full",
+    "Full"
+   ]
+  },
+  {
    "name": "Rashid Shaheed",
    "team": "SEA",
    "position": "WR",
-   "status": "Q",
-   "chance": 0.14339,
+   "status": "O",
+   "chance": 0,
    "practices": [
     "DNP",
     "DNP",
-    null
+    "DNP"
    ]
   },
   {
@@ -656,11 +656,11 @@
    "team": "SEA",
    "position": "RB",
    "status": "",
-   "chance": 0.85794,
+   "chance": 1,
    "practices": [
     "Limit",
     "Full",
-    null
+    "Full"
    ]
   },
   {
@@ -676,8 +676,8 @@
    ]
   },
   {
-   "name": "De'Zhaun Stribling",
-   "team": "SF",
+   "name": "Michael Pittman Jr.",
+   "team": "PIT",
    "position": "WR",
    "status": "IR",
    "chance": null,
@@ -688,8 +688,8 @@
    ]
   },
   {
-   "name": "Michael Pittman Jr.",
-   "team": "PIT",
+   "name": "De'Zhaun Stribling",
+   "team": "SF",
    "position": "WR",
    "status": "IR",
    "chance": null,
@@ -892,6 +892,18 @@
    ]
   },
   {
+   "name": "Calvin Ridley",
+   "team": "TEN",
+   "position": "WR",
+   "status": "Q",
+   "chance": 0.95,
+   "practices": [
+    "Limit",
+    "Limit",
+    "Full"
+   ]
+  },
+  {
    "name": "Tank Bigsby",
    "team": "PHI",
    "position": "RB",
@@ -901,18 +913,6 @@
     null,
     null,
     null
-   ]
-  },
-  {
-   "name": "Calvin Ridley",
-   "team": "TEN",
-   "position": "WR",
-   "status": "Q",
-   "chance": 0.90447,
-   "practices": [
-    "Limit",
-    "Limit",
-    "Full"
    ]
   },
   {
@@ -944,7 +944,7 @@
    "team": "WAS",
    "position": "WR",
    "status": "Q",
-   "chance": 0.73003,
+   "chance": 0.95,
    "practices": [
     "Limit",
     "DNP",
@@ -1292,11 +1292,11 @@
    "team": "SEA",
    "position": "QB",
    "status": "Q",
-   "chance": 0.28771,
+   "chance": 0.19296,
    "practices": [
     "Limit",
     "Limit",
-    null
+    "Limit"
    ]
   },
   {
@@ -1404,7 +1404,7 @@
    "practices": [
     "--",
     "--",
-    null
+    "--"
    ]
   },
   {
@@ -1783,12 +1783,12 @@
    "name": "Velus Jones Jr.",
    "team": "SEA",
    "position": "WR",
-   "status": "Q",
-   "chance": 0.03766,
+   "status": "O",
+   "chance": 0,
    "practices": [
     "DNP",
     "DNP",
-    null
+    "DNP"
    ]
   },
   {
@@ -1928,11 +1928,11 @@
    "team": "SEA",
    "position": "TE",
    "status": "",
-   "chance": 0.99,
+   "chance": 1,
    "practices": [
     "Full",
     "Full",
-    null
+    "Full"
    ]
   },
   {
