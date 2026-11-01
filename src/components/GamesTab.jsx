@@ -13,12 +13,13 @@ import { rateGames } from "../../scripts/lib/game-drama.js";
 //   grouped by NFL game, with the latest plays they've made.
 // - Opponent: the same for that manager's head-to-head opponent this week.
 // All games sorts by kickoff, 🔥 drama (Jim, 2026-10-31, after 538's bracket
-// excitement index: scripts/lib/game-drama.js), closest line, over/under, fantasy stakes
-// or NFL playoff stakes.
+// excitement index: scripts/lib/game-drama.js), closest line, over/under, fantasy stakes,
+// NFL playoff stakes, league points scored in the game, or league players on the field
+// right now. Every sort puts live games first, then upcoming, then finals (Jim, 2026-11-01).
 const LINES_POLL_MS = 10 * 60 * 1000;
 const FEED_PLAYS = 12;
 const GAME_PLAYS = 5;
-const SORTS = [["drama", "🔥 Drama"], ["kickoff", "Kickoff"], ["line", "Closest line"], ["total", "O/U"], ["fantasy", "Fantasy stakes"], ["playoff", "Playoff stakes"]];
+const SORTS = [["drama", "🔥 Drama"], ["kickoff", "Kickoff"], ["line", "Closest line"], ["total", "O/U"], ["fantasy", "Fantasy stakes"], ["playoff", "Playoff stakes"], ["points", "League pts"], ["field", "On the field"]];
 const readPref = (k, d) => { try { return localStorage.getItem(k) || d; } catch { return d; } };
 const writePref = (k, v) => { try { localStorage.setItem(k, v); } catch { /* private mode */ } };
 const logo = abbrev => `https://a.espncdn.com/i/teamlogos/nfl/500/${String(abbrev).toLowerCase()}.png`;
@@ -37,7 +38,15 @@ function useLines() {
 
 // "BUF −3" (spread is the home team's), "PK" for a pick'em.
 const spreadText = (s, home, away) => s == null ? "—" : s === 0 ? "PK" : s < 0 ? `${home} −${-s}` : `${away} −${s}`;
-function LineMove({ line, home, away }) {
+function LineMove({ line, live, home, away }) {
+  // In game: the live market's line and over/under, with the closing line for reference.
+  if (live && (live.spread != null || live.total != null)) {
+    const close = line?.moves?.[line.moves.length - 1] || line?.open;
+    return <div className="gm-line live" title="Live betting line and over/under, updated with the scores. The pregame line is in parentheses">
+      <span>Live {spreadText(live.spread, home, away) === "—" ? "—" : <b>{spreadText(live.spread, home, away)}</b>}{close?.spread != null ? <small> (was {spreadText(close.spread, home, away)})</small> : null}</span>
+      {live.total != null ? <span>O/U <b>{live.total}</b>{close?.total != null ? <small> (was {close.total})</small> : null}</span> : null}
+    </div>;
+  }
   if (!line?.open) return null;
   const now = line.moves?.[line.moves.length - 1] || line.open;
   const moved = now.spread !== line.open.spread;
@@ -113,12 +122,11 @@ export default function GamesTab({ scoreboard, guillotine, livePlays, survivorFe
   const order = g => g.state === "in" ? 0 : g.state === "pre" ? 1 : 2;
   const byKickoff = (a, b) => order(a) - order(b) || String(a.kickoff).localeCompare(String(b.kickoff));
   const sortedGames = [...games].sort(byKickoff);
-  const finalsLast = (a, b) => (a.completed ? 1 : 0) - (b.completed ? 1 : 0);
   const sortKey = {
     drama: r => -r.drama, line: r => r.spread == null ? 99 : Math.abs(r.spread), total: r => -(r.total ?? 0),
-    fantasy: r => -r.fantasy, playoff: r => -r.playoff
+    fantasy: r => -r.fantasy, playoff: r => -r.playoff, points: r => -r.leaguePts, field: r => -r.onField.length
   }[sort];
-  const allGames = sortKey ? [...games].sort((a, b) => finalsLast(a, b) || (ratingOf.get(a.id) && ratingOf.get(b.id) ? sortKey(ratingOf.get(a.id)) - sortKey(ratingOf.get(b.id)) : 0) || byKickoff(a, b)) : sortedGames;
+  const allGames = sortKey ? [...games].sort((a, b) => order(a) - order(b) || (ratingOf.get(a.id) && ratingOf.get(b.id) ? sortKey(ratingOf.get(a.id)) - sortKey(ratingOf.get(b.id)) : 0) || byKickoff(a, b)) : sortedGames;
 
   const gameHead = g => {
     const home = (g.teams || []).find(t => t.home), away = (g.teams || []).find(t => !t.home);
@@ -131,12 +139,24 @@ export default function GamesTab({ scoreboard, guillotine, livePlays, survivorFe
     </div>;
     return <>
       <div className="gm-head"><span className={g.state === "in" ? "live" : ""}>{statusText(g)}</span>
-        {ratingOf.get(g.id) ? <span className={"gm-drama" + (ratingOf.get(g.id).drama >= 60 ? " hot" : "")} title={`Drama ${ratingOf.get(g.id).drama}/100${ratingOf.get(g.id).reasons.length ? ": " + ratingOf.get(g.id).reasons.join(" · ") : ""}`}>🔥 {ratingOf.get(g.id).drama}</span> : null}</div>
+        {ratingOf.get(g.id) ? <span className={"gm-drama" + (ratingOf.get(g.id).drama >= 75 ? " hot" : "")} title={`Drama ${ratingOf.get(g.id).drama}/100${ratingOf.get(g.id).reasons.length ? ": " + ratingOf.get(g.id).reasons.join(" · ") : ""}`}>🔥 {ratingOf.get(g.id).drama}</span> : null}</div>
       <div className="gm-sides">{side(away)}<span className="gm-at">@</span>{side(home)}</div>
       {g.drive ? <Field drive={g.drive} homeHasBall={g.drive.possession === home.id} /> : null}
-      <LineMove line={lineOf(g)} home={home.abbrev} away={away.abbrev} />
+      <LineMove line={lineOf(g)} live={g.state === "in" ? g.live : null} home={home.abbrev} away={away.abbrev} />
+      {onFieldText(g)}
       {ratingOf.get(g.id)?.reasons.length ? <p className="gm-why">{ratingOf.get(g.id).reasons.slice(0, sort === "drama" ? 2 : 1).join(" · ")}</p> : null}
     </>;
+  };
+
+  // "🏈 DET ball · 6 league players on the field: Goff, St. Brown, … Vikings D/ST", plus the game's league points.
+  const onFieldText = g => {
+    const r = ratingOf.get(g.id);
+    if (!r || (g.state === "pre" && !r.leaguePts)) return null;
+    const ballTeam = r.ball ? [r.home, r.away].find(t => Number(t.id) === r.ball) : null;
+    return <p className="gm-field">
+      {ballTeam ? <span title="League starters on the field now: the offense's players and the other team's defense"><b>🏈 {ballTeam.abbrev} ball · {r.onField.length} on the field</b>{r.onField.length ? ": " + r.onField.map(p => p.name).join(", ") : ""}</span> : null}
+      {g.state !== "pre" ? <span className="gm-pts" title="Fantasy points league starters (both leagues) have scored in this game">{money(r.leaguePts)} league pts</span> : null}
+    </p>;
   };
 
   const playerRow = (p, showOwner) => <div className={"gm-player" + (p.league === "g" ? " g" : "") + (p.bench ? " bench" : "")} key={p.league + p.teamId + p.id + (p.bench ? "b" : "")}>
@@ -220,6 +240,6 @@ export default function GamesTab({ scoreboard, guillotine, livePlays, survivorFe
         <button key={id} type="button" className={view === id ? "active" : ""} aria-selected={view === id} onClick={() => setView(id)}>{label}</button>)}
     </div>
     {view === "all" ? renderAll() : renderFollowed()}
-    <p className="median-note">Win odds are ESPN's live win probability in game and the betting line before kickoff. Lines show the opening line and the latest, saved every 30 minutes until kickoff. Points are each league's own scoring{view === "all" ? "; open a game for every league starter in it" : ""}. Playoff odds are ESPN's FPI.{view === "all" ? " 🔥 Drama (0–100) blends how close the game is (late and close counts most), upsets, fantasy stakes (league starters in undecided matchups and chop races), survivor entries at risk, NFL playoff stakes, lightly rostered breakouts, games going off script (on pace to blow past the over/under), the league's own fan bases (Raiders, Chiefs, Niners, Rams, Lions) and, before kickoff, the over/under." : ""}</p>
+    <p className="median-note">Win odds are ESPN's live win probability in game and the betting line before kickoff. Lines show the opening line and the latest, saved every 30 minutes until kickoff; during a game, the live line and over/under from the betting markets. League pts: what league starters have scored in the game; on the field: the offense's league starters and the other team's defense. Points are each league's own scoring{view === "all" ? "; open a game for every league starter in it" : ""}. Playoff odds are ESPN's FPI.{view === "all" ? " 🔥 Drama (0–100) blends how close the game is (late and close counts most), upsets, fantasy stakes (league starters in undecided matchups and chop races), survivor entries at risk, NFL playoff stakes, lightly rostered breakouts, games going off script (on pace to blow past the over/under), the league's own fan bases (Raiders, Chiefs, Niners, Rams, Lions) and, before kickoff, the over/under. Live games score 50–100 and upcoming games 0–50, so a game being played always ranks above one that hasn't started." : ""}</p>
   </section>;
 }

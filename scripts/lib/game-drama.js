@@ -8,6 +8,9 @@ const FAN_NAMES = { LV: "Raiders", KC: "Chiefs", SF: "Niners", LAR: "Rams", DET:
 const lev = p => 4 * p * (1 - p);   // 1 at a coin flip, 0 when decided
 const clamp01 = x => Math.max(0, Math.min(1, x));
 
+// Kickers and defenses: a defense is on the field when the other team has the ball.
+const isDefense = p => p.pos === "D/ST";
+
 // Every league starter (main league and guillotine lineups) with its NFL game.
 export function leagueStarters(games, scores, guillotineTeams) {
   const gameOfTeam = new Map(games.flatMap(g => (g.teams || []).map(t => [Number(t.id), g])));
@@ -80,7 +83,14 @@ export function rateGames({ games, scores, guillotineTeams = [], svPicks = [], l
     const fanTeams = [away, home].filter(t => LEAGUE_FANS[t.abbrev]);
     const fans = clamp01(fanTeams.reduce((a, t) => a + LEAGUE_FANS[t.abbrev], 0) / 3);
     const fav = favHome ? home : away;
-    return { g, home, away, spread: latest?.spread ?? null, total: latest?.total ?? null, fantasyRaw, playoff, svRisk, close, upset, breakout, shootout, surprise, fans, inGame, riders,
+    // League points scored in this game, and who's on the field right now: the offense's league starters plus the
+    // other team's defense (each player once, even if started in both leagues).
+    const leaguePts = inGame.reduce((a, x) => a + (Number(x.actual) || 0), 0);
+    const ball = g.state === "in" ? Number(g.drive?.possession) || null : null;
+    const onField = ball ? [...new Map(inGame.filter(x => isDefense(x) ? Number(x.proTeamId) !== ball : Number(x.proTeamId) === ball).map(x => [x.id ?? x.name, x])).values()] : [];
+    // In game the line and over/under are the live market's (g.live); the pregame ones still drive shootout and surprise.
+    return { g, home, away, spread: g.live?.spread ?? latest?.spread ?? null, total: g.live?.total ?? latest?.total ?? null,
+      pregameSpread: latest?.spread ?? null, pregameTotal: latest?.total ?? null, leaguePts, ball, onField, fantasyRaw, playoff, svRisk, close, upset, breakout, shootout, surprise, fans, inGame, riders,
       why: [
         [h2h?.v || 0, h2h?.text || ""],
         [chop?.v || 0, chop?.text || ""],
@@ -99,9 +109,12 @@ export function rateGames({ games, scores, guillotineTeams = [], svPicks = [], l
   for (const r of rated) {
     r.fantasy = r.fantasyRaw / maxFantasy;
     const sv = clamp01(r.svRisk * 3);
-    r.drama = Math.round(100 * (r.g.state === "pre"
+    const raw = r.g.state === "pre"
       ? 0.25 * r.close + 0.1 * r.shootout + 0.25 * r.fantasy + 0.15 * r.playoff + 0.15 * sv + 0.1 * r.fans
-      : 0.2 * r.close + 0.15 * r.upset + 0.18 * r.fantasy + 0.08 * r.playoff + 0.12 * sv + 0.08 * r.breakout + 0.09 * r.surprise + 0.1 * r.fans));
+      : 0.2 * r.close + 0.15 * r.upset + 0.18 * r.fantasy + 0.08 * r.playoff + 0.12 * sv + 0.08 * r.breakout + 0.09 * r.surprise + 0.1 * r.fans;
+    // A game being played always beats one that hasn't started (Jim, 2026-11-01): live games score 50-100,
+    // upcoming ones 0-50 (anticipation), finals 0-100 for how dramatic they were.
+    r.drama = Math.round(r.g.state === "in" ? 50 + 50 * raw : r.g.state === "pre" ? 50 * raw : 100 * raw);
     r.reasons = r.why.filter(([v, text]) => v >= 0.35 && text).sort((a, b) => b[0] - a[0]).map(([, text]) => text);
   }
   return rated;

@@ -1,6 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { BENCH_SLOT, IR_SLOT, settledLineupRegret } from "./lib/lineup.js";
 import { altProjectionFn, buildLineupModel, calibrateAlt, chanceToPlayFn, fixAbbr, trackLineups } from "./lib/lineup-model.js";
+import { liveMarket } from "./lib/live-markets.js";
 import { SIMULATIONS, gameScriptInputs, medianOf, normalCdf, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
 
 const season = process.env.ESPN_SEASON || "2026";
@@ -157,6 +158,8 @@ for (const event of nflWeek?.events || []) {
   nflGames.push(game);
   for (const teamId of game.teamIds) nflGamesByTeam.set(teamId, game);
 }
+// Live line, over/under and win odds for games in progress (Games tab): betting markets, since the sportsbook line stops at kickoff.
+for (const g of nflGames.filter(g => g.state === "in")) { const m = await liveMarket(g); if (m) g.live = m; }
 
 // statSourceId 1 = ESPN projection, 0 = actual; statSplitTypeId 1 = single week.
 function weeklyStat(player, statSourceId) {
