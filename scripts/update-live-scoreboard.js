@@ -568,8 +568,8 @@ const thin = points => points.length <= MAX_ARCHIVE_POINTS ? points
 const archive = await readFile("data/current/week-archive.json", "utf8").then(JSON.parse).catch(() => ({ weeks: {} }));
 const archivedPlays = await readFile("data/current/live-plays.json", "utf8").then(JSON.parse).catch(() => null);
 const swingPlays = Number(archivedPlays?.week) === currentWeek
-  ? (archivedPlays.plays || []).filter(p => p.momentum?.shift >= 3).map(({ id, matchupId, fantasyTeamId, player, points, text, period, clock, wallclock, momentum }) =>
-      ({ id, matchupId, fantasyTeamId, player, points, text, period, clock, wallclock, momentum }))
+  ? (archivedPlays.plays || []).filter(p => p.momentum?.shift >= 3 || Math.abs(p.median?.shift || 0) >= 3).map(({ id, matchupId, fantasyTeamId, player, points, text, period, clock, wallclock, momentum, median }) =>
+      ({ id, matchupId, fantasyTeamId, player, points, text, period, clock, wallclock, momentum, median }))
   : archive.weeks?.[currentWeek]?.plays || [];
 // ---- Accuracy scorecard: our projections and odds vs ESPN's ----
 // Snapshots at Thursday's first kickoff ("thu") and once Sunday is under way

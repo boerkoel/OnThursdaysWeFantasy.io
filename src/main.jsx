@@ -204,26 +204,31 @@ function App() {
   const myScore = scores.find(s => Number(s.teamId) === Number(myTeamId)) || null;
   const myMatchupId = myScore?.matchupId ?? null;
   const seasonOddsWeeksLeft = live.seasonOdds?.remainingWeeks?.length ?? 0;
-  // A matchup's key plays: its 5 most recent from the last 5 hours (4+ point
-  // swings, or plays that moved the win odds 3%+), then the week's biggest
-  // odds swings, up to 10 in all, newest first. The swings are also the 🏈
-  // markers on the odds chart.
+  // A matchup's key plays: the 3 that moved the odds most (win or median odds; Jim, 2026-11-02) always lead,
+  // then its 5 most recent from the last 5 hours (4+ point swings, or plays that moved the odds 3%+), then the
+  // week's next-biggest swings, up to 10 in all, newest first after the top 3. The win-odds swings are also
+  // the 🏈 markers on the odds chart.
   const KEY_PLAY_MAX_AGE_MS = 5 * 60 * 60 * 1000;
+  const KEY_PLAYS_TOP = 3;
   const KEY_PLAYS_RECENT = 5;
   const KEY_PLAYS_MAX = 10;
   const KEY_NEWS_MAX = 3;
   const BIG_SWING = 3;
+  const MEDIAN_SWING_SHOWN = 2;
+  const swingOf = p => Math.max(p.momentum?.shift || 0, Math.abs(p.median?.shift || 0));
   const newestFirst = (a, b) => Date.parse(b.wallclock) - Date.parse(a.wallclock);
   const keyPlaysFor = matchupId => {
     const plays = (Number(livePlayFeed.week) === Number(scoreboard.week) ? livePlayFeed.plays || [] : [])
       .filter(p => Number(p.matchupId) === Number(matchupId) && p.wallclock);
+    const bySwing = plays.filter(p => swingOf(p) >= 0.5).sort((a, b) => swingOf(b) - swingOf(a));
+    const top = bySwing.slice(0, KEY_PLAYS_TOP), topIds = new Set(top.map(p => p.id));
     const recent = plays
-      .filter(p => (Math.abs(Number(p.points)) >= 4 || p.momentum?.shift >= BIG_SWING) && Date.now() - Date.parse(p.wallclock) <= KEY_PLAY_MAX_AGE_MS)
+      .filter(p => !topIds.has(p.id) && (Math.abs(Number(p.points)) >= 4 || swingOf(p) >= BIG_SWING) && Date.now() - Date.parse(p.wallclock) <= KEY_PLAY_MAX_AGE_MS)
       .sort(newestFirst)
       .slice(0, KEY_PLAYS_RECENT);
     const chosen = new Map(recent.map(p => [p.id, p]));
-    for (const p of plays.filter(p => p.momentum?.shift >= BIG_SWING).sort((a, b) => b.momentum.shift - a.momentum.shift)) {
-      if (chosen.size >= KEY_PLAYS_MAX) break;
+    for (const p of bySwing.filter(p => !topIds.has(p.id) && swingOf(p) >= BIG_SWING)) {
+      if (top.length + chosen.size >= KEY_PLAYS_MAX) break;
       chosen.set(p.id, p);
     }
     // Pregame news (📰 headlines and late scratches about this matchup's
@@ -232,14 +237,19 @@ function App() {
       .filter(n => Number(n.matchupId) === Number(matchupId) && n.wallclock)
       .sort(newestFirst)
       .slice(0, KEY_NEWS_MAX);
-    return [...chosen.values(), ...news].sort(newestFirst);
+    return [...top, ...[...chosen.values(), ...news].sort(newestFirst)];
   };
   // A key play's line: news has no points (📰 instead) and a headline already names the player.
   const playLabel = play => play.news ? "📰" : `${play.points > 0 ? "+" : ""}${money(play.points)}`;
   const playText = play => play.news === "headline" ? play.text : `${play.player} ${shortPlay(play)}`;
-  // "X 52→58%": the play's team and its win odds before → after, for plays that moved the odds at least half a point.
-  const momentumLine = play => play.momentum?.shift >= 0.5
-    ? `${play.momentum.toward} ${oddsMove(play.momentum.winProbability, play.momentum.shift)}` : null;
+  // "X 52→58%": the play's team and its win odds before → after, for plays that moved the odds at least half a point,
+  // plus its median odds when they moved 2+ ("X 52→58%, median 40→47%"; the team named when it's the other one).
+  const momentumLine = play => {
+    const win = play.momentum?.shift >= 0.5 ? `${play.momentum.toward} ${oddsMove(play.momentum.winProbability, play.momentum.shift)}` : null;
+    const median = Math.abs(play.median?.shift || 0) >= MEDIAN_SWING_SHOWN
+      ? `${win && play.median.team === play.momentum.toward ? "" : play.median.team + " "}median ${oddsMove(play.median.aboveMedianProbability, play.median.shift)}` : null;
+    return [win, median].filter(Boolean).join(", ") || null;
+  };
 
   // Standings, teams, awards, etc. are bundled and only change with the daily
   // ESPN update, so reload the page when that update's timestamp changes.
@@ -449,7 +459,7 @@ function App() {
           plays={keyPlays.filter(p => p.momentum?.shift >= BIG_SWING)} crossings />
         {keyPlays.length ? (
           <div className="key-plays" aria-label="Key plays">
-            <div className="key-plays-heading"><span>KEY PLAYS</span><em>LATEST + BIGGEST SWINGS</em></div>
+            <div className="key-plays-heading"><span>KEY PLAYS</span><em>BIGGEST SWINGS, THEN LATEST</em></div>
             <div className="key-play-list">
               {keyPlays.map(play => (
                 <div className="key-play" key={play.id}>

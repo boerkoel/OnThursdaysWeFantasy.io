@@ -85,6 +85,37 @@ function raffleMomentum(newPlays, scoresByTeam) {
   return result;
 }
 
+// Median-odds swing of a main-league play (Jim, 2026-11-02): the team's odds of beating the week's median,
+// treated as normal in its final score with its own spread and the median's (the middle of 12 scores moves
+// far less than any one team's, about 0.4 of a typical team's spread). Positive shift = odds up.
+// Returns play id -> { shift, aboveMedianProbability, team }.
+function medianMomentum(newPlays, scoresByTeam) {
+  const result = new Map();
+  const sds = [...scoresByTeam.values()].map(t => Number(t.projectionSd) || 0).sort((a, b) => a - b);
+  const typicalSd = sds.length ? sds[Math.floor(sds.length / 2)] : 0;
+  const byTeam = new Map();
+  for (const play of newPlays) {
+    if (!play.wallclock || Date.now() - Date.parse(play.wallclock) > MOMENTUM_MAX_AGE_MS) continue;
+    if (!byTeam.has(play.fantasyTeamId)) byTeam.set(play.fantasyTeamId, []);
+    byTeam.get(play.fantasyTeamId).push(play);
+  }
+  for (const [teamId, plays] of byTeam) {
+    const team = scoresByTeam.get(Number(teamId));
+    const odds = Number(team?.aboveMedianProbability);
+    if (!team || !(odds > 0 && odds < 100)) continue;
+    const sd = Math.max(MIN_MARGIN_SD, Math.hypot(Number(team.projectionSd) || 0, 0.4 * typicalSd));
+    let z = normalQuantile(Math.min(0.9999, Math.max(0.0001, odds / 100)));
+    plays.sort((x, y) => Date.parse(y.wallclock) - Date.parse(x.wallclock));
+    for (const play of plays) {
+      const after = normalCdf(z), before = normalCdf(z - Number(play.points) / sd);
+      z -= Number(play.points) / sd;
+      const shift = Math.round((after - before) * 1000) / 10;
+      if (shift) result.set(play.id, { shift, aboveMedianProbability: Math.round(after * 1000) / 10, team: team.team });
+    }
+  }
+  return result;
+}
+
 // Chop-odds swing of a guillotine play: a team's chop odds are treated as
 // normal in its final score, with the spread of its own score and of the
 // chop line (roughly another team's) combined. Positive shift = safer.
@@ -594,19 +625,21 @@ try {
   const newPlays = relevant.filter(p => !previousById.has(p.id));
   const fresh = momentumByPlay(newPlays, scoresByTeam);
   const freshRaffle = raffleMomentum(newPlays, scoresByTeam);
+  const freshMedian = medianMomentum(newPlays, scoresByTeam);
   const deduped = new Map();
   for (const play of [...relevant, ...previousPlays]) {
     if (deduped.has(play.id)) continue;
     const old = previousById.get(play.id);
     const momentum = old ? old.momentum : fresh.get(play.id);
     const raffle = old ? old.raffle : freshRaffle.get(play.id);
-    deduped.set(play.id, { ...play, ...(momentum ? { momentum } : {}), ...(raffle ? { raffle } : {}) });
+    const median = old ? old.median : freshMedian.get(play.id);
+    deduped.set(play.id, { ...play, ...(momentum ? { momentum } : {}), ...(raffle ? { raffle } : {}), ...(median ? { median } : {}) });
   }
 
   // The newest 60 plays, plus every play this week that moved a matchup's
-  // odds or a team's ticket odds 3%+ (the football markers on the charts).
+  // odds, a team's ticket odds or its median odds 3%+ (the football markers on the charts; key plays).
   const sorted = [...deduped.values()].sort((a, b) => new Date(b.wallclock || 0) - new Date(a.wallclock || 0));
-  const plays = sorted.filter((play, i) => i < 60 || play.momentum?.shift >= 3 || Math.abs(play.raffle?.shift || 0) >= 3);
+  const plays = sorted.filter((play, i) => i < 60 || play.momentum?.shift >= 3 || Math.abs(play.raffle?.shift || 0) >= 3 || Math.abs(play.median?.shift || 0) >= 3);
 
   // Guillotine plays: each new one gets the chop-odds swing it caused, judged
   // like matchup momentum (newest first per team, against this run's odds).
@@ -619,14 +652,15 @@ try {
     guillotineById.set(play.id, momentum ? { ...play, momentum } : play);
   }
   // Odds each NFL game has moved (Jim, 2026-11-02: the Games tab's fantasy swing): every new play's matchup,
-  // ticket and chop swings, summed per game in percentage points. Carried run to run, since the play list is pruned.
+  // ticket, median and chop swings, summed per game in percentage points. Carried run to run, since the play list is pruned.
   const gameSwings = structuredClone(previousSwings);
   const addSwing = (eventId, kind, shift) => {
     if (!eventId || !shift) return;
-    const s = gameSwings[eventId] ||= { win: 0, ticket: 0, chop: 0 };
+    const s = gameSwings[eventId] ||= { win: 0, ticket: 0, chop: 0, median: 0 };
+    s[kind] ||= 0;
     s[kind] = Math.round((s[kind] + Math.abs(shift)) * 10) / 10;
   };
-  for (const play of newPlays) { addSwing(play.eventId, "win", fresh.get(play.id)?.shift); addSwing(play.eventId, "ticket", freshRaffle.get(play.id)?.shift); }
+  for (const play of newPlays) { addSwing(play.eventId, "win", fresh.get(play.id)?.shift); addSwing(play.eventId, "ticket", freshRaffle.get(play.id)?.shift); addSwing(play.eventId, "median", freshMedian.get(play.id)?.shift); }
   for (const [id, momentum] of freshChop) addSwing(guillotineRelevant.find(p => p.id === id)?.eventId, "chop", momentum.shift);
   const guillotinePlays = [...guillotineById.values()]
     .sort((a, b) => new Date(b.wallclock || 0) - new Date(a.wallclock || 0))

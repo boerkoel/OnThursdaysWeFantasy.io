@@ -35,7 +35,7 @@ export function rateGames({ games, scores, guillotineTeams = [], svPicks = [], l
   // - surprise: live, on pace to blow past the over/under (a game nobody circled turning wild)
   // - fans: the league's own rooting interests (LEAGUE_FANS)
   // - swing: 🎯 fantasy swing (Jim, 2026-11-02), how far its plays have moved league odds (matchup win odds,
-  //   top-score ticket odds, chop odds; percentage points summed). 0-100: 50 pts → 28, 150 → 63, 300 → 86.
+  //   top-score ticket odds, median odds, chop odds; percentage points summed). 0-100: 50 pts → 28, 150 → 63, 300 → 86.
   // Finals look back on the whole game instead (Jim, 2026-11-02), from g.recap (update-live-scoreboard.js):
   // - thrill: total win-probability swing; finish: how close it was late (overtime counts extra);
   //   comeback: how low the winner's chances got; knocked out: survivor entries that lost on it; fantasy: league points scored
@@ -91,7 +91,7 @@ export function rateGames({ games, scores, guillotineTeams = [], svPicks = [], l
     const fanTeams = [away, home].filter(t => LEAGUE_FANS[t.abbrev]);
     const fans = clamp01(fanTeams.reduce((a, t) => a + LEAGUE_FANS[t.abbrev], 0) / 3);
     const fav = favHome ? home : away;
-    const sw = swings[g.id] || null, oddsMoved = sw ? (sw.win || 0) + (sw.ticket || 0) + (sw.chop || 0) : 0;
+    const sw = swings[g.id] || null, oddsMoved = sw ? (sw.win || 0) + (sw.ticket || 0) + (sw.median || 0) + (sw.chop || 0) : 0;
     const swing = 1 - Math.exp(-oddsMoved / 150);
     const rc = g.completed ? g.recap : null, winner = home.score > away.score ? home : away;
     const thrill = rc ? clamp01((rc.excitement - 1) / 5) : 0;
