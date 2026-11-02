@@ -77,8 +77,14 @@ export function gameScriptInputs(competition) {
 // Where the ball is (Jim, 2026-11-02): a starter's remaining points include this drive's share (his rest ÷ his
 // team's drives left), and that share scales with how likely this drive is to score from here, so a sack on
 // 3rd down or a catch into the red zone moves the odds right away. Chances are rough NFL rates: by yards to the
-// goal for a fresh set of downs, times the chance this set keeps going (a 3rd-and-long often doesn't), with a
-// field goal try on 4th when in range. Offense only: D/STs score nothing for points allowed here.
+// goal for a fresh set of downs, times the chance this set keeps going (a 3rd-and-long often doesn't).
+// The game decides the rest:
+// - 4th down: go for it or kick? Short yardage in plus territory often goes; out of range (but not deep in
+//   their own end) leans go; late, a team down 4-8 needs a TD (goes nearly always), down 9+ mostly goes, down
+//   1-3 kicks to tie or win, and a leading team takes the points.
+// - Pass or run: a trailing team throws more and a leading one runs, more so late (as gameScriptFactor), which
+//   tilts who on the drive would score: passing TDs to the QB and his targets, rushing TDs to the RB.
+// Offense only: D/STs score nothing for points allowed here.
 const TD_BY_YARDS = [[1, 0.78], [5, 0.66], [10, 0.56], [20, 0.46], [35, 0.37], [50, 0.3], [65, 0.24], [80, 0.18], [99, 0.1]];
 const FG_BY_YARDS = [[1, 0.12], [10, 0.28], [20, 0.34], [35, 0.3], [50, 0.18], [65, 0.1], [80, 0.07], [99, 0.04]];
 const interpolate = (table, x) => {
@@ -89,34 +95,75 @@ const interpolate = (table, x) => {
   }
   return table[table.length - 1][1];
 };
-export function driveChances({ toGo, down, distance }) {
+const LATE_SECONDS = 300;
+// How often an offense goes for it on 4th, given yards to go, distance and the game (margin = its lead).
+export function goForItRate({ toGo, distance, margin = 0, secondsLeft = 3600 }) {
+  const fgYds = toGo + 17;
+  let go = distance <= 2 && toGo <= 55 ? 0.45 : distance <= 4 && toGo <= 40 ? 0.2 : 0.04;
+  if (fgYds > 57 && toGo <= 45) go = Math.max(go, 0.35);   // too far to kick, too close to punt
+  if (secondsLeft <= LATE_SECONDS) {
+    if (margin < 0 && margin >= -3) go = Math.min(go, 0.15);       // a FG ties or wins: kick
+    else if (margin < -3 && margin >= -8) go = 0.95;               // needs a TD
+    else if (margin < -8) go = 0.7;                                // needs scores, and fast
+    else if (margin > 0) go = Math.min(go, 0.08);                  // leading: take the points
+  }
+  return go;
+}
+const fgMake = yds => yds <= 40 ? 0.88 : yds <= 50 ? 0.75 : yds <= 57 ? 0.55 : 0;
+// Chance this drive ends in a TD or a FG from here. ctx: { toGo, down, distance, margin, secondsLeft }.
+export function driveChances({ toGo, down, distance, margin = 0, secondsLeft = 3600 }) {
   if (!Number.isFinite(toGo)) return null;
   const d = Number.isFinite(distance) ? distance : 10;
-  const keep = down === 3 ? Math.min(0.75, Math.max(0.12, 0.75 - 0.045 * d)) : down === 4 ? Math.min(0.6, Math.max(0.1, 0.65 - 0.06 * d))
-    : down === 2 ? Math.min(1, Math.max(0.75, 1.05 - 0.02 * d)) : 1;
-  const kick = toGo + 17 <= 40 ? 0.85 : toGo + 17 <= 52 ? 0.6 : 0;   // a 4th-down FG try from here
-  const td = interpolate(TD_BY_YARDS, toGo) * keep;
-  const fg = interpolate(FG_BY_YARDS, toGo) * keep + (down >= 3 ? (1 - keep) * kick : 0);
-  return { td, fg };
+  const fresh = { td: interpolate(TD_BY_YARDS, toGo), fg: interpolate(FG_BY_YARDS, toGo) };
+  const fourth = () => {
+    const go = goForItRate({ toGo, distance: d, margin, secondsLeft });
+    const convert = Math.min(0.72, Math.max(0.15, 0.72 - 0.055 * (d - 1)));
+    const kick = (1 - go) * fgMake(toGo + 17);
+    return { td: go * convert * fresh.td, fg: go * convert * fresh.fg + kick, go };
+  };
+  if (down === 4) return fourth();
+  if (down === 3) {
+    const keep = Math.min(0.75, Math.max(0.12, 0.75 - 0.045 * d)), f = fourth();
+    return { td: keep * fresh.td + (1 - keep) * f.td, fg: keep * fresh.fg + (1 - keep) * f.fg };
+  }
+  const keep = down === 2 ? Math.min(1, Math.max(0.75, 1.05 - 0.02 * d)) : 1;
+  return { td: keep * fresh.td, fg: keep * fresh.fg };
 }
-// What a drive is worth to a skill player and to a kicker, against an average drive (22% TD, 14% FG).
-const skillValue = c => 6.5 * c.td + 1.5 * c.fg + 0.6;
-const kickerValue = c => c.td + 3.8 * c.fg;
+// Share of a drive's TDs that are passing TDs: 60% normally, up to 75% for a team trailing by two scores late
+// and down to 45% for one protecting a lead (the same ramps as gameScriptFactor).
+export function passShare({ margin = 0, secondsLeft = 3600 }) {
+  const strength = clamp01((SCRIPT_SECONDS_START - secondsLeft) / (SCRIPT_SECONDS_START - SCRIPT_SECONDS_FULL)) *
+    clamp01((Math.abs(margin) - SCRIPT_MARGIN_START) / (SCRIPT_MARGIN_FULL - SCRIPT_MARGIN_START));
+  return 0.6 + (margin < 0 ? 0.15 : -0.15) * strength;
+}
+// What a drive is worth to each position, against an average drive (22% TD, 14% FG, 60% passing TDs).
+const positionValue = (positionId, c, pass) => {
+  const pos = Number(positionId);
+  if (pos === 5) return c.td + 3.8 * c.fg;
+  const tdWeight = pos === 2 ? (1 - pass) / 0.4 : pos === 1 ? 0.5 + 0.5 * pass / 0.6 : pass / 0.6;
+  return 6.5 * c.td * tdWeight + 1.5 * c.fg + 0.6;
+};
 const AVERAGE_DRIVE = { td: 0.22, fg: 0.14 };
+// The game situation from the offense's side: its lead and the seconds left (overtime counts as late and tied).
+export function driveContext(game, proTeamId) {
+  const drive = game?.drive;
+  const offense = (game?.teams || []).find(t => Number(t.id) === Number(proTeamId));
+  const defense = (game?.teams || []).find(t => Number(t.id) !== Number(proTeamId));
+  if (!drive || !offense || !Number.isFinite(drive.yardLine)) return null;
+  const secondsLeft = game.period > 4 ? 0 : Math.max(0, (4 - (Number(game.period) || 1)) * 900 + (Number(game.clock) || 0));
+  return { toGo: offense.home ? 100 - drive.yardLine : drive.yardLine, down: drive.down, distance: drive.distance,
+    margin: (Number(offense.score) || 0) - (Number(defense?.score) || 0), secondsLeft };
+}
 export function driveFactor({ positionId, proTeamId, game }) {
   const drive = game?.drive;
   if (game?.state !== "in" || !drive || Number(drive.possession) !== Number(proTeamId) || Number(positionId) === 16) return 1;
-  const offense = (game.teams || []).find(t => Number(t.id) === Number(proTeamId));
-  if (!offense || !Number.isFinite(drive.yardLine)) return 1;
-  const toGo = offense.home ? 100 - drive.yardLine : drive.yardLine;
-  const c = driveChances({ toGo, down: drive.down, distance: drive.distance });
+  const ctx = driveContext(game, proTeamId), c = ctx && driveChances(ctx);
   if (!c) return 1;
-  const value = Number(positionId) === 5 ? kickerValue : skillValue;
-  const ratio = Math.min(3.5, Math.max(0.2, value(c) / value(AVERAGE_DRIVE)));
+  const pass = passShare(ctx);
+  const ratio = Math.min(3.5, Math.max(0.2, positionValue(positionId, c, pass) / positionValue(positionId, AVERAGE_DRIVE, 0.6)));
   // This drive's share of what's left: about 11 drives a game, fewer as the clock runs. Never more than a
   // quarter of it: late in a game the projections still hold more than one drive's worth.
-  const progress = game.period > 4 ? 1 : clamp01(((Number(game.period) || 1) - 1 + (900 - (Number(game.clock) || 0)) / 900) / 4);
-  const drivesLeft = Math.max(4, 11 * (1 - progress));
+  const drivesLeft = Math.max(4, 11 * ctx.secondsLeft / 3600);
   return 1 + (ratio - 1) / drivesLeft;
 }
 

@@ -1,4 +1,4 @@
-import { normalCdf, normalQuantile } from "../../scripts/lib/simulation.js";
+import { driveChances, driveContext, normalCdf, normalQuantile, passShare } from "../../scripts/lib/simulation.js";
 
 // What to root for on a live drive (Jim, 2026-11-02, Primetime view): for a matchup still in question, the
 // plays this drive could realistically produce, what each is worth to the league starters involved (the
@@ -9,7 +9,8 @@ import { normalCdf, normalQuantile } from "../../scripts/lib/simulation.js";
 // 4 per passing TD, 6 per rushing/receiving TD, −2 per INT or fumble lost, FGs 3 (under 40) / 4 (40s) /
 // 5 (50s) / 6 (60+), PAT 1, missed FG −1; D/ST 2 per takeaway, 6 per return TD, 1 per sack, 2 per safety,
 // nothing for points allowed (so an offensive score costs the defense nothing).
-// Chances are rough per-drive NFL rates, adjusted for field position. A drive that stalls costs the offense's
+// TD and FG chances come from the odds model's drive state (simulation.js driveChances: field position, down,
+// distance, and whether the game says go for it or kick), and passing vs rushing TDs from its game script. A drive that stalls costs the offense's
 // players the share of their remaining projection this drive was expected to bring (projected rest ÷ the
 // team's drives left), which is what the side facing them roots for.
 
@@ -24,10 +25,9 @@ export function driveRooting({ game, a, b }) {
   if (!drive?.possession || game.state !== "in") return null;
   const offense = Number(drive.possession), defense = (game.teams || []).map(t => Number(t.id)).find(id => id !== offense);
   const offenseTeam = (game.teams || []).find(t => Number(t.id) === offense);
-  // Yards to the goal line: yardLine counts from the home team's goal line.
-  const toGo = Number.isFinite(drive.yardLine) ? (offenseTeam?.home ? 100 - drive.yardLine : drive.yardLine) : null;
-  const tdRate = toGo == null ? 0.22 : toGo <= 20 ? 0.5 : toGo <= 40 ? 0.35 : toGo <= 70 ? 0.22 : 0.15;
-  const fgRate = toGo == null ? 0.14 : toGo <= 20 ? 0.35 : toGo <= 40 ? 0.3 : toGo <= 70 ? 0.12 : 0.06;
+  const ctx = driveContext(game, offense), chances = ctx && driveChances(ctx);
+  const toGo = ctx ? ctx.toGo : null;
+  const tdRate = chances ? chances.td : 0.22, fgRate = chances ? chances.fg : 0.14, pass = ctx ? passShare(ctx) : 0.6;
   const fgYds = toGo == null ? 45 : Math.max(20, toGo + 17);
 
   // This drive's league starters on both sides: [player, fantasy side].
@@ -46,9 +46,9 @@ export function driveRooting({ game, a, b }) {
   const scenarios = [];
   const add = (label, chance, pts) => { if (pts.some(([p]) => p)) scenarios.push({ label, chance, pts: pts.filter(([p]) => p) }); };
   const pat = k ? [[k, 1]] : [];
-  for (const r of catchers) add(`TD catch by ${lastName(r.name)}`, tdRate * 0.6 * 0.3, [[r, 6 + 1 + 2], [qb, 4.8], ...pat]);
-  for (const r of runners) add(`TD run by ${lastName(r.name)}`, tdRate * 0.4 * 0.6, [[r, 6.5], ...pat]);
-  if (qb) add(`TD pass by ${lastName(qb.name)}`, tdRate * 0.6, [[qb, 4.8], ...pat]);
+  for (const r of catchers) add(`TD catch by ${lastName(r.name)}`, tdRate * pass * 0.3, [[r, 6 + 1 + 2], [qb, 4.8], ...pat]);
+  for (const r of runners) add(`TD run by ${lastName(r.name)}`, tdRate * (1 - pass) * 0.6, [[r, 6.5], ...pat]);
+  if (qb) add(`TD pass by ${lastName(qb.name)}`, tdRate * pass, [[qb, 4.8], ...pat]);
   if (k) {
     if (fgYds <= 58) add(`${lastName(k.name)} ${fgYds}-yd FG`, fgRate, [[k, fgPoints(fgYds)]]);
     if (fgYds < 50) add(`${lastName(k.name)} 50+ yd FG`, 0.04, [[k, 5]]);
@@ -56,7 +56,7 @@ export function driveRooting({ game, a, b }) {
   }
   // A punt: this drive's expected share of the offense's remaining projections, gone. A team gets about 11 drives.
   const progress = Math.min(1, ((Number(game.period) || 1) - 1 + (900 - (Number(game.clock) || 0)) / 900) / 4);
-  const drivesLeft = Math.max(1, 11 * (1 - progress));
+  const drivesLeft = Math.max(4, 11 * (1 - progress));   // as the odds model counts it
   const offensive = on.filter(p => p.pos !== "D/ST");
   const stall = offensive.map(p => [p, -Math.max(0, (Number(p.projection) || 0) - (Number(p.actual) || 0)) / drivesLeft]);
   if (offensive.length) add(`a ${offenseTeam?.abbrev || "stalled"} punt`, toGo != null && toGo <= 40 ? 0.15 : 0.35, stall);
