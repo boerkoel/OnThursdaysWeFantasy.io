@@ -193,3 +193,34 @@ export function Needle({ a, b, history = [], odds = null, label = null, games = 
     </div>
   );
 }
+
+// A whole race at a glance (Jim, 2026-11-02): every team accounted for, in three tiers. Contenders (10-90%)
+// get mini needles; the likely-but-not-settled ride in a chip row with their odds; the settled (99%+ or 1% or
+// less, effectively locked) get a symbol. Teams move between tiers as they cross a line. Needles are ordered
+// by odds as of the last full update (from), not the 15-second drive moves, so they don't hop around; your
+// team comes first. items: [{ team, p, from }]; words: { likely: [left, right], locked: [left, right] };
+// chipOdds "right" shows every chip's odds of the right side (the ticket's long shots), else each side's own.
+export const LOCKED = 99;
+export function NeedleRace({ label, items, sides, colors, words, chipOdds = "side", history = [], games = [], stakes = null, mine = null }) {
+  const base = i => Number.isFinite(Number(i.from)) ? Number(i.from) : Number(i.p);
+  const isMine = i => mine != null && Number(i.team.teamId) === Number(mine);
+  const live = items.filter(i => Number.isFinite(Number(i.p)));
+  const needles = live.filter(i => i.p >= 10 && i.p <= 90).sort((x, y) => isMine(y) - isMine(x) || base(y) - base(x));
+  const likelyR = live.filter(i => i.p > 90 && i.p < LOCKED).sort((x, y) => y.p - x.p);
+  const likelyL = live.filter(i => i.p > 100 - LOCKED && i.p < 10).sort((x, y) => x.p - y.p);
+  const lockedR = live.filter(i => i.p >= LOCKED), lockedL = live.filter(i => i.p <= 100 - LOCKED);
+  const name = i => <b key={i.team.teamId} className={isMine(i) ? "mine" : ""}>{i.team.team}</b>;
+  const withOdds = (i, right) => <span key={i.team.teamId}>{name(i)} {Math.round(chipOdds === "right" || right ? i.p : 100 - i.p)}%</span>;
+  const join = list => list.flatMap((x, k) => k ? [" · ", x] : [x]);
+  const tier = (text, list) => list.length ? <p className="race-tier"><small>{text}</small> {join(list)}</p> : null;
+  if (!live.length) return null;
+  return <>
+    {label ? <small className="mini-needles-label">{label}</small> : null}
+    {needles.length ? <div className="mini-needles">{needles.map(i => <MiniNeedle key={i.team.teamId} team={i.team} p={Number(i.p)} from={i.from}
+      sides={sides} colors={colors} stakes={stakes} history={history} games={games} mine={isMine(i)} />)}</div> : null}
+    {tier(words.likely[1], likelyR.map(i => withOdds(i, true)))}
+    {tier(words.likely[0], likelyL.map(i => withOdds(i, false)))}
+    {tier(words.locked[1], lockedR.map(name))}
+    {tier(words.locked[0], lockedL.map(name))}
+  </>;
+}

@@ -31,7 +31,7 @@ import { useMyTeam, useTabs } from "./lib/tabs.js";
 import managerLinks from "./data/manager-links.json";
 import { BackToTop, SectionNav, TabBar } from "./components/Navigation.jsx";
 import { AccuracyScorecard, OutcomeBar, RaceChart, outcomeScale } from "./components/OutcomeBar.jsx";
-import { MiniNeedle, Needle } from "./components/Needle.jsx";
+import { LOCKED, MiniNeedle, Needle, NeedleRace } from "./components/Needle.jsx";
 import { driveRooting } from "./lib/rooting.js";
 import { useDriveAdjusted } from "./lib/liveDrives.js";
 import { useWakeLock } from "./lib/wakeLock.js";
@@ -522,7 +522,9 @@ function App() {
   const renderMyNeedles = (s, { skipWin = false } = {}) => {
     const games = scoreboard.nflGames || [];
     const opp = scores.find(x => Number(x.teamId) === Number(s.opponentId));
-    const open = p => Number(p) > 0.5 && Number(p) < 99.5;
+    // A race that's effectively settled (99%+ or 1% or less) shows as a status instead of a needle (Jim).
+    const open = p => Number(p) > 100 - LOCKED && Number(p) < LOCKED;
+    const status = [];
     const thisWeek = h => Number(h?.week) === Number(scoreboard.week) ? h.points || [] : [];
     const needles = [];
     // The head-to-head is left out where the full needle already shows it (Primetime view, the game-day view).
@@ -536,7 +538,15 @@ function App() {
     const g = gid != null && Number(guillotine.week) === Number(scoreboard.week) ? (guillotine.teams || []).find(t => Number(t.teamId) === Number(gid)) : null;
     if (g && open(g.chopProbability) && g.playersLeft) needles.push(<MiniNeedle key="chop" team={{ ...g, lineup: { starters: g.lineup || [] } }} p={Number(g.chopProbability)} from={g.liveChopFrom}
       sides={["safe", "chopped"]} colors={[GREEN, RED]} caption={`🪓 ${g.team}`} history={thisWeek(guillotine.chopHistory)} games={games} />);
-    return needles.length ? <><small className="mini-needles-label">YOUR NEEDLES</small><div className="mini-needles">{needles}</div></> : null;
+    const settled = (p, yes, no) => { if (Number(p) >= LOCKED && yes) status.push(yes); else if (Number(p) <= 100 - LOCKED && no) status.push(no); };
+    if (opp) settled(s.winProbability, `✅ Beat ${opp.team}`, `❌ Lost to ${opp.team}`);
+    settled(s.aboveMedianProbability, "✅ Above the median", "❌ Below the median");
+    settled(s.topScoreProbability, "🎟️ Ticket locked", null);
+    if (g) settled(g.chopProbability, `🪓 ${g.team} chopped`, `✅ ${g.team} safe`);
+    if (!needles.length && !status.length) return null;
+    return <><small className="mini-needles-label">YOUR NEEDLES</small>
+      {needles.length ? <div className="mini-needles">{needles}</div> : null}
+      {status.length ? <div className="my-status">{status.map(t => <span key={t}>{t}</span>)}</div> : null}</>;
   };
 
   // The same manager's other contests, at a glance: guillotine team and survivor entries.
@@ -743,14 +753,13 @@ function App() {
           const above = racing.filter(s => Number(s.aboveMedianProbability) >= 50).sort((x, y) => Number(x.aboveMedianProbability) - Number(y.aboveMedianProbability))[0];
           const below = racing.filter(s => Number(s.aboveMedianProbability) < 50).sort((x, y) => Number(y.aboveMedianProbability) - Number(x.aboveMedianProbability))[0];
           if (!above || !below || scores.every(s => Number(s.aboveMedianProbability) === 0 || Number(s.aboveMedianProbability) === 100)) return null;
-          // Everyone within reach of the line gets their own needle (Jim, 2026-11-02): 10–90% to finish above, up to
-          // 8, your team first, including teams whose games are over (the line still moves with everyone else's).
-          const inReach = scores.filter(s => Number(s.aboveMedianProbability) >= 10 && Number(s.aboveMedianProbability) <= 90)
-            .sort((x, y) => (Number(y.teamId) === Number(myTeamId)) - (Number(x.teamId) === Number(myTeamId)) || Number(y.aboveMedianProbability) - Number(x.aboveMedianProbability)).slice(0, 8);
+          // Every team on the median line (Jim, 2026-11-02): needles for those 10–90% to finish above (teams whose
+          // games are over included: the line still moves with everyone else's), chips for the likely, ✅/❌ for the
+          // settled; quaking with the whole league's live action.
           return <>
-            {inReach.length ? <><small className="mini-needles-label">MEDIAN LINE · WHO CLEARS IT</small>
-              <div className="mini-needles">{inReach.map(s => <MiniNeedle key={s.teamId} team={s} p={Number(s.aboveMedianProbability)} from={s.liveAboveFrom}
-                sides={["below", "above"]} colors={["#d98a86", "#8fd087"]} stakes={scores} games={scoreboard.nflGames || []} mine={Number(s.teamId) === Number(myTeamId)} />)}</div></> : null}
+            <NeedleRace label="MEDIAN LINE · WHO CLEARS IT" items={scores.map(s => ({ team: s, p: Number(s.aboveMedianProbability), from: s.liveAboveFrom }))}
+              sides={["below", "above"]} colors={["#d98a86", "#8fd087"]} words={{ likely: ["likely below", "likely above"], locked: ["❌ below", "✅ above"] }}
+              stakes={scores} games={scoreboard.nflGames || []} mine={myTeamId} />
             <button type="button" className="section-toggle" aria-expanded={medianVs} onClick={() => setMedianVs(v => !v)}>{medianVs ? "Hide the median race ▴" : "Who's on the median line ▾"}</button>
             {medianVs ? <VsLineups a={above} b={below} nflGames={scoreboard.nflGames || []}
               note={<>Likeliest to slip below the median: <b>{above.team}</b> ({money(above.projectionAverage)}, {pct(above.aboveMedianProbability)} to finish above). Likeliest to climb above it: <b>{below.team}</b> ({money(below.projectionAverage)}, {pct(below.aboveMedianProbability)}).</>} /> : null}

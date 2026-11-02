@@ -5,7 +5,7 @@ import { TeamLogo } from "./LiveBits.jsx";
 import { VsLineups } from "./MatchupLineup.jsx";
 import ChopChart, { peakTeams } from "./ChopChart.jsx";
 import Podium from "./Podium.jsx";
-import { MiniNeedle } from "./Needle.jsx";
+import { NeedleRace } from "./Needle.jsx";
 import { oddsMove } from "../lib/playText.js";
 
 // Ticket race, laid out like Death Watch: the three teams with the best odds
@@ -78,17 +78,12 @@ export default function RafflePodium({ scores, logos, week, final, history, play
         sub: `${money(s.score)} pts${final ? "" : ` · proj ${s.projectionAverage != null ? money(s.projectionAverage) : "—"}`}`,
         icon: MEDALS[i]
       }))} />
-      {(() => {   // everyone with a real shot at the ticket gets a needle (Jim, 2026-11-02): 10%+ top-score odds, up to
-        // 8, including teams whose games are over (the top score still moves with everyone else's); the quake
-        // follows the whole league's live action.
-        if (final) return null;
-        const contenders = [...scores].filter(s => Number(s.topScoreProbability) >= 10 && Number(s.topScoreProbability) < 99.5)
-          .sort((x, y) => Number(y.topScoreProbability) - Number(x.topScoreProbability)).slice(0, 8);
-        if (!contenders.length) return null;
-        return <><small className="mini-needles-label">🎟️ TICKET RACE · EACH TEAM'S SHOT</small>
-          <div className="mini-needles">{contenders.map(s => <MiniNeedle key={s.teamId} team={s} p={Number(s.topScoreProbability)} from={s.liveTopFrom}
-            sides={["no ticket", "ticket"]} colors={["#8b8e86", "#e6c85c"]} stakes={scores} history={history} games={nflGames} />)}</div></>;
-      })()}
+      {/* Every team in the ticket race (Jim, 2026-11-02): needles for 10–90% shots at the week's top score (teams
+          whose games are over included: the top score still moves with everyone else's), chips for near locks and
+          long shots, 🎟️/❌ for the settled; quaking with the whole league's live action. */}
+      {!final ? <NeedleRace label="🎟️ TICKET RACE · EACH TEAM'S SHOT" items={scores.map(s => ({ team: s, p: Number(s.topScoreProbability), from: s.liveTopFrom }))}
+        sides={["no ticket", "ticket"]} colors={["#8b8e86", "#e6c85c"]} words={{ likely: ["long shots", "near lock"], locked: ["❌ out", "🎟️ locked"] }}
+        chipOdds="right" stakes={scores} history={history} games={nflGames} /> : null}
       <button type="button" className="section-toggle" aria-expanded={showDetails} onClick={() => setShowDetails(v => !v)}>{showDetails ? "Hide race details ▴" : "Race details ▾"}</button>
       {showDetails ? <>
       <div className="award-grid dw-details">

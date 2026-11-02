@@ -6,7 +6,7 @@ import { useSwipe } from "../lib/swipe.js";
 import ChopChart, { peakTeams } from "./ChopChart.jsx";
 import Podium from "./Podium.jsx";
 import { RaceChart, normalDist } from "./OutcomeBar.jsx";
-import { MiniNeedle } from "./Needle.jsx";
+import { NeedleRace } from "./Needle.jsx";
 import obituaryData from "../../data/current/obituaries.json";
 import obituariesMarkdown from "../../content/obituaries.md?raw";
 
@@ -248,13 +248,11 @@ export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
         sub: `${money(t.score)} pts${t.playersLeft ? ` · proj ${money(t.projected)}` : " · final"}`,
         icon: "🪦"
       }))} />
-      {(() => {   // every team in danger gets its own needle (Jim, 2026-11-02): 5%+ chop odds with players left, at most 6
-        const danger = guillotine.teams.filter(t => t.chopProbability >= 5 && t.chopProbability < 99.5 && t.playersLeft).slice(0, 6);
-        if (!danger.length) return null;
-        return <><small className="mini-needles-label">🪓 THE CHOPPING BLOCK · EACH TEAM'S ODDS</small>
-          <div className="mini-needles">{danger.map(t => <MiniNeedle key={t.teamId} team={{ ...t, lineup: { starters: t.lineup || [] } }}
-            p={Number(t.chopProbability)} from={t.liveChopFrom} sides={["safe", "chopped"]} colors={["#8fd087", "#d98a86"]} history={history} games={nflGames} />)}</div></>;
-      })()}
+      {/* Every team left in the guillotine (Jim, 2026-11-02): needles for 10–90% chop odds, chips for the likely
+          safe and likely chopped, ✅/🪓 for the settled. */}
+      <NeedleRace label="🪓 THE CHOPPING BLOCK · EACH TEAM'S ODDS" items={guillotine.teams.map(t => ({ team: { ...t, lineup: { starters: t.lineup || [] } }, p: Number(t.chopProbability), from: t.liveChopFrom }))}
+        sides={["safe", "chopped"]} colors={["#8fd087", "#d98a86"]} words={{ likely: ["likely safe", "likely chopped"], locked: ["✅ safe", "🪓 chopped"] }}
+        stakes={guillotine.teams.map(t => ({ lineup: { starters: t.lineup || [] } }))} history={history} games={nflGames} />
       <div className="award-grid dw-details">
         {atRisk.map((t, i) => <article className="award-card" id={`dw-${t.teamId}`} key={t.teamId}>
           <small>{i === 0 ? "🪓 ON THE CHOPPING BLOCK" : `#${i + 1} MOST AT RISK`}</small>
