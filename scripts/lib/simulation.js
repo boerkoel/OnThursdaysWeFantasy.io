@@ -58,15 +58,66 @@ const SCRIPT_MIN = 0.75, SCRIPT_MAX = 1.15;
 const clamp01 = x => Math.min(1, Math.max(0, x));
 
 // The pieces of an ESPN scoreboard competition that game script needs:
-// { state, period, clock (seconds left in the period), teams: [{ id, score }] }.
+// { state, period, clock (seconds left in the period), teams: [{ id, score, home }], drive }.
+// drive (live games): { possession, yardLine (from the home team's goal line), down, distance }.
 export function gameScriptInputs(competition) {
-  const status = competition?.status;
+  const status = competition?.status, s = competition?.situation;
+  const state = status?.type?.state || "pre";
   return {
-    state: status?.type?.state || "pre",
+    state,
     period: Number(status?.period) || 0,
     clock: Number.isFinite(Number(status?.clock)) ? Number(status.clock) : null,
-    teams: (competition?.competitors || []).map(c => ({ id: Number(c.team?.id ?? c.id), score: Number(c.score) || 0 }))
+    teams: (competition?.competitors || []).map(c => ({ id: Number(c.team?.id ?? c.id), score: Number(c.score) || 0, home: c.homeAway === "home" })),
+    drive: state === "in" && s?.possession ? { possession: Number(s.possession), yardLine: Number.isFinite(s.yardLine) ? s.yardLine : null,
+      down: Number(s.down) || null, distance: Number.isFinite(Number(s.distance)) ? Number(s.distance) : null } : null
   };
+}
+
+// ---- Drive state --------------------------------------------------------------
+// Where the ball is (Jim, 2026-11-02): a starter's remaining points include this drive's share (his rest ÷ his
+// team's drives left), and that share scales with how likely this drive is to score from here, so a sack on
+// 3rd down or a catch into the red zone moves the odds right away. Chances are rough NFL rates: by yards to the
+// goal for a fresh set of downs, times the chance this set keeps going (a 3rd-and-long often doesn't), with a
+// field goal try on 4th when in range. Offense only: D/STs score nothing for points allowed here.
+const TD_BY_YARDS = [[1, 0.78], [5, 0.66], [10, 0.56], [20, 0.46], [35, 0.37], [50, 0.3], [65, 0.24], [80, 0.18], [99, 0.1]];
+const FG_BY_YARDS = [[1, 0.12], [10, 0.28], [20, 0.34], [35, 0.3], [50, 0.18], [65, 0.1], [80, 0.07], [99, 0.04]];
+const interpolate = (table, x) => {
+  if (x <= table[0][0]) return table[0][1];
+  for (let i = 1; i < table.length; i++) if (x <= table[i][0]) {
+    const [x0, y0] = table[i - 1], [x1, y1] = table[i];
+    return y0 + (y1 - y0) * (x - x0) / (x1 - x0);
+  }
+  return table[table.length - 1][1];
+};
+export function driveChances({ toGo, down, distance }) {
+  if (!Number.isFinite(toGo)) return null;
+  const d = Number.isFinite(distance) ? distance : 10;
+  const keep = down === 3 ? Math.min(0.75, Math.max(0.12, 0.75 - 0.045 * d)) : down === 4 ? Math.min(0.6, Math.max(0.1, 0.65 - 0.06 * d))
+    : down === 2 ? Math.min(1, Math.max(0.75, 1.05 - 0.02 * d)) : 1;
+  const kick = toGo + 17 <= 40 ? 0.85 : toGo + 17 <= 52 ? 0.6 : 0;   // a 4th-down FG try from here
+  const td = interpolate(TD_BY_YARDS, toGo) * keep;
+  const fg = interpolate(FG_BY_YARDS, toGo) * keep + (down >= 3 ? (1 - keep) * kick : 0);
+  return { td, fg };
+}
+// What a drive is worth to a skill player and to a kicker, against an average drive (22% TD, 14% FG).
+const skillValue = c => 6.5 * c.td + 1.5 * c.fg + 0.6;
+const kickerValue = c => c.td + 3.8 * c.fg;
+const AVERAGE_DRIVE = { td: 0.22, fg: 0.14 };
+export function driveFactor({ positionId, proTeamId, game }) {
+  const drive = game?.drive;
+  if (game?.state !== "in" || !drive || Number(drive.possession) !== Number(proTeamId) || Number(positionId) === 16) return 1;
+  const offense = (game.teams || []).find(t => Number(t.id) === Number(proTeamId));
+  if (!offense || !Number.isFinite(drive.yardLine)) return 1;
+  const toGo = offense.home ? 100 - drive.yardLine : drive.yardLine;
+  const c = driveChances({ toGo, down: drive.down, distance: drive.distance });
+  if (!c) return 1;
+  const value = Number(positionId) === 5 ? kickerValue : skillValue;
+  const ratio = Math.min(3.5, Math.max(0.2, value(c) / value(AVERAGE_DRIVE)));
+  // This drive's share of what's left: about 11 drives a game, fewer as the clock runs. Never more than a
+  // quarter of it: late in a game the projections still hold more than one drive's worth.
+  const progress = game.period > 4 ? 1 : clamp01(((Number(game.period) || 1) - 1 + (900 - (Number(game.clock) || 0)) / 900) / 4);
+  const drivesLeft = Math.max(4, 11 * (1 - progress));
+  return 1 + (ratio - 1) / drivesLeft;
 }
 
 // game: { state, period, clock, teams: [{ id, score }] } (an nflGames entry);
@@ -93,7 +144,7 @@ export function gameScriptFactor({ positionId, proTeamId, game }) {
 export function playerOutlook({ actual, projection, positionId, game = null, proTeamId = null }) {
   const unscripted = Number.isFinite(projection) ? Math.max(0, projection - (Number(actual) || 0)) : 0;
   const shareLeft = Number.isFinite(projection) && projection > 0 ? Math.min(1, unscripted / projection) : 0.5;
-  const rest = unscripted * gameScriptFactor({ positionId, proTeamId, game });
+  const rest = unscripted * gameScriptFactor({ positionId, proTeamId, game }) * driveFactor({ positionId, proTeamId, game });
   return {
     rest,
     sd: (SD_FRACTION[Number(positionId)] ?? DEFAULT_SD_FRACTION) * Math.max(rest, MIN_SPREAD_POINTS),
