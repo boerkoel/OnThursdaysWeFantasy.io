@@ -32,6 +32,7 @@ import managerLinks from "./data/manager-links.json";
 import { BackToTop, SectionNav, TabBar } from "./components/Navigation.jsx";
 import { AccuracyScorecard, OutcomeBar, RaceChart, outcomeScale } from "./components/OutcomeBar.jsx";
 import { Needle } from "./components/Needle.jsx";
+import { driveRooting } from "./lib/rooting.js";
 import { oddsMove, shortPlay } from "./lib/playText.js";
 
 // Standings and rest-of-season odds in one sortable table: current seed and
@@ -426,6 +427,14 @@ function App() {
     const open = [a, b].every(t => Number(t.winProbability) > 0.5 && Number(t.winProbability) < 99.5);
     return <div className="primetime-expand">
       {open ? <Needle a={a} b={b} /> : null}
+      {open ? (scoreboard.nflGames || []).map(g => ({ g, r: driveRooting({ game: g, a, b }) })).filter(x => x.r).slice(0, 2).map(({ g, r }) =>
+        <div className="rooting" key={g.id}>
+          <small>🏈 {r.offense} BALL{r.toGo != null ? ` · ${r.toGo} YDS TO GO` : ""} · ROOT FOR</small>
+          {r.hopes.map(h => <p key={h.team}><b>{h.team}:</b>{" "}
+            {h.likely ? <>{h.likely.label} <em>{h.likely.from}→{h.likely.to}%</em></> : null}
+            {h.likely && h.dream ? " · " : null}
+            {h.dream ? <span title={`About a ${Math.max(1, Math.round(h.dream.chance * 100))}% chance on any drive`}>{h.likely ? "dream: " : "long shot: "}{h.dream.label} <em>{h.dream.from}→{h.dream.to}%</em></span> : null}</p>)}
+        </div>) : null}
       <MatchupLineup a={a} b={b} nflGames={scoreboard.nflGames || []} liveOnly />
       {plays.length ? <ul className="primetime-plays">{plays.map((play, i) => <li key={i}><b>{playLabel(play)}</b> {playText(play)}{momentumLine(play) ? <em> ⚡ {momentumLine(play)}</em> : null}</li>)}</ul> : null}
     </div>;
