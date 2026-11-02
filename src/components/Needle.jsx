@@ -99,7 +99,8 @@ function useQuake({ teams, games, history, historyId, p }) {
 // chop): its chance of the named outcome, on a small dial, moving by the same rules as the full needle.
 // p: the chance of the right side's outcome; from: the same before the drives in progress moved it.
 // sides: [left label, right label], colors: [left, right]. caption: the line under it (the team's name by
-// default); stakes: the teams whose players can move it (the team itself, or both sides of a matchup).
+// default); stakes: the teams whose players can move it (the team itself, both sides of a matchup, or the whole
+// league for the median line, which moves with every team).
 export function MiniNeedle({ team, p, from = null, sides, colors, history = [], games = [], mine = false, caption = null, stakes = null }) {
   const { live, shown } = useQuake({ teams: stakes || [team], games, history, historyId: team.teamId, p });
   if (!Number.isFinite(Number(p))) return null;

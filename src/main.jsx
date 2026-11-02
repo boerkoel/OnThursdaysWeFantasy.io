@@ -528,7 +528,7 @@ function App() {
     // The head-to-head is left out where the full needle already shows it (Primetime view, the game-day view).
     if (!skipWin && opp && open(s.winProbability) && (s.startersLeft > 0 || opp.startersLeft > 0)) needles.push(<MiniNeedle key="win" team={s} stakes={[s, opp]} p={Number(s.winProbability)} from={s.liveWinFrom}
       sides={["lose", "win"]} colors={[RED, GREEN]} caption={`vs ${opp.team}`} history={thisWeek(scoreboard.winHistory)} games={games} />);
-    if (open(s.aboveMedianProbability) && s.startersLeft > 0) needles.push(<MiniNeedle key="median" team={s} p={Number(s.aboveMedianProbability)} from={s.liveAboveFrom}
+    if (open(s.aboveMedianProbability)) needles.push(<MiniNeedle key="median" team={s} stakes={scores} p={Number(s.aboveMedianProbability)} from={s.liveAboveFrom}
       sides={["below", "above"]} colors={[RED, GREEN]} caption="median line" games={games} />);
     if (Number(s.topScoreProbability) >= 3 && open(s.topScoreProbability) && s.startersLeft > 0) needles.push(<MiniNeedle key="ticket" team={s} p={Number(s.topScoreProbability)} from={s.liveTopFrom}
       sides={["no ticket", "ticket"]} colors={["#8b8e86", "#e6c85c"]} caption="🎟️ top score" history={thisWeek(scoreboard.raffleHistory)} games={games} />);
@@ -743,14 +743,14 @@ function App() {
           const above = racing.filter(s => Number(s.aboveMedianProbability) >= 50).sort((x, y) => Number(x.aboveMedianProbability) - Number(y.aboveMedianProbability))[0];
           const below = racing.filter(s => Number(s.aboveMedianProbability) < 50).sort((x, y) => Number(y.aboveMedianProbability) - Number(x.aboveMedianProbability))[0];
           if (!above || !below || scores.every(s => Number(s.aboveMedianProbability) === 0 || Number(s.aboveMedianProbability) === 100)) return null;
-          // Everyone within reach of the line gets their own needle (Jim, 2026-11-02): 15–85% to finish above with
-          // starters left, at most 6, your team first.
-          const inReach = scores.filter(s => s.startersLeft > 0 && Number(s.aboveMedianProbability) >= 15 && Number(s.aboveMedianProbability) <= 85)
-            .sort((x, y) => (Number(y.teamId) === Number(myTeamId)) - (Number(x.teamId) === Number(myTeamId)) || Number(y.aboveMedianProbability) - Number(x.aboveMedianProbability)).slice(0, 6);
+          // Everyone within reach of the line gets their own needle (Jim, 2026-11-02): 10–90% to finish above, up to
+          // 8, your team first, including teams whose games are over (the line still moves with everyone else's).
+          const inReach = scores.filter(s => Number(s.aboveMedianProbability) >= 10 && Number(s.aboveMedianProbability) <= 90)
+            .sort((x, y) => (Number(y.teamId) === Number(myTeamId)) - (Number(x.teamId) === Number(myTeamId)) || Number(y.aboveMedianProbability) - Number(x.aboveMedianProbability)).slice(0, 8);
           return <>
             {inReach.length ? <><small className="mini-needles-label">MEDIAN LINE · WHO CLEARS IT</small>
               <div className="mini-needles">{inReach.map(s => <MiniNeedle key={s.teamId} team={s} p={Number(s.aboveMedianProbability)} from={s.liveAboveFrom}
-                sides={["below", "above"]} colors={["#d98a86", "#8fd087"]} games={scoreboard.nflGames || []} mine={Number(s.teamId) === Number(myTeamId)} />)}</div></> : null}
+                sides={["below", "above"]} colors={["#d98a86", "#8fd087"]} stakes={scores} games={scoreboard.nflGames || []} mine={Number(s.teamId) === Number(myTeamId)} />)}</div></> : null}
             <button type="button" className="section-toggle" aria-expanded={medianVs} onClick={() => setMedianVs(v => !v)}>{medianVs ? "Hide the median race ▴" : "Who's on the median line ▾"}</button>
             {medianVs ? <VsLineups a={above} b={below} nflGames={scoreboard.nflGames || []}
               note={<>Likeliest to slip below the median: <b>{above.team}</b> ({money(above.projectionAverage)}, {pct(above.aboveMedianProbability)} to finish above). Likeliest to climb above it: <b>{below.team}</b> ({money(below.projectionAverage)}, {pct(below.aboveMedianProbability)}).</>} /> : null}
