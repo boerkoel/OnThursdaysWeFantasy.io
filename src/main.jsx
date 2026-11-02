@@ -704,9 +704,6 @@ function App() {
           const above = racing.filter(s => Number(s.aboveMedianProbability) >= 50).sort((x, y) => Number(x.aboveMedianProbability) - Number(y.aboveMedianProbability))[0];
           const below = racing.filter(s => Number(s.aboveMedianProbability) < 50).sort((x, y) => Number(y.aboveMedianProbability) - Number(x.aboveMedianProbability))[0];
           if (!above || !below || scores.every(s => Number(s.aboveMedianProbability) === 0 || Number(s.aboveMedianProbability) === 100)) return null;
-          // The race on one scale (Jim, 2026-11-02): the near-median teams' likely finals against the projected median.
-          const racers = displayScores.filter(s => (projectedMedianEdgeTeams.has(s.teamId) || s.nearMedian) && s.projection?.dist)
-            .sort((x, y) => Number(y.projectionAverage) - Number(x.projectionAverage)).slice(0, 5);
           // Everyone within reach of the line gets their own needle (Jim, 2026-11-02): 15–85% to finish above with
           // starters left, at most 6, your team first.
           const inReach = scores.filter(s => s.startersLeft > 0 && Number(s.aboveMedianProbability) >= 15 && Number(s.aboveMedianProbability) <= 85)
@@ -715,8 +712,6 @@ function App() {
             {inReach.length ? <><small className="mini-needles-label">MEDIAN LINE · WHO CLEARS IT</small>
               <div className="mini-needles">{inReach.map(s => <MiniNeedle key={s.teamId} team={s} p={Number(s.aboveMedianProbability)} from={s.liveAboveFrom}
                 sides={["below", "above"]} colors={["#d98a86", "#8fd087"]} games={scoreboard.nflGames || []} mine={Number(s.teamId) === Number(myTeamId)} />)}</div></> : null}
-            <RaceChart oddsLabel="above" line={scoreboard.projectedMedian != null ? { value: Number(scoreboard.projectedMedian), label: "median" } : null}
-              rows={racers.map(s => ({ key: s.teamId, name: s.team, score: s.score, dist: s.projection.dist, odds: s.aboveMedianProbability }))} />
             <button type="button" className="section-toggle" aria-expanded={medianVs} onClick={() => setMedianVs(v => !v)}>{medianVs ? "Hide the median race ▴" : "Who's on the median line ▾"}</button>
             {medianVs ? <VsLineups a={above} b={below} nflGames={scoreboard.nflGames || []}
               note={<>Likeliest to slip below the median: <b>{above.team}</b> ({money(above.projectionAverage)}, {pct(above.aboveMedianProbability)} to finish above). Likeliest to climb above it: <b>{below.team}</b> ({money(below.projectionAverage)}, {pct(below.aboveMedianProbability)}).</>} /> : null}
