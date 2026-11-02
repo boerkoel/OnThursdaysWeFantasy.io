@@ -31,16 +31,6 @@ function wildness(history, teamId) {
   return Math.min(1, Math.max(0, (moves.reduce((x, y) => x + y, 0) / moves.length - 1) / 4));
 }
 
-// Who finishes higher, from the two projected finals (the median race: the line falls between them): b's
-// chance now, and before the drives in progress shifted the projections (liveShift).
-export function higherOdds(a, b) {
-  const da = a.projection?.dist, db = b.projection?.dist;
-  const sd = Math.max(1, Math.hypot(sdOf(da), sdOf(db)));
-  if (!da || !db) return null;
-  const p = gap => Math.round(1000 * normalCdf(gap / sd)) / 10;
-  return { b: p(db.mean - da.mean), bFrom: p((db.mean - (Number(b.liveShift) || 0)) - (da.mean - (Number(a.liveShift) || 0))) };
-}
-
 // Any two-way race (Jim, 2026-11-02): head to head by default (b.winProbability), or pass odds: { b, bFrom }
 // (b's chance, and the same before the drives in progress moved it) and a kicker label for the ticket race or
 // the median line. history: odds snapshots ({ p: { teamId: odds } }) whose moves set the wildness.
@@ -83,6 +73,58 @@ function onTheField(team, games) {
   });
 }
 
+// The needle's motion, shared by the full and mini needles (see the comment in Needle): which look-ahead h,
+// and the walk; returns whether it's live and where the needle sits now.
+function lookAhead(stakes, wild) {
+  const live = stakes.live >= 0.25;
+  const size = Math.min(1, Math.max(0.25, Math.sqrt(stakes.live) / 20));
+  return { live, h: live ? Math.min(0.5, (stakes.live / stakes.total) * size * (0.6 + 0.8 * wild)) : stakes.total >= 0.25 ? 0.02 : 0 };
+}
+function useQuake({ teams, games, history, historyId, p }) {
+  const { live, h } = lookAhead(stakesLeft(teams, games), wildness(history, historyId));
+  const [wobble, setWobble] = useState(0);
+  useEffect(() => {
+    if (!(h > 0) || reducedMotion()) { setWobble(0); return; }
+    const RHO = live ? 0.7 : 0.85, gauss = () => Math.sqrt(-2 * Math.log(1 - Math.random())) * Math.cos(2 * Math.PI * Math.random());
+    let w = gauss();
+    const id = setInterval(() => { w = RHO * w + Math.sqrt(1 - RHO * RHO) * gauss(); setWobble(w); }, live ? 220 : 650);
+    return () => clearInterval(id);
+  }, [live, h > 0]);
+  const pp = Math.min(99.9, Math.max(0.1, Number(p)));
+  const shown = h > 0 && wobble && Number.isFinite(pp) ? Math.min(99.5, Math.max(0.5, 100 * normalCdf((normalQuantile(pp / 100) + Math.sqrt(h) * wobble) / Math.sqrt(1 - h)))) : pp;
+  return { live, shown };
+}
+
+// One team's own needle (Jim, 2026-11-02: everyone within reach of the median line, every team in danger of the
+// chop): its chance of the named outcome, on a small dial, moving by the same rules as the full needle.
+// p: the chance of the right side's outcome; from: the same before the drives in progress moved it.
+// sides: [left label, right label], colors: [left, right].
+export function MiniNeedle({ team, p, from = null, sides, colors, history = [], games = [], mine = false }) {
+  const { live, shown } = useQuake({ teams: [team], games, history, historyId: team.teamId, p });
+  if (!Number.isFinite(Number(p))) return null;
+  const right = Number(p) >= 50;
+  // The drives' move in the number shown (the side it favors).
+  const moved = from != null && Number.isFinite(Number(from)) ? (Number(p) - Number(from)) * (right ? 1 : -1) : 0;
+  const deg = (shown / 100 - 0.5) * 180;
+  return (
+    <div className={"mini-needle" + (mine ? " mine" : "")} role="img" aria-label={`${team.team}: ${Math.round(p)}% ${sides[1]}`}
+      title={`${team.team}: ${Math.round(p)}% ${sides[1]}, ${Math.round(100 - p)}% ${sides[0]}${live ? " · live" : ""}`}>
+      <svg viewBox="0 0 240 128" className="needle-dial">
+        {ZONES.map(([lo, hi, o]) => <path key={lo} d={wedge(lo, hi)} fill={hi <= 50 ? colors[0] : colors[1]} fillOpacity={o} />)}
+        <line x1={CX} y1={CY - R_OUT - 3} x2={CX} y2={CY - R_IN + 3} className="needle-mid" />
+        <g style={{ transform: `rotate(${deg}deg)`, transformOrigin: `${CX}px ${CY}px`, transition: `transform ${live ? 0.22 : 0.65}s linear` }}>
+          <line x1={CX} y1={CY} x2={CX} y2={CY - R_OUT - 4} className="needle-hand" />
+        </g>
+        <circle cx={CX} cy={CY} r={7} className="needle-hub" />
+      </svg>
+      <b style={{ color: right ? colors[1] : colors[0] }}>{Math.round(right ? p : 100 - p)}% {right ? sides[1] : sides[0]}
+        {Math.abs(moved) >= 0.5 ? <small className={moved > 0 ? "up" : "down"}>{moved > 0 ? "▲" : "▼"}{Math.abs(Math.round(moved))}</small> : null}
+        {live ? <span className="needle-live">●</span> : null}</b>
+      <span className="mini-needle-name">{team.team}</span>
+    </div>
+  );
+}
+
 export function Needle({ a, b, history = [], odds = null, label = null, games = [] }) {
   const oddsB = odds ? odds.b : Number(b.winProbability), fromB = odds ? odds.bFrom : Number(b.liveWinFrom);
   const pB = Math.min(99.9, Math.max(0.1, Number(oddsB)));
@@ -97,22 +139,9 @@ export function Needle({ a, b, history = [], odds = null, label = null, games = 
   // sweeps a coin flip about 25–75%; one RB, about 40–60%.
   // Between games it's a muted quake (h 2%, slower: a coin flip drifts 46–54%), none once nothing is left.
   // The needle walks Z as an AR(1) process that stays standard normal, so over time it shows that spread.
-  const stakes = stakesLeft([a, b], games);
-  const live = stakes.live >= 0.25;
-  const size = Math.min(1, Math.max(0.25, Math.sqrt(stakes.live) / 20));
-  const h = live ? Math.min(0.5, (stakes.live / stakes.total) * size * (0.6 + 0.8 * wildness(history, a.teamId))) : stakes.total >= 0.25 ? 0.02 : 0;
-  const [wobble, setWobble] = useState(0);
+  const { live, shown } = useQuake({ teams: [a, b], games, history, historyId: a.teamId, p: pB });
   const arcId = useId();
-  useEffect(() => {
-    if (!(h > 0) || reducedMotion()) { setWobble(0); return; }
-    const RHO = live ? 0.7 : 0.85, gauss = () => Math.sqrt(-2 * Math.log(1 - Math.random())) * Math.cos(2 * Math.PI * Math.random());
-    let w = gauss();
-    const id = setInterval(() => { w = RHO * w + Math.sqrt(1 - RHO * RHO) * gauss(); setWobble(w); }, live ? 220 : 650);
-    return () => clearInterval(id);
-  }, [live, h > 0]);
   if (!Number.isFinite(pB)) return null;
-  const z = normalQuantile(pB / 100);
-  const shown = h > 0 && wobble ? Math.min(99.5, Math.max(0.5, 100 * normalCdf((z + Math.sqrt(h) * wobble) / Math.sqrt(1 - h)))) : pB;
   // The steady odds, and how far plays have moved them since the last full update.
   const moved = Number.isFinite(Number(fromB)) ? Number(oddsB) - Number(fromB) : 0;
   const arrow = d => Math.abs(d) >= 0.5 ? <small className={d > 0 ? "up" : "down"} title="Since the last full update, from the drives in progress">{d > 0 ? "▲" : "▼"}{Math.abs(Math.round(d))}</small> : null;

@@ -84,7 +84,7 @@ export function adjustScoreboard(scoreboard, espn) {
     const sd = Number(s.projectionSd) || 0;
     const marginSd = Math.max(3, Math.hypot(sd, Number(opp?.projectionSd) || 0));
     const shift = d => d ? { ...d, ...Object.fromEntries(["mean", "p10", "p25", "p50", "p75", "p90"].filter(k => Number.isFinite(d[k])).map(k => [k, d[k] + mine])) } : d;
-    return { ...s, liveShift: mine, liveWinFrom: s.winProbability, liveTopFrom: s.topScoreProbability,
+    return { ...s, liveShift: mine, liveWinFrom: s.winProbability, liveTopFrom: s.topScoreProbability, liveAboveFrom: s.aboveMedianProbability,
       projectionAverage: s.projectionAverage != null ? Number(s.projectionAverage) + mine : s.projectionAverage,
       projection: s.projection ? { ...s.projection, dist: shift(s.projection.dist) } : s.projection,
       winProbability: odds(Number(s.winProbability), (mine - theirs) / marginSd),

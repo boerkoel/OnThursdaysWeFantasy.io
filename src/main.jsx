@@ -31,7 +31,7 @@ import { useMyTeam, useTabs } from "./lib/tabs.js";
 import managerLinks from "./data/manager-links.json";
 import { BackToTop, SectionNav, TabBar } from "./components/Navigation.jsx";
 import { AccuracyScorecard, OutcomeBar, RaceChart, outcomeScale } from "./components/OutcomeBar.jsx";
-import { Needle, higherOdds } from "./components/Needle.jsx";
+import { MiniNeedle, Needle } from "./components/Needle.jsx";
 import { driveRooting } from "./lib/rooting.js";
 import { useDriveAdjusted } from "./lib/liveDrives.js";
 import { oddsMove, shortPlay } from "./lib/playText.js";
@@ -684,11 +684,14 @@ function App() {
           // The race on one scale (Jim, 2026-11-02): the near-median teams' likely finals against the projected median.
           const racers = displayScores.filter(s => (projectedMedianEdgeTeams.has(s.teamId) || s.nearMedian) && s.projection?.dist)
             .sort((x, y) => Number(y.projectionAverage) - Number(x.projectionAverage)).slice(0, 5);
-          // The two closest to the line, one on either side, on the needle: whoever finishes higher is likely above it.
-          const lineOdds = higherOdds(above, below);
-          const lineOpen = lineOdds && [above, below].some(s => s.startersLeft > 0) && [above, below].every(s => Number(s.aboveMedianProbability) > 0.5 && Number(s.aboveMedianProbability) < 99.5);
+          // Everyone within reach of the line gets their own needle (Jim, 2026-11-02): 15–85% to finish above with
+          // starters left, at most 6, your team first.
+          const inReach = scores.filter(s => s.startersLeft > 0 && Number(s.aboveMedianProbability) >= 15 && Number(s.aboveMedianProbability) <= 85)
+            .sort((x, y) => (Number(y.teamId) === Number(myTeamId)) - (Number(x.teamId) === Number(myTeamId)) || Number(y.aboveMedianProbability) - Number(x.aboveMedianProbability)).slice(0, 6);
           return <>
-            {lineOpen ? <Needle a={above} b={below} label="MEDIAN LINE · WHO FINISHES HIGHER" odds={lineOdds} games={scoreboard.nflGames || []} /> : null}
+            {inReach.length ? <><small className="mini-needles-label">MEDIAN LINE · WHO CLEARS IT</small>
+              <div className="mini-needles">{inReach.map(s => <MiniNeedle key={s.teamId} team={s} p={Number(s.aboveMedianProbability)} from={s.liveAboveFrom}
+                sides={["below", "above"]} colors={["#d98a86", "#8fd087"]} games={scoreboard.nflGames || []} mine={Number(s.teamId) === Number(myTeamId)} />)}</div></> : null}
             <RaceChart oddsLabel="above" line={scoreboard.projectedMedian != null ? { value: Number(scoreboard.projectedMedian), label: "median" } : null}
               rows={racers.map(s => ({ key: s.teamId, name: s.team, score: s.score, dist: s.projection.dist, odds: s.aboveMedianProbability }))} />
             <button type="button" className="section-toggle" aria-expanded={medianVs} onClick={() => setMedianVs(v => !v)}>{medianVs ? "Hide the median race ▴" : "Who's on the median line ▾"}</button>

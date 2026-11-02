@@ -6,7 +6,7 @@ import { useSwipe } from "../lib/swipe.js";
 import ChopChart, { peakTeams } from "./ChopChart.jsx";
 import Podium from "./Podium.jsx";
 import { RaceChart, normalDist } from "./OutcomeBar.jsx";
-import { Needle } from "./Needle.jsx";
+import { MiniNeedle } from "./Needle.jsx";
 import obituaryData from "../../data/current/obituaries.json";
 import obituariesMarkdown from "../../content/obituaries.md?raw";
 
@@ -248,13 +248,12 @@ export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
         sub: `${money(t.score)} pts${t.playersLeft ? ` · proj ${money(t.projected)}` : " · final"}`,
         icon: "🪦"
       }))} />
-      {(() => {   // the two most at risk on the needle (Jim, 2026-11-02): their shares of the chop odds, head to head
-        const [x, y] = atRisk, cx = Number(x?.chopProbability), cy = Number(y?.chopProbability);
-        if (!y || !(cy >= 10) || !(cx < 99.5) || !(x.playersLeft || y.playersLeft)) return null;
-        const racer = t => ({ ...t, projection: { dist: normalDist(t.score, t.projected, t.projectionSd) }, lineup: { starters: t.lineup || [] } });
-        const from = t => Number.isFinite(Number(t.liveChopFrom)) ? Number(t.liveChopFrom) : Number(t.chopProbability);
-        return <Needle a={racer(x)} b={racer(y)} label="🪓 WHO GETS CHOPPED" history={history} games={nflGames}
-          odds={{ b: 100 * cy / (cx + cy), bFrom: 100 * from(y) / (from(x) + from(y)) }} />;
+      {(() => {   // every team in danger gets its own needle (Jim, 2026-11-02): 5%+ chop odds with players left, at most 6
+        const danger = guillotine.teams.filter(t => t.chopProbability >= 5 && t.chopProbability < 99.5 && t.playersLeft).slice(0, 6);
+        if (!danger.length) return null;
+        return <><small className="mini-needles-label">🪓 THE CHOPPING BLOCK · EACH TEAM'S ODDS</small>
+          <div className="mini-needles">{danger.map(t => <MiniNeedle key={t.teamId} team={{ ...t, lineup: { starters: t.lineup || [] } }}
+            p={Number(t.chopProbability)} from={t.liveChopFrom} sides={["safe", "chopped"]} colors={["#8fd087", "#d98a86"]} history={history} games={nflGames} />)}</div></>;
       })()}
       <div className="award-grid dw-details">
         {atRisk.map((t, i) => <article className="award-card" id={`dw-${t.teamId}`} key={t.teamId}>
