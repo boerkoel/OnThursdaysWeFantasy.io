@@ -3,9 +3,10 @@ import { money } from "../lib/data.js";
 import { normalCdf, normalQuantile } from "../../scripts/lib/simulation.js";
 
 // The Primetime needle (Jim, 2026-11-02, after the NYT election needle): a matchup's win odds on a half dial,
-// team a's side on the left, b's on the right, shaded from lean to very likely. The needle swings across the
-// middle half of what's still possible (Jim: for nerves and drama), and under it the projected margin reads
-// like a betting line.
+// team a's side on the left, b's on the right, shaded from lean to very likely. The needle wanders over where
+// the odds could be halfway through what's left to play (Jim: drama that still means something): it averages
+// out at today's odds and spends half its time in the middle half of those futures. Under it the projected
+// margin reads like a betting line.
 const CX = 120, CY = 118, R_OUT = 104, R_IN = 66;
 // Zone edges in b's win chance, and how strong each zone's shade is.
 const ZONES = [[0, 5, 0.9], [5, 25, 0.6], [25, 50, 0.32], [50, 75, 0.32], [75, 95, 0.6], [95, 100, 0.9]];
@@ -23,19 +24,21 @@ export function Needle({ a, b }) {
   const pB = Math.min(99.9, Math.max(0.1, Number(b.winProbability)));
   const da = a.projection?.dist, db = b.projection?.dist;
   const sd = Math.hypot(sdOf(da), sdOf(db));
-  // Swing: a random walk in z around the odds, out to the middle half of the remaining margin (±0.67 SD of it,
-  // the "likely" range printed below): a coin flip with a lot left sweeps about 25–75%. Odds' z is roughly
-  // margin ÷ SD, so that's ±0.67 in z, easing off over the last few points left and still once all have played.
-  const amp = 0.6745 * Math.min(1, sd / 3);
+  // Halfway through what's left, half the remaining variance has played out: the margin has moved by Z × SD/√2
+  // and SD/√2 is still to come, so the odds' z is then √2·z + Z, Z standard normal. The needle walks Z as an
+  // AR(1) process that stays standard normal, so over time it shows that whole spread of futures.
+  const live = sd >= 0.5;
   const [wobble, setWobble] = useState(0);
   useEffect(() => {
-    if (!(amp > 0.01) || reducedMotion()) { setWobble(0); return; }
-    let w = 0;
-    const id = setInterval(() => { w = Math.max(-1, Math.min(1, 0.6 * w + 0.8 * (Math.random() * 2 - 1))); setWobble(w); }, 220);
+    if (!live || reducedMotion()) { setWobble(0); return; }
+    const RHO = 0.7, gauss = () => Math.sqrt(-2 * Math.log(1 - Math.random())) * Math.cos(2 * Math.PI * Math.random());
+    let w = gauss();
+    const id = setInterval(() => { w = RHO * w + Math.sqrt(1 - RHO * RHO) * gauss(); setWobble(w); }, 220);
     return () => clearInterval(id);
-  }, [amp]);
+  }, [live]);
   if (!Number.isFinite(pB)) return null;
-  const shown = 100 * normalCdf(normalQuantile(pB / 100) + amp * wobble);
+  const z = normalQuantile(pB / 100);
+  const shown = live && wobble ? Math.min(99.5, Math.max(0.5, 100 * normalCdf(Math.SQRT2 * z + wobble))) : pB;
   const deg = (shown / 100 - 0.5) * 180;
   const margin = da && db ? da.mean - db.mean : null;
   const lead = margin == null ? null : Math.abs(margin) < 0.25 ? "Dead even" : `${(margin > 0 ? a : b).team} by ${half(margin)}`;
@@ -44,7 +47,7 @@ export function Needle({ a, b }) {
   const sign = margin >= 0 ? 1 : -1;
   const range = lo == null ? null : lo * hi <= 0 ? "either way" : `likely ${half(Math.min(sign * lo, sign * hi))}–${half(Math.max(sign * lo, sign * hi))}`;
   return (
-    <div className="needle" role="img" aria-label={`${a.team} ${Math.round(100 - pB)}%, ${b.team} ${Math.round(pB)}% to win`}>
+    <div className="needle" role="img" title="The needle wanders over where the odds could be halfway through what's left to play: it averages out at today's odds" aria-label={`${a.team} ${Math.round(100 - pB)}%, ${b.team} ${Math.round(pB)}% to win`}>
       <svg viewBox="0 0 240 128" className="needle-dial">
         {ZONES.map(([from, to, o]) => <path key={from} d={wedge(from, to)} fill={to <= 50 ? A_COLOR : B_COLOR} fillOpacity={o} />)}
         <line x1={CX} y1={CY - R_OUT - 3} x2={CX} y2={CY - R_IN + 3} className="needle-mid" />
