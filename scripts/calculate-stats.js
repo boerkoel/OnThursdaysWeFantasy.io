@@ -845,6 +845,21 @@ for (const team of teams.values()) {
   longTermRegretsByTeam.set(Number(team.id), regrets.sort((a, b) => b.winsAdded - a.winsAdded || b.points - a.points).slice(0, 3));
 }
 
+// Each team's lineup in its last two completed weeks (League Wire WHIPLASH, Jim, 2026-11-02: a start/sit call
+// that backfired, flipped the next week, and backfired again). IR left out.
+const recentLineupsByTeam = new Map();
+for (const team of teams.values()) {
+  recentLineupsByTeam.set(Number(team.id), completedWeeks.slice(-2).map(week => {
+    const entries = weeklyRosterForTeam(week, team.id)?.roster?.entries || [];
+    const game = completed.find(m => m.week === week && (m.homeTeamId === Number(team.id) || m.awayTeamId === Number(team.id)));
+    if (!entries.length || !game) return null;
+    const home = game.homeTeamId === Number(team.id);
+    return { week, score:Number(home ? game.homeScore : game.awayScore), opponentScore:Number(home ? game.awayScore : game.homeScore), median:weeklyMedianByWeek.get(week) ?? null,
+      players:entries.filter(e => Number(e.lineupSlotId) !== 21).map(e => ({ id:Number(e.playerId), name:e.playerPoolEntry?.player?.fullName || null,
+        pos:positionNames[Number(e.playerPoolEntry?.player?.defaultPositionId)] || null, started:Number(e.lineupSlotId) !== 20, points:round(Number(e.playerPoolEntry?.appliedStatTotal) || 0) })) };
+  }).filter(Boolean));
+}
+
 const rosterFitByTeam = new Map();
 for (const team of teams.values()) {
   const fit = positionFitByTeam.get(Number(team.id)) || {strengths:[],needs:[]};
@@ -1762,6 +1777,7 @@ await writeJson("data/current/teams.json",{season:settings.seasonId,currentWeek,
       rosterFit:rosterFitByTeam.get(Number(t.id))||null,
       winWinTrades:winWinTradesByTeam.get(Number(t.id))||[],
       longTermRegrets:longTermRegretsByTeam.get(Number(t.id))||[],
+      recentLineups:recentLineupsByTeam.get(Number(t.id))||[],
       waiverTargets:freeAgentData ? waiverTargetsByTeam.get(Number(t.id))||[] : null,
       trend:trend ? {...trend,direction:trend.slope >= 2 ? "up" : trend.slope <= -2 ? "down" : "steady"} : null,
       luck:luck ? {actualWins:round(luck.actual),expectedWins:round(luck.expected),difference:round(luck.luck)} : null
