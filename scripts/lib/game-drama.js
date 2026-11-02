@@ -33,6 +33,9 @@ export function rateGames({ games, scores, guillotineTeams = [], svPicks = [], l
   // - shootout: the over/under (pregame only)
   // - surprise: live, on pace to blow past the over/under (a game nobody circled turning wild)
   // - fans: the league's own rooting interests (LEAGUE_FANS)
+  // Finals look back on the whole game instead (Jim, 2026-11-02), from g.recap (update-live-scoreboard.js):
+  // - thrill: total win-probability swing; finish: how close it was late (overtime counts extra);
+  //   comeback: how low the winner's chances got; knocked out: survivor entries that lost on it; fantasy: league points scored
   const scoreOf = new Map(scores.map(s => [Number(s.teamId), s]));
   const chopOf = new Map(guillotineTeams.map(t => [Number(t.teamId), Number(t.chopProbability) || 0]));
   const gameOfAbbrev = abbrev => games.find(g => (g.teams || []).some(t => feedTeam(t.abbrev) === abbrev));
@@ -68,6 +71,8 @@ export function rateGames({ games, scores, guillotineTeams = [], svPicks = [], l
     }
     const riders = svPicks.filter(x => gameOfAbbrev(x.team) === g);
     const sideOf = abbrev => [home, away].find(t => feedTeam(t.abbrev) === abbrev);
+    const losers = g.completed ? riders.filter(x => (sideOf(x.team)?.score ?? 0) < Math.max(home.score, away.score)) : [];
+    const svOut = losers.length / Math.max(1, svPicks.length);
     const svRisk = riders.reduce((a, x) => a + (g.completed ? 0 : 1 - (sideOf(x.team)?.winChance ?? 0.5)), 0) / Math.max(1, svPicks.length);
     const playoff = [home, away].reduce((a, t) => a + (t.playoffOdds == null ? 0 : lev(t.playoffOdds / 100)), 0) / 2;
     const progress = g.state === "in" ? clamp01(((Number(g.period) || 1) - 1 + (900 - (Number(g.clock) || 0)) / 900) / 4) : g.completed ? 1 : 0;
@@ -83,6 +88,11 @@ export function rateGames({ games, scores, guillotineTeams = [], svPicks = [], l
     const fanTeams = [away, home].filter(t => LEAGUE_FANS[t.abbrev]);
     const fans = clamp01(fanTeams.reduce((a, t) => a + LEAGUE_FANS[t.abbrev], 0) / 3);
     const fav = favHome ? home : away;
+    const rc = g.completed ? g.recap : null, winner = home.score > away.score ? home : away;
+    const thrill = rc ? clamp01((rc.excitement - 1) / 5) : 0;
+    const comeback = rc ? clamp01((0.5 - rc.low) / 0.45) : 0;
+    // Without the win-probability history, the final margin stands in: a field goal or less is close.
+    const finish = rc ? clamp01(rc.late + (rc.overtime ? 0.25 : 0)) : g.completed ? clamp01(1 - (Math.abs(home.score - away.score) - 3) / 14) : 0;
     // League points scored in this game, and who's on the field right now: the offense's league starters plus the
     // other team's defense (each player once, even if started in both leagues).
     const leaguePts = inGame.reduce((a, x) => a + (Number(x.actual) || 0), 0);
@@ -90,8 +100,17 @@ export function rateGames({ games, scores, guillotineTeams = [], svPicks = [], l
     const onField = ball ? [...new Map(inGame.filter(x => isDefense(x) ? Number(x.proTeamId) !== ball : Number(x.proTeamId) === ball).map(x => [x.id ?? x.name, x])).values()] : [];
     // In game the line and over/under are the live market's (g.live); the pregame ones still drive shootout and surprise.
     return { g, home, away, spread: g.live?.spread ?? latest?.spread ?? null, total: g.live?.total ?? latest?.total ?? null,
-      pregameSpread: latest?.spread ?? null, pregameTotal: latest?.total ?? null, leaguePts, ball, onField, fantasyRaw, playoff, svRisk, close, upset, breakout, shootout, surprise, fans, inGame, riders,
-      why: [
+      pregameSpread: latest?.spread ?? null, pregameTotal: latest?.total ?? null, leaguePts, ball, onField, fantasyRaw, playoff, svRisk, svOut, thrill, finish, comeback, close, upset, breakout, shootout, surprise, fans, inGame, riders,
+      why: g.completed ? [
+        [thrill >= 0.5 ? thrill : 0, "Back and forth all game"],
+        [finish, rc?.overtime ? "Went to overtime" : "Down to the wire"],
+        [comeback, `Comeback: ${winner.abbrev} was down to ${Math.round((rc?.low ?? 0) * 100)}%`],
+        [upset, `Upset: ${fav.abbrev} was ${Math.round(Math.max(preHome ?? 0, 1 - (preHome ?? 0)) * 100)}% before kickoff`],
+        [svOut * 3, `🛡️ Knocked out ${losers.length} survivor ${losers.length === 1 ? "entry" : "entries"}`],
+        [breakout, boomer ? `Breakout: ${boomer.name} (${boomer.owned}% rostered) had ${boomer.actual.toFixed(2)}` : ""],
+        [surprise, `Off script: ${home.score + away.score} points, O/U was ${latest?.total}`],
+        [fans * 0.7, `League rooting interest: ${fanTeams.map(t => `${FAN_NAMES[t.abbrev]} fans`).join(" vs ")}`]
+      ] : [
         [h2h?.v || 0, h2h?.text || ""],
         [chop?.v || 0, chop?.text || ""],
         [close >= 0.85 ? close : 0, g.state === "pre" ? `Coin flip: ${Math.round((preHome ?? 0.5) * 100)}–${Math.round((1 - (preHome ?? 0.5)) * 100)}` : `Too close to call: ${Math.round(p * 100)}–${Math.round((1 - p) * 100)}`],
@@ -106,15 +125,19 @@ export function rateGames({ games, scores, guillotineTeams = [], svPicks = [], l
   };
   const rated = games.map(rateGame).filter(Boolean);
   const maxFantasy = Math.max(1, ...rated.map(r => r.fantasyRaw));
+  const maxFinalPts = Math.max(1, ...rated.filter(r => r.g.completed).map(r => r.leaguePts));
   for (const r of rated) {
-    r.fantasy = r.fantasyRaw / maxFantasy;
+    // A final's fantasy weight is the league points it produced (its stakes are settled by then).
+    r.fantasy = r.g.completed ? r.leaguePts / maxFinalPts : r.fantasyRaw / maxFantasy;
     const sv = clamp01(r.svRisk * 3);
-    const raw = r.g.state === "pre"
+    const raw = r.g.completed
+      ? 0.35 * r.thrill + 0.2 * r.finish + 0.15 * r.comeback + 0.07 * r.upset + 0.1 * r.fantasy + 0.05 * clamp01(r.svOut * 3) + 0.04 * r.breakout + 0.04 * r.surprise + 0.05 * r.fans
+      : r.g.state === "pre"
       ? 0.25 * r.close + 0.1 * r.shootout + 0.25 * r.fantasy + 0.15 * r.playoff + 0.15 * sv + 0.1 * r.fans
       : 0.2 * r.close + 0.15 * r.upset + 0.18 * r.fantasy + 0.08 * r.playoff + 0.12 * sv + 0.08 * r.breakout + 0.09 * r.surprise + 0.1 * r.fans;
     // A game being played always beats one that hasn't started (Jim, 2026-11-01): live games score 50-100,
     // upcoming ones 0-50 (anticipation), finals 0-100 for how dramatic they were.
-    r.drama = Math.round(r.g.state === "in" ? 50 + 50 * raw : r.g.state === "pre" ? 50 * raw : 100 * raw);
+    r.drama = Math.round(r.g.state === "in" ? 50 + 50 * raw : r.g.state === "pre" ? 50 * raw : 100 * clamp01(raw));
     r.reasons = r.why.filter(([v, text]) => v >= 0.35 && text).sort((a, b) => b[0] - a[0]).map(([, text]) => text);
   }
   return rated;

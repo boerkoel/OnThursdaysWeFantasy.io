@@ -160,6 +160,20 @@ for (const event of nflWeek?.events || []) {
 }
 // Live line, over/under and win odds for games in progress (Games tab): betting markets, since the sportsbook line stops at kickoff.
 for (const g of nflGames.filter(g => g.state === "in")) { const m = await liveMarket(g); if (m) g.live = m; }
+// How a finished game played out, from ESPN's play-by-play win probability (Jim, 2026-11-02: a final's drama
+// index looks back on the whole game): excitement = total win-probability swing (538's excitement index),
+// low = the winner's lowest chance along the way, late = how close it was over the last 15% of plays.
+await Promise.all(nflGames.filter(g => g.completed).map(async g => {
+  try {
+    const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=${g.id}`, { headers: { Accept: "application/json", "User-Agent": "OnThursdaysWeFantasy/1.0" }, signal: AbortSignal.timeout(10000) });
+    const wp = r.ok ? ((await r.json()).winprobability || []).map(x => Number(x.homeWinPercentage)).filter(Number.isFinite) : [];
+    if (wp.length < 10) return;
+    const homeWon = wp[wp.length - 1] > 0.5, winner = wp.map(p => homeWon ? p : 1 - p);
+    const round = x => Math.round(x * 1000) / 1000;
+    g.recap = { excitement: round(wp.slice(1).reduce((a, p, i) => a + Math.abs(p - wp[i]), 0)), low: round(Math.min(...winner)),
+      late: round(Math.max(0, ...wp.slice(Math.floor(wp.length * 0.85), -1).map(p => 4 * p * (1 - p)))), overtime: /OT/.test(g.detail) };
+  } catch {}
+}));
 
 // statSourceId 1 = ESPN projection, 0 = actual; statSplitTypeId 1 = single week.
 function weeklyStat(player, statSourceId) {
