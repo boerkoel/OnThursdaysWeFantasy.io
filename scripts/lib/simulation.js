@@ -59,7 +59,7 @@ const clamp01 = x => Math.min(1, Math.max(0, x));
 
 // The pieces of an ESPN scoreboard competition that game script needs:
 // { state, period, clock (seconds left in the period), teams: [{ id, score, home }], drive }.
-// drive (live games): { possession, yardLine (from the home team's goal line), down, distance }.
+// drive (live games): { possession, yardLine (from the home team's goal line), down, distance, text, redZone }.
 export function gameScriptInputs(competition) {
   const status = competition?.status, s = competition?.situation;
   const state = status?.type?.state || "pre";
@@ -69,7 +69,8 @@ export function gameScriptInputs(competition) {
     clock: Number.isFinite(Number(status?.clock)) ? Number(status.clock) : null,
     teams: (competition?.competitors || []).map(c => ({ id: Number(c.team?.id ?? c.id), score: Number(c.score) || 0, home: c.homeAway === "home" })),
     drive: state === "in" && s?.possession ? { possession: Number(s.possession), yardLine: Number.isFinite(s.yardLine) ? s.yardLine : null,
-      down: Number(s.down) || null, distance: Number.isFinite(Number(s.distance)) ? Number(s.distance) : null } : null
+      down: Number(s.down) || null, distance: Number.isFinite(Number(s.distance)) ? Number(s.distance) : null,
+      text: s.downDistanceText || s.possessionText || "", redZone: s.isRedZone === true } : null
   };
 }
 

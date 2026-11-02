@@ -33,6 +33,7 @@ import { BackToTop, SectionNav, TabBar } from "./components/Navigation.jsx";
 import { AccuracyScorecard, OutcomeBar, RaceChart, outcomeScale } from "./components/OutcomeBar.jsx";
 import { Needle } from "./components/Needle.jsx";
 import { driveRooting } from "./lib/rooting.js";
+import { useDriveAdjusted } from "./lib/liveDrives.js";
 import { oddsMove, shortPlay } from "./lib/playText.js";
 
 // Standings and rest-of-season odds in one sortable table: current seed and
@@ -190,7 +191,7 @@ function MatchupTeam({ team, opponent, logo, projected, flashing, dotClass }) {
 }
 
 function App() {
-  const live = useLiveData();
+  const live = useDriveAdjusted(useLiveData());   // odds move with each drive between live runs
   const { scoreboard, guillotine } = live;
   const livePlayFeed = live.livePlays;
   const scores = scoreboard.scores || [];
@@ -426,7 +427,7 @@ function App() {
     const plays = keyPlaysFor(matchupId).slice(0, 3);
     const open = [a, b].every(t => Number(t.winProbability) > 0.5 && Number(t.winProbability) < 99.5);
     return <div className="primetime-expand">
-      {open ? <Needle a={a} b={b} /> : null}
+      {open ? <Needle a={a} b={b} history={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} /> : null}
       {open ? (scoreboard.nflGames || []).map(g => ({ g, r: driveRooting({ game: g, a, b }) })).filter(x => x.r).slice(0, 2).map(({ g, r }) =>
         <div className="rooting" key={g.id}>
           <small>🏈 {r.offense} BALL{r.toGo != null ? ` · ${r.toGo} YDS TO GO` : ""} · ROOT FOR</small>
