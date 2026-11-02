@@ -1,5 +1,6 @@
 import React from "react";
 import { money } from "../lib/data.js";
+import { Explain } from "./LiveBits.jsx";
 
 // A team's simulated final score, compactly: the thin line spans the middle 80%
 // of outcomes (10th-90th percentile), the band the middle half (25th-75th), the
@@ -70,7 +71,7 @@ export function AccuracyScorecard({ scorecard }) {
           <tr><td>Above-median odds (Brier)</td>{cols.map(([k]) => <React.Fragment key={k}>{cell(scorecard[k]?.brierAbove, scorecard[k]?.brierAboveEspn, "", 3)}</React.Fragment>)}</tr>
         </tbody></table></div>
         : <p className="median-note">Grading starts with Week {scorecard.since}: the first results land after Monday night.</p>}
-      <p className="median-note">Ours vs ESPN's, lower is better (green = we did better). Projections are graded on each team's final score; odds by Brier score (the average squared miss on a 0–1 scale; 0.25 is a coin flip). ESPN doesn't publish odds, so its column uses the odds its projections imply with the same spread.</p>
+      <Explain lead="Ours vs ESPN's, lower is better (green = we did better).">Projections are graded on each team's final score; odds by Brier score (the average squared miss on a 0–1 scale; 0.25 is a coin flip). ESPN doesn't publish odds, so its column uses the odds its projections imply with the same spread.</Explain>
     </section>
   );
 }

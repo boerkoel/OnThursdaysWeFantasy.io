@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { TeamLogo } from "./LiveBits.jsx";
+import { Explain, TeamLogo } from "./LiveBits.jsx";
 
 // Report cards (scripts/report-cards.js): every manager graded on a curve
 // against the league, this season (by category), last week and all-time.
@@ -71,7 +71,7 @@ export default function ReportCards({ cards, logos = {} }) {
           </React.Fragment>;
         })}
       </div>
-      <p className="median-note">Grades are on a curve against the league: roughly the top two earn A's, the bottom two D's or an F. Season: {cards.weights?.season}. Week: {cards.weights?.weekly}. All-time: {cards.weights?.allTime}; all-time draft, waivers and trades (in a team's details) are points per week started from each source over every season we have rosters for, shown but not weighted. Tap a column to sort, a team for the details.</p>
+      <Explain lead="Graded on a curve against the league. Tap a column to sort, a team for details.">Roughly the top two earn A's, the bottom two D's or an F. Season: {cards.weights?.season}. Week: {cards.weights?.weekly}. All-time: {cards.weights?.allTime}; all-time draft, waivers and trades (in a team's details) are points per week started from each source over every season we have rosters for, shown but not weighted.</Explain>
     </section>
   );
 }

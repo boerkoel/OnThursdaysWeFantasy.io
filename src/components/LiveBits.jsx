@@ -17,7 +17,12 @@ export function ShareButton({ build, filename, section, label = "Share", iconOnl
   return <button type="button" className="share-button" onClick={onClick} disabled={busy} aria-label={label + " as an image"}>⤴ {busy ? "…" : label}</button>;
 }
 
-export const TeamLogo = ({ src, size = "sm" }) => src ? <img src={src} alt="" className={`inline-team-logo ${size}`} /> : null;
+// A short note with the long explanation tucked behind a caret (Jim, 2026-11-02).
+export function Explain({ lead, children, className = "median-note" }) {
+  return <details className={`explain ${className}`}><summary>{lead}</summary><div>{children}</div></details>;
+}
+
+export const TeamLogo =({ src, size = "sm" }) => src ? <img src={src} alt="" className={`inline-team-logo ${size}`} /> : null;
 
 // "updated 42s ago", ticking on its own so the rest of the page doesn't
 // re-render every second.

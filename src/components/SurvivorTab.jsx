@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { NOTIFY_SERVICE, pct } from "../lib/data.js";
+import { Explain } from "./LiveBits.jsx";
 import { feedTeam, survivorModel } from "../../scripts/lib/survivor-model.js";
 
 export { survivorModel };
@@ -146,7 +147,7 @@ function GamesSection({ feed, games, pot }) {
         const fav = r.a.chance != null && r.h.chance != null ? (r.a.chance >= r.h.chance ? r.a : r.h) : null;
         return `${r.a.team} @ ${r.h.team}${fav ? ` (${fav.team} ${Math.round(fav.chance * 100)}%)` : ""}`;
       }).join(" · ")}</p> : null}
-    <p className="median-note">Picks show once their game kicks off. Rooting interests use the same money model as Managers: every live entry gets an equal share of the {dollars(pot)} pot, so a game moves a manager's value both through their own entries and through everyone else's. Picks that haven't been revealed yet are assumed to survive here.</p>
+    <Explain lead="Picks show once their game kicks off.">Rooting interests use the same money model as Managers: every live entry gets an equal share of the {dollars(pot)} pot, so a game moves a manager's value both through their own entries and through everyone else's. Picks that haven't been revealed yet are assumed to survive here.</Explain>
   </section>;
 }
 
@@ -343,8 +344,8 @@ export default function SurvivorTab({ nflGames = [], nflWeek = null }) {
           <b className={"sv-ledger-roi " + (m.roi > 0.5 ? "up" : m.roi < -0.5 ? "down" : "")}>{m.roi > 0 ? "+" : m.roi < 0 ? "−" : ""}{Math.abs(m.roi).toFixed(0)}%</b>
         </div>)}
       </div>
-      {showLive ? <p className="median-note"><b>Live:</b> expected value averages each manager's share of the pot over 2,000 simulations of this week's games (live win chances; hidden picks modeled), so it moves with every game in action. Switch to As it stands for the current count.</p> : weekSim && !weekSim.final ? <p className="median-note"><b>As it stands:</b> a pick counts as lost once its game is final or it's under 0.5% to win in a live game; everything still open counts as surviving.</p> : null}
-      <p className="median-note">Expected value = (manager's entries remaining ÷ all {c.alive} entries remaining) × the {dollars(pot)} pot ({dollars(fee)} × {total} entries). Expected ROI = (expected value − buy-ins) ÷ buy-ins. Every live entry counts equally; picks won counts graded picks across all entries. Wk {n} = expected entries left after this week, live from each pick's chance to win; * = includes picks not revealed yet, modeled as favorites among each entry's unused teams in games that haven't kicked off.</p>
+      {showLive ? <Explain lead={<><b>Live:</b> expected value moves with every game in action.</>}>Expected value averages each manager's share of the pot over 2,000 simulations of this week's games (live win chances; hidden picks modeled). Switch to As it stands for the current count.</Explain> : weekSim && !weekSim.final ? <p className="median-note"><b>As it stands:</b> a pick counts as lost once its game is final or it's under 0.5% to win in a live game; everything still open counts as surviving.</p> : null}
+      <Explain lead="Expected value = each manager's share of the pot by entries left.">Expected value = (manager's entries remaining ÷ all {c.alive} entries remaining) × the {dollars(pot)} pot ({dollars(fee)} × {total} entries). Expected ROI = (expected value − buy-ins) ÷ buy-ins. Every live entry counts equally; picks won counts graded picks across all entries. Wk {n} = expected entries left after this week, live from each pick's chance to win; * = includes picks not revealed yet, modeled as favorites among each entry's unused teams in games that haven't kicked off.</Explain>
     </section>
 
     <section id="survivor-teams" className="section">

@@ -1,5 +1,5 @@
 import React from "react";
-import { ShareButton, TeamLogo } from "./LiveBits.jsx";
+import { Explain, ShareButton, TeamLogo } from "./LiveBits.jsx";
 import { basisTag } from "../lib/tradeBasis.js";
 
 // Teams tab: the league's best win-win trades (1-for-1, 2-for-1, 2-for-2),
@@ -72,7 +72,7 @@ export default function TopTrades({ teams, week }) {
         <div><span className="section-kicker">THE TRADE MACHINE · IN HINDSIGHT</span><h2>Trades that should have happened</h2></div>
         <ShareButton section="trades" iconOnly label="Share the trades that should have happened" filename={`week-${week}-top-trades`} build={share} />
       </div>
-      <p className="team-cards-intro">If these teams had swapped these players back then, both would be ahead today: the wins each would have added, replaying the weeks with optimal lineups or the lineups ESPN's projections would have set. Hindsight, not a promise about what happens next.</p>
+      <Explain className="team-cards-intro" lead="Swaps that would have left both teams ahead today.">The wins each would have added, replaying the weeks with optimal lineups or the lineups ESPN's projections would have set. Hindsight, not a promise about what happens next.</Explain>
       <div className="top-trades">
         {[...trades, ...recent].map(t => <article className="top-trade" key={t.teamId + ":" + t.givePlayerId + ":" + t.getPlayerId}>
           <span className="top-trade-kind">{t.kind ? `${t.kind} · ` : ""}{basisTag(t.basis)}</span>

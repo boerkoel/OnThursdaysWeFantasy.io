@@ -4,6 +4,7 @@ import { feedTeam } from "../../scripts/lib/survivor-model.js";
 import { Field } from "./SurvivorTab.jsx";
 import { rateGames } from "../../scripts/lib/game-drama.js";
 import { shortPlay } from "../lib/playText.js";
+import { Explain } from "./LiveBits.jsx";
 
 // Games tab (Jim, 2026-10-29): the NFL slate through the league's eyes.
 // - All games: every game with score, clock, win odds, possession and the
@@ -241,6 +242,6 @@ export default function GamesTab({ scoreboard, guillotine, livePlays, survivorFe
         <button key={id} type="button" className={view === id ? "active" : ""} aria-selected={view === id} onClick={() => setView(id)}>{label}</button>)}
     </div>
     {view === "all" ? renderAll() : renderFollowed()}
-    <p className="median-note">Lines: open → now before kickoff, live in game. League pts: what league starters scored in the game; on the field: the offense's starters plus the other team's D/ST.{view === "all" ? " 🔥 Drama blends closeness, upsets, fantasy and survivor stakes, playoff stakes, breakouts and the league's fan bases; live games always outrank upcoming ones. Hover 🔥 for the reasons." : ""}</p>
+    <Explain lead="Lines: open → now before kickoff, live in game.">League pts: what league starters scored in the game; on the field: the offense's starters plus the other team's D/ST.{view === "all" ? " 🔥 Drama blends closeness, upsets, fantasy and survivor stakes, playoff stakes, breakouts and the league's fan bases; live games always outrank upcoming ones. Hover 🔥 for the reasons." : ""}</Explain>
   </section>;
 }

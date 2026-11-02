@@ -9,7 +9,7 @@ import playoffs from "../data/current/playoffs.json";
 import teamsData from "../data/current/teams.json";
 import weekly from "../data/current/weekly.json";
 import { fetchData, fetchWeekArchive, gameState, money, pct, useLiveData } from "./lib/data.js";
-import { ShareButton, TeamLogo, UpdatedAgo, useChangedScores } from "./components/LiveBits.jsx";
+import { Explain, ShareButton, TeamLogo, UpdatedAgo, useChangedScores } from "./components/LiveBits.jsx";
 import LeagueWire from "./components/LeagueWire.jsx";
 import { useRefresh } from "./components/PullToRefresh.jsx";
 import TeamCards from "./components/TeamCards.jsx";
@@ -117,9 +117,9 @@ function StandingsTable({ seasonOdds, logos, liveScores = [], week }) {
           {[["live", "Live"], ["stands", "As it stands"], ["before", "Before this week"]].map(([k, label]) =>
             <button type="button" key={k} className={liveMode === k ? "active" : ""} onClick={() => setLiveMode(k)}>{label}</button>)}
         </span> : null}</h3>
-      {isLive && !stands ? <p className="median-note"><b>Live:</b> Week {week} counted as it goes. W-L adds each team's expected wins this week (head-to-head and beating the median, out of 2): a result counts in full once it's locked (99.5%+ either way), the rest at its odds. PF adds points so far, and seeds are re-ranked by that record (points break ties). ▲▼ = seed change since the week began.</p> : null}
-      {isLive && stands ? <p className="median-note"><b>As it stands:</b> W-L adds only this week's results that are locked (99.5%+ either way, head-to-head or the median); open games don't count yet. PF adds points so far, and seeds are re-ranked by that record (points break ties). ▲▼ = seed change since the week began.</p> : null}
-      <p className="median-note">Seeds go by record (head-to-head + median wins), with total points breaking ties; the top {playoffs.playoffTeamCount || 6} make the playoffs and the top 2 get byes. Odds come from {Number(seasonOdds?.simulations || 0).toLocaleString()} simulations of the rest of the season, including both postseason brackets, using each team's scoring so far and, for the week in progress, live projections (Live), the points so far as if the week ended now (As it stands), or nothing from this week (Before this week). Title and Ultimate Loser odds each add up to 100%. Click a column to sort.</p>
+      {isLive && !stands ? <Explain lead={<><b>Live:</b> Week {week} counted as it goes, at its odds. ▲▼ = seed change this week.</>}>W-L adds each team's expected wins this week (head-to-head and beating the median, out of 2): a result counts in full once it's locked (99.5%+ either way), the rest at its odds. PF adds points so far, and seeds are re-ranked by that record (points break ties).</Explain> : null}
+      {isLive && stands ? <Explain lead={<><b>As it stands:</b> only locked results count. ▲▼ = seed change this week.</>}>W-L adds only this week's results that are locked (99.5%+ either way, head-to-head or the median); open games don't count yet. PF adds points so far, and seeds are re-ranked by that record (points break ties).</Explain> : null}
+      <Explain lead={<>Top {playoffs.playoffTeamCount || 6} make the playoffs. Odds from {Number(seasonOdds?.simulations || 0).toLocaleString()} season simulations; click a column to sort.</>}>Seeds go by record (head-to-head + median wins), with total points breaking ties; the top {playoffs.playoffTeamCount || 6} make the playoffs and the top 2 get byes. Odds come from {Number(seasonOdds?.simulations || 0).toLocaleString()} simulations of the rest of the season, including both postseason brackets, using each team's scoring so far and, for the week in progress, live projections (Live), the points so far as if the week ended now (As it stands), or nothing from this week (Before this week). Title and Ultimate Loser odds each add up to 100%.</Explain>
       <div className="survival-table odds-table">
         <div className="odds-row survival-header">
           {STANDINGS_COLUMNS.map(c => c.value
@@ -639,7 +639,7 @@ function App() {
               note={<>Projected just above the median: <b>{above.team}</b> ({money(above.projectionAverage)}, {pct(above.aboveMedianProbability)} to finish above). Just below: <b>{below.team}</b> ({money(below.projectionAverage)}, {pct(below.aboveMedianProbability)}).</>} /> : null}
           </>;
         })()}
-        <p className="median-note">Projections are ours: ESPN, Sleeper (RotoWire) and FantasyPros averaged, with injuries and likely lineup moves simulated (the bar on wide screens: band = middle half of outcomes, line = 80%, ◆ = ESPN). The projected median is the median of those projections. Odds of finishing above the median come from simulating the rest of the week, where the league median moves with every team’s result. Highlighted in yellow: the teams projected just above and just below the median, plus any team with a {NEAR_MEDIAN_MIN}–{NEAR_MEDIAN_MAX}% chance.</p>
+        <Explain lead={<>Projections blend ESPN, Sleeper and FantasyPros. Yellow = teams near the median.</>}>Projections are ours: ESPN, Sleeper (RotoWire) and FantasyPros averaged, with injuries and likely lineup moves simulated (the bar on wide screens: band = middle half of outcomes, line = 80%, ◆ = ESPN). The projected median is the median of those projections. Odds of finishing above the median come from simulating the rest of the week, where the league median moves with every team’s result. Highlighted in yellow: the teams projected just above and just below the median, plus any team with a {NEAR_MEDIAN_MIN}–{NEAR_MEDIAN_MAX}% chance.</Explain>
       </section>
       <AccuracyScorecard scorecard={scoreboard.scorecard} />
       </> : null}
@@ -654,7 +654,7 @@ function App() {
           <div><span className="section-kicker">ROAD TO THE TITLE</span><h2>2026 Playoffs</h2></div>
           <span className="record-count">{playoffs.status === "ACTIVE" ? "PLAYOFFS ACTIVE" : "PROJECTED FROM CURRENT STANDINGS"}</span>
         </div>
-        <p className="playoff-intro">Six teams qualify. Seeding goes by record (head-to-head plus median wins), with total points breaking ties; the top two seeds get first-round byes. Teams are reseeded after the quarterfinals: the #1 seed plays the lowest remaining seed (dashed lines).</p>
+        <Explain className="playoff-intro" lead="Six teams qualify; the top two get byes.">Seeding goes by record (head-to-head plus median wins), with total points breaking ties. Teams are reseeded after the quarterfinals: the #1 seed plays the lowest remaining seed (dashed lines).</Explain>
         <div className="bracket">
           <div className="bracket-round reseed-next">
             <div className="bracket-round-title">WEEK 15 · QUARTERFINALS</div>
@@ -704,7 +704,7 @@ function App() {
           <div><span className="section-kicker">THE OTHER ROAD</span><h2>Ultimate Loser</h2></div>
           <span className="record-count">WEEKS 16–18 · 8 TEAMS</span>
         </div>
-        <p className="playoff-intro">Three weeks. Eight-team single elimination. The lower-scoring team advances, and teams are reseeded after the quarterfinals (dashed lines). The six regular-season non-playoff teams are seeded 1–6, followed by the lower-ranked Week 15 playoff loser at #7 and the higher-ranked Week 15 playoff loser at #8.</p>
+        <Explain className="playoff-intro" lead="Three weeks, eight teams: the lower score advances.">Single elimination, and teams are reseeded after the quarterfinals (dashed lines). The six regular-season non-playoff teams are seeded 1–6, followed by the lower-ranked Week 15 playoff loser at #7 and the higher-ranked Week 15 playoff loser at #8.</Explain>
         {/* Mostly placeholders early in the season: collapsed until Week 12. */}
         <details className="collapsible ul-details" open={Number(scoreboard.week) >= 12}>
         <summary>Show the bracket <span>SEEDS AS OF WEEK {scoreboard.week}</span></summary>
