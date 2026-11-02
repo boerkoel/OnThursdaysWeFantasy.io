@@ -31,6 +31,7 @@ import { useMyTeam, useTabs } from "./lib/tabs.js";
 import managerLinks from "./data/manager-links.json";
 import { BackToTop, SectionNav, TabBar } from "./components/Navigation.jsx";
 import { AccuracyScorecard, OutcomeBar, RaceChart, outcomeScale } from "./components/OutcomeBar.jsx";
+import { Needle } from "./components/Needle.jsx";
 import { oddsMove, shortPlay } from "./lib/playText.js";
 
 // Standings and rest-of-season odds in one sortable table: current seed and
@@ -422,7 +423,9 @@ function App() {
     if (!pair) return null;
     const [a, b] = pair;
     const plays = keyPlaysFor(matchupId).slice(0, 3);
+    const open = [a, b].every(t => Number(t.winProbability) > 0.5 && Number(t.winProbability) < 99.5);
     return <div className="primetime-expand">
+      {open ? <Needle a={a} b={b} /> : null}
       <MatchupLineup a={a} b={b} nflGames={scoreboard.nflGames || []} liveOnly />
       {plays.length ? <ul className="primetime-plays">{plays.map((play, i) => <li key={i}><b>{playLabel(play)}</b> {playText(play)}{momentumLine(play) ? <em> ⚡ {momentumLine(play)}</em> : null}</li>)}</ul> : null}
     </div>;
