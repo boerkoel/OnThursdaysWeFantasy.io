@@ -639,7 +639,9 @@ try {
   // The newest 60 plays, plus every play this week that moved a matchup's
   // odds, a team's ticket odds or its median odds 3%+ (the football markers on the charts; key plays).
   const sorted = [...deduped.values()].sort((a, b) => new Date(b.wallclock || 0) - new Date(a.wallclock || 0));
-  const plays = sorted.filter((play, i) => i < 60 || play.momentum?.shift >= 3 || Math.abs(play.raffle?.shift || 0) >= 3 || Math.abs(play.median?.shift || 0) >= 3);
+  const plays = sorted.filter((play, i) => i < 60 || play.momentum?.shift >= 3 || Math.abs(play.raffle?.shift || 0) >= 3 || Math.abs(play.median?.shift || 0) >= 3
+    // and every go-ahead play (crossed 50% in the win odds): the clinching one leads a decided matchup's key plays
+    || (play.momentum?.winProbability >= 50 && play.momentum.winProbability - play.momentum.shift < 50));
 
   // Guillotine plays: each new one gets the chop-odds swing it caused, judged
   // like matchup momentum (newest first per team, against this run's odds).
