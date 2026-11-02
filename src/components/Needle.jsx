@@ -6,7 +6,8 @@ import { normalCdf, normalQuantile } from "../../scripts/lib/simulation.js";
 // team a's side on the left, b's on the right, shaded from lean to very likely. The needle wanders over where
 // the odds could be partway through what's left to play (Jim: drama that still means something): it averages
 // out at the current odds, and how far ahead it looks follows how wild the matchup has been (Jim: a boring
-// game quivers less, a wild one more). The odds under it are the steady number: they move only as plays
+// game quivers less, a wild one more) and how much is still in play (a pile of skill players left bounces it
+// more than a lone kicker or D/ST). The odds under it are the steady number: they move only as plays
 // and drives do (liveDrives.js), with ▲▼ for the change since the last full update. Under them the projected
 // margin reads like a betting line.
 const CX = 120, CY = 118, R_OUT = 104, R_IN = 66;
@@ -37,9 +38,12 @@ export function Needle({ a, b, history = [] }) {
   const sd = Math.hypot(sdOf(da), sdOf(db));
   // A fraction h through what's left, the margin has moved by Z × SD·√h and SD·√(1−h) is still to come, so the
   // odds' z is then (z + √h·Z) / √(1−h), Z standard normal (its average is still today's odds). h runs from 10%
-  // for a dull matchup (a coin flip mostly sits 41–59%) to 50% for a wild one (25–75%). The needle walks Z as
-  // an AR(1) process that stays standard normal, so over time it shows that spread of futures.
-  const h = 0.1 + 0.4 * wildness(history, a.teamId);
+  // for a dull matchup (a coin flip mostly sits 41–59%) to 50% for a wild one (25–75%), scaled by the stakes
+  // left: the spread of the remaining margin against a full slate's (about 25 points), down to a quarter of it,
+  // so a matchup down to a kicker looks barely ahead (mostly 47–53% at a coin flip). The needle walks Z as an
+  // AR(1) process that stays standard normal, so over time it shows that spread of futures.
+  const stakes = Math.min(1, Math.max(0.25, sd / 25));
+  const h = (0.1 + 0.4 * wildness(history, a.teamId)) * stakes;
   const live = sd >= 0.5;
   const [wobble, setWobble] = useState(0);
   useEffect(() => {
