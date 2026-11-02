@@ -8,11 +8,42 @@ import { LOCKED, MiniNeedle, NeedleRace } from "./Needle.jsx";
 // across the room, nothing to tap. Six matchup needles, the median, ticket and chop races, who's on the field,
 // and a ticker of key plays and League Wire headlines. Keeps the screen awake, hides an idle cursor, and pulses
 // a matchup's tile when it gets a new favorite. At #tv; sized to the screen (vw units) so a laptop or a TV works.
+// Space follows what's still in play (Jim, 2026-11-02): decided matchups announce themselves full screen, then
+// shrink into a results strip while the open ones grow (3×2, 2×2, side by side, one big needle); the side
+// races show only the median's four most at stake and the ticket's and chop's top two, and a new team taking
+// one of those spots is announced too.
 const A_COLOR = "#7aa6d8", B_COLOR = "#e0a64a";
 const MEDIAN_COLORS = ["#d96b67", "#e6c85c", "#72b96a"];
 const FLASH_MS = 6000;
 const TICKER_PLAYS = 12;
 const TICKER_MAX_AGE_MS = 3 * 60 * 60 * 1000;
+const ANNOUNCE_MS = 6000;
+
+// Announcements, one at a time: { icon, text, sub }.
+function useAnnouncer() {
+  const [queue, setQueue] = useState([]);
+  useEffect(() => {
+    if (!queue.length) return;
+    const id = setTimeout(() => setQueue(q => q.slice(1)), ANNOUNCE_MS);
+    return () => clearTimeout(id);
+  }, [queue]);
+  return [queue[0] || null, a => setQueue(q => [...q, a])];
+}
+
+// Announce each matchup the moment it's decided (not the ones already decided when the screen opened).
+function useClinches(pairs, announce) {
+  const seen = useRef(null);
+  const decided = pairs.filter(([a, b]) => Number(a.winProbability) >= LOCKED || Number(b.winProbability) >= LOCKED);
+  const key = decided.map(([a]) => a.matchupId).join(",");
+  useEffect(() => {
+    const now = new Set(decided.map(([a]) => a.matchupId));
+    if (seen.current) for (const [a, b] of decided) if (!seen.current.has(a.matchupId)) {
+      const [w, l] = Number(a.winProbability) >= Number(b.winProbability) ? [a, b] : [b, a];
+      announce({ icon: "✊", text: `${w.team} has clinched it`, sub: `over ${l.team} · ${money(w.score)}–${money(l.score)}` });
+    }
+    seen.current = now;
+  }, [key]);
+}
 
 const teamIdsOf = g => (g.teamIds || (g.teams || []).map(t => Number(t.id))).map(Number);
 const gameText = g => {
@@ -67,6 +98,12 @@ export default function TvView({ scoreboard, guillotine, livePlays, marquee, log
   const week = Number(scoreboard.week);
   const pairs = [...new Set(scores.map(s => s.matchupId))].map(id => scores.filter(s => s.matchupId === id)).filter(p => p.length === 2);
   const flashing = useFlashes(pairs);
+  const [announcement, announce] = useAnnouncer();
+  useClinches(pairs, announce);
+  const swapped = icon => (inTeam, outTeam) => announce({ icon, text: `${inTeam} is in`, sub: `taking ${outTeam}'s spot` });
+  const isDecided = ([a, b]) => Number(a.winProbability) >= LOCKED || Number(b.winProbability) >= LOCKED;
+  const open = pairs.filter(p => !isDecided(p)), done = pairs.filter(isDecided);
+  const cols = open.length <= 1 ? 1 : open.length <= 4 ? 2 : 3;
   const liveGames = games.filter(g => g.state === "in");
   const teamName = new Map(scores.map(s => [Number(s.teamId), s.team]));
 
@@ -99,35 +136,39 @@ export default function TvView({ scoreboard, guillotine, livePlays, marquee, log
         </div>
       </header>
       <div className="tv-body">
-        <section className="tv-matchups">
-          {pairs.map(([a, b]) => {
-            const decided = Number(a.winProbability) >= LOCKED || Number(b.winProbability) >= LOCKED;
-            const winner = Number(a.winProbability) >= Number(b.winProbability) ? a : b;
-            return <div key={a.matchupId} className={"tv-tile" + (flashing.has(a.matchupId) ? " flash" : "") + (decided ? " decided" : "")}>
+        <section className="tv-left">
+          {open.length ? <div className={"tv-matchups n" + open.length} style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
+            {open.map(([a, b]) => <div key={a.matchupId} className={"tv-tile" + (flashing.has(a.matchupId) ? " flash" : "")}>
               <div className="tv-score">
                 {[[a, A_COLOR], [b, B_COLOR]].map(([t, c]) => <p key={t.teamId} style={{ color: c }}>
                   <span>{logos[t.teamId] ? <img src={logos[t.teamId]} alt="" /> : null}{t.team}</span><b>{money(t.score)}</b></p>)}
               </div>
-              {decided ? <p className="tv-clinched">✊ {winner.team} {a.startersLeft || b.startersLeft ? "has clinched it" : "wins"}</p>
-                : <MiniNeedle team={b} stakes={[a, b]} p={Number(b.winProbability)} from={b.liveWinFrom} sides={[a.team, b.team]} colors={[A_COLOR, B_COLOR]}
-                  caption={`${a.startersLeft ?? 0} left · ${b.startersLeft ?? 0} left`} history={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} games={games} />}
-            </div>;
-          })}
+              <MiniNeedle team={b} stakes={[a, b]} p={Number(b.winProbability)} from={b.liveWinFrom} sides={[a.team, b.team]} colors={[A_COLOR, B_COLOR]}
+                caption={`${a.startersLeft ?? 0} left · ${b.startersLeft ?? 0} left`} history={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} games={games} />
+            </div>)}
+          </div> : <p className="tv-all-done">Every matchup is decided.</p>}
+          {done.length ? <div className="tv-results">{done.map(([a, b]) => {
+            const [w, l] = Number(a.winProbability) >= Number(b.winProbability) ? [a, b] : [b, a];
+            return <span key={a.matchupId}>✊ <b>{w.team}</b> {money(w.score)}–{money(l.score)} {l.team}</span>;
+          })}</div> : null}
         </section>
         <aside className="tv-side">
-          <NeedleRace label="MEDIAN LINE" items={scores.map(s => ({ team: s, p: Number(s.aboveMedianProbability), from: s.liveAboveFrom }))}
+          <NeedleRace label="MEDIAN LINE" max={4} pick="stake" onSwap={swapped("📏")} items={scores.map(s => ({ team: s, p: Number(s.aboveMedianProbability), from: s.liveAboveFrom }))}
             sides={["below", "above"]} colors={MEDIAN_COLORS} band={[30, 70]} words={{ likely: ["likely below", "likely above"], locked: ["❌ below", "✅ above"] }}
             stakes={scores} games={games} />
-          <NeedleRace label="🎟️ TICKET RACE" items={scores.map(s => ({ team: s, p: Number(s.topScoreProbability), from: s.liveTopFrom }))}
+          <NeedleRace label="🎟️ TICKET RACE" max={2} onSwap={swapped("🎟️")} items={scores.map(s => ({ team: s, p: Number(s.topScoreProbability), from: s.liveTopFrom }))}
             sides={["no ticket", "ticket"]} colors={["#8b8e86", "#e6c85c"]} words={{ likely: ["long shots", "near lock"], locked: ["❌ out", "🎟️ locked"] }}
             chipOdds="right" stakes={scores} history={scoreboard.raffleHistory?.week === scoreboard.week ? scoreboard.raffleHistory.points : []} games={games} />
-          {gWeek && guillotine.teams?.length ? <NeedleRace label="🪓 CHOPPING BLOCK" items={guillotine.teams.map(t => ({ team: { ...t, lineup: { starters: t.lineup || [] } }, p: Number(t.chopProbability), from: t.liveChopFrom }))}
+          {gWeek && guillotine.teams?.length ? <NeedleRace label="🪓 CHOPPING BLOCK" max={2} onSwap={swapped("🪓")} items={guillotine.teams.map(t => ({ team: { ...t, lineup: { starters: t.lineup || [] } }, p: Number(t.chopProbability), from: t.liveChopFrom }))}
             sides={["safe", "chopped"]} colors={["#8fd087", "#d98a86"]} words={{ likely: ["likely safe", "likely chopped"], locked: ["✅ safe", "🪓 chopped"] }}
             stakes={guillotine.teams.map(t => ({ lineup: { starters: t.lineup || [] } }))} games={games} /> : null}
           {field.length ? <div className="tv-field"><small className="mini-needles-label">ON THE FIELD NOW</small>
             {field.map(f => <p key={f.id}><b>{f.head}</b>{f.on.length ? " — " + f.on.join(", ") : " — no league starters"}</p>)}</div> : null}
         </aside>
       </div>
+      {announcement ? <div className="tv-announce" key={announcement.text + announcement.sub}>
+        <span>{announcement.icon}</span><b>{announcement.text}</b>{announcement.sub ? <small>{announcement.sub}</small> : null}
+      </div> : null}
       {ticker.length ? <footer className="tv-ticker" aria-label="Key plays and League Wire">
         <div className="tv-ticker-track" style={{ animationDuration: `${Math.max(40, ticker.join(" ").length / 6)}s` }}>
           {[...ticker, ...ticker].map((t, i) => <span key={i}>{t}</span>)}

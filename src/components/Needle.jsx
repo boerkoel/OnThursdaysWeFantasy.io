@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useState } from "react";
+import React, { useEffect, useId, useRef, useState } from "react";
 import { money } from "../lib/data.js";
 import { normalCdf, normalQuantile, playerOutlook } from "../../scripts/lib/simulation.js";
 
@@ -207,11 +207,43 @@ export function Needle({ a, b, history = [], odds = null, label = null, games = 
 // team comes first. items: [{ team, p, from }]; words: { likely: [left, right], locked: [left, right] };
 // chipOdds "right" shows every chip's odds of the right side (the ticket's long shots), else each side's own.
 export const LOCKED = 99;
-export function NeedleRace({ label, items, sides, colors, band = null, words, chipOdds = "side", history = [], games = [], stakes = null, mine = null }) {
+// With max (the TV view, Jim 2026-11-02): only that many needles, the contenders with the most at stake
+// (pick "stake": closest to 50%) or the best odds (pick "odds"), the rest in an "also in it" chip row. The set is
+// sticky: a challenger takes a spot only once 5+ points better than the weakest shown, and onSwap hears of it
+// ("Brock You Like a Hurricane in for Kyle Tucker") so the screen can call it out.
+const SWAP_MARGIN = 5;
+function useStickySet(items, max, score, onSwap) {
+  const kept = useRef(null);
+  const ids = i => String(i.team.teamId);
+  let shown = items, swaps = [];
+  if (max) {
+    const byId = new Map(items.map(i => [ids(i), i]));
+    shown = (kept.current || []).map(id => byId.get(id)).filter(Boolean);
+    for (const i of [...items].sort((x, y) => score(y) - score(x))) if (shown.length < max && !shown.includes(i)) shown.push(i);
+    for (const c of [...items].sort((x, y) => score(y) - score(x))) {
+      if (shown.includes(c)) continue;
+      const worst = [...shown].sort((x, y) => score(x) - score(y))[0];
+      if (worst && score(c) >= score(worst) + SWAP_MARGIN) { swaps.push([c, worst]); shown = shown.map(i => i === worst ? c : i); }
+    }
+  }
+  const key = shown.map(ids).join(",");
+  useEffect(() => {
+    const had = kept.current;
+    kept.current = shown.map(ids);
+    if (had && onSwap) for (const [c, out] of swaps) onSwap(c.team.team, out.team.team);
+  }, [key]);
+  return shown;
+}
+
+export function NeedleRace({ label, items, sides, colors, band = null, words, chipOdds = "side", history = [], games = [], stakes = null, mine = null,
+  max = null, pick = "odds", onSwap = null }) {
   const base = i => Number.isFinite(Number(i.from)) ? Number(i.from) : Number(i.p);
   const isMine = i => mine != null && Number(i.team.teamId) === Number(mine);
   const live = items.filter(i => Number.isFinite(Number(i.p)));
-  const needles = live.filter(i => i.p >= 10 && i.p <= 90).sort((x, y) => isMine(y) - isMine(x) || base(y) - base(x));
+  const contenders = live.filter(i => i.p >= 10 && i.p <= 90);
+  const shown = useStickySet(contenders, max, pick === "stake" ? i => -Math.abs(base(i) - 50) : base, onSwap);
+  const needles = [...shown].sort((x, y) => isMine(y) - isMine(x) || base(y) - base(x));
+  const alsoIn = contenders.filter(i => !shown.includes(i)).sort((x, y) => y.p - x.p);
   const likelyR = live.filter(i => i.p > 90 && i.p < LOCKED).sort((x, y) => y.p - x.p);
   const likelyL = live.filter(i => i.p > 100 - LOCKED && i.p < 10).sort((x, y) => x.p - y.p);
   const lockedR = live.filter(i => i.p >= LOCKED), lockedL = live.filter(i => i.p <= 100 - LOCKED);
@@ -224,6 +256,7 @@ export function NeedleRace({ label, items, sides, colors, band = null, words, ch
     {label ? <small className="mini-needles-label">{label}</small> : null}
     {needles.length ? <div className="mini-needles">{needles.map(i => <MiniNeedle key={i.team.teamId} team={i.team} p={Number(i.p)} from={i.from}
       sides={sides} colors={colors} band={band} stakes={stakes} history={history} games={games} mine={isMine(i)} />)}</div> : null}
+    {tier("also in it", alsoIn.map(i => withOdds(i, chipOdds === "right" || i.p >= 50)))}
     {tier(words.likely[1], likelyR.map(i => withOdds(i, true)))}
     {tier(words.likely[0], likelyL.map(i => withOdds(i, false)))}
     {tier(words.locked[1], lockedR.map(name))}
