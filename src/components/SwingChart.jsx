@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import PlayMarkers, { playTime } from "./PlayMarkers.jsx";
 import { pct } from "../lib/data.js";
+import { oddsMove } from "../lib/playText.js";
 
 // Win-odds swing chart for one matchup: team A's chance of winning over the
 // week (team B's is the mirror image). One series, so the caption names it
@@ -87,7 +88,7 @@ export default function SwingChart({ points, teamId, teamName, opponentName, pla
         }) : null}
         <PlayMarkers plays={plays} t0={t0} end={last.t} width={WIDTH} height={HEIGHT}
           x={t => x({ t })} y={p => y({ p })} valueAt={(play, t) => (series.find(pt => pt.t >= t) || last).p}
-          swingText={play => `${pct(play.momentum.shift)} toward ${play.momentum.toward} (now ${pct(play.momentum.winProbability)})`} />
+          swingText={play => `${play.momentum.toward} ${oddsMove(play.momentum.winProbability, play.momentum.shift)}`} />
       </div>
     </div>
   );

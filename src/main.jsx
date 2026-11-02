@@ -31,6 +31,7 @@ import { useMyTeam, useTabs } from "./lib/tabs.js";
 import managerLinks from "./data/manager-links.json";
 import { BackToTop, SectionNav, TabBar } from "./components/Navigation.jsx";
 import { AccuracyScorecard, MatchupOutcomes, OutcomeBar, outcomeScale } from "./components/OutcomeBar.jsx";
+import { oddsMove, shortPlay } from "./lib/playText.js";
 
 // Standings and rest-of-season odds in one sortable table: current seed and
 // record (standings.json, playoffs.json) plus simulated odds (season-odds.js).
@@ -235,10 +236,10 @@ function App() {
   };
   // A key play's line: news has no points (📰 instead) and a headline already names the player.
   const playLabel = play => play.news ? "📰" : `${play.points > 0 ? "+" : ""}${money(play.points)}`;
-  const playText = play => play.news === "headline" ? play.text : `${play.player} ${play.text}`;
-  // "Momentum shift: swung the odds 6.2% toward X (now 58.0%)", for plays that moved the odds at least half a point.
+  const playText = play => play.news === "headline" ? play.text : `${play.player} ${shortPlay(play)}`;
+  // "X 52→58%": the play's team and its win odds before → after, for plays that moved the odds at least half a point.
   const momentumLine = play => play.momentum?.shift >= 0.5
-    ? `Momentum shift: swung the odds ${pct(play.momentum.shift)} toward ${play.momentum.toward} (now ${pct(play.momentum.winProbability)})` : null;
+    ? `${play.momentum.toward} ${oddsMove(play.momentum.winProbability, play.momentum.shift)}` : null;
 
   // Standings, teams, awards, etc. are bundled and only change with the daily
   // ESPN update, so reload the page when that update's timestamp changes.
@@ -453,7 +454,7 @@ function App() {
               {keyPlays.map(play => (
                 <div className="key-play" key={play.id}>
                   <strong className={play.points < 0 ? "negative" : ""}>{playLabel(play)}</strong>
-                  <span>{play.news === "headline" ? play.text : <><b>{play.player}</b> {play.text}</>}{momentumLine(play) ? <em className="key-play-momentum">⚡ {momentumLine(play)}</em> : null}</span>
+                  <span title={play.news ? undefined : play.text}>{play.news === "headline" ? play.text : <><b>{play.player}</b> {shortPlay(play)}</>}{momentumLine(play) ? <em className="key-play-momentum">⚡ {momentumLine(play)}</em> : null}</span>
                 </div>
               ))}
             </div>

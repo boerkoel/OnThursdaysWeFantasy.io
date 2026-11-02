@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { money } from "../lib/data.js";
+import { shortPlay } from "../lib/playText.js";
 
 // 🏈 markers on an odds chart (matchup win odds, Death Watch chop odds,
 // ticket odds): each play sits on its line at the odds just after it
@@ -43,7 +44,7 @@ export default function PlayMarkers({ plays, t0, end, x, y, valueAt, width, heig
         {current.plays.slice(0, 3).map(play => (
           <div key={play.id} className="swing-play-tip-row">
             <div><b className={play.points < 0 ? "negative" : ""}>{play.points > 0 ? "+" : ""}{money(play.points)}</b> {play.player} <small>{subtitle ? subtitle(play) + " · " : ""}{playTime(play)}</small></div>
-            <p>{play.text}</p>
+            <p title={play.text}>{shortPlay(play)}</p>
             <em>⚡ {swingText(play)}</em>
           </div>
         ))}

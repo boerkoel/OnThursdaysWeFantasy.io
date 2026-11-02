@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { money, pct } from "../lib/data.js";
 import PlayMarkers from "./PlayMarkers.jsx";
+import { oddsMove, shortPlay } from "../lib/playText.js";
 
 // Odds race panel (Death Watch chop odds, ticket race odds): the odds of the
 // three teams on the podium (every team, once 4 or fewer are left) over the week,
@@ -20,9 +21,8 @@ export const CHOP_COLORS = ["#ef9a96", "#e6c85c", "#9cc3e6", "#b8c69b"];
 const ALL_TEAMS_AT = 4;
 
 const newestFirst = (a, b) => Date.parse(b.wallclock) - Date.parse(a.wallclock);
-const chopSwingText = play => play.momentum
-  ? `chop odds ${play.momentum.shift > 0 ? "down" : "up"} ${pct(Math.abs(play.momentum.shift))} (now ${pct(play.momentum.chopProbability)})`
-  : null;
+// "chop 30→18%" (a positive shift is good news: chop odds down).
+const chopSwingText = play => play.momentum ? `chop ${oddsMove(play.momentum.chopProbability, -play.momentum.shift)}` : null;
 
 // The teams whose story the chart tells: the n with the highest odds at any
 // point this week (history plus now), so a team that escaped (or locked it
@@ -107,7 +107,7 @@ export default function ChopChart({ history, teams, plays, colors = CHOP_COLORS,
       <div className="key-play-list">
         {keyPlays.map(play => <div className="key-play" key={play.id}>
           <strong className={play.points < 0 ? "negative" : ""}>{play.points > 0 ? "+" : ""}{money(play.points)}</strong>
-          <span><b>{play.player}</b> <i className="chop-team-dot" style={{ background: colorOf[String(play.teamId)] }}></i>{nameOf[String(play.teamId)]} · {play.text}
+          <span title={play.text}><b>{play.player}</b> {shortPlay(play)} <i className="chop-team-dot" style={{ background: colorOf[String(play.teamId)] }}></i>{nameOf[String(play.teamId)]}
             {swingText(play) ? <em className="key-play-momentum">⚡ {swingText(play)}</em> : null}</span>
         </div>)}
       </div>

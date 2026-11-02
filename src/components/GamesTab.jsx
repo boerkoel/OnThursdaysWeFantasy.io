@@ -3,6 +3,7 @@ import { NOTIFY_SERVICE, money } from "../lib/data.js";
 import { feedTeam } from "../../scripts/lib/survivor-model.js";
 import { Field } from "./SurvivorTab.jsx";
 import { rateGames } from "../../scripts/lib/game-drama.js";
+import { shortPlay } from "../lib/playText.js";
 
 // Games tab (Jim, 2026-10-29): the NFL slate through the league's eyes.
 // - All games: every game with score, clock, win odds, possession and the
@@ -62,7 +63,7 @@ const playTimeText = p => p.period ? `Q${p.period > 4 ? "OT" : p.period} ${p.clo
 function PlayRow({ play, tag }) {
   return <div className="gm-play">
     <strong className={play.points < 0 ? "negative" : ""}>{play.points > 0 ? "+" : ""}{money(play.points)}</strong>
-    <span><b>{play.player}</b>{tag ? <em className="gm-tag">{tag}</em> : null} {play.text}</span>
+    <span title={play.text}><b>{play.player}</b> {shortPlay(play)}{tag ? <em className="gm-tag">{tag}</em> : null}</span>
     <small>{playTimeText(play)}</small>
   </div>;
 }
@@ -240,6 +241,6 @@ export default function GamesTab({ scoreboard, guillotine, livePlays, survivorFe
         <button key={id} type="button" className={view === id ? "active" : ""} aria-selected={view === id} onClick={() => setView(id)}>{label}</button>)}
     </div>
     {view === "all" ? renderAll() : renderFollowed()}
-    <p className="median-note">Win odds are ESPN's live win probability in game and the betting line before kickoff. Lines show the opening line and the latest, saved every 30 minutes until kickoff; during a game, the live line and over/under from the betting markets. League pts: what league starters have scored in the game; on the field: the offense's league starters and the other team's defense. Points are each league's own scoring{view === "all" ? "; open a game for every league starter in it" : ""}. Playoff odds are ESPN's FPI.{view === "all" ? " 🔥 Drama (0–100) blends how close the game is (late and close counts most), upsets, fantasy stakes (league starters in undecided matchups and chop races), survivor entries at risk, NFL playoff stakes, lightly rostered breakouts, games going off script (on pace to blow past the over/under), the league's own fan bases (Raiders, Chiefs, Niners, Rams, Lions) and, before kickoff, the over/under. Live games score 50–100 and upcoming games 0–50, so a game being played always ranks above one that hasn't started." : ""}</p>
+    <p className="median-note">Lines: open → now before kickoff, live in game. League pts: what league starters scored in the game; on the field: the offense's starters plus the other team's D/ST.{view === "all" ? " 🔥 Drama blends closeness, upsets, fantasy and survivor stakes, playoff stakes, breakouts and the league's fan bases; live games always outrank upcoming ones. Hover 🔥 for the reasons." : ""}</p>
   </section>;
 }

@@ -5,6 +5,7 @@ import { TeamLogo } from "./LiveBits.jsx";
 import { VsLineups } from "./MatchupLineup.jsx";
 import ChopChart, { peakTeams } from "./ChopChart.jsx";
 import Podium from "./Podium.jsx";
+import { oddsMove } from "../lib/playText.js";
 
 // Ticket race, laid out like Death Watch: the three teams with the best odds
 // of the week's top score (a raffle ticket) on a podium, a details card for
@@ -14,9 +15,7 @@ const MEDAL_COLORS = ["#e6c85c", "#c9ccd1", "#c98b5a"];
 const LABELS = ["🥇 TICKET FAVORITE", "🥈 #2 IN THE RACE", "🥉 #3 IN THE RACE"];
 const POSITION_IDS = { QB: 1, RB: 2, WR: 3, TE: 4, K: 5, "D/ST": 16 };
 const short = n => /D\/ST/.test(n) ? n : n.split(" ").slice(1).join(" ") || n;
-const ticketSwing = play => play.momentum
-  ? `ticket odds ${play.momentum.shift > 0 ? "up" : "down"} ${pct(Math.abs(play.momentum.shift))} (now ${pct(play.momentum.topScoreProbability)})`
-  : null;
+const ticketSwing = play => play.momentum ? `ticket ${oddsMove(play.momentum.topScoreProbability, play.momentum.shift)}` : null;
 
 // Starters still to play, with what they're projected to add and their spread.
 function playersLeft(team, nflGames) {
