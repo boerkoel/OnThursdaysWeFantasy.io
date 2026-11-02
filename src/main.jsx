@@ -674,10 +674,12 @@ function App() {
             <div className={"score-row " + (projectedMedianEdgeTeams.has(s.teamId) ? "median-near" : Number(s.aboveMedianProbability) > 50 ? "median-above" : s.aboveMedianProbability != null ? "median-below" : "")}><span className="rank">{i + 1}</span><span className="score-team"><TeamLogo src={teamLogos[s.teamId]} />{s.team}{projectedMedianEdgeTeams.has(s.teamId) ? <em className="median-near-label">NEAR MEDIAN</em> : null}</span><span className="score-opponent">vs {s.opponent}</span><strong className={["score-primary", scoreSort === "projected" ? "projected-score" : "", flashingScores.has(s.teamId) ? "score-flash" : ""].join(" ").trim()}>{scoreSort === "wins" ? (expectedWins(s) != null ? expectedWins(s).toFixed(2) : "—") : money(scoreSort === "projected" ? s.projectionAverage : s.score)}</strong>{scoreSort === "wins" ? <span className="score-projection">H2H {pct(s.winProbability)}<em className="score-probability">ABOVE MEDIAN {pct(s.aboveMedianProbability)}</em></span> : <span className="score-projection">{scoreSort === "projected" ? "ACT " + money(s.score) : "PROJ "}{scoreSort === "projected" ? "" : (s.projectionTrend === "up" ? "↑ " : s.projectionTrend === "down" ? "↓ " : "")}{scoreSort === "projected" ? "" : (s.projectionAverage != null ? money(s.projectionAverage) : "—")}<em className="score-probability">ABOVE MEDIAN {pct(s.aboveMedianProbability)}</em></span>}{leagueScale ? <span className="score-dist"><OutcomeBar dist={s.projection?.dist} espn={Number(s.projection?.espn)} lo={leagueScale.lo} hi={leagueScale.hi} width={110} /></span> : null}</div>
           </React.Fragment>)}
         </div>
-        {(() => {   // the median race: the teams projected just above and just below the line, head to head
-          const byProj = [...scores].filter(s => s.projectionAverage != null && s.lineup?.starters?.length).sort((x, y) => Number(y.projectionAverage) - Number(x.projectionAverage));
-          const half = Math.floor(byProj.length / 2);
-          const above = byProj[half - 1], below = byProj[half];
+        {(() => {   // the median race: the two with the most at stake, head to head (Jim, 2026-11-02): the team
+          // favored to finish above the median with the lowest odds, and the one favored below with the highest
+          // (odds rather than projected points, so how much each still has in play counts)
+          const racing = scores.filter(s => s.aboveMedianProbability != null && s.lineup?.starters?.length);
+          const above = racing.filter(s => Number(s.aboveMedianProbability) >= 50).sort((x, y) => Number(x.aboveMedianProbability) - Number(y.aboveMedianProbability))[0];
+          const below = racing.filter(s => Number(s.aboveMedianProbability) < 50).sort((x, y) => Number(y.aboveMedianProbability) - Number(x.aboveMedianProbability))[0];
           if (!above || !below || scores.every(s => Number(s.aboveMedianProbability) === 0 || Number(s.aboveMedianProbability) === 100)) return null;
           // The race on one scale (Jim, 2026-11-02): the near-median teams' likely finals against the projected median.
           const racers = displayScores.filter(s => (projectedMedianEdgeTeams.has(s.teamId) || s.nearMedian) && s.projection?.dist)
@@ -691,7 +693,7 @@ function App() {
               rows={racers.map(s => ({ key: s.teamId, name: s.team, score: s.score, dist: s.projection.dist, odds: s.aboveMedianProbability }))} />
             <button type="button" className="section-toggle" aria-expanded={medianVs} onClick={() => setMedianVs(v => !v)}>{medianVs ? "Hide the median race ▴" : "Who's on the median line ▾"}</button>
             {medianVs ? <VsLineups a={above} b={below} nflGames={scoreboard.nflGames || []}
-              note={<>Projected just above the median: <b>{above.team}</b> ({money(above.projectionAverage)}, {pct(above.aboveMedianProbability)} to finish above). Just below: <b>{below.team}</b> ({money(below.projectionAverage)}, {pct(below.aboveMedianProbability)}).</>} /> : null}
+              note={<>Likeliest to slip below the median: <b>{above.team}</b> ({money(above.projectionAverage)}, {pct(above.aboveMedianProbability)} to finish above). Likeliest to climb above it: <b>{below.team}</b> ({money(below.projectionAverage)}, {pct(below.aboveMedianProbability)}).</>} /> : null}
           </>;
         })()}
         <Explain lead={<>Projections blend ESPN, Sleeper and FantasyPros. Yellow = teams near the median.</>}>Projections are ours: ESPN, Sleeper (RotoWire) and FantasyPros averaged, with injuries and likely lineup moves simulated (the bar on wide screens: band = middle half of outcomes, line = 80%, ◆ = ESPN). The projected median is the median of those projections. Odds of finishing above the median come from simulating the rest of the week, where the league median moves with every team’s result. Highlighted in yellow: the teams projected just above and just below the median, plus any team with a {NEAR_MEDIAN_MIN}–{NEAR_MEDIAN_MAX}% chance.</Explain>
