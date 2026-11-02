@@ -6,6 +6,7 @@ import { useSwipe } from "../lib/swipe.js";
 import ChopChart, { peakTeams } from "./ChopChart.jsx";
 import Podium from "./Podium.jsx";
 import { RaceChart, normalDist } from "./OutcomeBar.jsx";
+import { Needle } from "./Needle.jsx";
 import obituaryData from "../../data/current/obituaries.json";
 import obituariesMarkdown from "../../content/obituaries.md?raw";
 
@@ -247,6 +248,14 @@ export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
         sub: `${money(t.score)} pts${t.playersLeft ? ` · proj ${money(t.projected)}` : " · final"}`,
         icon: "🪦"
       }))} />
+      {(() => {   // the two most at risk on the needle (Jim, 2026-11-02): their shares of the chop odds, head to head
+        const [x, y] = atRisk, cx = Number(x?.chopProbability), cy = Number(y?.chopProbability);
+        if (!y || !(cy >= 10) || !(cx < 99.5) || !(x.playersLeft || y.playersLeft)) return null;
+        const racer = t => ({ ...t, projection: { dist: normalDist(t.score, t.projected, t.projectionSd) }, lineup: { starters: t.lineup || [] } });
+        const from = t => Number.isFinite(Number(t.liveChopFrom)) ? Number(t.liveChopFrom) : Number(t.chopProbability);
+        return <Needle a={racer(x)} b={racer(y)} label="🪓 WHO GETS CHOPPED" history={history} games={nflGames}
+          odds={{ b: 100 * cy / (cx + cy), bFrom: 100 * from(y) / (from(x) + from(y)) }} />;
+      })()}
       <div className="award-grid dw-details">
         {atRisk.map((t, i) => <article className="award-card" id={`dw-${t.teamId}`} key={t.teamId}>
           <small>{i === 0 ? "🪓 ON THE CHOPPING BLOCK" : `#${i + 1} MOST AT RISK`}</small>

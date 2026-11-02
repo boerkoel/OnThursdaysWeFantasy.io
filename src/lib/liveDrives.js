@@ -107,7 +107,7 @@ export function adjustGuillotine(guillotine, baseGames, espn) {
   }));
   const total = [...raw.values()].reduce((a, b) => a + b, 0), share = atRisk.reduce((a, t) => a + t.chopProbability, 0);
   return { ...guillotine, teams: teams.map(t => raw.has(t.teamId)
-    ? { ...t, chopProbability: Math.round(1000 * raw.get(t.teamId) * share / total) / 1000, projected: t.projected + (changes.get(t.teamId) || 0) } : t) };
+    ? { ...t, liveChopFrom: t.chopProbability, chopProbability: Math.round(1000 * raw.get(t.teamId) * share / total) / 1000, projected: t.projected + (changes.get(t.teamId) || 0) } : t) };
 }
 
 // The run's games with ESPN's live clock, drive and score (only for games the run has, same week).
