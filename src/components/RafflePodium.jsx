@@ -5,6 +5,7 @@ import { TeamLogo } from "./LiveBits.jsx";
 import { VsLineups } from "./MatchupLineup.jsx";
 import ChopChart, { peakTeams } from "./ChopChart.jsx";
 import Podium from "./Podium.jsx";
+import { Needle } from "./Needle.jsx";
 import { oddsMove } from "../lib/playText.js";
 
 // Ticket race, laid out like Death Watch: the three teams with the best odds
@@ -77,6 +78,13 @@ export default function RafflePodium({ scores, logos, week, final, history, play
         sub: `${money(s.score)} pts${final ? "" : ` · proj ${s.projectionAverage != null ? money(s.projectionAverage) : "—"}`}`,
         icon: MEDALS[i]
       }))} />
+      {(() => {   // the top two's race on the needle (Jim, 2026-11-02): their shares of the ticket odds, head to head
+        const [x, y] = top, px = Number(x.topScoreProbability), py = Number(y.topScoreProbability);
+        if (final || !(py >= 10) || !(px < 99.5) || !playersLeft(x, nflGames).length && !playersLeft(y, nflGames).length) return null;
+        const share = (b, a) => 100 * b / (a + b);
+        const from = s => Number.isFinite(Number(s.liveTopFrom)) ? Number(s.liveTopFrom) : Number(s.topScoreProbability);
+        return <Needle a={x} b={y} label="🎟️ TICKET RACE · TOP TWO" history={history} odds={{ b: share(py, px), bFrom: share(from(y), from(x)) }} />;
+      })()}
       <button type="button" className="section-toggle" aria-expanded={showDetails} onClick={() => setShowDetails(v => !v)}>{showDetails ? "Hide race details ▴" : "Race details ▾"}</button>
       {showDetails ? <>
       <div className="award-grid dw-details">

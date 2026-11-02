@@ -32,8 +32,22 @@ function wildness(history, teamId) {
   return Math.min(1, Math.max(0, (moves.reduce((x, y) => x + y, 0) / moves.length - 1) / 4));
 }
 
-export function Needle({ a, b, history = [] }) {
-  const pB = Math.min(99.9, Math.max(0.1, Number(b.winProbability)));
+// Who finishes higher, from the two projected finals (the median race: the line falls between them): b's
+// chance now, and before the drives in progress shifted the projections (liveShift).
+export function higherOdds(a, b) {
+  const da = a.projection?.dist, db = b.projection?.dist;
+  const sd = Math.max(1, Math.hypot(sdOf(da), sdOf(db)));
+  if (!da || !db) return null;
+  const p = gap => Math.round(1000 * normalCdf(gap / sd)) / 10;
+  return { b: p(db.mean - da.mean), bFrom: p((db.mean - (Number(b.liveShift) || 0)) - (da.mean - (Number(a.liveShift) || 0))) };
+}
+
+// Any two-way race (Jim, 2026-11-02): head to head by default (b.winProbability), or pass odds: { b, bFrom }
+// (b's chance, and the same before the drives in progress moved it) and a kicker label for the ticket race or
+// the median line. history: odds snapshots ({ p: { teamId: odds } }) whose moves set the wildness.
+export function Needle({ a, b, history = [], odds = null, label = null }) {
+  const oddsB = odds ? odds.b : Number(b.winProbability), fromB = odds ? odds.bFrom : Number(b.liveWinFrom);
+  const pB = Math.min(99.9, Math.max(0.1, Number(oddsB)));
   const da = a.projection?.dist, db = b.projection?.dist;
   const sd = Math.hypot(sdOf(da), sdOf(db));
   // A fraction h through what's left, the margin has moved by Z × SD·√h and SD·√(1−h) is still to come, so the
@@ -57,7 +71,7 @@ export function Needle({ a, b, history = [] }) {
   const z = normalQuantile(pB / 100);
   const shown = live && wobble ? Math.min(99.5, Math.max(0.5, 100 * normalCdf((z + Math.sqrt(h) * wobble) / Math.sqrt(1 - h)))) : pB;
   // The steady odds, and how far plays have moved them since the last full update.
-  const moved = Number.isFinite(Number(b.liveWinFrom)) ? Number(b.winProbability) - Number(b.liveWinFrom) : 0;
+  const moved = Number.isFinite(Number(fromB)) ? Number(oddsB) - Number(fromB) : 0;
   const arrow = d => Math.abs(d) >= 0.5 ? <small className={d > 0 ? "up" : "down"} title="Since the last full update, from the drives in progress">{d > 0 ? "▲" : "▼"}{Math.abs(Math.round(d))}</small> : null;
   const deg = (shown / 100 - 0.5) * 180;
   const margin = da && db ? da.mean - db.mean : null;
@@ -67,7 +81,8 @@ export function Needle({ a, b, history = [] }) {
   const sign = margin >= 0 ? 1 : -1;
   const range = lo == null ? null : lo * hi <= 0 ? "either way" : `likely ${half(Math.min(sign * lo, sign * hi))}–${half(Math.max(sign * lo, sign * hi))}`;
   return (
-    <div className="needle" role="img" title="The needle wanders over where the odds could be halfway through what's left to play: it averages out at today's odds" aria-label={`${a.team} ${Math.round(100 - pB)}%, ${b.team} ${Math.round(pB)}% to win`}>
+    <div className="needle" role="img" title="The needle wanders over where the odds could be halfway through what's left to play: it averages out at today's odds" aria-label={`${label ? label + ": " : ""}${a.team} ${Math.round(100 - pB)}%, ${b.team} ${Math.round(pB)}%`}>
+      {label ? <small className="needle-label">{label}</small> : null}
       <svg viewBox="0 0 240 128" className="needle-dial">
         {ZONES.map(([from, to, o]) => <path key={from} d={wedge(from, to)} fill={to <= 50 ? A_COLOR : B_COLOR} fillOpacity={o} />)}
         <line x1={CX} y1={CY - R_OUT - 3} x2={CX} y2={CY - R_IN + 3} className="needle-mid" />
