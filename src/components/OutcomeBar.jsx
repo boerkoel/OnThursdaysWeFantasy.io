@@ -32,23 +32,49 @@ export function outcomeScale(teams) {
   return { lo: lo - pad, hi: hi + pad };
 }
 
-// Both teams of a matchup on one scale, with the numbers spelled out.
-export function MatchupOutcomes({ teams }) {
-  const scale = outcomeScale(teams);
-  if (!scale || !teams.every(t => t.projection?.dist) || teams.every(t => t.projection.dist.p90 <= t.projection.dist.p10)) return null;
-  const spread = t => t.projection.dist.p90 - t.projection.dist.p10;
+// A final-score distribution from a projection and its spread (normal), never below the points already scored.
+const Z = { p10: -1.2816, p25: -0.6745, p50: 0, p75: 0.6745, p90: 1.2816 };
+export function normalDist(score, projected, sd) {
+  if (!Number.isFinite(Number(projected))) return null;
+  const d = { mean: Number(projected) };
+  for (const [k, z] of Object.entries(Z)) d[k] = Math.max(Number(score) || 0, Number(projected) + z * (Number(sd) || 0));
+  return d;
+}
+
+// A race at a glance (Jim, 2026-11-02): each team's likely final score on one shared scale, phone-sized. Per row:
+// name and odds, then a full-width bar: the solid stretch is points already banked, the band the middle half of
+// outcomes, the thin line 80%, the tick the projection. line: an optional bar to clear (the projected median).
+// rows: [{ key, name, score, dist, odds, hot, espn }] (espn: ESPN's projection, a small ◆); oddsLabel: "chop", "to win", "above".
+// Two teams also get a betting-style line (Jim, 2026-11-02): the projected margin as a spread, to the half point
+// ("Line: Mel's −4.5"), plus the over/under with total; against a line (the median), each row shows its margin.
+const half = v => (Math.round(Math.abs(v) * 2) / 2).toFixed(1);
+export function RaceChart({ rows, oddsLabel, line = null, total = false }) {
+  const ok = rows.filter(r => r.dist);
+  if (ok.length < 2) return null;
+  const vals = ok.flatMap(r => [r.dist.p10, r.dist.p90, Number(r.score) || 0]).concat(line ? [line.value] : []).filter(Number.isFinite);
+  const span = Math.max(...vals) - Math.min(...vals), pad = Math.max(2, span * 0.05);
+  const lo = Math.max(0, Math.min(...vals) - pad), hi = Math.max(...vals) + pad;
+  const x = v => `${Math.max(0, Math.min(100, ((v - lo) / (hi - lo)) * 100))}%`;
+  const w = (a, b) => `${Math.max(0.6, ((Math.min(b, hi) - Math.max(a, lo)) / (hi - lo)) * 100)}%`;
   return (
-    <div className="matchup-outcomes">
-      {teams.map(t => {
-        const d = t.projection.dist, espn = Number(t.projection.espn);
-        const gap = Number.isFinite(espn) ? d.mean - espn : null;
-        return <div className="mo-row" key={t.teamId}>
-          <span className="mo-name">{t.team}</span>
-          <OutcomeBar dist={d} espn={espn} lo={scale.lo} hi={scale.hi} width={220} />
-          <span className="mo-nums"><b>{money(d.mean)}</b> <small>80%: {money(d.p10)}–{money(d.p90)}{gap != null && Math.abs(gap) >= 3 ? ` · ESPN ${money(espn)}` : ""}</small></span>
-        </div>;
-      })}
-      <p className="mo-legend">Bold tick: our projection (ESPN, Sleeper (RotoWire) and FantasyPros averaged, with injuries and likely lineup moves simulated). Band: middle half of outcomes; line: 80% of outcomes ({teams.map(t => `${t.team} ±${money(spread(t) / 2)}`).join(", ")}). ◆ ESPN's projection.</p>
+    <div className="race-chart">
+      {ok.map(r => <div className={"race-row" + (r.hot ? " hot" : "")} key={r.key}
+        title={`${r.name}: ${money(r.score)} so far · projected ${money(r.dist.mean)} · middle half ${money(r.dist.p25)}–${money(r.dist.p75)} · 80% ${money(r.dist.p10)}–${money(r.dist.p90)}${Number.isFinite(r.espn) ? ` · ◆ ESPN ${money(r.espn)}` : ""}`}>
+        <div className="race-head"><span>{r.name}</span><b>{line ? <em>{r.dist.mean >= line.value ? "+" : "−"}{half(r.dist.mean - line.value)} </em> : null}{r.odds != null ? `${Math.round(r.odds)}% ${oddsLabel}` : ""}</b></div>
+        <div className="race-track">
+          <i className="race-banked" style={{ left: 0, width: x(Number(r.score) || 0) }} />
+          <i className="race-range" style={{ left: x(r.dist.p10), width: w(r.dist.p10, r.dist.p90) }} />
+          <i className="race-iqr" style={{ left: x(r.dist.p25), width: w(r.dist.p25, r.dist.p75) }} />
+          <i className="race-mean" style={{ left: x(r.dist.mean) }} />
+          {Number.isFinite(r.espn) ? <i className="race-espn" style={{ left: x(r.espn) }} /> : null}
+          {line ? <i className="race-line" style={{ left: x(line.value) }} /> : null}
+        </div>
+      </div>)}
+      {ok.length === 2 && !line ? (() => {
+        const [fav, dog] = ok[0].dist.mean >= ok[1].dist.mean ? ok : [ok[1], ok[0]], m = fav.dist.mean - dog.dist.mean;
+        return <p className="race-spread">Line: {m < 0.25 ? "pick'em" : `${fav.name} −${half(m)}`}{total ? ` · O/U ${half(fav.dist.mean + dog.dist.mean)}` : ""}</p>;
+      })() : null}
+      <div className="race-axis"><span>{Math.round(lo)}</span>{line ? <span className="race-line-label" style={{ left: x(line.value) }}>{line.label} {money(line.value)}</span> : null}<span>{Math.round(hi)}</span></div>
     </div>
   );
 }

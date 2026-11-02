@@ -5,6 +5,7 @@ import { LiveToggle, TeamLineup, useLiveOnly } from "./MatchupLineup.jsx";
 import { useSwipe } from "../lib/swipe.js";
 import ChopChart, { peakTeams } from "./ChopChart.jsx";
 import Podium from "./Podium.jsx";
+import { RaceChart, normalDist } from "./OutcomeBar.jsx";
 import obituaryData from "../../data/current/obituaries.json";
 import obituariesMarkdown from "../../content/obituaries.md?raw";
 
@@ -84,6 +85,19 @@ const gameLine = t => {
   const g = t.swingGame;
   if (!g) return null;
   return `${g.game} is the difference maker (${g.players.map(short).join(", ")}): a big game (~${Math.round(g.bigGame)} pts) drops the chop odds to ${Math.round(g.chopIfAbove)}%; a quiet one (~${Math.round(g.quietGame)} pts) raises them to ${Math.round(g.chopIfBelow)}%.`;
+};
+// The card's one-line swing (Jim, 2026-11-02: the full lines were too wordy; they're the tooltip now):
+// "🎲 CHI @ SEA (Seahawks D/ST, Myers): big → 39%, quiet → 91%".
+const shortSwing = t => {
+  const g = t.swingGame, p = t.swingPlayer, s = g || p;
+  if (!s) return null;
+  const who = g ? `${g.game} (${g.players.map(short).join(", ")})` : `${short(p.name)}${p.game ? ` (${p.game})` : ""}`;
+  return `${who}: big → ${Math.round(s.chopIfAbove)}%, quiet → ${Math.round(s.chopIfBelow)}%`;
+};
+// The race on a card: this team and the one it's really racing (or the other most at risk).
+const raceRows = (t, teams, i) => {
+  const rival = teams.find(x => x.teamId === t.rival?.teamId) || (i === 0 ? teams[1] : teams[0]);
+  return [t, rival].filter(Boolean).map(x => ({ key: x.teamId, name: x.team, score: x.score, dist: normalDist(x.score, x.projected, x.projectionSd), odds: x.chopProbability, hot: x === t }));
 };
 const rivalLine = t => t.rival?.share >= RIVAL_SHOWN_AT
   ? `Racing ${t.rival.team}: they're the team just above in ${Math.round(t.rival.share)}% of the simulated chops.`
@@ -240,9 +254,8 @@ export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
           <b className="chop-odds">{t.chopProbability >= 100 ? "Chop guaranteed" : `${pct(t.chopProbability)} chance of being chopped`}</b>
           <p>{money(t.score)} pts{t.playersLeft ? ` · projected ${money(t.projected)}` : " · final"}</p>
           {t.survivalNeed ? <p>Needs {money(t.survivalNeed.points)} more pts to pass {t.survivalNeed.passTeam}</p> : null}
-          {gameLine(t) ? <p className="dw-insight">🏟️ {gameLine(t)}</p> : null}
-          {swingLine(t) ? <p className="dw-insight">🎲 {swingLine(t)}</p> : null}
-          {rivalLine(t) ? <p className="dw-insight">🏁 {rivalLine(t)}</p> : null}
+          {t.playersLeft ? <RaceChart rows={raceRows(t, guillotine.teams, i)} oddsLabel="chop" /> : null}
+          {shortSwing(t) ? <p className="dw-insight" title={[gameLine(t), swingLine(t), rivalLine(t)].filter(Boolean).join("\n")}>🎲 {shortSwing(t)}</p> : null}
           <p className="dw-left">{leftLine(t)}</p>
           {t.lineup?.length ? <button type="button" className="dw-lineup-toggle" aria-expanded={openLineups.has(t.teamId)} onClick={() => toggleLineup(t.teamId)}>{openLineups.has(t.teamId) ? "Hide lineup ▴" : "Lineup ▾"}</button> : null}
           {openLineups.has(t.teamId) ? (() => {
@@ -268,8 +281,7 @@ export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
                 { text: `${pct(t.chopProbability)} chance of being chopped`, size: 48, color: "alert", weight: 800, gap: 40 },
                 { text: `${money(t.score)} pts${t.playersLeft ? ` · projected ${money(t.projected)}` : " · final"}`, size: 34 },
                 t.survivalNeed ? { text: `Needs ${money(t.survivalNeed.points)} more pts to pass ${t.survivalNeed.passTeam}`, size: 30, color: "ink" } : null,
-                gameLine(t) ? { text: "🏟️ " + gameLine(t), size: 28, color: "ink", gap: 24 } : null,
-                swingLine(t) ? { text: "🎲 " + swingLine(t), size: 28, color: "ink", gap: gameLine(t) ? 8 : 24 } : null,
+                shortSwing(t) ? { text: "🎲 " + shortSwing(t), size: 28, color: "ink", gap: 24 } : null,
                 rivalLine(t) ? { text: "🏁 " + rivalLine(t), size: 28 } : null,
                 { text: leftLine(t), size: 26, color: "muted" }
               ].filter(Boolean)

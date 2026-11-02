@@ -30,7 +30,7 @@ import { seriesLine } from "./lib/recordBook.js";
 import { useMyTeam, useTabs } from "./lib/tabs.js";
 import managerLinks from "./data/manager-links.json";
 import { BackToTop, SectionNav, TabBar } from "./components/Navigation.jsx";
-import { AccuracyScorecard, MatchupOutcomes, OutcomeBar, outcomeScale } from "./components/OutcomeBar.jsx";
+import { AccuracyScorecard, OutcomeBar, RaceChart, outcomeScale } from "./components/OutcomeBar.jsx";
 import { oddsMove, shortPlay } from "./lib/playText.js";
 
 // Standings and rest-of-season odds in one sortable table: current seed and
@@ -456,7 +456,8 @@ function App() {
         <div className="versus">vs</div>
         <MatchupTeam team={b} opponent={a} logo={teamLogos[b.teamId]} projected={false} flashing={flashingScores.has(b.teamId)} dotClass={medianDotClass(b)} />
       </div>
-      <MatchupOutcomes teams={[a, b]} />
+      {[a, b].some(t => t.projection?.dist && t.projection.dist.p90 > t.projection.dist.p10) ? <RaceChart oddsLabel="to win" total
+        rows={[a, b].map(t => ({ key: t.teamId, name: t.team, score: t.score, dist: t.projection?.dist, odds: t.winProbability, espn: Number(t.projection?.espn) }))} /> : null}
       <div className="sheet-tabs" role="tablist">
         <button type="button" role="tab" aria-selected={view === "odds"} className={view === "odds" ? "active" : ""} onClick={() => setDetailView("odds")}>Odds & plays</button>
         {hasLineups ? <button type="button" role="tab" aria-selected={view === "lineup"} className={view === "lineup" ? "active" : ""} onClick={() => setDetailView("lineup")}>Lineups</button> : null}
@@ -665,7 +666,12 @@ function App() {
           const half = Math.floor(byProj.length / 2);
           const above = byProj[half - 1], below = byProj[half];
           if (!above || !below || scores.every(s => Number(s.aboveMedianProbability) === 0 || Number(s.aboveMedianProbability) === 100)) return null;
+          // The race on one scale (Jim, 2026-11-02): the near-median teams' likely finals against the projected median.
+          const racers = displayScores.filter(s => (projectedMedianEdgeTeams.has(s.teamId) || s.nearMedian) && s.projection?.dist)
+            .sort((x, y) => Number(y.projectionAverage) - Number(x.projectionAverage)).slice(0, 5);
           return <>
+            <RaceChart oddsLabel="above" line={scoreboard.projectedMedian != null ? { value: Number(scoreboard.projectedMedian), label: "median" } : null}
+              rows={racers.map(s => ({ key: s.teamId, name: s.team, score: s.score, dist: s.projection.dist, odds: s.aboveMedianProbability }))} />
             <button type="button" className="section-toggle" aria-expanded={medianVs} onClick={() => setMedianVs(v => !v)}>{medianVs ? "Hide the median race ▴" : "Who's on the median line ▾"}</button>
             {medianVs ? <VsLineups a={above} b={below} nflGames={scoreboard.nflGames || []}
               note={<>Projected just above the median: <b>{above.team}</b> ({money(above.projectionAverage)}, {pct(above.aboveMedianProbability)} to finish above). Just below: <b>{below.team}</b> ({money(below.projectionAverage)}, {pct(below.aboveMedianProbability)}).</>} /> : null}
