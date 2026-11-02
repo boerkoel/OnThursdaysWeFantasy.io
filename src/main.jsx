@@ -34,6 +34,7 @@ import { AccuracyScorecard, OutcomeBar, RaceChart, outcomeScale } from "./compon
 import { MiniNeedle, Needle } from "./components/Needle.jsx";
 import { driveRooting } from "./lib/rooting.js";
 import { useDriveAdjusted } from "./lib/liveDrives.js";
+import { useWakeLock } from "./lib/wakeLock.js";
 import { oddsMove, shortPlay } from "./lib/playText.js";
 
 // Standings and rest-of-season odds in one sortable table: current seed and
@@ -518,13 +519,14 @@ function App() {
   // Your needles (Jim, 2026-11-02): every race your pinned team is still in, at a glance on its card: the
   // matchup, the median line, the ticket and your guillotine team's chop, each as a mini needle.
   const RED = "#d98a86", GREEN = "#8fd087";
-  const renderMyNeedles = s => {
+  const renderMyNeedles = (s, { skipWin = false } = {}) => {
     const games = scoreboard.nflGames || [];
     const opp = scores.find(x => Number(x.teamId) === Number(s.opponentId));
     const open = p => Number(p) > 0.5 && Number(p) < 99.5;
     const thisWeek = h => Number(h?.week) === Number(scoreboard.week) ? h.points || [] : [];
     const needles = [];
-    if (opp && open(s.winProbability) && (s.startersLeft > 0 || opp.startersLeft > 0)) needles.push(<MiniNeedle key="win" team={s} stakes={[s, opp]} p={Number(s.winProbability)} from={s.liveWinFrom}
+    // The head-to-head is left out where the full needle already shows it (Primetime view, the game-day view).
+    if (!skipWin && opp && open(s.winProbability) && (s.startersLeft > 0 || opp.startersLeft > 0)) needles.push(<MiniNeedle key="win" team={s} stakes={[s, opp]} p={Number(s.winProbability)} from={s.liveWinFrom}
       sides={["lose", "win"]} colors={[RED, GREEN]} caption={`vs ${opp.team}`} history={thisWeek(scoreboard.winHistory)} games={games} />);
     if (open(s.aboveMedianProbability) && s.startersLeft > 0) needles.push(<MiniNeedle key="median" team={s} p={Number(s.aboveMedianProbability)} from={s.liveAboveFrom}
       sides={["below", "above"]} colors={[RED, GREEN]} caption="median line" games={games} />);
@@ -606,6 +608,41 @@ function App() {
   };
 
   // "My team": pinned at the top of Live with the key odds and the matchup card.
+  // Game-day view (Jim, 2026-11-02): everything the pinned manager is in on one full screen that stays awake:
+  // the matchup with its needle, drives to root for, live lineups and key plays, the other needles, the
+  // guillotine and survivor lines. Over the app (the matchup sheet still opens on top), at #gameday.
+  const [gameday, setGameday] = useState(() => { try { return window.location.hash === "#gameday"; } catch { return false; } });
+  const awake = useWakeLock(gameday && Boolean(myScore));
+  const openGameday = () => {
+    setGameday(true);
+    try { window.history.replaceState(null, "", "#gameday"); } catch {}
+    // A real full screen where the browser allows it (iPad, Android, desktop); the iPhone home-screen app already is.
+    try { document.documentElement.requestFullscreen?.().catch(() => {}); } catch {}
+  };
+  const closeGameday = () => {
+    setGameday(false);
+    try { if (window.location.hash === "#gameday") window.history.replaceState(null, "", window.location.pathname + window.location.search); } catch {}
+    try { if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {}); } catch {}
+  };
+  useEffect(() => {
+    if (!gameday) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, [gameday]);
+  const renderGameday = () => !gameday || !myScore ? null : (
+    <div className="gameday" role="dialog" aria-label="Game day view">
+      <div className="gameday-head">
+        <span className="section-kicker">📌 {myScore.team.toUpperCase()} · GAME DAY</span>
+        <button type="button" className="gameday-close" onClick={closeGameday} aria-label="Close the game-day view">✕</button>
+      </div>
+      <p className="gameday-awake">{awake ? "☀️ Screen stays on while this is open" : "To keep this on, set Auto-Lock to Never (Settings → Display & Brightness)"}</p>
+      <div className="matchup-list">{renderMatchupRow(myMatchupId, true)}{renderPrimetime(myMatchupId)}</div>
+      {renderMyNeedles(myScore, { skipWin: true })}
+      {renderOtherContests(myScore.teamId)}
+    </div>
+  );
+
   const renderMyTeam = () => {
     const picker = <select value={myTeamId || ""} onChange={e => setMyTeamId(Number(e.target.value) || null)} aria-label="Your team">
       <option value="">{myScore ? "Change team…" : "Pick your team…"}</option>
@@ -618,7 +655,8 @@ function App() {
     const chip = (label, value) => value == null ? null : <span className="my-chip"><small>{label}</small><b>{pct(value)}</b></span>;
     return (
       <section className="my-team" id="my-team">
-        <div className="my-team-head"><span className="section-kicker">📌 YOUR MATCHUP</span>{picker}</div>
+        <div className="my-team-head"><span className="section-kicker">📌 YOUR MATCHUP</span>
+          <button type="button" className="gameday-open" onClick={openGameday} title="Everything your team is in, on one screen that stays on">⛶ Game day</button>{picker}</div>
         <div className="my-chips">
           {(() => {   // record and place (H2H + median wins), same order as Standings
             const rows = (teamsData.teams || []).map(t => t.standings).filter(Boolean)
@@ -635,7 +673,7 @@ function App() {
         </div>
         {renderExpectedWinnings(myScore.teamId, odds)}
         {renderOtherContests(myScore.teamId)}
-        {renderMyNeedles(myScore)}
+        {renderMyNeedles(myScore, { skipWin: primetimeView })}
         <a className="my-games-link" href="#games">🏟️ See all my players, game by game →</a>
         <div className="matchup-list">{renderMatchupRow(myMatchupId, true)}{primetimeView ? renderPrimetime(myMatchupId) : null}</div>
       </section>
@@ -668,6 +706,7 @@ function App() {
       </section>
       <LeagueWire stories={live.marquee.stories || []} status={status} week={live.marquee.week ?? scoreboard.week} onOpen={openWireStory} />
       {renderMyTeam()}
+      {renderGameday()}
       <PrimetimeWatch scores={scores} nflGames={scoreboard.nflGames || []} guillotine={Number(guillotine.week) === Number(scoreboard.week) ? guillotine : null} logos={teamLogos} week={scoreboard.week} />
       <section id="scores" className="section">
         <div className="section-heading"><div><span className="section-kicker">RIGHT NOW</span><h2>Week {scoreboard.week} Scores</h2></div>
