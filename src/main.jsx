@@ -208,6 +208,8 @@ function App() {
   // then its 5 most recent from the last 5 hours (4+ point swings, or plays that moved the odds 3%+), then the
   // week's next-biggest swings, up to 10 in all, newest first after the top 3. The win-odds swings are also
   // the 🏈 markers on the odds chart.
+  // Once a matchup is decided (final, or 99.5%+), its 🏁 decider leads: the last play that put the winner ahead in
+  // the odds, after which they never fell back below 50% (Jim, 2026-11-02).
   const KEY_PLAY_MAX_AGE_MS = 5 * 60 * 60 * 1000;
   const KEY_PLAYS_TOP = 3;
   const KEY_PLAYS_RECENT = 5;
@@ -221,7 +223,11 @@ function App() {
     const plays = (Number(livePlayFeed.week) === Number(scoreboard.week) ? livePlayFeed.plays || [] : [])
       .filter(p => Number(p.matchupId) === Number(matchupId) && p.wallclock);
     const bySwing = plays.filter(p => swingOf(p) >= 0.5).sort((a, b) => swingOf(b) - swingOf(a));
-    const top = bySwing.slice(0, KEY_PLAYS_TOP), topIds = new Set(top.map(p => p.id));
+    const sides = scores.filter(x => Number(x.matchupId) === Number(matchupId));
+    const winner = sides.find(x => Number(x.winProbability) >= 99.5 || (x.status === "FINAL" && sides.every(y => Number(x.score) >= Number(y.score))));
+    const crossed = p => p.momentum?.toward === winner?.team && p.momentum.winProbability >= 50 && p.momentum.winProbability - p.momentum.shift < 50;
+    const decider = winner ? plays.filter(crossed).sort(newestFirst)[0] : null;
+    const top = [...(decider ? [{ ...decider, decider: true }] : []), ...bySwing.filter(p => p.id !== decider?.id).slice(0, KEY_PLAYS_TOP)], topIds = new Set(top.map(p => p.id));
     const recent = plays
       .filter(p => !topIds.has(p.id) && (Math.abs(Number(p.points)) >= 4 || swingOf(p) >= BIG_SWING) && Date.now() - Date.parse(p.wallclock) <= KEY_PLAY_MAX_AGE_MS)
       .sort(newestFirst)
@@ -241,7 +247,7 @@ function App() {
   };
   // A key play's line: news has no points (📰 instead) and a headline already names the player.
   const playLabel = play => play.news ? "📰" : `${play.points > 0 ? "+" : ""}${money(play.points)}`;
-  const playText = play => play.news === "headline" ? play.text : `${play.player} ${shortPlay(play)}`;
+  const playText = play => (play.decider ? "🏁 " : "") + (play.news === "headline" ? play.text : `${play.player} ${shortPlay(play)}`);
   // "X 52→58%": the play's team and its win odds before → after, for plays that moved the odds at least half a point,
   // plus its median odds when they moved 2+ ("X 52→58%, median 40→47%"; the team named when it's the other one).
   const momentumLine = play => {
@@ -464,7 +470,7 @@ function App() {
               {keyPlays.map(play => (
                 <div className="key-play" key={play.id}>
                   <strong className={play.points < 0 ? "negative" : ""}>{playLabel(play)}</strong>
-                  <span title={play.news ? undefined : play.text}>{play.news === "headline" ? play.text : <><b>{play.player}</b> {shortPlay(play)}</>}{momentumLine(play) ? <em className="key-play-momentum">⚡ {momentumLine(play)}</em> : null}</span>
+                  <span title={play.news ? undefined : play.text}>{play.decider ? <em className="key-play-decider" title="Put the winner ahead for good">🏁 DECIDER </em> : null}{play.news === "headline" ? play.text : <><b>{play.player}</b> {shortPlay(play)}</>}{momentumLine(play) ? <em className="key-play-momentum">⚡ {momentumLine(play)}</em> : null}</span>
                 </div>
               ))}
             </div>
