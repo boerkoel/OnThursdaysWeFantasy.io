@@ -43,7 +43,7 @@ function restChange(p, base, fresh) {
   const sameScore = (fresh.teams || []).every(t => (base.teams || []).find(b => Number(b.id) === Number(t.id))?.score === t.score);
   if (!sameScore) return 0;
   const pos = POSITION_IDS[p.pos], pro = Number(p.proTeamId);
-  const rest = g => playerOutlook({ actual: p.actual, projection: p.projection, positionId: pos, game: g, proTeamId: pro }).rest;
+  const rest = g => playerOutlook({ actual: p.actual, projection: p.projection, positionId: pos, game: g, proTeamId: pro, usage: p.usage }).rest;
   let change = rest(fresh) - rest(base);
   // His team had the ball and lost it without scoring: that drive's share of his points is gone.
   if (pos !== 16 && Number(base.drive?.possession) === pro && Number(fresh.drive?.possession) !== pro) {

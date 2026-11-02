@@ -168,6 +168,30 @@ export function driveFactor({ positionId, proTeamId, game }) {
   return 1 + (ratio - 1) / drivesLeft;
 }
 
+// ---- Usage ------------------------------------------------------------------------
+// How involved he's been (Jim, 2026-11-02): an RB, WR or TE's targets plus carries so far against what his
+// projection expected by this point in his game. Getting hyper-targeted, more of his rest is coming; not
+// involved at all, less. Shrunk toward his projection by a few touches' worth, so two early targets don't
+// swing it, and his remaining points scale a bit less than one-for-one with it (0.6× to 1.45×).
+// usage: { touches, expected } (targets + carries: so far, and projected for the whole game).
+const USAGE_PRIOR = 4;
+// From an ESPN player's stats: targets (58) plus carries (23) this week, so far (source 0) and projected (1).
+export function weeklyUsage(player, week) {
+  const touches = src => {
+    const stat = (player?.stats || []).find(s => Number(s.scoringPeriodId) === Number(week) && Number(s.statSourceId) === src && Number(s.statSplitTypeId) === 1);
+    return stat?.stats ? (Number(stat.stats["58"]) || 0) + (Number(stat.stats["23"]) || 0) : null;
+  };
+  const expected = touches(1);
+  return expected >= 1 ? { touches: touches(0) ?? 0, expected: Math.round(expected * 10) / 10 } : null;
+}
+export function usageFactor({ positionId, usage, game }) {
+  if (![2, 3, 4].includes(Number(positionId)) || game?.state !== "in" || !(usage?.expected >= 1) || !Number.isFinite(usage.touches)) return 1;
+  const secondsLeft = game.period > 4 ? 0 : Math.max(0, (4 - (Number(game.period) || 1)) * 900 + (Number(game.clock) || 0));
+  const soFar = usage.expected * (1 - secondsLeft / 3600);
+  const ratio = (usage.touches + USAGE_PRIOR) / (soFar + USAGE_PRIOR);
+  return Math.min(1.45, Math.max(0.6, Math.pow(ratio, 0.8)));
+}
+
 // game: { state, period, clock, teams: [{ id, score }] } (an nflGames entry);
 // proTeamId: the player's NFL team.
 export function gameScriptFactor({ positionId, proTeamId, game }) {
@@ -189,10 +213,10 @@ export function gameScriptFactor({ positionId, proTeamId, game }) {
 
 // What a starter who hasn't finished might still add. With his NFL game
 // (and team), the remaining points are adjusted for game script.
-export function playerOutlook({ actual, projection, positionId, game = null, proTeamId = null }) {
+export function playerOutlook({ actual, projection, positionId, game = null, proTeamId = null, usage = null }) {
   const unscripted = Number.isFinite(projection) ? Math.max(0, projection - (Number(actual) || 0)) : 0;
   const shareLeft = Number.isFinite(projection) && projection > 0 ? Math.min(1, unscripted / projection) : 0.5;
-  const rest = unscripted * gameScriptFactor({ positionId, proTeamId, game }) * driveFactor({ positionId, proTeamId, game });
+  const rest = unscripted * gameScriptFactor({ positionId, proTeamId, game }) * driveFactor({ positionId, proTeamId, game }) * usageFactor({ positionId, usage, game });
   return {
     rest,
     sd: (SD_FRACTION[Number(positionId)] ?? DEFAULT_SD_FRACTION) * Math.max(rest, MIN_SPREAD_POINTS),

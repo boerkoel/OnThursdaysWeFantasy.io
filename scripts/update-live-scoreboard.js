@@ -2,7 +2,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { BENCH_SLOT, IR_SLOT, settledLineupRegret } from "./lib/lineup.js";
 import { altProjectionFn, buildLineupModel, calibrateAlt, chanceToPlayFn, fixAbbr, trackLineups } from "./lib/lineup-model.js";
 import { liveMarket } from "./lib/live-markets.js";
-import { SIMULATIONS, gameScriptInputs, medianOf, normalCdf, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
+import { SIMULATIONS, gameScriptInputs, weeklyUsage, medianOf, normalCdf, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
 
 const season = process.env.ESPN_SEASON || "2026";
 const leagueId = process.env.ESPN_LEAGUE_ID || "998599827";
@@ -192,6 +192,9 @@ await Promise.all(nflGames.filter(g => g.completed).map(async g => {
 }));
 
 // statSourceId 1 = ESPN projection, 0 = actual; statSplitTypeId 1 = single week.
+// Targets plus carries so far vs projected, for usage (simulation.js usageFactor).
+const usageOf = player => weeklyUsage(player, currentWeek);
+
 function weeklyStat(player, statSourceId) {
   const stat = (player?.stats || []).find(s =>
     Number(s.scoringPeriodId) === currentWeek &&
@@ -235,7 +238,7 @@ for (const teamId of teams.keys()) {
       const nflGame = nflGamesByTeam.get(Number(player.proTeamId));
       // Teams missing from the week's schedule are on bye.
       if (!nflWeek || (nflGame && !nflGame.completed)) {
-        remainingPlayers.push(playerOutlook({ actual, projection: fullProjection, positionId: player.defaultPositionId, game: nflGame, proTeamId: player.proTeamId }));
+        remainingPlayers.push(playerOutlook({ actual, projection: fullProjection, positionId: player.defaultPositionId, game: nflGame, proTeamId: player.proTeamId, usage: usageOf(player) }));
       }
     }
     if (!Number.isFinite(fullProjection)) continue;
@@ -278,7 +281,7 @@ const altProjection = calibrateAlt(await altProjectionFn(currentWeek, scoringIte
 console.log("Second-opinion scales by position:", JSON.stringify(altProjection.scale));
 const lineupModels = new Map(), lineupSummaries = new Map();
 for (const teamId of teams.keys()) {
-  const { model, summary } = buildLineupModel({ entries: rosterEntriesForTeam(teamId), nflWeek: Boolean(nflWeek),
+  const { model, summary } = buildLineupModel({ entries: rosterEntriesForTeam(teamId), nflWeek: Boolean(nflWeek), usageOf,
     gameFor: id => nflGamesByTeam.get(id) || null, weeklyStat, chanceToPlay, altProjection, set: lineupBaseline.changed[teamId] });
   if (model) lineupModels.set(teamId, model);
   if (summary) lineupSummaries.set(teamId, summary);
@@ -313,6 +316,8 @@ for (const teamId of teams.keys()) {
         injury: INJURY_SHORT[player.injuryStatus] || null,
         owned: Number.isFinite(player.ownership?.percentOwned) ? Math.round(player.ownership.percentOwned) : null,
         eligibleSlots: (player.eligibleSlots || []).map(Number),
+        // Targets + carries so far vs projected for the game (RB/WR/TE; usage in the odds and the lineups).
+        ...([2, 3, 4].includes(Number(player.defaultPositionId)) && usageOf(player) ? { usage: usageOf(player) } : {}),
         // No game this week (bye) counts as finished.
         finished: game ? game.completed : nflGames.length > 0
       };

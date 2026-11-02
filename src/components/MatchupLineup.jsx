@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { usageFactor } from "../../scripts/lib/simulation.js";
 
 // "Live" lineups: only players whose NFL game is in progress. One shared
 // setting (remembered on this device) so every lineup view follows it.
@@ -68,6 +69,18 @@ function gameLine(proTeamId, nflGames) {
   return vs + " " + mine.score + "-" + opp.score + " " + (game.completed ? "Final" : game.detail);
 }
 
+// 🔥 getting fed (targets + carries well ahead of his projected pace), 👻 barely involved: the usage the odds
+// already count (simulation.js usageFactor), shown once it's moved his outlook 20%+ (Jim, 2026-11-02).
+const USAGE_POS = { RB: 2, WR: 3, TE: 4 };
+function UsageMark({ player, game }) {
+  if (!player.usage || !USAGE_POS[player.pos] || game?.state !== "in") return null;
+  const f = usageFactor({ positionId: USAGE_POS[player.pos], usage: player.usage, game });
+  if (f > 0.8 && f < 1.2) return null;
+  const left = game.period > 4 ? 0 : Math.max(0, (4 - (game.period || 1)) * 900 + (game.clock || 0));
+  const pace = Math.round(player.usage.expected * (1 - left / 3600) * 10) / 10;
+  return <em className="lineup-usage" title={`${player.usage.touches} targets + carries so far; about ${pace} expected by now`}>{f >= 1.2 ? " 🔥" : " 👻"}</em>;
+}
+
 function PlayerCell({ player, side, nflGames, highlight }) {
   // An unfilled starting slot reads "Empty"; a bench side with no one to show stays blank.
   let info, points;
@@ -78,7 +91,7 @@ function PlayerCell({ player, side, nflGames, highlight }) {
     const game = nflGames.find(g => (g.teamIds || []).includes(player.proTeamId));
     const started = !game || game.state !== "pre";
     info = <div className={"lineup-player " + side}>
-      <b>{player.name}{player.injury ? <em className="lineup-injury">{player.injury}</em> : null}</b>
+      <b>{player.name}<UsageMark player={player} game={game} />{player.injury ? <em className="lineup-injury">{player.injury}</em> : null}</b>
       <small>{gameLine(player.proTeamId, nflGames)}</small>
     </div>;
     points = <div className={"lineup-points " + side + (highlight ? " regret" : "")}>
@@ -148,7 +161,7 @@ export function TeamLineup({ lineup = [], nflGames = [], liveOnly = false }) {
       return <div className="team-lineup-row" key={p.id}>
         <div className="lineup-slot">{SLOT_LABELS[p.slot] || p.pos}</div>
         <div className="lineup-player left">
-          <b>{p.name}{p.injury ? <em className="lineup-injury">{p.injury}</em> : null}</b>
+          <b>{p.name}<UsageMark player={p} game={game} />{p.injury ? <em className="lineup-injury">{p.injury}</em> : null}</b>
           <small>{gameLine(p.proTeamId, nflGames)}</small>
         </div>
         <div className="lineup-points left">

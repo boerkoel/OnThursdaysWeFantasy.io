@@ -1,6 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { altProjectionFn, buildLineupModel, calibrateAlt, chanceToPlayFn, fixAbbr, trackLineups } from "./lib/lineup-model.js";
-import { SIMULATIONS, gameScriptInputs, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
+import { SIMULATIONS, gameScriptInputs, weeklyUsage, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
 
 // Death Watch for the companion guillotine league (public on ESPN, so no
 // cookies are needed): each week the lowest-scoring surviving team is
@@ -173,7 +173,7 @@ const alive = [...scoreByTeam.values()]
     }
     // Starters still to play (bye weeks and finished games have nothing left to
     // add), and the lineup model the simulation uses.
-    const built = buildLineupModel({ entries: rosterByTeam.get(teamId) || [], nflWeek: Boolean(nflWeek),
+    const built = buildLineupModel({ entries: rosterByTeam.get(teamId) || [], nflWeek: Boolean(nflWeek), usageOf: p => weeklyUsage(p, week),
       gameFor: id => nflGameByProTeam.get(id) || null, weeklyStat, chanceToPlay, altProjection, set: lineupBaseline.changed[teamId] });
     for (const r of built.remaining) remaining.push({ name: r.player.fullName, game: r.game?.name || "", actual: round(r.actual), ...r.outlook });
     const score = round(Number(t.totalPointsLive ?? t.totalPoints ?? 0));
