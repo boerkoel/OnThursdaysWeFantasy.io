@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { money, pct } from "../lib/data.js";
 import { HALF_MEAN_SD, normalCdf, normalQuantile, playerOutlook } from "../../scripts/lib/simulation.js";
 import { TeamLogo } from "./LiveBits.jsx";
 import { VsLineups } from "./MatchupLineup.jsx";
 import ChopChart, { peakTeams } from "./ChopChart.jsx";
 import Podium from "./Podium.jsx";
-import { Needle } from "./Needle.jsx";
+import { MiniNeedle } from "./Needle.jsx";
 import { oddsMove } from "../lib/playText.js";
 
 // Ticket race, laid out like Death Watch: the three teams with the best odds
@@ -27,34 +27,6 @@ function playersLeft(team, nflGames) {
   }).filter(Boolean);
 }
 
-// The ticket needle's pair sticks (Jim, 2026-11-02): a challenger replaces the weaker of the two only once its
-// ticket odds beat that team's by 5+ points, so near-ties don't flicker, and a swap is called out for a minute.
-const SWAP_MARGIN = 5, SWAP_SHOWN_MS = 60000;
-function useStickyPair(ranked) {
-  const kept = useRef(null);
-  const [swap, setSwap] = useState(null);
-  const odds = s => Number(s.topScoreProbability);
-  let pair = (kept.current || []).map(id => ranked.find(s => s.teamId === id)).filter(Boolean);
-  let swapped = null;
-  if (pair.length < 2) pair = ranked.slice(0, 2);
-  else for (const c of ranked.slice(0, 3)) {
-    if (pair.includes(c)) continue;
-    const weaker = odds(pair[0]) <= odds(pair[1]) ? pair[0] : pair[1];
-    if (odds(c) >= odds(weaker) + SWAP_MARGIN) { swapped = { in: c.team, out: weaker.team }; pair = pair.map(s => s === weaker ? c : s); }
-  }
-  pair = [...pair].sort((x, y) => odds(y) - odds(x));
-  const ids = pair.map(s => s.teamId).join(",");
-  useEffect(() => {
-    const had = kept.current;
-    kept.current = pair.map(s => s.teamId);
-    if (!had || !swapped) return;
-    setSwap({ ...swapped, at: Date.now() });
-    const id = setTimeout(() => setSwap(null), SWAP_SHOWN_MS);
-    return () => clearTimeout(id);
-  }, [ids]);
-  return { pair, swap };
-}
-
 export default function RafflePodium({ scores, logos, week, final, history, plays = [], nflGames = [] }) {
   const [openLineups, setOpenLineups] = useState(() => new Set());
   // The podium always shows; the cards and chart start collapsed (the Live
@@ -64,7 +36,6 @@ export default function RafflePodium({ scores, logos, week, final, history, play
     .filter(s => s.topScoreProbability != null)
     .sort((a, b) => Number(b.topScoreProbability) - Number(a.topScoreProbability) || Number(b.score) - Number(a.score))
     .slice(0, 3);
-  const { pair: duel, swap } = useStickyPair(top);
   if (top.length < 3) return null;
   const toggle = id => setOpenLineups(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
   const leader = [...scores].sort((a, b) => Number(b.score) - Number(a.score))[0];
@@ -107,12 +78,16 @@ export default function RafflePodium({ scores, logos, week, final, history, play
         sub: `${money(s.score)} pts${final ? "" : ` · proj ${s.projectionAverage != null ? money(s.projectionAverage) : "—"}`}`,
         icon: MEDALS[i]
       }))} />
-      {(() => {   // the top two's race on the needle (Jim, 2026-11-02): their shares of the ticket odds, head to head
-        const [x, y] = duel, px = Number(x.topScoreProbability), py = Number(y.topScoreProbability);
-        if (final || !(py >= 10) || !(px < 99.5) || !playersLeft(x, nflGames).length && !playersLeft(y, nflGames).length) return null;
-        const share = (b, a) => 100 * b / (a + b);
-        const from = s => Number.isFinite(Number(s.liveTopFrom)) ? Number(s.liveTopFrom) : Number(s.topScoreProbability);
-        return <>{swap ? <p className="needle-swap">↔ {swap.in} in for {swap.out}</p> : null}<Needle a={x} b={y} label="🎟️ TICKET RACE · TOP TWO" history={history} games={nflGames} odds={{ b: share(py, px), bFrom: share(from(y), from(x)) }} /></>;
+      {(() => {   // everyone with a real shot at the ticket gets a needle (Jim, 2026-11-02): 10%+ top-score odds, up to
+        // 8, including teams whose games are over (the top score still moves with everyone else's); the quake
+        // follows the whole league's live action.
+        if (final) return null;
+        const contenders = [...scores].filter(s => Number(s.topScoreProbability) >= 10 && Number(s.topScoreProbability) < 99.5)
+          .sort((x, y) => Number(y.topScoreProbability) - Number(x.topScoreProbability)).slice(0, 8);
+        if (!contenders.length) return null;
+        return <><small className="mini-needles-label">🎟️ TICKET RACE · EACH TEAM'S SHOT</small>
+          <div className="mini-needles">{contenders.map(s => <MiniNeedle key={s.teamId} team={s} p={Number(s.topScoreProbability)} from={s.liveTopFrom}
+            sides={["no ticket", "ticket"]} colors={["#8b8e86", "#e6c85c"]} stakes={scores} history={history} games={nflGames} />)}</div></>;
       })()}
       <button type="button" className="section-toggle" aria-expanded={showDetails} onClick={() => setShowDetails(v => !v)}>{showDetails ? "Hide race details ▴" : "Race details ▾"}</button>
       {showDetails ? <>

@@ -530,7 +530,7 @@ function App() {
       sides={["lose", "win"]} colors={[RED, GREEN]} caption={`vs ${opp.team}`} history={thisWeek(scoreboard.winHistory)} games={games} />);
     if (open(s.aboveMedianProbability)) needles.push(<MiniNeedle key="median" team={s} stakes={scores} p={Number(s.aboveMedianProbability)} from={s.liveAboveFrom}
       sides={["below", "above"]} colors={[RED, GREEN]} caption="median line" games={games} />);
-    if (Number(s.topScoreProbability) >= 3 && open(s.topScoreProbability) && s.startersLeft > 0) needles.push(<MiniNeedle key="ticket" team={s} p={Number(s.topScoreProbability)} from={s.liveTopFrom}
+    if (Number(s.topScoreProbability) >= 3 && open(s.topScoreProbability)) needles.push(<MiniNeedle key="ticket" team={s} stakes={scores} p={Number(s.topScoreProbability)} from={s.liveTopFrom}
       sides={["no ticket", "ticket"]} colors={["#8b8e86", "#e6c85c"]} caption="🎟️ top score" history={thisWeek(scoreboard.raffleHistory)} games={games} />);
     const gid = managerLinks[String(s.teamId)]?.guillotine;
     const g = gid != null && Number(guillotine.week) === Number(scoreboard.week) ? (guillotine.teams || []).find(t => Number(t.teamId) === Number(gid)) : null;
