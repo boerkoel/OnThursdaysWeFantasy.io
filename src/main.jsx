@@ -519,6 +519,8 @@ function App() {
   // Your needles (Jim, 2026-11-02): every race your pinned team is still in, at a glance on its card: the
   // matchup, the median line, the ticket and your guillotine team's chop, each as a mini needle.
   const RED = "#d98a86", GREEN = "#8fd087";
+  // The median's needles in the scoreboard's colors: red below, yellow near the line (30–70%), green above.
+  const MEDIAN_COLORS = ["#d96b67", "#e6c85c", "#72b96a"];
   const renderMyNeedles = (s, { skipWin = false } = {}) => {
     const games = scoreboard.nflGames || [];
     const opp = scores.find(x => Number(x.teamId) === Number(s.opponentId));
@@ -531,7 +533,7 @@ function App() {
     if (!skipWin && opp && open(s.winProbability) && (s.startersLeft > 0 || opp.startersLeft > 0)) needles.push(<MiniNeedle key="win" team={s} stakes={[s, opp]} p={Number(s.winProbability)} from={s.liveWinFrom}
       sides={["lose", "win"]} colors={[RED, GREEN]} caption={`vs ${opp.team}`} history={thisWeek(scoreboard.winHistory)} games={games} />);
     if (open(s.aboveMedianProbability)) needles.push(<MiniNeedle key="median" team={s} stakes={scores} p={Number(s.aboveMedianProbability)} from={s.liveAboveFrom}
-      sides={["below", "above"]} colors={[RED, GREEN]} caption="median line" games={games} />);
+      sides={["below", "above"]} colors={MEDIAN_COLORS} band={[NEAR_MEDIAN_MIN, NEAR_MEDIAN_MAX]} caption="median line" games={games} />);
     if (Number(s.topScoreProbability) >= 3 && open(s.topScoreProbability)) needles.push(<MiniNeedle key="ticket" team={s} stakes={scores} p={Number(s.topScoreProbability)} from={s.liveTopFrom}
       sides={["no ticket", "ticket"]} colors={["#8b8e86", "#e6c85c"]} caption="🎟️ top score" history={thisWeek(scoreboard.raffleHistory)} games={games} />);
     const gid = managerLinks[String(s.teamId)]?.guillotine;
@@ -758,7 +760,7 @@ function App() {
           // settled; quaking with the whole league's live action.
           return <>
             <NeedleRace label="MEDIAN LINE · WHO CLEARS IT" items={scores.map(s => ({ team: s, p: Number(s.aboveMedianProbability), from: s.liveAboveFrom }))}
-              sides={["below", "above"]} colors={["#d98a86", "#8fd087"]} words={{ likely: ["likely below", "likely above"], locked: ["❌ below", "✅ above"] }}
+              sides={["below", "above"]} colors={MEDIAN_COLORS} band={[NEAR_MEDIAN_MIN, NEAR_MEDIAN_MAX]} words={{ likely: ["likely below", "likely above"], locked: ["❌ below", "✅ above"] }}
               stakes={scores} games={scoreboard.nflGames || []} mine={myTeamId} />
             <button type="button" className="section-toggle" aria-expanded={medianVs} onClick={() => setMedianVs(v => !v)}>{medianVs ? "Hide the median race ▴" : "Who's on the median line ▾"}</button>
             {medianVs ? <VsLineups a={above} b={below} nflGames={scoreboard.nflGames || []}

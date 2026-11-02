@@ -98,13 +98,19 @@ function useQuake({ teams, games, history, historyId, p }) {
 // One team's own needle (Jim, 2026-11-02: everyone within reach of the median line, every team in danger of the
 // chop): its chance of the named outcome, on a small dial, moving by the same rules as the full needle.
 // p: the chance of the right side's outcome; from: the same before the drives in progress moved it.
-// sides: [left label, right label], colors: [left, right]. caption: the line under it (the team's name by
+// sides: [left label, right label], colors: [left, right], or [left, middle, right] with band: [lo, hi] for a
+// middle zone of its own (the median's yellow "near the line", 30-70%, as on the scoreboard). caption: the line under it (the team's name by
 // default); stakes: the teams whose players can move it (the team itself, both sides of a matchup, or the whole
 // league for the median line, which moves with every team).
-export function MiniNeedle({ team, p, from = null, sides, colors, history = [], games = [], mine = false, caption = null, stakes = null }) {
+export function MiniNeedle({ team, p, from = null, sides, colors, band = null, history = [], games = [], mine = false, caption = null, stakes = null }) {
   const { live, shown } = useQuake({ teams: stakes || [team], games, history, historyId: team.teamId, p });
   if (!Number.isFinite(Number(p))) return null;
   const right = Number(p) >= 50;
+  // With a middle color: red, yellow and green zones (stronger at the ends), and the odds colored by zone.
+  const zones = colors.length === 3 && band
+    ? [[0, 5, 0.9, colors[0]], [5, band[0], 0.55, colors[0]], [band[0], 50, 0.45, colors[1]], [50, band[1], 0.45, colors[1]], [band[1], 95, 0.55, colors[2]], [95, 100, 0.9, colors[2]]]
+    : ZONES.map(([lo, hi, o]) => [lo, hi, o, hi <= 50 ? colors[0] : colors[colors.length - 1]]);
+  const oddsColor = colors.length === 3 && band ? (p < band[0] ? colors[0] : p > band[1] ? colors[2] : colors[1]) : right ? colors[colors.length - 1] : colors[0];
   // The drives' move in the number shown (the side it favors).
   const moved = from != null && Number.isFinite(Number(from)) ? (Number(p) - Number(from)) * (right ? 1 : -1) : 0;
   const deg = (shown / 100 - 0.5) * 180;
@@ -112,14 +118,14 @@ export function MiniNeedle({ team, p, from = null, sides, colors, history = [], 
     <div className={"mini-needle" + (mine ? " mine" : "")} role="img" aria-label={`${team.team}: ${Math.round(p)}% ${sides[1]}`}
       title={`${team.team}: ${Math.round(p)}% ${sides[1]}, ${Math.round(100 - p)}% ${sides[0]}${live ? " · live" : ""}`}>
       <svg viewBox="0 0 240 128" className="needle-dial">
-        {ZONES.map(([lo, hi, o]) => <path key={lo} d={wedge(lo, hi)} fill={hi <= 50 ? colors[0] : colors[1]} fillOpacity={o} />)}
+        {zones.map(([lo, hi, o, c]) => <path key={lo} d={wedge(lo, hi)} fill={c} fillOpacity={o} />)}
         <line x1={CX} y1={CY - R_OUT - 3} x2={CX} y2={CY - R_IN + 3} className="needle-mid" />
         <g style={{ transform: `rotate(${deg}deg)`, transformOrigin: `${CX}px ${CY}px`, transition: `transform ${live ? 0.22 : 0.65}s linear` }}>
           <line x1={CX} y1={CY} x2={CX} y2={CY - R_OUT - 4} className="needle-hand" />
         </g>
         <circle cx={CX} cy={CY} r={7} className="needle-hub" />
       </svg>
-      <b style={{ color: right ? colors[1] : colors[0] }}>{Math.round(right ? p : 100 - p)}% {right ? sides[1] : sides[0]}
+      <b style={{ color: oddsColor }}>{Math.round(right ? p : 100 - p)}% {right ? sides[1] : sides[0]}
         {Math.abs(moved) >= 0.5 ? <small className={moved > 0 ? "up" : "down"}>{moved > 0 ? "▲" : "▼"}{Math.abs(Math.round(moved))}</small> : null}
         {live ? <span className="needle-live">●</span> : null}</b>
       <span className="mini-needle-name">{caption || team.team}</span>
@@ -201,7 +207,7 @@ export function Needle({ a, b, history = [], odds = null, label = null, games = 
 // team comes first. items: [{ team, p, from }]; words: { likely: [left, right], locked: [left, right] };
 // chipOdds "right" shows every chip's odds of the right side (the ticket's long shots), else each side's own.
 export const LOCKED = 99;
-export function NeedleRace({ label, items, sides, colors, words, chipOdds = "side", history = [], games = [], stakes = null, mine = null }) {
+export function NeedleRace({ label, items, sides, colors, band = null, words, chipOdds = "side", history = [], games = [], stakes = null, mine = null }) {
   const base = i => Number.isFinite(Number(i.from)) ? Number(i.from) : Number(i.p);
   const isMine = i => mine != null && Number(i.team.teamId) === Number(mine);
   const live = items.filter(i => Number.isFinite(Number(i.p)));
@@ -217,7 +223,7 @@ export function NeedleRace({ label, items, sides, colors, words, chipOdds = "sid
   return <>
     {label ? <small className="mini-needles-label">{label}</small> : null}
     {needles.length ? <div className="mini-needles">{needles.map(i => <MiniNeedle key={i.team.teamId} team={i.team} p={Number(i.p)} from={i.from}
-      sides={sides} colors={colors} stakes={stakes} history={history} games={games} mine={isMine(i)} />)}</div> : null}
+      sides={sides} colors={colors} band={band} stakes={stakes} history={history} games={games} mine={isMine(i)} />)}</div> : null}
     {tier(words.likely[1], likelyR.map(i => withOdds(i, true)))}
     {tier(words.likely[0], likelyL.map(i => withOdds(i, false)))}
     {tier(words.locked[1], lockedR.map(name))}
