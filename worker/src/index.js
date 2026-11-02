@@ -36,6 +36,7 @@ const TEAM_ALERT_GAP_MS = 5 * 60 * 1000;
 const SURVIVOR_SCARE = 0.4;     // a pick under this live win chance
 const CHOP_ALERT_MOVE = 20;     // guillotine chop-odds move worth an alert (pts)
 const WIN_SWING_ALERT = 30;     // matchup win-odds swing worth an alert (pts)
+const NEEDLE_MOVE = 10;         // matchup win-odds move worth a needle alert while its players are live (pts)
 const MAX_ALERTS_PER_PHONE_PER_RUN = 3;
 // /refresh starts a live update only when the published data is older than
 // this, and at most once per gap (a run takes ~2 minutes to publish).
@@ -193,6 +194,17 @@ async function requestLiveUpdate(env) {
 
 // ---- Finding what's new --------------------------------------------------------
 
+// The needle on the lock screen (Jim, 2026-11-02): a matchup's odds drawn as text, the needle at b's chance:
+// "Kirbo 39% ───────●──── 61% TDsMaGee". Sent with the matchup's tag, so each one replaces the last.
+const shortTeam = t => t.team.length > 14 ? t.team.split(/\s+/)[0] : t.team;
+export function needleLine(a, b) {
+  const pB = Math.min(100, Math.max(0, Number(b.winProbability) || 0)), slots = 13, at = Math.round(pB / 100 * (slots - 1));
+  return `${shortTeam(a)} ${Math.round(100 - pB)}% ${"─".repeat(at)}●${"─".repeat(slots - 1 - at)} ${Math.round(pB)}% ${shortTeam(b)}`;
+}
+// Whether either team has a starter in a game being played now.
+const playingNow = (pair, games) => pair.some(t => (t.lineup?.starters || []).some(p =>
+  games.some(g => g.state === "in" && (g.teamIds || []).map(Number).includes(Number(p.proTeamId)))));
+
 export function findEvents(live, state) {   // exported for tests
   const events = [];
   const scoreboard = live.scoreboard || {};
@@ -210,7 +222,7 @@ export function findEvents(live, state) {   // exported for tests
     guillotineWeek: Number(live.guillotine?.week),
     lastSent: state?.lastSent || {},
     // Manager alerts: what was last sent for each.
-    svSent: [], chopAlerted: {}, winAlerted: {}
+    svSent: [], chopAlerted: {}, winAlerted: {}, needleAlerted: {}
   };
   // A new week (or the very first run) only records a baseline.
   const baseline = !state || state.week !== week;
@@ -219,6 +231,7 @@ export function findEvents(live, state) {   // exported for tests
   next.svSent = [...(previous.svSent || [])];
   next.chopAlerted = { ...(previous.chopAlerted || {}) };
   next.winAlerted = { ...(previous.winAlerted || {}) };
+  next.needleAlerted = { ...(previous.needleAlerted || {}) };
   next.chopBlockSent = [...(previous.chopBlockSent || [])];
 
   const byMatchup = new Map();
@@ -232,6 +245,8 @@ export function findEvents(live, state) {   // exported for tests
     const topics = [`team:${a.teamId}`, `team:${b.teamId}`];
     const tag = `matchup-${matchupId}`;
     const final = a.startersLeft === 0 && b.startersLeft === 0;
+    const needle = "\n" + needleLine(a, b);
+    const before = events.length;
 
     const leader = a.score > b.score ? a : b.score > a.score ? b : null;
     next.leaders[matchupId] = leader?.teamId ?? previous.leaders?.[matchupId] ?? null;
@@ -265,6 +280,29 @@ export function findEvents(live, state) {   // exported for tests
           title: p > last ? "📈 Momentum" : "📉 Momentum", body: `${t.team} went from ${Math.round(last)}% to ${Math.round(p)}% to beat ${o.team} (${t.score.toFixed(2)}–${o.score.toFixed(2)}).` });
       }
     }
+
+    // The needle: a 10-point move in the odds since the last needle (or any alert about this matchup) while
+    // its players are live, with the play that moved it most and who's left. Any matchup alert this run carries
+    // the needle line, so whichever lands on the lock screen shows the dial.
+    const pA = Number(a.winProbability);
+    if (Number.isFinite(pA)) {
+      const lastNeedle = previous.needleAlerted?.[matchupId];
+      const moved = !baseline && lastNeedle != null && Math.abs(pA - lastNeedle) >= NEEDLE_MOVE;
+      if (lastNeedle == null || baseline) next.needleAlerted[matchupId] = pA;
+      if (events.length > before) next.needleAlerted[matchupId] = pA;
+      else if (moved && !final && pA > 0.5 && pA < 99.5 && playingNow(pair, scoreboard.nflGames || [])) {
+        next.needleAlerted[matchupId] = pA;
+        const plays = Number(live.livePlays?.week) === week ? (live.livePlays.plays || []) : [];
+        const play = plays.filter(p => Number(p.matchupId) === Number(matchupId) && p.momentum?.shift >= 2 && Date.now() - Date.parse(p.wallclock) < 20 * 60 * 1000)
+          .sort((x, y) => Date.parse(y.wallclock) - Date.parse(x.wallclock))[0];
+        const gainer = pA > lastNeedle ? a : b;
+        const cause = play ? `After ${play.player} ${play.points > 0 ? "+" : ""}${Number(play.points).toFixed(2)}` : `${gainer.team} on the move`;
+        events.push({ id: `needle-${matchupId}-${scoreboard.lastUpdated}`, topics, tag,
+          title: `🪡 ${a.team} ${Math.round(pA)}% · ${b.team} ${Math.round(100 - pA)}%`,
+          body: `${needleLine(a, b)}\n${cause} · left: ${a.startersLeft ?? "?"}–${b.startersLeft ?? "?"}` });
+      }
+    }
+    for (const e of events.slice(before)) if (!e.id.startsWith("needle-") && !e.id.startsWith("final-")) e.body += needle;
 
     if (final) next.finals.push(matchupId);
     if (final && !baseline && !(previous.finals || []).includes(matchupId)) {
