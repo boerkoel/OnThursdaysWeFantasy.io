@@ -21,8 +21,9 @@ export function leagueStarters(games, scores, guillotineTeams) {
 }
 
 // games: scoreboard.nflGames; scores: scoreboard.scores; guillotineTeams: this week's guillotine.teams (or []);
-// svPicks: [{ user, team }] this week's revealed survivor picks; lineOf(game): the worker's /lines entry or null.
-export function rateGames({ games, scores, guillotineTeams = [], svPicks = [], lineOf = () => null, starters = leagueStarters(games, scores, guillotineTeams) }) {
+// svPicks: [{ user, team }] this week's revealed survivor picks; lineOf(game): the worker's /lines entry or null;
+// swings: live-plays.json's gameSwings, the league odds each game's plays have moved ({ [game id]: { win, ticket, chop } }).
+export function rateGames({ games, scores, guillotineTeams = [], svPicks = [], lineOf = () => null, swings = {}, starters = leagueStarters(games, scores, guillotineTeams) }) {
   // Pieces, each 0-1:
   // - close: a coin flip before kickoff (the betting line); live, how close it is weighted by how late it is
   // - upset: how far the pregame favorite has fallen
@@ -33,6 +34,8 @@ export function rateGames({ games, scores, guillotineTeams = [], svPicks = [], l
   // - shootout: the over/under (pregame only)
   // - surprise: live, on pace to blow past the over/under (a game nobody circled turning wild)
   // - fans: the league's own rooting interests (LEAGUE_FANS)
+  // - swing: 🎯 fantasy swing (Jim, 2026-11-02), how far its plays have moved league odds (matchup win odds,
+  //   top-score ticket odds, chop odds; percentage points summed). 0-100: 50 pts → 28, 150 → 63, 300 → 86.
   // Finals look back on the whole game instead (Jim, 2026-11-02), from g.recap (update-live-scoreboard.js):
   // - thrill: total win-probability swing; finish: how close it was late (overtime counts extra);
   //   comeback: how low the winner's chances got; knocked out: survivor entries that lost on it; fantasy: league points scored
@@ -88,6 +91,8 @@ export function rateGames({ games, scores, guillotineTeams = [], svPicks = [], l
     const fanTeams = [away, home].filter(t => LEAGUE_FANS[t.abbrev]);
     const fans = clamp01(fanTeams.reduce((a, t) => a + LEAGUE_FANS[t.abbrev], 0) / 3);
     const fav = favHome ? home : away;
+    const sw = swings[g.id] || null, oddsMoved = sw ? (sw.win || 0) + (sw.ticket || 0) + (sw.chop || 0) : 0;
+    const swing = 1 - Math.exp(-oddsMoved / 150);
     const rc = g.completed ? g.recap : null, winner = home.score > away.score ? home : away;
     const thrill = rc ? clamp01((rc.excitement - 1) / 5) : 0;
     const comeback = rc ? clamp01((0.5 - rc.low) / 0.45) : 0;
@@ -100,12 +105,13 @@ export function rateGames({ games, scores, guillotineTeams = [], svPicks = [], l
     const onField = ball ? [...new Map(inGame.filter(x => isDefense(x) ? Number(x.proTeamId) !== ball : Number(x.proTeamId) === ball).map(x => [x.id ?? x.name, x])).values()] : [];
     // In game the line and over/under are the live market's (g.live); the pregame ones still drive shootout and surprise.
     return { g, home, away, spread: g.live?.spread ?? latest?.spread ?? null, total: g.live?.total ?? latest?.total ?? null,
-      pregameSpread: latest?.spread ?? null, pregameTotal: latest?.total ?? null, leaguePts, ball, onField, fantasyRaw, playoff, svRisk, svOut, thrill, finish, comeback, close, upset, breakout, shootout, surprise, fans, inGame, riders,
+      pregameSpread: latest?.spread ?? null, pregameTotal: latest?.total ?? null, leaguePts, ball, onField, fantasyRaw, playoff, svRisk, svOut, sw, oddsMoved, swing, swingScore: sw ? Math.round(100 * swing) : null, thrill, finish, comeback, close, upset, breakout, shootout, surprise, fans, inGame, riders,
       why: g.completed ? [
         [thrill >= 0.5 ? thrill : 0, "Back and forth all game"],
         [finish, rc?.overtime ? "Went to overtime" : "Down to the wire"],
         [comeback, `Comeback: ${winner.abbrev} was down to ${Math.round((rc?.low ?? 0) * 100)}%`],
         [upset, `Upset: ${fav.abbrev} was ${Math.round(Math.max(preHome ?? 0, 1 - (preHome ?? 0)) * 100)}% before kickoff`],
+        [swing, `🎯 Swung league odds ${Math.round(oddsMoved)} pts`],
         [svOut * 3, `🛡️ Knocked out ${losers.length} survivor ${losers.length === 1 ? "entry" : "entries"}`],
         [breakout, boomer ? `Breakout: ${boomer.name} (${boomer.owned}% rostered) had ${boomer.actual.toFixed(2)}` : ""],
         [surprise, `Off script: ${home.score + away.score} points, O/U was ${latest?.total}`],
@@ -113,6 +119,7 @@ export function rateGames({ games, scores, guillotineTeams = [], svPicks = [], l
       ] : [
         [h2h?.v || 0, h2h?.text || ""],
         [chop?.v || 0, chop?.text || ""],
+        [g.state === "in" ? swing : 0, `🎯 Has swung league odds ${Math.round(oddsMoved)} pts`],
         [close >= 0.85 ? close : 0, g.state === "pre" ? `Coin flip: ${Math.round((preHome ?? 0.5) * 100)}–${Math.round((1 - (preHome ?? 0.5)) * 100)}` : `Too close to call: ${Math.round(p * 100)}–${Math.round((1 - p) * 100)}`],
         [upset, `Upset ${g.completed ? "" : "brewing"}: ${fav.abbrev} was ${Math.round(Math.max(preHome ?? 0, 1 - (preHome ?? 0)) * 100)}% before kickoff`.replace("Upset :", "Upset:")],
         [svRisk * 3, `🛡️ ${riders.length} survivor ${riders.length === 1 ? "entry" : "entries"} riding ${[...new Set(riders.map(x => x.team))].join("/")}`],
@@ -129,6 +136,8 @@ export function rateGames({ games, scores, guillotineTeams = [], svPicks = [], l
   for (const r of rated) {
     // A final's fantasy weight is the league points it produced (its stakes are settled by then).
     r.fantasy = r.g.completed ? r.leaguePts / maxFinalPts : r.fantasyRaw / maxFantasy;
+    // Once plays have moved odds, that counts half: what the game did, next to what it had riding on it.
+    if (r.sw && r.g.state !== "pre") r.fantasy = 0.5 * r.fantasy + 0.5 * r.swing;
     const sv = clamp01(r.svRisk * 3);
     const raw = r.g.completed
       ? 0.35 * r.thrill + 0.2 * r.finish + 0.15 * r.comeback + 0.07 * r.upset + 0.1 * r.fantasy + 0.05 * clamp01(r.svOut * 3) + 0.04 * r.breakout + 0.04 * r.surprise + 0.05 * r.fans

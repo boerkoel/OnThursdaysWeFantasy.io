@@ -21,7 +21,7 @@ import { Explain } from "./LiveBits.jsx";
 const LINES_POLL_MS = 10 * 60 * 1000;
 const FEED_PLAYS = 12;
 const GAME_PLAYS = 5;
-const SORTS = [["drama", "🔥 Drama"], ["kickoff", "Kickoff"], ["line", "Closest line"], ["total", "O/U"], ["fantasy", "Fantasy stakes"], ["playoff", "Playoff stakes"], ["points", "League pts"], ["field", "On the field"]];
+const SORTS = [["drama", "🔥 Drama"], ["swing", "🎯 Fantasy swing"], ["kickoff", "Kickoff"], ["line", "Closest line"], ["total", "O/U"], ["fantasy", "Fantasy stakes"], ["playoff", "Playoff stakes"], ["points", "League pts"], ["field", "On the field"]];
 const readPref = (k, d) => { try { return localStorage.getItem(k) || d; } catch { return d; } };
 const writePref = (k, v) => { try { localStorage.setItem(k, v); } catch { /* private mode */ } };
 const logo = abbrev => `https://a.espncdn.com/i/teamlogos/nfl/500/${String(abbrev).toLowerCase()}.png`;
@@ -117,7 +117,7 @@ export default function GamesTab({ scoreboard, guillotine, livePlays, survivorFe
   const handles = new Set(link.splash || []);
   const isFollowed = p => (p.league === "main" && p.teamId === followId) || (p.league === "g" && p.teamId === gid);
 
-  const rated = rateGames({ games, scores, guillotineTeams: gThisWeek ? guillotine.teams || [] : [], svPicks, lineOf, starters });
+  const rated = rateGames({ games, scores, guillotineTeams: gThisWeek ? guillotine.teams || [] : [], svPicks, lineOf, swings: playsThisWeek ? livePlays.gameSwings || {} : {}, starters });
   const ratingOf = new Map(rated.map(r => [r.g.id, r]));
 
   const statusText = g => g.completed ? "Final" : g.state === "in" ? (g.detail || "Live") : new Date(g.kickoff).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });
@@ -125,11 +125,14 @@ export default function GamesTab({ scoreboard, guillotine, livePlays, survivorFe
   const byKickoff = (a, b) => order(a) - order(b) || String(a.kickoff).localeCompare(String(b.kickoff));
   const sortedGames = [...games].sort(byKickoff);
   const sortKey = {
-    drama: r => -r.drama, line: r => r.spread == null ? 99 : Math.abs(r.spread), total: r => -(r.total ?? 0),
+    drama: r => -r.drama, swing: r => -(r.swingScore ?? -1), line: r => r.spread == null ? 99 : Math.abs(r.spread), total: r => -(r.total ?? 0),
     fantasy: r => -r.fantasy, playoff: r => -r.playoff, points: r => -r.leaguePts, field: r => -r.onField.length
   }[sort];
   const allGames = sortKey ? [...games].sort((a, b) => order(a) - order(b) || (ratingOf.get(a.id) && ratingOf.get(b.id) ? sortKey(ratingOf.get(a.id)) - sortKey(ratingOf.get(b.id)) : 0) || byKickoff(a, b)) : sortedGames;
 
+  // "Fantasy swing 63/100: league odds moved 150 pts (matchups 90, top-score ticket 40, chop 20)".
+  const swingTitle = r => `Fantasy swing ${r.swingScore}/100: league odds moved ${Math.round(r.oddsMoved)} pts (` +
+    [["matchups", r.sw.win], ["top-score ticket", r.sw.ticket], ["chop", r.sw.chop]].filter(([, v]) => v >= 0.5).map(([k, v]) => `${k} ${Math.round(v)}`).join(", ") + ")";
   const gameHead = g => {
     const home = (g.teams || []).find(t => t.home), away = (g.teams || []).find(t => !t.home);
     if (!home || !away) return null;
@@ -141,7 +144,8 @@ export default function GamesTab({ scoreboard, guillotine, livePlays, survivorFe
     </div>;
     return <>
       <div className="gm-head"><span className={g.state === "in" ? "live" : ""}>{statusText(g)}</span>
-        {ratingOf.get(g.id) ? <span className={"gm-drama" + (ratingOf.get(g.id).drama >= 75 ? " hot" : "")} title={`Drama ${ratingOf.get(g.id).drama}/100${ratingOf.get(g.id).reasons.length ? ": " + ratingOf.get(g.id).reasons.join(" · ") : ""}`}>🔥 {ratingOf.get(g.id).drama}</span> : null}</div>
+        {ratingOf.get(g.id) ? <span className={"gm-drama" + (ratingOf.get(g.id).drama >= 75 ? " hot" : "")} title={`Drama ${ratingOf.get(g.id).drama}/100${ratingOf.get(g.id).reasons.length ? ": " + ratingOf.get(g.id).reasons.join(" · ") : ""}`}>🔥 {ratingOf.get(g.id).drama}</span> : null}
+        {ratingOf.get(g.id)?.swingScore != null ? <span className="gm-drama gm-swing" title={swingTitle(ratingOf.get(g.id))}>🎯 {ratingOf.get(g.id).swingScore}</span> : null}</div>
       <div className="gm-sides">{side(away)}<span className="gm-at">@</span>{side(home)}</div>
       {g.drive ? <Field drive={g.drive} homeHasBall={g.drive.possession === home.id} /> : null}
       <LineMove line={lineOf(g)} live={g.state === "in" ? g.live : null} home={home.abbrev} away={away.abbrev} />
@@ -242,6 +246,6 @@ export default function GamesTab({ scoreboard, guillotine, livePlays, survivorFe
         <button key={id} type="button" className={view === id ? "active" : ""} aria-selected={view === id} onClick={() => setView(id)}>{label}</button>)}
     </div>
     {view === "all" ? renderAll() : renderFollowed()}
-    <Explain lead="Lines: open → now before kickoff, live in game.">League pts: what league starters scored in the game; on the field: the offense's starters plus the other team's D/ST.{view === "all" ? " 🔥 Drama blends closeness, upsets, fantasy and survivor stakes, playoff stakes, breakouts and the league's fan bases; live games always outrank upcoming ones. Finals score how it played out: the swings, a close finish, comebacks. Hover 🔥 for the reasons." : ""}</Explain>
+    <Explain lead="Lines: open → now before kickoff, live in game.">League pts: what league starters scored in the game; on the field: the offense's starters plus the other team's D/ST.{view === "all" ? " 🔥 Drama blends closeness, upsets, fantasy and survivor stakes, playoff stakes, breakouts and the league's fan bases; live games always outrank upcoming ones. Finals score how it played out: the swings, a close finish, comebacks. 🎯 Fantasy swing: how far the game's plays have moved league odds (matchups, top-score ticket, chop), 0–100. Hover 🔥 for the reasons." : ""}</Explain>
   </section>;
 }

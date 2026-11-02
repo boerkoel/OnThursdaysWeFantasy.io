@@ -575,13 +575,14 @@ try {
   // Merge the new ESPN snapshot with the previous saved feed so a 5-minute
   // refresh does not erase recent plays. ESPN can return only the latest slice
   // of PBP, so persistence has to happen here rather than in the frontend.
-  let previousPlays = [], previousGuillotine = [], previousInjuries = [];
+  let previousPlays = [], previousGuillotine = [], previousInjuries = [], previousSwings = {};
   try {
     const previous = JSON.parse(await readFile("data/current/live-plays.json", "utf8"));
     if (Number(previous.week) === Number(currentWeek)) {
       previousPlays = previous.plays || [];
       previousGuillotine = previous.guillotinePlays || [];
       previousInjuries = previous.injuries || [];
+      previousSwings = previous.gameSwings || {};
     }
   } catch {}
 
@@ -617,6 +618,16 @@ try {
     const momentum = previousGuillotineIds.has(play.id) ? previousGuillotineIds.get(play.id).momentum : freshChop.get(play.id);
     guillotineById.set(play.id, momentum ? { ...play, momentum } : play);
   }
+  // Odds each NFL game has moved (Jim, 2026-11-02: the Games tab's fantasy swing): every new play's matchup,
+  // ticket and chop swings, summed per game in percentage points. Carried run to run, since the play list is pruned.
+  const gameSwings = structuredClone(previousSwings);
+  const addSwing = (eventId, kind, shift) => {
+    if (!eventId || !shift) return;
+    const s = gameSwings[eventId] ||= { win: 0, ticket: 0, chop: 0 };
+    s[kind] = Math.round((s[kind] + Math.abs(shift)) * 10) / 10;
+  };
+  for (const play of newPlays) { addSwing(play.eventId, "win", fresh.get(play.id)?.shift); addSwing(play.eventId, "ticket", freshRaffle.get(play.id)?.shift); }
+  for (const [id, momentum] of freshChop) addSwing(guillotineRelevant.find(p => p.id === id)?.eventId, "chop", momentum.shift);
   const guillotinePlays = [...guillotineById.values()]
     .sort((a, b) => new Date(b.wallclock || 0) - new Date(a.wallclock || 0))
     .filter((play, i) => i < 60 || Math.abs(play.momentum?.shift || 0) >= 3);
@@ -638,7 +649,8 @@ try {
     updatedAt: new Date().toISOString(),
     plays,
     guillotinePlays,
-    injuries: injuryList
+    injuries: injuryList,
+    gameSwings
   }, null, 2) + "\n");
 
   console.log(`Live-play parser: ${relevant.length} fantasy-relevant plays retained; stored ${plays.length} across ${relevantGames.length} relevant NFL games; ${guillotinePlays.length} guillotine plays; ${injuryList.length} injury updates.`);
