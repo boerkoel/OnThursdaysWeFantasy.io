@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useId, useState } from "react";
 import { money } from "../lib/data.js";
 import { normalCdf, normalQuantile, playerOutlook } from "../../scripts/lib/simulation.js";
 
@@ -59,6 +59,30 @@ function stakesLeft(teams, games) {
   return { total, live };
 }
 
+// While games are on (Jim, 2026-11-02): where the odds stood when the race's first game in progress kicked off,
+// from the history (b's chance: head to head, or two-way shares for the ticket and chop races).
+function kickoffOdds({ a, b, history, games, twoWay }) {
+  const ids = new Set([a, b].flatMap(t => (t.lineup?.starters || []).map(p => Number(p.proTeamId))));
+  const kicks = games.filter(g => g.state === "in" && (g.teamIds || []).some(id => ids.has(Number(id)))).map(g => Date.parse(g.kickoff)).filter(Number.isFinite);
+  if (!kicks.length || !history?.length) return null;
+  const before = history.filter(x => Date.parse(x.t) <= Math.min(...kicks) + 60000).at(-1);
+  const pa = Number(before?.p?.[a.teamId]), pb = Number(before?.p?.[b.teamId]);
+  if (!Number.isFinite(pb)) return null;
+  return twoWay ? (Number.isFinite(pa) && pa + pb > 0 ? 100 * pb / (pa + pb) : null) : pb;
+}
+// The race's players in games being played now, each trending up (↑, 2+ pts ahead of his projected pace),
+// down (↓, 2+ behind) or on pace (→).
+function onTheField(team, games) {
+  return (team.lineup?.starters || []).flatMap(p => {
+    const g = games.find(x => x.state === "in" && (x.teamIds || []).map(Number).includes(Number(p.proTeamId)));
+    if (!g) return [];
+    const left = g.period > 4 ? 0 : Math.max(0, (4 - (Number(g.period) || 1)) * 900 + (Number(g.clock) || 0));
+    const due = (Number(p.projection) || 0) * (1 - left / 3600), diff = (Number(p.actual) || 0) - due;
+    const name = /D\/ST/.test(p.name) ? p.name.replace(" D/ST", "") : p.name.replace(/^[A-Z]\.\s*/, "");
+    return [{ name, trend: diff >= 2 ? "up" : diff <= -2 ? "down" : "even", title: `${p.name}: ${money(p.actual)} pts, ${money(due)} expected by now` }];
+  });
+}
+
 export function Needle({ a, b, history = [], odds = null, label = null, games = [] }) {
   const oddsB = odds ? odds.b : Number(b.winProbability), fromB = odds ? odds.bFrom : Number(b.liveWinFrom);
   const pB = Math.min(99.9, Math.max(0.1, Number(oddsB)));
@@ -78,6 +102,7 @@ export function Needle({ a, b, history = [], odds = null, label = null, games = 
   const size = Math.min(1, Math.max(0.25, Math.sqrt(stakes.live) / 20));
   const h = live ? Math.min(0.5, (stakes.live / stakes.total) * size * (0.6 + 0.8 * wildness(history, a.teamId))) : stakes.total >= 0.25 ? 0.02 : 0;
   const [wobble, setWobble] = useState(0);
+  const arcId = useId();
   useEffect(() => {
     if (!(h > 0) || reducedMotion()) { setWobble(0); return; }
     const RHO = live ? 0.7 : 0.85, gauss = () => Math.sqrt(-2 * Math.log(1 - Math.random())) * Math.cos(2 * Math.PI * Math.random());
@@ -92,6 +117,15 @@ export function Needle({ a, b, history = [], odds = null, label = null, games = 
   const moved = Number.isFinite(Number(fromB)) ? Number(oddsB) - Number(fromB) : 0;
   const arrow = d => Math.abs(d) >= 0.5 ? <small className={d > 0 ? "up" : "down"} title="Since the last full update, from the drives in progress">{d > 0 ? "▲" : "▼"}{Math.abs(Math.round(d))}</small> : null;
   const deg = (shown / 100 - 0.5) * 180;
+  // Drift since kickoff: an arc outside the dial from the odds then to now, and the points it's moved.
+  const startB = live ? kickoffOdds({ a, b, history, games, twoWay: Boolean(odds) }) : null;
+  const drift = startB == null ? 0 : pB - startB;
+  const R_ARC = R_OUT + 8;
+  const arc = Math.abs(drift) >= 1 ? (() => {
+    const [x1, y1] = point(startB, R_ARC), [x2, y2] = point(pB, R_ARC);
+    return `M ${x1} ${y1} A ${R_ARC} ${R_ARC} 0 0 ${drift > 0 ? 1 : 0} ${x2} ${y2}`;
+  })() : null;
+  const field = live ? [onTheField(a, games), onTheField(b, games)] : null;
   const margin = da && db ? da.mean - db.mean : null;
   const lead = margin == null ? null : Math.abs(margin) < 0.25 ? "Dead even" : `${(margin > 0 ? a : b).team} by ${half(margin)}`;
   const lo = margin == null ? null : margin - 0.6745 * sd, hi = margin == null ? null : margin + 0.6745 * sd;
@@ -108,11 +142,21 @@ export function Needle({ a, b, history = [], odds = null, label = null, games = 
           <line x1={CX} y1={CY} x2={CX} y2={CY - R_OUT - 4} className="needle-hand" />
         </g>
         <circle cx={CX} cy={CY} r={5} className="needle-hub" />
+        {arc ? <>
+          <defs><marker id={arcId} viewBox="0 0 6 6" refX="3" refY="3" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L6 3 L0 6 Z" className="needle-drift-head" /></marker></defs>
+          <path d={arc} className="needle-drift" markerEnd={`url(#${arcId})`} />
+          <circle cx={point(startB, R_ARC)[0]} cy={point(startB, R_ARC)[1]} r={2} className="needle-drift-start" />
+        </> : null}
       </svg>
+      {Math.abs(drift) >= 1 ? <p className="needle-drift-text" title={`${b.team} ${Math.round(startB)}% when the game${games.filter(g => g.state === "in").length > 1 ? "s" : ""} kicked off, ${Math.round(pB)}% now`}>
+        since kickoff {drift < 0 ? <b style={{ color: A_COLOR }}>◀ {Math.round(-drift)}</b> : <b style={{ color: B_COLOR }}>{Math.round(drift)} ▶</b>}</p> : null}
       <div className="needle-odds">
         <span style={{ color: A_COLOR }}><b>{Math.round(100 - pB)}%{arrow(-moved)}</b>{a.team}</span>
         <span style={{ color: B_COLOR }}><b>{Math.round(pB)}%{arrow(moved)}</b>{b.team}</span>
       </div>
+      {field && (field[0].length || field[1].length) ? <div className="needle-field">
+        {field.map((list, i) => <span key={i}>{list.map(p => <em key={p.name} className={p.trend} title={p.title}>{p.name} {p.trend === "up" ? "↑" : p.trend === "down" ? "↓" : "→"}</em>)}</span>)}
+      </div> : null}
       {lead ? <p className="needle-line" title={`Projected ${money(da.mean)} – ${money(db.mean)}; middle half of outcomes: ${a.team} ${lo >= 0 ? "+" : "−"}${half(lo)} to ${hi >= 0 ? "+" : "−"}${half(hi)}`}>
         Projected: <b>{lead}</b> ({range})</p> : null}
     </div>
