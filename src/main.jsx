@@ -427,7 +427,7 @@ function App() {
     const plays = keyPlaysFor(matchupId).slice(0, 3);
     const open = [a, b].every(t => Number(t.winProbability) > 0.5 && Number(t.winProbability) < 99.5);
     return <div className="primetime-expand">
-      {open ? <Needle a={a} b={b} history={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} /> : null}
+      {open ? <Needle a={a} b={b} games={scoreboard.nflGames || []} history={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} /> : null}
       {open ? (scoreboard.nflGames || []).map(g => ({ g, r: driveRooting({ game: g, a, b }) })).filter(x => x.r).slice(0, 2).map(({ g, r }) =>
         <div className="rooting" key={g.id}>
           <small>🏈 {r.offense} BALL{r.toGo != null ? ` · ${r.toGo} YDS TO GO` : ""} · ROOT FOR</small>
@@ -688,7 +688,7 @@ function App() {
           const lineOdds = higherOdds(above, below);
           const lineOpen = lineOdds && [above, below].some(s => s.startersLeft > 0) && [above, below].every(s => Number(s.aboveMedianProbability) > 0.5 && Number(s.aboveMedianProbability) < 99.5);
           return <>
-            {lineOpen ? <Needle a={above} b={below} label="MEDIAN LINE · WHO FINISHES HIGHER" odds={lineOdds} /> : null}
+            {lineOpen ? <Needle a={above} b={below} label="MEDIAN LINE · WHO FINISHES HIGHER" odds={lineOdds} games={scoreboard.nflGames || []} /> : null}
             <RaceChart oddsLabel="above" line={scoreboard.projectedMedian != null ? { value: Number(scoreboard.projectedMedian), label: "median" } : null}
               rows={racers.map(s => ({ key: s.teamId, name: s.team, score: s.score, dist: s.projection.dist, odds: s.aboveMedianProbability }))} />
             <button type="button" className="section-toggle" aria-expanded={medianVs} onClick={() => setMedianVs(v => !v)}>{medianVs ? "Hide the median race ▴" : "Who's on the median line ▾"}</button>

@@ -83,7 +83,7 @@ export default function RafflePodium({ scores, logos, week, final, history, play
         if (final || !(py >= 10) || !(px < 99.5) || !playersLeft(x, nflGames).length && !playersLeft(y, nflGames).length) return null;
         const share = (b, a) => 100 * b / (a + b);
         const from = s => Number.isFinite(Number(s.liveTopFrom)) ? Number(s.liveTopFrom) : Number(s.topScoreProbability);
-        return <Needle a={x} b={y} label="🎟️ TICKET RACE · TOP TWO" history={history} odds={{ b: share(py, px), bFrom: share(from(y), from(x)) }} />;
+        return <Needle a={x} b={y} label="🎟️ TICKET RACE · TOP TWO" history={history} games={nflGames} odds={{ b: share(py, px), bFrom: share(from(y), from(x)) }} />;
       })()}
       <button type="button" className="section-toggle" aria-expanded={showDetails} onClick={() => setShowDetails(v => !v)}>{showDetails ? "Hide race details ▴" : "Race details ▾"}</button>
       {showDetails ? <>

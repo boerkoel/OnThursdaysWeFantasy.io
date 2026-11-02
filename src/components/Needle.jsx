@@ -45,7 +45,12 @@ export function higherOdds(a, b) {
 // Any two-way race (Jim, 2026-11-02): head to head by default (b.winProbability), or pass odds: { b, bFrom }
 // (b's chance, and the same before the drives in progress moved it) and a kicker label for the ticket race or
 // the median line. history: odds snapshots ({ p: { teamId: odds } }) whose moves set the wildness.
-export function Needle({ a, b, history = [], odds = null, label = null }) {
+// It only moves while one of the race's starters is in a live game (Jim, 2026-11-02): between games it rests
+// on the odds, so a moving needle means something is happening now. games: this week's nflGames.
+const playingNow = (teams, games) => teams.some(t => (t.lineup?.starters || []).some(p =>
+  games.some(g => g.state === "in" && (g.teamIds || (g.teams || []).map(x => Number(x.id))).map(Number).includes(Number(p.proTeamId)))));
+
+export function Needle({ a, b, history = [], odds = null, label = null, games = [] }) {
   const oddsB = odds ? odds.b : Number(b.winProbability), fromB = odds ? odds.bFrom : Number(b.liveWinFrom);
   const pB = Math.min(99.9, Math.max(0.1, Number(oddsB)));
   const da = a.projection?.dist, db = b.projection?.dist;
@@ -58,7 +63,7 @@ export function Needle({ a, b, history = [], odds = null, label = null }) {
   // AR(1) process that stays standard normal, so over time it shows that spread of futures.
   const stakes = Math.min(1, Math.max(0.25, sd / 25));
   const h = (0.1 + 0.4 * wildness(history, a.teamId)) * stakes;
-  const live = sd >= 0.5;
+  const live = sd >= 0.5 && playingNow([a, b], games);
   const [wobble, setWobble] = useState(0);
   useEffect(() => {
     if (!live || reducedMotion()) { setWobble(0); return; }
@@ -81,8 +86,8 @@ export function Needle({ a, b, history = [], odds = null, label = null }) {
   const sign = margin >= 0 ? 1 : -1;
   const range = lo == null ? null : lo * hi <= 0 ? "either way" : `likely ${half(Math.min(sign * lo, sign * hi))}–${half(Math.max(sign * lo, sign * hi))}`;
   return (
-    <div className="needle" role="img" title="The needle wanders over where the odds could be halfway through what's left to play: it averages out at today's odds" aria-label={`${label ? label + ": " : ""}${a.team} ${Math.round(100 - pB)}%, ${b.team} ${Math.round(pB)}%`}>
-      {label ? <small className="needle-label">{label}</small> : null}
+    <div className="needle" role="img" title={live ? "Live: the needle wanders over where the odds could be partway through what's left to play, averaging out at the current odds" : "The needle moves while their players are in a game"} aria-label={`${label ? label + ": " : ""}${a.team} ${Math.round(100 - pB)}%, ${b.team} ${Math.round(pB)}%`}>
+      {label || live ? <small className="needle-label">{label}{live ? <span className="needle-live">● LIVE</span> : null}</small> : null}
       <svg viewBox="0 0 240 128" className="needle-dial">
         {ZONES.map(([from, to, o]) => <path key={from} d={wedge(from, to)} fill={to <= 50 ? A_COLOR : B_COLOR} fillOpacity={o} />)}
         <line x1={CX} y1={CY - R_OUT - 3} x2={CX} y2={CY - R_IN + 3} className="needle-mid" />
