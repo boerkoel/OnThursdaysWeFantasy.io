@@ -515,6 +515,28 @@ function App() {
   // Notification settings live in a sheet behind the header's bell.
   const [notifyOpen, setNotifyOpen] = useState(false);
 
+  // Your needles (Jim, 2026-11-02): every race your pinned team is still in, at a glance on its card: the
+  // matchup, the median line, the ticket and your guillotine team's chop, each as a mini needle.
+  const RED = "#d98a86", GREEN = "#8fd087";
+  const renderMyNeedles = s => {
+    const games = scoreboard.nflGames || [];
+    const opp = scores.find(x => Number(x.teamId) === Number(s.opponentId));
+    const open = p => Number(p) > 0.5 && Number(p) < 99.5;
+    const thisWeek = h => Number(h?.week) === Number(scoreboard.week) ? h.points || [] : [];
+    const needles = [];
+    if (opp && open(s.winProbability) && (s.startersLeft > 0 || opp.startersLeft > 0)) needles.push(<MiniNeedle key="win" team={s} stakes={[s, opp]} p={Number(s.winProbability)} from={s.liveWinFrom}
+      sides={["lose", "win"]} colors={[RED, GREEN]} caption={`vs ${opp.team}`} history={thisWeek(scoreboard.winHistory)} games={games} />);
+    if (open(s.aboveMedianProbability) && s.startersLeft > 0) needles.push(<MiniNeedle key="median" team={s} p={Number(s.aboveMedianProbability)} from={s.liveAboveFrom}
+      sides={["below", "above"]} colors={[RED, GREEN]} caption="median line" games={games} />);
+    if (Number(s.topScoreProbability) >= 3 && open(s.topScoreProbability) && s.startersLeft > 0) needles.push(<MiniNeedle key="ticket" team={s} p={Number(s.topScoreProbability)} from={s.liveTopFrom}
+      sides={["no ticket", "ticket"]} colors={["#8b8e86", "#e6c85c"]} caption="🎟️ top score" history={thisWeek(scoreboard.raffleHistory)} games={games} />);
+    const gid = managerLinks[String(s.teamId)]?.guillotine;
+    const g = gid != null && Number(guillotine.week) === Number(scoreboard.week) ? (guillotine.teams || []).find(t => Number(t.teamId) === Number(gid)) : null;
+    if (g && open(g.chopProbability) && g.playersLeft) needles.push(<MiniNeedle key="chop" team={{ ...g, lineup: { starters: g.lineup || [] } }} p={Number(g.chopProbability)} from={g.liveChopFrom}
+      sides={["safe", "chopped"]} colors={[GREEN, RED]} caption={`🪓 ${g.team}`} history={thisWeek(guillotine.chopHistory)} games={games} />);
+    return needles.length ? <><small className="mini-needles-label">YOUR NEEDLES</small><div className="mini-needles">{needles}</div></> : null;
+  };
+
   // The same manager's other contests, at a glance: guillotine team and survivor entries.
   // Links live in src/data/manager-links.json (main-league team id -> guillotine team, Splash handles).
   const renderOtherContests = teamId => {
@@ -613,6 +635,7 @@ function App() {
         </div>
         {renderExpectedWinnings(myScore.teamId, odds)}
         {renderOtherContests(myScore.teamId)}
+        {renderMyNeedles(myScore)}
         <a className="my-games-link" href="#games">🏟️ See all my players, game by game →</a>
         <div className="matchup-list">{renderMatchupRow(myMatchupId, true)}{primetimeView ? renderPrimetime(myMatchupId) : null}</div>
       </section>

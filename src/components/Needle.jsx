@@ -98,9 +98,10 @@ function useQuake({ teams, games, history, historyId, p }) {
 // One team's own needle (Jim, 2026-11-02: everyone within reach of the median line, every team in danger of the
 // chop): its chance of the named outcome, on a small dial, moving by the same rules as the full needle.
 // p: the chance of the right side's outcome; from: the same before the drives in progress moved it.
-// sides: [left label, right label], colors: [left, right].
-export function MiniNeedle({ team, p, from = null, sides, colors, history = [], games = [], mine = false }) {
-  const { live, shown } = useQuake({ teams: [team], games, history, historyId: team.teamId, p });
+// sides: [left label, right label], colors: [left, right]. caption: the line under it (the team's name by
+// default); stakes: the teams whose players can move it (the team itself, or both sides of a matchup).
+export function MiniNeedle({ team, p, from = null, sides, colors, history = [], games = [], mine = false, caption = null, stakes = null }) {
+  const { live, shown } = useQuake({ teams: stakes || [team], games, history, historyId: team.teamId, p });
   if (!Number.isFinite(Number(p))) return null;
   const right = Number(p) >= 50;
   // The drives' move in the number shown (the side it favors).
@@ -120,7 +121,7 @@ export function MiniNeedle({ team, p, from = null, sides, colors, history = [], 
       <b style={{ color: right ? colors[1] : colors[0] }}>{Math.round(right ? p : 100 - p)}% {right ? sides[1] : sides[0]}
         {Math.abs(moved) >= 0.5 ? <small className={moved > 0 ? "up" : "down"}>{moved > 0 ? "▲" : "▼"}{Math.abs(Math.round(moved))}</small> : null}
         {live ? <span className="needle-live">●</span> : null}</b>
-      <span className="mini-needle-name">{team.team}</span>
+      <span className="mini-needle-name">{caption || team.team}</span>
     </div>
   );
 }
