@@ -3,9 +3,9 @@ import { money } from "../lib/data.js";
 import { normalCdf, normalQuantile } from "../../scripts/lib/simulation.js";
 
 // The Primetime needle (Jim, 2026-11-02, after the NYT election needle): a matchup's win odds on a half dial,
-// team a's side on the left, b's on the right, shaded from lean to very likely. The needle quivers within the
-// uncertainty still left (wider early, still once every starter has played), and under it the projected
-// margin reads like a betting line.
+// team a's side on the left, b's on the right, shaded from lean to very likely. The needle swings across the
+// middle half of what's still possible (Jim: for nerves and drama), and under it the projected margin reads
+// like a betting line.
 const CX = 120, CY = 118, R_OUT = 104, R_IN = 66;
 // Zone edges in b's win chance, and how strong each zone's shade is.
 const ZONES = [[0, 5, 0.9], [5, 25, 0.6], [25, 50, 0.32], [50, 75, 0.32], [75, 95, 0.6], [95, 100, 0.9]];
@@ -23,8 +23,10 @@ export function Needle({ a, b }) {
   const pB = Math.min(99.9, Math.max(0.1, Number(b.winProbability)));
   const da = a.projection?.dist, db = b.projection?.dist;
   const sd = Math.hypot(sdOf(da), sdOf(db));
-  // Quiver: a random walk in z around the odds, up to ±0.3 SD when lots is left, nothing once it's all played.
-  const amp = 0.3 * sd / (sd + 15);
+  // Swing: a random walk in z around the odds, out to the middle half of the remaining margin (±0.67 SD of it,
+  // the "likely" range printed below): a coin flip with a lot left sweeps about 25–75%. Odds' z is roughly
+  // margin ÷ SD, so that's ±0.67 in z, easing off over the last few points left and still once all have played.
+  const amp = 0.6745 * Math.min(1, sd / 3);
   const [wobble, setWobble] = useState(0);
   useEffect(() => {
     if (!(amp > 0.01) || reducedMotion()) { setWobble(0); return; }
