@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { money } from "../lib/data.js";
-import { normalCdf, normalQuantile } from "../../scripts/lib/simulation.js";
+import { normalCdf, normalQuantile, playerOutlook } from "../../scripts/lib/simulation.js";
 
 // The Primetime needle (Jim, 2026-11-02, after the NYT election needle): a matchup's win odds on a half dial,
 // team a's side on the left, b's on the right, shaded from lean to very likely. The needle wanders over where
-// the odds could be partway through what's left to play (Jim: drama that still means something): it averages
-// out at the current odds, and how far ahead it looks follows how wild the matchup has been (Jim: a boring
-// game quivers less, a wild one more) and how much is still in play (a pile of skill players left bounces it
-// more than a lone kicker or D/ST). The odds under it are the steady number: they move only as plays
+// the odds could be once the games in progress are over (Jim: drama that still means something, in proportion
+// to what those games can change): it averages out at the current odds, swings as far as those games can move
+// them, more for a wild matchup and less for a dull one, and between games only quakes, muted. The odds under it are the steady number: they move only as plays
 // and drives do (liveDrives.js), with ▲▼ for the change since the last full update. Under them the projected
 // margin reads like a betting line.
 const CX = 120, CY = 118, R_OUT = 104, R_IN = 66;
@@ -45,36 +44,50 @@ export function higherOdds(a, b) {
 // Any two-way race (Jim, 2026-11-02): head to head by default (b.winProbability), or pass odds: { b, bFrom }
 // (b's chance, and the same before the drives in progress moved it) and a kicker label for the ticket race or
 // the median line. history: odds snapshots ({ p: { teamId: odds } }) whose moves set the wildness.
-// It only moves while one of the race's starters is in a live game (Jim, 2026-11-02): between games it rests
-// on the odds, so a moving needle means something is happening now. games: this week's nflGames.
-const playingNow = (teams, games) => teams.some(t => (t.lineup?.starters || []).some(p =>
-  games.some(g => g.state === "in" && (g.teamIds || (g.teams || []).map(x => Number(x.id))).map(Number).includes(Number(p.proTeamId)))));
+// games: this week's nflGames. How much of the race is still to be decided, as variance in points: all of both
+// teams' unfinished starters, and those in the games being played right now.
+const POSITION_IDS = { QB: 1, RB: 2, WR: 3, TE: 4, K: 5, "D/ST": 16 };
+function stakesLeft(teams, games) {
+  let total = 0, live = 0;
+  for (const p of teams.flatMap(t => t.lineup?.starters || [])) {
+    const game = games.find(g => (g.teamIds || (g.teams || []).map(x => Number(x.id))).map(Number).includes(Number(p.proTeamId)));
+    if (!game || game.completed) continue;
+    const v = playerOutlook({ actual: p.actual, projection: p.projection, positionId: POSITION_IDS[p.pos], game, proTeamId: p.proTeamId }).sd ** 2;
+    total += v;
+    if (game.state === "in") live += v;
+  }
+  return { total, live };
+}
 
 export function Needle({ a, b, history = [], odds = null, label = null, games = [] }) {
   const oddsB = odds ? odds.b : Number(b.winProbability), fromB = odds ? odds.bFrom : Number(b.liveWinFrom);
   const pB = Math.min(99.9, Math.max(0.1, Number(oddsB)));
   const da = a.projection?.dist, db = b.projection?.dist;
   const sd = Math.hypot(sdOf(da), sdOf(db));
-  // A fraction h through what's left, the margin has moved by Z × SD·√h and SD·√(1−h) is still to come, so the
-  // odds' z is then (z + √h·Z) / √(1−h), Z standard normal (its average is still today's odds). h runs from 10%
-  // for a dull matchup (a coin flip mostly sits 41–59%) to 50% for a wild one (25–75%), scaled by the stakes
-  // left: the spread of the remaining margin against a full slate's (about 25 points), down to a quarter of it,
-  // so a matchup down to a kicker looks barely ahead (mostly 47–53% at a coin flip). The needle walks Z as an
-  // AR(1) process that stays standard normal, so over time it shows that spread of futures.
-  const stakes = Math.min(1, Math.max(0.25, sd / 25));
-  const h = (0.1 + 0.4 * wildness(history, a.teamId)) * stakes;
-  const live = sd >= 0.5 && playingNow([a, b], games);
+  // Once a fraction h of what's left has played out, the margin has moved by Z × SD·√h and SD·√(1−h) is still
+  // to come, so the odds' z is then (z + √h·Z) / √(1−h), Z standard normal (its average is still today's odds).
+  // Live, h is the share of what's left that the games in progress decide (their starters' variance over all
+  // unfinished starters'), times how much those games hold in points (their spread against a big game's ~20,
+  // down to a quarter: a lone kicker or D/ST barely moves it, a pile of skill players does), times 0.6 for a
+  // dull matchup up to 1.4 for a wild one, at most 50%: a game holding several of both teams' last skill players
+  // sweeps a coin flip about 25–75%; one RB, about 40–60%.
+  // Between games it's a muted quake (h 2%, slower: a coin flip drifts 46–54%), none once nothing is left.
+  // The needle walks Z as an AR(1) process that stays standard normal, so over time it shows that spread.
+  const stakes = stakesLeft([a, b], games);
+  const live = stakes.live >= 0.25;
+  const size = Math.min(1, Math.max(0.25, Math.sqrt(stakes.live) / 20));
+  const h = live ? Math.min(0.5, (stakes.live / stakes.total) * size * (0.6 + 0.8 * wildness(history, a.teamId))) : stakes.total >= 0.25 ? 0.02 : 0;
   const [wobble, setWobble] = useState(0);
   useEffect(() => {
-    if (!live || reducedMotion()) { setWobble(0); return; }
-    const RHO = 0.7, gauss = () => Math.sqrt(-2 * Math.log(1 - Math.random())) * Math.cos(2 * Math.PI * Math.random());
+    if (!(h > 0) || reducedMotion()) { setWobble(0); return; }
+    const RHO = live ? 0.7 : 0.85, gauss = () => Math.sqrt(-2 * Math.log(1 - Math.random())) * Math.cos(2 * Math.PI * Math.random());
     let w = gauss();
-    const id = setInterval(() => { w = RHO * w + Math.sqrt(1 - RHO * RHO) * gauss(); setWobble(w); }, 220);
+    const id = setInterval(() => { w = RHO * w + Math.sqrt(1 - RHO * RHO) * gauss(); setWobble(w); }, live ? 220 : 650);
     return () => clearInterval(id);
-  }, [live]);
+  }, [live, h > 0]);
   if (!Number.isFinite(pB)) return null;
   const z = normalQuantile(pB / 100);
-  const shown = live && wobble ? Math.min(99.5, Math.max(0.5, 100 * normalCdf((z + Math.sqrt(h) * wobble) / Math.sqrt(1 - h)))) : pB;
+  const shown = h > 0 && wobble ? Math.min(99.5, Math.max(0.5, 100 * normalCdf((z + Math.sqrt(h) * wobble) / Math.sqrt(1 - h)))) : pB;
   // The steady odds, and how far plays have moved them since the last full update.
   const moved = Number.isFinite(Number(fromB)) ? Number(oddsB) - Number(fromB) : 0;
   const arrow = d => Math.abs(d) >= 0.5 ? <small className={d > 0 ? "up" : "down"} title="Since the last full update, from the drives in progress">{d > 0 ? "▲" : "▼"}{Math.abs(Math.round(d))}</small> : null;
@@ -86,12 +99,12 @@ export function Needle({ a, b, history = [], odds = null, label = null, games = 
   const sign = margin >= 0 ? 1 : -1;
   const range = lo == null ? null : lo * hi <= 0 ? "either way" : `likely ${half(Math.min(sign * lo, sign * hi))}–${half(Math.max(sign * lo, sign * hi))}`;
   return (
-    <div className="needle" role="img" title={live ? "Live: the needle wanders over where the odds could be partway through what's left to play, averaging out at the current odds" : "The needle moves while their players are in a game"} aria-label={`${label ? label + ": " : ""}${a.team} ${Math.round(100 - pB)}%, ${b.team} ${Math.round(pB)}%`}>
+    <div className="needle" role="img" title={live ? "Live: the needle wanders over where the odds could be once the games in progress are over, averaging out at the current odds" : "Between games the needle only quakes; it swings while their players are in a game"} aria-label={`${label ? label + ": " : ""}${a.team} ${Math.round(100 - pB)}%, ${b.team} ${Math.round(pB)}%`}>
       {label || live ? <small className="needle-label">{label}{live ? <span className="needle-live">● LIVE</span> : null}</small> : null}
       <svg viewBox="0 0 240 128" className="needle-dial">
         {ZONES.map(([from, to, o]) => <path key={from} d={wedge(from, to)} fill={to <= 50 ? A_COLOR : B_COLOR} fillOpacity={o} />)}
         <line x1={CX} y1={CY - R_OUT - 3} x2={CX} y2={CY - R_IN + 3} className="needle-mid" />
-        <g style={{ transform: `rotate(${deg}deg)`, transformOrigin: `${CX}px ${CY}px`, transition: "transform .22s linear" }}>
+        <g style={{ transform: `rotate(${deg}deg)`, transformOrigin: `${CX}px ${CY}px`, transition: `transform ${live ? 0.22 : 0.65}s linear` }}>
           <line x1={CX} y1={CY} x2={CX} y2={CY - R_OUT - 4} className="needle-hand" />
         </g>
         <circle cx={CX} cy={CY} r={5} className="needle-hub" />
