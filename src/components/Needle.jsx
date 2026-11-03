@@ -97,6 +97,18 @@ function DriftArcs({ range, now, markerId }) {
   </>;
 }
 
+// Since halftime (Jim, 2026-11-02): the odds when the most recent halftime among this race's games in progress
+// began (live runs stamp it on the game: halftimeAt), from the same history; null before any halftime.
+function halftimeOdds({ a, b, history, games, twoWay }) {
+  const ids = new Set([a, b].flatMap(t => (t.lineup?.starters || []).map(p => Number(p.proTeamId))));
+  const halves = games.filter(g => g.state === "in" && g.halftimeAt && (g.teamIds || []).some(id => ids.has(Number(id)))).map(g => Date.parse(g.halftimeAt)).filter(Number.isFinite);
+  if (!halves.length || !history?.length) return null;
+  const at = history.filter(x => Date.parse(x.t) <= Math.max(...halves) + 60000).at(-1);
+  const pa = Number(at?.p?.[a.teamId]), pb = Number(at?.p?.[b.teamId]);
+  if (!Number.isFinite(pb)) return null;
+  return twoWay ? (Number.isFinite(pa) && pa + pb > 0 ? 100 * pb / (pa + pb) : null) : pb;
+}
+
 // The race's players in games being played now, each trending up (↑, 2+ pts ahead of his projected pace),
 // down (↓, 2+ behind) or on pace (→).
 function onTheField(team, games) {
@@ -257,6 +269,12 @@ export function Needle({ a, b, history = [], odds = null, label = null, games = 
       </svg>
       {Math.abs(drift) >= 1 ? <p className="needle-drift-text" title={`${b.team} ${Math.round(startB)}% when the game${games.filter(g => g.state === "in").length > 1 ? "s" : ""} kicked off, ${Math.round(pB)}% now`}>
         since kickoff {drift < 0 ? <b style={{ color: A_COLOR }}>◀ {Math.round(-drift)}</b> : <b style={{ color: B_COLOR }}>{Math.round(drift)} ▶</b>}</p> : null}
+      {(() => {
+        const half = live ? halftimeOdds({ a, b, history, games, twoWay: Boolean(odds) }) : null;
+        const d = half == null ? 0 : pB - half;
+        return half != null && Math.abs(d) >= 1 ? <p className="needle-drift-text" title={`${b.team} ${Math.round(half)}% at halftime, ${Math.round(pB)}% now`}>
+          since halftime {d < 0 ? <b style={{ color: A_COLOR }}>◀ {Math.round(-d)}</b> : <b style={{ color: B_COLOR }}>{Math.round(d)} ▶</b>}</p> : null;
+      })()}
       <div className="needle-odds">
         <span style={{ color: A_COLOR }}><b>{Math.round(100 - pB)}%{arrow(-moved)}</b>{a.team}</span>
         <span style={{ color: B_COLOR }}><b>{Math.round(pB)}%{arrow(moved)}</b>{b.team}</span>

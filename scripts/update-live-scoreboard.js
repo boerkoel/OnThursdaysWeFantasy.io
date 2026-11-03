@@ -169,6 +169,11 @@ for (const g of nflGames) {
   if (g.state === "in" && Number.isFinite(p)) track.push(p);
   else if (g.completed && track.length && Number.isFinite(p) && track[track.length - 1] !== p) track.push(p);   // the final 1 or 0
   if (track.length) g.wpTrack = track.slice(-600);
+  // When halftime began (the needles' "since halftime", Jim 2026-11-02): the first run that sees it, or the 3rd
+  // quarter if a run missed halftime.
+  const halftimeAt = previousGames.get(g.id)?.halftimeAt;
+  if (halftimeAt) g.halftimeAt = halftimeAt;
+  else if (g.state === "in" && (/half/i.test(g.detail || "") || Number(g.period) >= 3)) g.halftimeAt = new Date().toISOString();
 }
 // How a finished game played out, from its win-probability history (Jim, 2026-11-02: a final's drama
 // index looks back on the whole game): excitement = total win-probability swing (538's excitement index),
