@@ -35,6 +35,7 @@ import { LOCKED, MiniNeedle, Needle, NeedleRace } from "./components/Needle.jsx"
 import { driveRooting } from "./lib/rooting.js";
 import { useDriveAdjusted } from "./lib/liveDrives.js";
 import { useWakeLock } from "./lib/wakeLock.js";
+import { forkFor } from "./lib/injuryForks.js";
 import TvView from "./components/TvView.jsx";
 import { oddsMove, shortPlay } from "./lib/playText.js";
 
@@ -440,6 +441,13 @@ function App() {
   const [primetimeView, setPrimetimeView] = useState(() => { try { return localStorage.getItem("primetimeView") === "1"; } catch { return false; } });
   useEffect(() => { try { localStorage.setItem("primetimeView", primetimeView ? "1" : "0"); } catch {} }, [primetimeView]);
   const [liveOnly, setLiveOnly] = useLiveOnly();
+  // Two futures when a starter is hurt mid-game (injuryForks.js): the forks for a matchup, the median, the ticket.
+  const injuryFeed = Number(livePlayFeed.week) === Number(scoreboard.week) ? livePlayFeed : null;
+  const sdOfTeam = t => Number(t.projectionSd) || 0;
+  const typicalSd = (() => { const v = scores.map(sdOfTeam).sort((x, y) => x - y); return v[Math.floor(v.length / 2)] || 0; })();
+  const winFork = (a, b) => forkFor({ p: Number(b.winProbability), right: [b], left: [a], sd: Math.hypot(sdOfTeam(a), sdOfTeam(b)), livePlays: injuryFeed, games: scoreboard.nflGames || [] });
+  const medianFork = t => forkFor({ p: Number(t.aboveMedianProbability), right: [t], sd: Math.hypot(sdOfTeam(t), 0.4 * typicalSd), livePlays: injuryFeed, games: scoreboard.nflGames || [] });
+  const ticketFork = t => forkFor({ p: Number(t.topScoreProbability), right: [t], sd: Math.hypot(sdOfTeam(t), typicalSd), livePlays: injuryFeed, games: scoreboard.nflGames || [] });
   const renderPrimetime = matchupId => {
     const pair = pairOf(matchupId);
     if (!pair) return null;
@@ -447,7 +455,7 @@ function App() {
     const plays = highlightsFor(matchupId).slice(0, 3);
     const open = [a, b].every(t => Number(t.winProbability) > 0.5 && Number(t.winProbability) < 99.5);
     return <div className="primetime-expand">
-      {open ? <Needle a={a} b={b} games={scoreboard.nflGames || []} history={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} /> : null}
+      {open ? <Needle a={a} b={b} fork={winFork(a, b)} games={scoreboard.nflGames || []} history={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} /> : null}
       {open ? (scoreboard.nflGames || []).map(g => ({ g, r: driveRooting({ game: g, a, b }) })).filter(x => x.r).slice(0, 2).map(({ g, r }) =>
         <div className="rooting" key={g.id}>
           <small>🏈 {r.offense} BALL{r.toGo != null ? ` · ${r.toGo} YDS TO GO` : ""} · ROOT FOR</small>
@@ -549,11 +557,11 @@ function App() {
     const thisWeek = h => Number(h?.week) === Number(scoreboard.week) ? h.points || [] : [];
     const needles = [];
     // The head-to-head is left out where the full needle already shows it (Primetime view, the game-day view).
-    if (!skipWin && opp && open(s.winProbability) && (s.startersLeft > 0 || opp.startersLeft > 0)) needles.push(<MiniNeedle key="win" team={s} stakes={[s, opp]} p={Number(s.winProbability)} from={s.liveWinFrom}
+    if (!skipWin && opp && open(s.winProbability) && (s.startersLeft > 0 || opp.startersLeft > 0)) needles.push(<MiniNeedle key="win" team={s} stakes={[s, opp]} fork={winFork(opp, s)} p={Number(s.winProbability)} from={s.liveWinFrom}
       sides={["lose", "win"]} colors={[RED, GREEN]} caption={`vs ${opp.team}`} history={thisWeek(scoreboard.winHistory)} games={games} />);
-    if (open(s.aboveMedianProbability)) needles.push(<MiniNeedle key="median" team={s} stakes={scores} p={Number(s.aboveMedianProbability)} from={s.liveAboveFrom}
+    if (open(s.aboveMedianProbability)) needles.push(<MiniNeedle key="median" team={s} stakes={scores} fork={medianFork(s)} p={Number(s.aboveMedianProbability)} from={s.liveAboveFrom}
       sides={["below", "above"]} colors={MEDIAN_COLORS} band={[NEAR_MEDIAN_MIN, NEAR_MEDIAN_MAX]} caption="median line" history={thisWeek(scoreboard.medianHistory)} games={games} />);
-    if (Number(s.topScoreProbability) >= 3 && open(s.topScoreProbability)) needles.push(<MiniNeedle key="ticket" team={s} stakes={scores} p={Number(s.topScoreProbability)} from={s.liveTopFrom}
+    if (Number(s.topScoreProbability) >= 3 && open(s.topScoreProbability)) needles.push(<MiniNeedle key="ticket" team={s} stakes={scores} fork={ticketFork(s)} p={Number(s.topScoreProbability)} from={s.liveTopFrom}
       sides={["no ticket", "ticket"]} colors={["#8b8e86", "#e6c85c"]} caption="🎟️ top score" history={thisWeek(scoreboard.raffleHistory)} games={games} />);
     const gid = managerLinks[String(s.teamId)]?.guillotine;
     const g = gid != null && Number(guillotine.week) === Number(scoreboard.week) ? (guillotine.teams || []).find(t => Number(t.teamId) === Number(gid)) : null;
@@ -724,7 +732,7 @@ function App() {
     );
   };
 
-  if (tv) return <TvView scoreboard={scoreboard} guillotine={guillotine} livePlays={livePlayFeed} marquee={live.marquee} logos={teamLogos} onClose={closeTv} />;
+  if (tv) return <TvView forks={{ win: winFork, median: medianFork, ticket: ticketFork }} scoreboard={scoreboard} guillotine={guillotine} livePlays={livePlayFeed} marquee={live.marquee} logos={teamLogos} onClose={closeTv} />;
   return (
     <main className="site">
       {refresher.view}
@@ -764,7 +772,7 @@ function App() {
           {orderedMatchups.filter(id => id !== myMatchupId).map(id => primetimeView ? <React.Fragment key={id}>{renderMatchupRow(id)}{renderPrimetime(id)}</React.Fragment> : renderMatchupRow(id))}
         </div>
       </section>
-      <RafflePodium scores={scores} logos={teamLogos} week={scoreboard.week} final={Boolean(currentWeekComplete)}
+      <RafflePodium ticketFork={ticketFork} scores={scores} logos={teamLogos} week={scoreboard.week} final={Boolean(currentWeekComplete)}
         history={Number(scoreboard.raffleHistory?.week) === Number(scoreboard.week) ? scoreboard.raffleHistory.points : []}
         plays={Number(livePlayFeed.week) === Number(scoreboard.week) ? livePlayFeed.plays || [] : []} nflGames={scoreboard.nflGames || []} />
       <section id="scoreboard" className="section">
@@ -793,7 +801,7 @@ function App() {
           // games are over included: the line still moves with everyone else's), chips for the likely, ✅/❌ for the
           // settled; quaking with the whole league's live action.
           return <>
-            <NeedleRace label="MEDIAN LINE · WHO CLEARS IT" items={scores.map(s => ({ team: s, p: Number(s.aboveMedianProbability), from: s.liveAboveFrom }))}
+            <NeedleRace label="MEDIAN LINE · WHO CLEARS IT" items={scores.map(s => ({ team: s, p: Number(s.aboveMedianProbability), from: s.liveAboveFrom, fork: medianFork(s) }))}
               sides={["below", "above"]} colors={MEDIAN_COLORS} band={[NEAR_MEDIAN_MIN, NEAR_MEDIAN_MAX]} words={{ likely: ["likely below", "likely above"], locked: ["❌ below", "✅ above"] }}
               stakes={scores} history={Number(scoreboard.medianHistory?.week) === Number(scoreboard.week) ? scoreboard.medianHistory.points || [] : []} games={scoreboard.nflGames || []} mine={myTeamId} />
             <button type="button" className="section-toggle" aria-expanded={medianVs} onClick={() => setMedianVs(v => !v)}>{medianVs ? "Hide the median race ▴" : "Who's on the median line ▾"}</button>
