@@ -2,7 +2,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { BENCH_SLOT, IR_SLOT, settledLineupRegret } from "./lib/lineup.js";
 import { altProjectionFn, buildLineupModel, calibrateAlt, chanceToPlayFn, fixAbbr, trackLineups } from "./lib/lineup-model.js";
 import { liveMarket } from "./lib/live-markets.js";
-import { SIMULATIONS, gameScriptInputs, weeklyUsage, medianOf, normalCdf, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
+import { SIMULATIONS, bigPlayCeiling, gameScriptInputs, keepInPlay, weeklyUsage, medianOf, normalCdf, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
 
 const season = process.env.ESPN_SEASON || "2026";
 const leagueId = process.env.ESPN_LEAGUE_ID || "998599827";
@@ -504,6 +504,31 @@ for (const matchup of currentWeekMatchups) {
   }
 }
  
+// One big play could still flip it: a matchup or a median race whose gap a trailing team's big-play ceiling
+// covers stays off 0 and 100 (simulation.js keepInPlay).
+const unfinished = p => { const g = nflGamesByTeam.get(Number(p.proTeamId)); return Boolean(g) && !g.completed; };
+const ceilingOf = s => bigPlayCeiling(lineupByTeam.get(s.teamId)?.starters, unfinished);
+for (const matchup of currentWeekMatchups) {
+  if (matchup.completed) continue;
+  const home = currentScores.find(s => s.teamId === matchup.homeTeamId), away = currentScores.find(s => s.teamId === matchup.awayTeamId);
+  if (!home || !away) continue;
+  const lead = Number(home.score) - Number(away.score);
+  const flippable = lead >= 0 ? ceilingOf(away) >= lead && ceilingOf(away) > 0 : ceilingOf(home) >= -lead;
+  if (flippable) { home.winProbability = keepInPlay(home.winProbability); away.winProbability = round(100 - home.winProbability); }
+}
+{
+  const live = [...currentScores].map(s => Number(s.score)).sort((x, y) => x - y);
+  const liveMedian = live.length ? (live[Math.floor((live.length - 1) / 2)] + live[Math.ceil((live.length - 1) / 2)]) / 2 : null;
+  for (const s of currentScores) {
+    if (liveMedian == null || s.aboveMedianProbability == null) continue;
+    const gap = Number(s.score) - liveMedian;
+    // Below the line with a big play left that clears it, or above it with someone below able to pass.
+    const canRise = gap < 0 && ceilingOf(s) >= -gap;
+    const canFall = gap >= 0 && currentScores.some(o => o !== s && Number(o.score) < Number(s.score) && ceilingOf(o) >= Number(s.score) - Number(o.score));
+    if (canRise || canFall) { s.aboveMedianProbability = keepInPlay(s.aboveMedianProbability); s.belowMedianProbability = round(100 - s.aboveMedianProbability); }
+  }
+}
+
 const previousProjectionHistory = previousScoreboard?.projectionHistory || [];
 const priorThreeSnapshots = previousProjectionHistory
   .filter(snapshot => Number(snapshot.week) === currentWeek)

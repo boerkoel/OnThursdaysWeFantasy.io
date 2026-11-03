@@ -1,6 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { altProjectionFn, buildLineupModel, calibrateAlt, chanceToPlayFn, fixAbbr, trackLineups } from "./lib/lineup-model.js";
-import { SIMULATIONS, gameScriptInputs, weeklyUsage, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
+import { SIMULATIONS, STILL_IN_PLAY, bigPlayCeiling, gameScriptInputs, keepInPlay, weeklyUsage, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
 
 // Death Watch for the companion guillotine league (public on ESPN, so no
 // cookies are needed): each week the lowest-scoring surviving team is
@@ -245,6 +245,18 @@ for (const t of alive) {
   const surelySafe = others.some(o => o.max < me.min);
   const surelyChopped = others.every(o => o.min > me.max);
   t.chopProbability = surelySafe ? 0 : surelyChopped ? 100 : possibleOdds(chopCounts.get(t.teamId));
+}
+// One big play could still swing the chop (simulation.js keepInPlay): the team in danger with a ceiling that clears
+// the team above it, or a team a lower-scoring team's ceiling could drop it below, stays off 0 and 100.
+{
+  const unfinished = p => p.game ? !p.game.completed : true;
+  const ceilingOf = t => bigPlayCeiling((t.lineup || []).map(p => ({ ...p, game: nflGameByProTeam.get(Number(p.proTeamId)) })), unfinished);
+  for (const t of alive) {
+    const lower = alive.filter(o => o !== t && o.score < t.score);
+    const canEscape = alive.some(o => o !== t && o.score > t.score) && alive.filter(o => o !== t).some(o => ceilingOf(t) >= o.score - t.score && o.score > t.score);
+    const canSink = lower.some(o => ceilingOf(o) >= t.score - o.score);
+    if (t.chopProbability >= 100 - STILL_IN_PLAY[0] && canEscape || t.chopProbability <= STILL_IN_PLAY[0] && canSink) t.chopProbability = keepInPlay(t.chopProbability);
+  }
 }
 // The swing player: the one whose beating his projection or not moves the
 // team's chop odds most (with enough simulations on both sides to trust it).

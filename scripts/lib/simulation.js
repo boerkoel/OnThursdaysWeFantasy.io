@@ -284,6 +284,17 @@ export const TD_POINTS = { 1: 4.8, 2: 6.5, 3: 9, 4: 9 };
 const TD_RATE = { 1: 0.12, 2: 0.07, 3: 0.06, 4: 0.07 };   // chance = 1 - e^(-rate x remaining points)
 export const tdChance = (positionId, rest) => TD_RATE[Number(positionId)] ? 1 - Math.exp(-TD_RATE[Number(positionId)] * Math.max(0, rest)) : 0;
 
+// While one big play could still flip a race, its odds stay off the ends (Jim, 2026-11-02: never 100, not even
+// 99.9): a ceiling per starter still to play (a long TD catch ~13, run 12, a QB's long TD pass 6.4, a 50-yard
+// FG 5, a return TD 8), summed; if it covers the gap, the odds are held to 1.5-98.5% (they show as 1% and 99%
+// but never read as settled).
+export const BIG_PLAY = { QB: 6.4, RB: 12, WR: 13, TE: 13, K: 5, "D/ST": 8 };
+export const STILL_IN_PLAY = [1.5, 98.5];
+export function bigPlayCeiling(starters, unfinished) {
+  return (starters || []).filter(unfinished).reduce((sum, p) => sum + (BIG_PLAY[p.pos] || 0), 0);
+}
+export const keepInPlay = p => Math.min(STILL_IN_PLAY[1], Math.max(STILL_IN_PLAY[0], p));
+
 function drawPoints(p, rng) {
   const keep = 1 - p.exitRisk * (1 - EARLY_EXIT_SHARE / 2);
   const rest = keep > 0 ? p.rest / keep : p.rest;
