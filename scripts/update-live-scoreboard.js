@@ -317,7 +317,7 @@ for (const teamId of teams.keys()) {
         owned: Number.isFinite(player.ownership?.percentOwned) ? Math.round(player.ownership.percentOwned) : null,
         eligibleSlots: (player.eligibleSlots || []).map(Number),
         // Targets + carries so far vs projected for the game (RB/WR/TE; usage in the odds and the lineups).
-        ...([2, 3, 4].includes(Number(player.defaultPositionId)) && usageOf(player) ? { usage: usageOf(player) } : {}),
+        ...([1, 2, 3, 4].includes(Number(player.defaultPositionId)) && usageOf(player) ? { usage: usageOf(player) } : {}),
         // No game this week (bye) counts as finished.
         finished: game ? game.completed : nflGames.length > 0
       };

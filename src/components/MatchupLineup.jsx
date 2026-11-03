@@ -71,7 +71,7 @@ function gameLine(proTeamId, nflGames) {
 
 // 🔥 getting fed (targets + carries well ahead of his projected pace), 👻 barely involved: the usage the odds
 // already count (simulation.js usageFactor), shown once it's moved his outlook 20%+ (Jim, 2026-11-02).
-const USAGE_POS = { RB: 2, WR: 3, TE: 4 };
+const USAGE_POS = { QB: 1, RB: 2, WR: 3, TE: 4 };
 function UsageMark({ player, game }) {
   if (!player.usage || !USAGE_POS[player.pos] || game?.state !== "in") return null;
   const f = usageFactor({ positionId: USAGE_POS[player.pos], usage: player.usage, game });

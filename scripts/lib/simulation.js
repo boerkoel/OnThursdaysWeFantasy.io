@@ -173,19 +173,20 @@ export function driveFactor({ positionId, proTeamId, game }) {
 // projection expected by this point in his game. Getting hyper-targeted, more of his rest is coming; not
 // involved at all, less. Shrunk toward his projection by a few touches' worth, so two early targets don't
 // swing it, and his remaining points scale a bit less than one-for-one with it (0.6× to 1.45×).
-// usage: { touches, expected } (targets + carries: so far, and projected for the whole game).
+// usage: { touches, expected } (targets + carries, plus pass attempts for a QB (Jim, 2026-11-02): so far, and
+// projected for the whole game).
 const USAGE_PRIOR = 4;
 // From an ESPN player's stats: targets (58) plus carries (23) this week, so far (source 0) and projected (1).
 export function weeklyUsage(player, week) {
   const touches = src => {
     const stat = (player?.stats || []).find(s => Number(s.scoringPeriodId) === Number(week) && Number(s.statSourceId) === src && Number(s.statSplitTypeId) === 1);
-    return stat?.stats ? (Number(stat.stats["58"]) || 0) + (Number(stat.stats["23"]) || 0) : null;
+    return stat?.stats ? (Number(stat.stats["58"]) || 0) + (Number(stat.stats["23"]) || 0) + (Number(stat.stats["0"]) || 0) : null;
   };
   const expected = touches(1);
   return expected >= 1 ? { touches: touches(0) ?? 0, expected: Math.round(expected * 10) / 10 } : null;
 }
 export function usageFactor({ positionId, usage, game }) {
-  if (![2, 3, 4].includes(Number(positionId)) || game?.state !== "in" || !(usage?.expected >= 1) || !Number.isFinite(usage.touches)) return 1;
+  if (![1, 2, 3, 4].includes(Number(positionId)) || game?.state !== "in" || !(usage?.expected >= 1) || !Number.isFinite(usage.touches)) return 1;
   const secondsLeft = game.period > 4 ? 0 : Math.max(0, (4 - (Number(game.period) || 1)) * 900 + (Number(game.clock) || 0));
   const soFar = usage.expected * (1 - secondsLeft / 3600);
   const ratio = (usage.touches + USAGE_PRIOR) / (soFar + USAGE_PRIOR);
@@ -228,8 +229,19 @@ export function restOf({ projection, actual, game = null }) {
   return share == null ? Math.max(0, Number(projection) - (Number(actual) || 0)) : Math.max(0, Number(projection)) * share;
 }
 
+// Kickers and defenses have no usage to read, so a light pull toward their actual pace instead (Jim, 2026-11-02):
+// points so far against what his projection expected by now, shrunk by a few points' worth and square-rooted, so
+// a quiet half trims his rest a little (Myers with 3 of an expected 4.9 at halftime keeps about 87%), 0.7x-1.3x.
+const PACE_PRIOR = 3;
+export function paceFactor({ positionId, actual, projection, game }) {
+  const share = gameShareLeft(game);
+  if (![5, 16].includes(Number(positionId)) || share == null || !(Number(projection) > 0)) return 1;
+  const due = Number(projection) * (1 - share);
+  return Math.min(1.3, Math.max(0.7, Math.sqrt(((Number(actual) || 0) + PACE_PRIOR) / (due + PACE_PRIOR))));
+}
+
 export function playerOutlook({ actual, projection, positionId, game = null, proTeamId = null, usage = null }) {
-  const unscripted = restOf({ projection, actual, game });
+  const unscripted = restOf({ projection, actual, game }) * paceFactor({ positionId, actual, projection, game });
   const shareLeft = Number.isFinite(projection) && projection > 0 ? Math.min(1, unscripted / projection) : 0.5;
   const rest = unscripted * gameScriptFactor({ positionId, proTeamId, game }) * driveFactor({ positionId, proTeamId, game }) * usageFactor({ positionId, usage, game });
   return {
