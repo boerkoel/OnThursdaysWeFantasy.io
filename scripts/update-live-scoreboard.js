@@ -564,6 +564,17 @@ const lastRaffle = raffleHistory[raffleHistory.length - 1];
 if (!lastRaffle || Object.entries(raffleSnapshot.p).some(([id, p]) => lastRaffle.p?.[id] !== p)) raffleHistory.push(raffleSnapshot);
 if (raffleHistory.length > MAX_WIN_HISTORY) raffleHistory = raffleHistory.filter((_, i) => i % 2 === 0 || i >= raffleHistory.length - 100);
 
+// Median-odds history (each team's odds of finishing above the median), for the median needles' drift since
+// kickoff (Jim, 2026-11-02): same rules. A week that starts without one can take a seed (data/history/
+// median-seed-<season>-week-<n>.json, Week 8's from a pregame screenshot).
+const medianSnapshot = { t: winSnapshot.t, p: Object.fromEntries(currentScores.map(s => [s.teamId, s.aboveMedianProbability])) };
+const medianSeed = await readFile(`data/history/median-seed-${new Date().getFullYear()}-week-${currentWeek}.json`, "utf8").then(JSON.parse).catch(() => null);
+let medianHistory = Number(previousScoreboard?.medianHistory?.week) === currentWeek ? [...(previousScoreboard.medianHistory.points || [])]
+  : Number(medianSeed?.week) === currentWeek ? [...(medianSeed.points || [])] : [];
+const lastMedian = medianHistory[medianHistory.length - 1];
+if (!lastMedian || Object.entries(medianSnapshot.p).some(([id, p]) => lastMedian.p?.[id] !== p)) medianHistory.push(medianSnapshot);
+if (medianHistory.length > MAX_WIN_HISTORY) medianHistory = medianHistory.filter((_, i) => i % 2 === 0 || i >= medianHistory.length - 100);
+
 // Week archive for the League tab's recaps: each week's win-odds history
 // (thinned) and the plays that swung odds 3%+, refreshed every run and left
 // alone once the week rolls over. The plays come from the previous run's
@@ -650,6 +661,7 @@ await writeFile("data/current/scoreboard.json", JSON.stringify({
   nflGames,
   winHistory: { week: currentWeek, points: winHistory },
   raffleHistory: { week: currentWeek, points: raffleHistory },
+  medianHistory: { week: currentWeek, points: medianHistory },
   projectionHistory,
   lineupBaseline,
   scorecard
