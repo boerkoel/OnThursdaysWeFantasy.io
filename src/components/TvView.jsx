@@ -3,6 +3,7 @@ import { money } from "../lib/data.js";
 import { oddsMove, shortPlay } from "../lib/playText.js";
 import { useWakeLock } from "../lib/wakeLock.js";
 import { LOCKED, MiniNeedle, NeedleRace } from "./Needle.jsx";
+import { driveRooting } from "../lib/rooting.js";
 
 // The league on a TV (Jim, 2026-11-02, for watch parties): everything live on one landscape screen, read from
 // across the room, nothing to tap. Six matchup needles, the median, ticket and chop races, who's on the field,
@@ -179,6 +180,14 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
               <MiniNeedle team={b} stakes={[a, b]} fork={settled ? null : forks.win(a, b)} p={Number(b.winProbability)} from={b.liveWinFrom} sides={[a.team, b.team]} colors={[A_COLOR, B_COLOR]} short={narrow || settled}
                 caption={settled ? `✊ ${winner.team}` : narrow ? false : `${a.startersLeft ?? 0} left · ${b.startersLeft ?? 0} left`} journey={settled}
                 history={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} games={games} />
+              {!settled && !narrow ? (() => {   // what each side roots for on a drive in progress (Jim, 2026-11-02), wide screens
+                const r = games.map(g => driveRooting({ game: g, a, b })).find(Boolean);
+                if (!r) return null;
+                return <p className="tv-root"><small>🏈 {r.offense} ball · root for</small>{r.hopes.map(h => {
+                  const pick = h.likely || h.dream;
+                  return <span key={h.team} style={{ color: h.team === a.team ? A_COLOR : B_COLOR }}><b>{h.team}:</b> {h.likely ? "" : "dream: "}{pick.label} <em>{pick.from}→{pick.to}%</em></span>;
+                })}</p>;
+              })() : null}
             </div>; })}
           </div> : <p className="tv-all-done">Every matchup is decided.</p>}
           {strip.length && narrow && !resultsOpen ? <p className="tv-results-line" onClick={() => setResultsOpen(true)}
