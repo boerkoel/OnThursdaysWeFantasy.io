@@ -1205,3 +1205,6 @@ section,details,.odds-block{scroll-margin-top:72px}
 .tv-side .mini-needles-label{margin-top:8px}.tv-side .race-tiers{gap:0 10px}.tv-field{display:none}
 .tv-body{padding-bottom:40px}.tv-ticker{position:fixed;left:0;right:0;bottom:0;margin:0;padding:6px 0;z-index:2}.tv-ticker-track span{font-size:12px!important}}
 @media (max-width:760px),(orientation:portrait) and (max-width:1024px){.tv-side .mini-needle b{font-size:12px;white-space:nowrap}.tv-side .mini-needle{grid-template-columns:50px minmax(0,1fr);column-gap:6px}.tv-side .mini-needle .needle-dial{max-width:50px!important}.tv-tile .mini-needle .needle-dial{max-width:110px!important}}
+/* Watch mode clears the iPhone's status bar and home indicator (the home-screen app draws under them). */
+.tv{padding-top:calc(env(safe-area-inset-top) + 1.4vw);padding-left:max(1.8vw,env(safe-area-inset-left));padding-right:max(1.8vw,env(safe-area-inset-right))}.tv-ticker{padding-bottom:calc(env(safe-area-inset-bottom) + .8vw)}
+@media (max-width:760px),(orientation:portrait) and (max-width:1024px){.tv{padding-top:calc(env(safe-area-inset-top) + 12px)}.tv-ticker{padding-bottom:calc(env(safe-area-inset-bottom) + 6px)}.tv-body{padding-bottom:calc(env(safe-area-inset-bottom) + 40px)}}
