@@ -21,6 +21,46 @@ const TICKER_PLAYS = 12;
 const TICKER_MAX_AGE_MS = 3 * 60 * 60 * 1000;
 const ANNOUNCE_MS = 6000;
 
+// Sound for the big moments (Jim, 2026-11-02): off until tapped on (browsers only play sound after a tap), then a
+// rising chime for a clinch and a softer ping for a team taking a spot. Made with Web Audio, no files; the
+// choice is remembered on this device. iPhones stay quiet with the silent switch on.
+const CHIMES = { clinch: [[659, 0], [784, 0.12], [988, 0.24], [1319, 0.38]], swap: [[784, 0], [988, 0.14]] };
+function useSound() {
+  const ctx = useRef(null);
+  const [on, setOn] = useState(() => { try { return localStorage.getItem("watchSound") === "1"; } catch { return false; } });
+  const toggle = () => {
+    const next = !on;
+    if (next) {
+      try { ctx.current ||= new (window.AudioContext || window.webkitAudioContext)(); ctx.current.resume?.(); } catch {}
+    }
+    setOn(next);
+    try { localStorage.setItem("watchSound", next ? "1" : "0"); } catch {}
+    if (next) setTimeout(() => play("swap"), 50);
+  };
+  const play = kind => {
+    const c = ctx.current;
+    if (!c || c.state === "closed") return;
+    const t0 = c.currentTime + 0.02, loud = kind === "clinch" ? 0.22 : 0.12;
+    for (const [freq, at] of CHIMES[kind] || []) {
+      const osc = c.createOscillator(), gain = c.createGain();
+      osc.type = "sine"; osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, t0 + at);
+      gain.gain.exponentialRampToValueAtTime(loud, t0 + at + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + at + 0.7);
+      osc.connect(gain).connect(c.destination);
+      osc.start(t0 + at); osc.stop(t0 + at + 0.75);
+    }
+  };
+  // A remembered "on" needs a tap to wake the audio after a reload: the first tap anywhere does it.
+  useEffect(() => {
+    if (!on) return;
+    const wake = () => { try { ctx.current ||= new (window.AudioContext || window.webkitAudioContext)(); ctx.current.resume?.(); } catch {} };
+    window.addEventListener("pointerdown", wake, { once: true });
+    return () => window.removeEventListener("pointerdown", wake);
+  }, [on]);
+  return { on, toggle, play: kind => { if (on) play(kind); } };
+}
+
 // Announcements, one at a time: { icon, text, sub }.
 function useAnnouncer() {
   const [queue, setQueue] = useState([]);
@@ -121,7 +161,9 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
   const week = Number(scoreboard.week);
   const pairs = [...new Set(scores.map(s => s.matchupId))].map(id => scores.filter(s => s.matchupId === id)).filter(p => p.length === 2);
   const flashing = useFlashes(pairs);
-  const [announcement, announce] = useAnnouncer();
+  const [announcement, announceQuiet] = useAnnouncer();
+  const sound = useSound();
+  const announce = a => { announceQuiet(a); sound.play(a.icon === "✊" ? "clinch" : "swap"); };
   const clinchedAt = useRef(new Map());
   useClinches(pairs, announce, clinchedAt);
   const swapped = icon => (inTeam, outTeam) => announce({ icon, text: `${inTeam} is in`, sub: `taking ${outTeam}'s spot` });
@@ -164,6 +206,7 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
           <h1>{liveGames.length ? <><span className="needle-live">● LIVE</span> {liveGames.map(gameText).join("   ·   ")}</> : "Game day"}</h1></div>
         <div className="tv-actions">
           {!fullscreen && document.documentElement.requestFullscreen ? <button type="button" onClick={() => document.documentElement.requestFullscreen().catch(() => {})}>⛶ Full screen</button> : null}
+          <button type="button" onClick={sound.toggle} aria-pressed={sound.on} title={sound.on ? "Sound on: a chime for each clinch" : "Turn on a chime for each clinch"}>{sound.on ? "🔊" : "🔇"} Sound</button>
           <button type="button" onClick={onClose} aria-label="Leave watch mode">✕</button>
         </div>
       </header>
