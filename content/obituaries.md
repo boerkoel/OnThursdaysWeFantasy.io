@@ -165,6 +165,6 @@ And Seattle’s rain left him drenched.
 
 Sundays are free now, Pastor. You know where to be.
 
-Rest in pieces, In My Fantasy Era. We are never, ever, ever getting back together.
+Rest in pieces, In My Fantasy Era. This roster is never, ever, ever getting back together: Allen, McBride and Higgins are off to the waiver wire.
 
 Cause of death: Lineup malpractice, aggravated by blind faith in the Seahawks.
