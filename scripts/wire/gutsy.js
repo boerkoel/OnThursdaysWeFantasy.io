@@ -1,10 +1,13 @@
-import { clockNow, currentScores, fit, money, nflGames, pickLine, sleeperData } from "./context.js";
+import { IR_SLOT } from "../lib/lineup.js";
+import { clockNow, currentScores, currentWeek, fit, money, nflGames, pickLine, rosterData, sleeperData } from "./context.js";
 
 // League Wire: GUTSY CALL (Jim, 2026-11-02). A manager starts a backup (an RB or TE who isn't his team's top one
 // on Sleeper's depth chart, or a WR outside its top three) while benching the safer play at his position: best,
 // the man ahead of him on that same depth chart (the handcuff over the starter); else a bench player projected
 // higher. Before kickoff it's the call; once both games are final, whether it paid off or backfired.
-// A benched player who's out or injured isn't a choice, so he doesn't count.
+// A benched player who's out or injured isn't a choice, so he doesn't count; one left in the IR slot after he's
+// healthy again is (activating him was one move away: Jim, 2026-11-02, Price behind Wilson). ESPN's status wins
+// over Sleeper's, which lags on reactivations.
 const players = sleeperData?.players || {};
 const BACKUP_FROM = { RB: 2, TE: 2, WR: 4 };
 const SOON_MS = 30 * 60 * 60 * 1000;
@@ -14,12 +17,20 @@ const gameOf = p => nflGames.find(g => (g.teamIds || []).map(Number).includes(Nu
 const abbrevOf = p => (gameOf(p)?.teams || []).find(t => Number(t.id) === Number(p.proTeamId))?.abbrev || "";
 const last = n => String(n || "").replace(/^[A-Z]\.\s*/, "");
 const depthOf = p => players[String(p.id)];
-const unavailable = p => p.injury && /^(O|OUT|IR|D|DOUBTFUL|SUSP)/i.test(String(p.injury)) || /^(Out|IR|Doubtful|Sus)/i.test(String(depthOf(p)?.injury || ""));
+const unavailable = p => Boolean(p.injury) && /^(O|OUT|IR|D|DOUBTFUL|SUSP)/i.test(String(p.injury));
+const POSITIONS = { 1: "QB", 2: "RB", 3: "WR", 4: "TE", 5: "K", 16: "D/ST" };
+const HEALTHY = new Set(["ACTIVE", "NORMAL", "PROBABLE", "QUESTIONABLE", "DAY_TO_DAY"]);
+const weekStat = (player, source) => Number((player.stats || []).find(x => Number(x.scoringPeriodId) === currentWeek && Number(x.statSourceId) === source && Number(x.statSplitTypeId) === 1)?.appliedTotal);
+// A team's healthy players sitting in the IR slot, shaped like its bench.
+const healthyOnIr = teamId => ((rosterData.teams || []).find(t => Number(t.id) === Number(teamId))?.roster?.entries || [])
+  .filter(e => Number(e.lineupSlotId) === IR_SLOT && e.playerPoolEntry?.player && HEALTHY.has(e.playerPoolEntry.player.injuryStatus || "ACTIVE"))
+  .map(e => { const pl = e.playerPoolEntry.player; return { id: Number(e.playerId), name: (pl.firstName ? pl.firstName[0] + ". " : "") + (pl.lastName || pl.fullName),
+    pos: POSITIONS[Number(pl.defaultPositionId)] || "", proTeamId: Number(pl.proTeamId), projection: weekStat(pl, 1) || 0, actual: weekStat(pl, 0) || 0, onIr: true }; });
 
 export function addGutsyCallStory(add) {
   const found = [];
   for (const s of currentScores) {
-    const bench = (s.lineup?.bench || []).filter(p => !unavailable(p));
+    const bench = [...(s.lineup?.bench || []).filter(p => !unavailable(p)), ...healthyOnIr(s.teamId)];
     for (const p of s.lineup?.starters || []) {
       const d = depthOf(p);
       if (!BACKUP_FROM[p.pos] || !d || d.pos !== p.pos || !(d.depth >= BACKUP_FROM[p.pos])) continue;
@@ -36,7 +47,8 @@ export function addGutsyCallStory(add) {
   const gp = gameOf(p), gb = gameOf(better);
   const rank = `${abbrevOf(p)}'s ${p.pos}${d.depth}`;
   const lead = pickLine("gutsy:" + s.teamId + ":" + p.id, ["🎲 GUTSY CALL", "🎲 Bold move", "🎲 Against the grain"]);
-  const why = teammate ? `over ${last(better.name)}, ${abbrevOf(better)}'s ${better.pos}${depthOf(better).depth}, on the bench` : `over ${last(better.name)} (projected ${money(better.projection)}) on the bench`;
+  const where = better.onIr ? "left on IR though healthy" : "on the bench";
+  const why = teammate ? `over ${last(better.name)}, ${abbrevOf(better)}'s ${better.pos}${depthOf(better).depth}, ${where}` : `over ${last(better.name)} (projected ${money(better.projection)}) ${where}`;
   if (gp?.completed && gb?.completed) {
     const gap = Number(p.actual) - Number(better.actual);
     if (Math.abs(gap) < OUTCOME_GAP) return;
@@ -52,7 +64,7 @@ export function addGutsyCallStory(add) {
   if (gp && gp.state === "pre" && Date.parse(gp.kickoff) - clockNow() <= SOON_MS) {
     add("GUTSY CALL", fit(
       `${lead}: ${s.team} is starting ${p.name} (${rank}) ${why}.`,
-      `${lead}: ${s.team} is starting ${last(p.name)} (${rank}) over ${last(better.name)} on the bench.`,
+      `${lead}: ${s.team} is starting ${last(p.name)} (${rank}) over ${last(better.name)} ${where}.`,
       `${lead}: ${s.team} starts ${last(p.name)} (${rank}) over ${last(better.name)}.`
     ), teammate ? 72 : 66);
   }
