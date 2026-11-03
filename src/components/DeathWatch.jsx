@@ -6,6 +6,7 @@ import { useSwipe } from "../lib/swipe.js";
 import ChopChart, { peakTeams } from "./ChopChart.jsx";
 import Podium from "./Podium.jsx";
 import { RaceChart, normalDist } from "./OutcomeBar.jsx";
+import { chopPeeks } from "../lib/tdPeeks.js";
 import { NeedleRace } from "./Needle.jsx";
 import obituaryData from "../../data/current/obituaries.json";
 import obituariesMarkdown from "../../content/obituaries.md?raw";
@@ -250,7 +251,7 @@ export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
       }))} />
       {/* Every team left in the guillotine (Jim, 2026-11-02): needles for 10–90% chop odds, chips for the likely
           safe and likely chopped, ✅/🪓 for the settled. */}
-      <NeedleRace minShown={2} label="🪓 THE CHOPPING BLOCK · EACH TEAM'S ODDS" items={guillotine.teams.map(t => ({ team: { ...t, lineup: { starters: t.lineup || [] } }, p: Number(t.chopProbability), from: t.liveChopFrom }))}
+      <NeedleRace minShown={2} label="🪓 THE CHOPPING BLOCK · EACH TEAM'S ODDS" items={guillotine.teams.map(t => ({ team: { ...t, lineup: { starters: t.lineup || [] } }, p: Number(t.chopProbability), from: t.liveChopFrom, peeks: chopPeeks(t, guillotine.teams, nflGames) }))}
         good="left" sides={["safe", "chopped"]} colors={["#8fd087", "#d98a86"]} words={{ likely: ["likely safe", "likely chopped"], locked: ["✅ safe", "🪓 chopped"] }} implied="left"
         stakes={guillotine.teams.map(t => ({ lineup: { starters: t.lineup || [] } }))} history={history} games={nflGames} />
       <div className="award-grid dw-details">

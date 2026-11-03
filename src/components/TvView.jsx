@@ -3,6 +3,7 @@ import { money } from "../lib/data.js";
 import { oddsMove, shortPlay } from "../lib/playText.js";
 import { useWakeLock } from "../lib/wakeLock.js";
 import { LOCKED, MiniNeedle, NeedleRace } from "./Needle.jsx";
+import { chopPeeks } from "../lib/tdPeeks.js";
 import { driveRooting } from "../lib/rooting.js";
 
 // The league on a TV (Jim, 2026-11-02, for watch parties): everything live on one landscape screen, read from
@@ -256,7 +257,7 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
           <NeedleRace minShown={2} label="🎟️ TICKET RACE" compact max={2} onSwap={swapped("🎟️")} items={scores.map(s => ({ team: s, p: Number(s.topScoreProbability), from: s.liveTopFrom, fork: forks.ticket(s), peeks: peeks.ticket(s) }))}
             sides={["no ticket", "ticket"]} colors={["#8b8e86", "#e6c85c"]} words={{ likely: ["long shots", "near lock"], locked: ["❌ out", "🎟️ locked"] }} implied="left"
             chipOdds="right" stakes={scores} history={scoreboard.raffleHistory?.week === scoreboard.week ? scoreboard.raffleHistory.points : []} games={games} />
-          {gWeek && guillotine.teams?.length ? <NeedleRace minShown={2} label="🪓 CHOPPING BLOCK" compact max={2} onSwap={swapped("🪓")} items={guillotine.teams.map(t => ({ team: { ...t, lineup: { starters: t.lineup || [] } }, p: Number(t.chopProbability), from: t.liveChopFrom }))}
+          {gWeek && guillotine.teams?.length ? <NeedleRace minShown={2} label="🪓 CHOPPING BLOCK" compact max={2} onSwap={swapped("🪓")} items={guillotine.teams.map(t => ({ team: { ...t, lineup: { starters: t.lineup || [] } }, p: Number(t.chopProbability), from: t.liveChopFrom, peeks: chopPeeks(t, guillotine.teams, games) }))}
             good="left" sides={["safe", "chopped"]} colors={["#8fd087", "#d98a86"]} words={{ likely: ["likely safe", "likely chopped"], locked: ["✅ safe", "🪓 chopped"] }} implied="left"
             stakes={guillotine.teams.map(t => ({ lineup: { starters: t.lineup || [] } }))} games={games} /> : null}
           {field.length ? <div className="tv-field"><small className="mini-needles-label">ON THE FIELD NOW</small>
