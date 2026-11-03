@@ -27,7 +27,7 @@ function playersLeft(team, nflGames) {
   }).filter(Boolean);
 }
 
-export default function RafflePodium({ ticketFork = () => null, scores, logos, week, final, history, plays = [], nflGames = [] }) {
+export default function RafflePodium({ ticketFork = () => null, ticketPeeks = () => [], scores, logos, week, final, history, plays = [], nflGames = [] }) {
   const [openLineups, setOpenLineups] = useState(() => new Set());
   // The podium always shows; the cards and chart start collapsed (the Live
   // tab is long on game days).
@@ -81,7 +81,7 @@ export default function RafflePodium({ ticketFork = () => null, scores, logos, w
       {/* Every team in the ticket race (Jim, 2026-11-02): needles for 10–90% shots at the week's top score (teams
           whose games are over included: the top score still moves with everyone else's), chips for near locks and
           long shots, 🎟️/❌ for the settled; quaking with the whole league's live action. */}
-      {!final ? <NeedleRace minShown={2} label="🎟️ TICKET RACE · EACH TEAM'S SHOT" items={scores.map(s => ({ team: s, p: Number(s.topScoreProbability), from: s.liveTopFrom, fork: ticketFork(s) }))}
+      {!final ? <NeedleRace minShown={2} label="🎟️ TICKET RACE · EACH TEAM'S SHOT" items={scores.map(s => ({ team: s, p: Number(s.topScoreProbability), from: s.liveTopFrom, fork: ticketFork(s), peeks: ticketPeeks(s) }))}
         sides={["no ticket", "ticket"]} colors={["#8b8e86", "#e6c85c"]} words={{ likely: ["long shots", "near lock"], locked: ["❌ out", "🎟️ locked"] }} implied="left"
         chipOdds="right" stakes={scores} history={history} games={nflGames} /> : null}
       <button type="button" className="section-toggle" aria-expanded={showDetails} onClick={() => setShowDetails(v => !v)}>{showDetails ? "Hide race details ▴" : "Race details ▾"}</button>

@@ -124,8 +124,14 @@ const CALM = 0.4, BURST_CHANCE = 0.025, BURST_DECAY = 0.88;
 // fork ({ pOut } from injuryForks.js): two futures; the needle's center jumps between p (he's back) and pOut
 // (he isn't) every few seconds, quaking around whichever it's on.
 const FORK_SWITCH = 0.12;
-function useQuake({ teams, games, history, historyId, p, fork = null }) {
+// peeks (tdPeeks.js): odds if a player scores; each tick a peek starts with chance ∝ his TD chance and holds
+// for about two seconds, so a likely scorer's TD is visited often and a long shot's now and then.
+const PEEK_PER_TICK = 0.12, PEEK_TICKS = 6;
+function useQuake({ teams, games, history, historyId, p, fork = null, peeks = [] }) {
   const forked = useRef(false);
+  const peeking = useRef(null), peekLeft = useRef(0);
+  const peeksRef = useRef(peeks);
+  peeksRef.current = peeks;
   const { live, h } = lookAhead(stakesLeft(teams, games), wildness(history, historyId));
   const [wobble, setWobble] = useState(0);
   const burst = useRef(0), lastP = useRef(Number(p));
@@ -137,6 +143,11 @@ function useQuake({ teams, games, history, historyId, p, fork = null }) {
     const id = setInterval(() => {
       w = RHO * w + Math.sqrt(1 - RHO * RHO) * gauss();
       if (forkRef.current && Math.random() < FORK_SWITCH) forked.current = !forked.current;
+      if (peekLeft.current > 0) peekLeft.current -= 1;
+      else {
+        peeking.current = null;
+        if (live) for (const pk of peeksRef.current) if (Math.random() < PEEK_PER_TICK * pk.chance) { peeking.current = pk; peekLeft.current = PEEK_TICKS; break; }
+      }
       if (live && Math.random() < BURST_CHANCE) burst.current = 1;
       burst.current *= BURST_DECAY;
       setWobble(w * (CALM + (1 - CALM) * burst.current));
@@ -146,9 +157,10 @@ function useQuake({ teams, games, history, historyId, p, fork = null }) {
   const forkRef = useRef(fork);
   forkRef.current = fork;
   if (!fork) forked.current = false;
-  const pp = Math.min(99.9, Math.max(0.1, Number(fork && forked.current ? fork.pOut : p)));
+  const peek = peeking.current && peeks.some(x => x.label === peeking.current.label) ? peeking.current : null;
+  const pp = Math.min(99.9, Math.max(0.1, Number(peek ? peek.p : fork && forked.current ? fork.pOut : p)));
   const shown = h > 0 && wobble && Number.isFinite(pp) ? Math.min(99.5, Math.max(0.5, 100 * normalCdf((normalQuantile(pp / 100) + Math.sqrt(h) * wobble) / Math.sqrt(1 - h)))) : pp;
-  return { live, shown };
+  return { live, shown: peek ? pp : shown, peek };
 }
 
 // One team's own needle (Jim, 2026-11-02: everyone within reach of the median line, every team in danger of the
@@ -161,8 +173,8 @@ function useQuake({ teams, games, history, historyId, p, fork = null }) {
 // short: just the percentage (the Watch-mode tiles on a phone, whose header already names the teams);
 // caption false: no line under it.
 // journey: show the drift since kickoff even once its games are over (a decided matchup's tile).
-export function MiniNeedle({ team, p, from = null, sides, colors, band = null, history = [], games = [], mine = false, caption = null, stakes = null, short = false, journey = false, fork = null }) {
-  const { live, shown } = useQuake({ teams: stakes || [team], games, history, historyId: team.teamId, p, fork });
+export function MiniNeedle({ team, p, from = null, sides, colors, band = null, history = [], games = [], mine = false, caption = null, stakes = null, short = false, journey = false, fork = null, peeks = [] }) {
+  const { live, shown, peek } = useQuake({ teams: stakes || [team], games, history, historyId: team.teamId, p, fork, peeks });
   const markerId = useId();
   if (!Number.isFinite(Number(p))) return null;
   const range = live || journey ? sinceKickoff({ teams: stakes || [team], games, history, id: team.teamId, now: Number(p), finished: journey }) : null;
@@ -191,13 +203,14 @@ export function MiniNeedle({ team, p, from = null, sides, colors, band = null, h
         {Math.abs(moved) >= 0.5 ? <small className={moved > 0 ? "up" : "down"}>{moved > 0 ? "▲" : "▼"}{Math.abs(Math.round(moved))}</small> : null}
         {live ? <span className="needle-live">●</span> : null}</b>
       {caption === false ? null : <span className="mini-needle-name">{caption || team.team}</span>}
+      {peek ? <span className="mini-needle-peek">{peek.label}: {Math.round(right ? peek.p : 100 - peek.p)}%</span> : null}
       {fork ? <span className="mini-needle-fork" title={`Flailing between two futures: ${Math.round(p)}% if he's back, ${Math.round(fork.pOut)}% if not`}>
         {fork.label} · {Math.round(right ? p : 100 - p)}↔{Math.round(right ? fork.pOut : 100 - fork.pOut)}%</span> : null}
     </div>
   );
 }
 
-export function Needle({ a, b, history = [], odds = null, label = null, games = [], fork = null }) {
+export function Needle({ a, b, history = [], odds = null, label = null, games = [], fork = null, peeks = [] }) {
   const oddsB = odds ? odds.b : Number(b.winProbability), fromB = odds ? odds.bFrom : Number(b.liveWinFrom);
   const pB = Math.min(99.9, Math.max(0.1, Number(oddsB)));
   const da = a.projection?.dist, db = b.projection?.dist;
@@ -211,7 +224,7 @@ export function Needle({ a, b, history = [], odds = null, label = null, games = 
   // sweeps a coin flip about 25–75%; one RB, about 40–60%.
   // Between games it's a muted quake (h 2%, slower: a coin flip drifts 46–54%), none once nothing is left.
   // The needle walks Z as an AR(1) process that stays standard normal, so over time it shows that spread.
-  const { live, shown } = useQuake({ teams: [a, b], games, history, historyId: a.teamId, p: pB, fork });
+  const { live, shown, peek } = useQuake({ teams: [a, b], games, history, historyId: a.teamId, p: pB, fork, peeks });
   const arcId = useId();
   if (!Number.isFinite(pB)) return null;
   // The steady odds, and how far plays have moved them since the last full update.
@@ -248,6 +261,7 @@ export function Needle({ a, b, history = [], odds = null, label = null, games = 
         <span style={{ color: A_COLOR }}><b>{Math.round(100 - pB)}%{arrow(-moved)}</b>{a.team}</span>
         <span style={{ color: B_COLOR }}><b>{Math.round(pB)}%{arrow(moved)}</b>{b.team}</span>
       </div>
+      {peek ? <p className="needle-peek">{peek.label}: <b style={{ color: B_COLOR }}>{b.team} {Math.round(peek.p)}%</b></p> : null}
       {fork ? <p className="needle-fork">{fork.label} · <b style={{ color: B_COLOR }}>{b.team} {Math.round(pB)}%</b> if he's back · <b style={{ color: B_COLOR }}>{Math.round(fork.pOut)}%</b> if not</p> : null}
       {field && (field[0].length || field[1].length) ? <div className="needle-field">
         {field.map((list, i) => <span key={i}>{list.map(p => <em key={p.name} className={p.trend} title={p.title}>{p.name} {p.trend === "up" ? "↑" : p.trend === "down" ? "↓" : "→"}</em>)}</span>)}
@@ -322,7 +336,7 @@ export function NeedleRace({ label, items, sides, colors, band = null, words, ch
   if (!live.length) return null;
   return <>
     {label ? <small className="mini-needles-label">{label}</small> : null}
-    {needles.length ? <div className="mini-needles">{needles.map(i => <MiniNeedle key={i.team.teamId} team={i.team} p={Number(i.p)} from={i.from} fork={i.fork || null}
+    {needles.length ? <div className="mini-needles">{needles.map(i => <MiniNeedle key={i.team.teamId} team={i.team} p={Number(i.p)} from={i.from} fork={i.fork || null} peeks={i.peeks || []}
       sides={sides} colors={colors} band={band} stakes={stakes} history={history} games={games} mine={isMine(i)} />)}</div> : null}
     <div className={"race-chips" + (compact ? " compact" : "") + (chipsOpen ? " open" : "")} onClick={compact ? () => setChipsOpen(o => !o) : undefined}>
     {tier("also in it", alsoIn.map(i => withOdds(i, chipOdds === "right" || i.p >= 50)))}
