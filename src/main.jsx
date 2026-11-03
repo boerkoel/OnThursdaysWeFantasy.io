@@ -562,14 +562,17 @@ function App() {
     const result = (p, yes, no, live) => Number(p) >= LOCKED ? yes : Number(p) <= 100 - LOCKED ? no : live;
     const thisWeek = h => Number(h?.week) === Number(scoreboard.week) ? h.points || [] : [];
     const needles = [];
-    // The head-to-head is left out where the full needle already shows it (Primetime view, the game-day view).
-    if (!skipWin && opp) needles.push(<MiniNeedle key="win" team={s} stakes={[s, opp]} fork={open(s.winProbability) ? winFork(opp, s) : null} peeks={open(s.winProbability) ? winPeeks(opp, s) : []}
+    // The head-to-head is left out only where the full needle shows it (Primetime and the game-day view draw it
+    // while the matchup is open; a decided one keeps its mini needle here).
+    if (opp && !(skipWin && open(s.winProbability))) needles.push(<MiniNeedle key="win" team={s} stakes={[s, opp]} fork={open(s.winProbability) ? winFork(opp, s) : null} peeks={open(s.winProbability) ? winPeeks(opp, s) : []}
       p={Number(s.winProbability)} from={s.liveWinFrom} journey={!open(s.winProbability)} sides={["lose", "win"]} colors={[RED, GREEN]}
       caption={result(s.winProbability, `✅ Beat ${opp.team}`, `❌ Lost to ${opp.team}`, `vs ${opp.team}`)} history={thisWeek(scoreboard.winHistory)} games={games} />);
     if (s.aboveMedianProbability != null) needles.push(<MiniNeedle key="median" team={s} stakes={scores} fork={open(s.aboveMedianProbability) ? medianFork(s) : null} peeks={open(s.aboveMedianProbability) ? medianPeeks(s) : []}
       p={Number(s.aboveMedianProbability)} from={s.liveAboveFrom} journey={!open(s.aboveMedianProbability)} sides={["below", "above"]} colors={MEDIAN_COLORS} band={[NEAR_MEDIAN_MIN, NEAR_MEDIAN_MAX]}
       caption={result(s.aboveMedianProbability, "✅ Above the median", "❌ Below the median", "median line")} history={thisWeek(scoreboard.medianHistory)} games={games} />);
-    if (Number(s.topScoreProbability) >= 3) needles.push(<MiniNeedle key="ticket" team={s} stakes={scores} fork={open(s.topScoreProbability) ? ticketFork(s) : null} peeks={open(s.topScoreProbability) ? ticketPeeks(s) : []}
+    // The ticket while it's a real shot, or was one at any point this week (its ride stays).
+    const ticketPeak = Math.max(Number(s.topScoreProbability) || 0, ...thisWeek(scoreboard.raffleHistory).map(x => Number(x.p?.[s.teamId]) || 0));
+    if (ticketPeak >= 3) needles.push(<MiniNeedle key="ticket" team={s} stakes={scores} fork={open(s.topScoreProbability) ? ticketFork(s) : null} peeks={open(s.topScoreProbability) ? ticketPeeks(s) : []}
       p={Number(s.topScoreProbability)} from={s.liveTopFrom} journey={!open(s.topScoreProbability)} sides={["no ticket", "ticket"]} colors={["#8b8e86", "#e6c85c"]}
       caption={result(s.topScoreProbability, "🎟️ Ticket locked", "🎟️ top score", "🎟️ top score")} history={thisWeek(scoreboard.raffleHistory)} games={games} />);
     const gid = managerLinks[String(s.teamId)]?.guillotine;
