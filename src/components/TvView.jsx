@@ -73,7 +73,8 @@ function useFlashes(pairs) {
   return flashing;
 }
 
-// A phone or an upright screen (the stacked layout), where the median shows its two with the most at stake.
+// A phone or an upright screen (the stacked layout), where the median shows its two with the most at stake
+// while 5-6 matchups are open, four once the grid has shrunk (Jim, 2026-11-02).
 const NARROW = "(max-width: 760px), (orientation: portrait) and (max-width: 1024px)";
 function useNarrow() {
   const [narrow, setNarrow] = useState(() => { try { return window.matchMedia(NARROW).matches; } catch { return false; } });
@@ -176,7 +177,7 @@ export default function TvView({ scoreboard, guillotine, livePlays, marquee, log
           })}</div> : null}
         </section>
         <aside className="tv-side">
-          <NeedleRace label="MEDIAN LINE" compact max={narrow ? 2 : 4} pick="stake" onSwap={swapped("📏")} items={scores.map(s => ({ team: s, p: Number(s.aboveMedianProbability), from: s.liveAboveFrom }))}
+          <NeedleRace label="MEDIAN LINE" compact max={narrow && open.length > 4 ? 2 : 4} pick="stake" onSwap={swapped("📏")} items={scores.map(s => ({ team: s, p: Number(s.aboveMedianProbability), from: s.liveAboveFrom }))}
             sides={["below", "above"]} colors={MEDIAN_COLORS} band={[30, 70]} words={{ likely: ["likely below", "likely above"], locked: ["❌ below", "✅ above"] }}
             stakes={scores} games={games} />
           <NeedleRace label="🎟️ TICKET RACE" compact max={2} onSwap={swapped("🎟️")} items={scores.map(s => ({ team: s, p: Number(s.topScoreProbability), from: s.liveTopFrom }))}
