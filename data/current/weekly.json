@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "currentWeek": 8,
+  "currentWeek": 9,
   "weeks": [
     {
       "week": 1,
@@ -1037,6 +1037,166 @@
         "winnerScore": 157.64,
         "loserScore": 113.28,
         "margin": 44.36
+      }
+    },
+    {
+      "week": 8,
+      "recap": [
+        {
+          "type": "HIGH SCORE",
+          "text": "🔥 Kyle Tucker dropped 169.28 points — the week's highest score."
+        },
+        {
+          "type": "CLOSEST MATCHUP",
+          "text": "⚔️ Ruffing the Passer edged The Mahomies by just 6.38 points."
+        },
+        {
+          "type": "INSTANT REGRET",
+          "text": "🤦 Gibb it to Me Baby would have won and finished above the median by starting Tyler Allgeier (37.10) over Quinshon Judkins (6.90)."
+        },
+        {
+          "type": "BIGGEST REGRET",
+          "text": "🪑 Gibb it to Me Baby left 37.10 points on the bench with Tyler Allgeier."
+        },
+        {
+          "type": "TOUGH LUCK",
+          "text": "😬 Ramosverse scored 123.98 and still took the L."
+        },
+        {
+          "type": "BLOWOUT",
+          "text": "💥 Kyle Tucker beat Mr. Action Jackson 169.28-90.70 (78.58 points)."
+        }
+      ],
+      "regrets": [
+        {
+          "teamId": 10,
+          "team": "Gibb it to Me Baby",
+          "matchupId": 43,
+          "benchPlayer": "Tyler Allgeier",
+          "benchPoints": 37.1,
+          "starter": "Quinshon Judkins",
+          "starterPoints": 6.9,
+          "gain": 30.2,
+          "flips": [
+            "win",
+            "median"
+          ]
+        },
+        {
+          "teamId": 9,
+          "team": "The Mahomies",
+          "matchupId": 45,
+          "benchPlayer": "Ryan Flournoy",
+          "benchPoints": 13.1,
+          "starter": "Jeremiyah Love",
+          "starterPoints": 2.3,
+          "gain": 10.8,
+          "flips": [
+            "win",
+            "median"
+          ]
+        },
+        {
+          "teamId": 2,
+          "team": "TDsMaGee",
+          "matchupId": 46,
+          "benchPlayer": "Wan'Dale Robinson",
+          "benchPoints": 15.7,
+          "starter": "Emanuel Wilson",
+          "starterPoints": 0,
+          "gain": 15.7,
+          "flips": [
+            "win",
+            "median"
+          ]
+        }
+      ],
+      "matchups": [
+        {
+          "id": 43,
+          "week": 8,
+          "homeTeamId": 12,
+          "awayTeamId": 10,
+          "homeScore": 114.88,
+          "awayScore": 104.34,
+          "margin": 10.539999999999992,
+          "winner": "HOME",
+          "completed": true
+        },
+        {
+          "id": 44,
+          "week": 8,
+          "homeTeamId": 5,
+          "awayTeamId": 1,
+          "homeScore": 147.1,
+          "awayScore": 123.98,
+          "margin": 23.11999999999999,
+          "winner": "HOME",
+          "completed": true
+        },
+        {
+          "id": 45,
+          "week": 8,
+          "homeTeamId": 9,
+          "awayTeamId": 7,
+          "homeScore": 122.54,
+          "awayScore": 128.92,
+          "margin": 6.379999999999981,
+          "winner": "AWAY",
+          "completed": true
+        },
+        {
+          "id": 46,
+          "week": 8,
+          "homeTeamId": 2,
+          "awayTeamId": 4,
+          "homeScore": 123.28,
+          "awayScore": 130,
+          "margin": 6.719999999999999,
+          "winner": "AWAY",
+          "completed": true
+        },
+        {
+          "id": 47,
+          "week": 8,
+          "homeTeamId": 8,
+          "awayTeamId": 3,
+          "homeScore": 90.7,
+          "awayScore": 169.28,
+          "margin": 78.58,
+          "winner": "AWAY",
+          "completed": true
+        },
+        {
+          "id": 48,
+          "week": 8,
+          "homeTeamId": 11,
+          "awayTeamId": 6,
+          "homeScore": 156.06,
+          "awayScore": 85.16,
+          "margin": 70.9,
+          "winner": "HOME",
+          "completed": true
+        }
+      ],
+      "highestScore": {
+        "week": 8,
+        "teamId": 3,
+        "team": "Kyle Tucker",
+        "opponentId": 8,
+        "opponent": "Mr. Action Jackson",
+        "score": 169.28,
+        "result": "W"
+      },
+      "largestBlowout": {
+        "week": 8,
+        "winnerTeamId": 3,
+        "winner": "Kyle Tucker",
+        "loserTeamId": 8,
+        "loser": "Mr. Action Jackson",
+        "winnerScore": 169.28,
+        "loserScore": 90.7,
+        "margin": 78.58
       }
     }
   ]
