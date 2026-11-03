@@ -1194,3 +1194,12 @@ section,details,.odds-block{scroll-margin-top:72px}
 /* Watch mode on a phone or upright screen, restated last so the screen-scaled sizes above don't shrink it. */
 @media (max-width:760px),(orientation:portrait) and (max-width:1024px){.tv-side .mini-needles{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.tv-side .mini-needle{padding:8px 8px 6px}.tv-side .mini-needle .needle-dial{max-width:130px}.tv-side .mini-needle b{font-size:13px}.tv-side .mini-needle-name{font-size:10px}.tv-side .race-tier{font-size:11px}.tv-side .mini-needles-label{font-size:10px;margin-top:10px}.tv-field p{font-size:11px}.tv-ticker-track span{font-size:13px}}
 @media (max-width:760px){.race-tier.implied{display:none}}
+.race-chips.compact .race-tier{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}.race-chips.compact.open .race-tier{white-space:normal}.tv-left-count{margin-left:auto;margin-right:.5em;font-size:.72em;color:#8b8e86;font-weight:700;flex:none}.tv-results-line{margin:4px 0 0;font-size:12px;font-weight:700;color:#e6c85c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+/* Watch mode on a phone: the snapshot (keep last so the screen-scaled rules above don't win). */
+@media (max-width:760px),(orientation:portrait) and (max-width:1024px){
+.tv{padding-bottom:0}.tv-head h1{font-size:16px}.tv-head .section-kicker{font-size:9px}
+.tv-tile{padding:8px 8px 4px}.tv-score{font-size:12px}.tv-tile .mini-needle .needle-dial{max-width:96px!important}.tv-tile .mini-needle b{font-size:15px!important;margin-top:0}
+.tv-side .mini-needle{display:grid;grid-template-columns:58px minmax(0,1fr);column-gap:8px;align-items:center;text-align:left;padding:6px 8px}.tv-side .mini-needle .needle-dial{grid-row:span 2;max-width:58px!important;margin:0}.tv-side .mini-needle b{margin:0;font-size:13px}.tv-side .mini-needle-name{font-size:10px}
+.tv-side .mini-needles-label{margin-top:8px}.tv-side .race-tiers{gap:0 10px}.tv-field{display:none}
+.tv-body{padding-bottom:40px}.tv-ticker{position:fixed;left:0;right:0;bottom:0;margin:0;padding:6px 0;z-index:2}.tv-ticker-track span{font-size:12px!important}}
+@media (max-width:760px),(orientation:portrait) and (max-width:1024px){.tv-side .mini-needle b{font-size:12px;white-space:nowrap}.tv-side .mini-needle{grid-template-columns:50px minmax(0,1fr);column-gap:6px}.tv-side .mini-needle .needle-dial{max-width:50px!important}.tv-tile .mini-needle .needle-dial{max-width:110px!important}}

@@ -99,10 +99,14 @@ function useIdleCursor() {
   return idle;
 }
 
+// On a phone (Jim, 2026-11-02: one always-on snapshot, the detail is in Primetime view): shorter tiles (the
+// odds alone under the dial, players left beside the scores), races as compact rows, chip columns on one line
+// each, results on one line, a smaller ticker that covers nothing, and no "on the field" list.
 export default function TvView({ scoreboard, guillotine, livePlays, marquee, logos = {}, onClose }) {
   useWakeLock(true);
   const idle = useIdleCursor();
   const narrow = useNarrow();
+  const [resultsOpen, setResultsOpen] = useState(false);
   const [fullscreen, setFullscreen] = useState(() => Boolean(document.fullscreenElement));
   useEffect(() => {
     const on = () => setFullscreen(Boolean(document.fullscreenElement));
@@ -156,25 +160,29 @@ export default function TvView({ scoreboard, guillotine, livePlays, marquee, log
             {open.map(([a, b]) => <div key={a.matchupId} className={"tv-tile" + (flashing.has(a.matchupId) ? " flash" : "")}>
               <div className="tv-score">
                 {[[a, A_COLOR], [b, B_COLOR]].map(([t, c]) => <p key={t.teamId} style={{ color: c }}>
-                  <span>{logos[t.teamId] ? <img src={logos[t.teamId]} alt="" /> : null}{t.team}</span><b>{money(t.score)}</b></p>)}
+                  <span>{logos[t.teamId] ? <img src={logos[t.teamId]} alt="" /> : null}{t.team}</span>
+                  {narrow ? <small className="tv-left-count">{t.startersLeft ?? 0} left</small> : null}<b>{money(t.score)}</b></p>)}
               </div>
-              <MiniNeedle team={b} stakes={[a, b]} p={Number(b.winProbability)} from={b.liveWinFrom} sides={[a.team, b.team]} colors={[A_COLOR, B_COLOR]}
-                caption={`${a.startersLeft ?? 0} left · ${b.startersLeft ?? 0} left`} history={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} games={games} />
+              <MiniNeedle team={b} stakes={[a, b]} p={Number(b.winProbability)} from={b.liveWinFrom} sides={[a.team, b.team]} colors={[A_COLOR, B_COLOR]} short={narrow}
+                caption={narrow ? false : `${a.startersLeft ?? 0} left · ${b.startersLeft ?? 0} left`} history={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} games={games} />
             </div>)}
           </div> : <p className="tv-all-done">Every matchup is decided.</p>}
-          {done.length ? <div className="tv-results">{done.map(([a, b]) => {
+          {done.length && narrow && !resultsOpen ? <p className="tv-results-line" onClick={() => setResultsOpen(true)}
+            title={done.map(([a, b]) => `${a.team} ${money(a.score)}–${money(b.score)} ${b.team}`).join("\n")}>
+            {done.map(([a, b]) => "✊ " + (Number(a.winProbability) >= Number(b.winProbability) ? a : b).team).join(" · ")}</p>
+          : done.length ? <div className="tv-results" onClick={narrow ? () => setResultsOpen(false) : undefined}>{done.map(([a, b]) => {
             const [w, l] = Number(a.winProbability) >= Number(b.winProbability) ? [a, b] : [b, a];
             return <span key={a.matchupId}>✊ <b>{w.team}</b> {money(w.score)}–{money(l.score)} {l.team}</span>;
           })}</div> : null}
         </section>
         <aside className="tv-side">
-          <NeedleRace label="MEDIAN LINE" max={narrow ? 2 : 4} pick="stake" onSwap={swapped("📏")} items={scores.map(s => ({ team: s, p: Number(s.aboveMedianProbability), from: s.liveAboveFrom }))}
+          <NeedleRace label="MEDIAN LINE" compact={narrow} max={narrow ? 2 : 4} pick="stake" onSwap={swapped("📏")} items={scores.map(s => ({ team: s, p: Number(s.aboveMedianProbability), from: s.liveAboveFrom }))}
             sides={["below", "above"]} colors={MEDIAN_COLORS} band={[30, 70]} words={{ likely: ["likely below", "likely above"], locked: ["❌ below", "✅ above"] }}
             stakes={scores} games={games} />
-          <NeedleRace label="🎟️ TICKET RACE" max={2} onSwap={swapped("🎟️")} items={scores.map(s => ({ team: s, p: Number(s.topScoreProbability), from: s.liveTopFrom }))}
+          <NeedleRace label="🎟️ TICKET RACE" compact={narrow} max={2} onSwap={swapped("🎟️")} items={scores.map(s => ({ team: s, p: Number(s.topScoreProbability), from: s.liveTopFrom }))}
             sides={["no ticket", "ticket"]} colors={["#8b8e86", "#e6c85c"]} words={{ likely: ["long shots", "near lock"], locked: ["❌ out", "🎟️ locked"] }} implied="left"
             chipOdds="right" stakes={scores} history={scoreboard.raffleHistory?.week === scoreboard.week ? scoreboard.raffleHistory.points : []} games={games} />
-          {gWeek && guillotine.teams?.length ? <NeedleRace label="🪓 CHOPPING BLOCK" max={2} onSwap={swapped("🪓")} items={guillotine.teams.map(t => ({ team: { ...t, lineup: { starters: t.lineup || [] } }, p: Number(t.chopProbability), from: t.liveChopFrom }))}
+          {gWeek && guillotine.teams?.length ? <NeedleRace label="🪓 CHOPPING BLOCK" compact={narrow} max={2} onSwap={swapped("🪓")} items={guillotine.teams.map(t => ({ team: { ...t, lineup: { starters: t.lineup || [] } }, p: Number(t.chopProbability), from: t.liveChopFrom }))}
             good="left" sides={["safe", "chopped"]} colors={["#8fd087", "#d98a86"]} words={{ likely: ["likely safe", "likely chopped"], locked: ["✅ safe", "🪓 chopped"] }} implied="left"
             stakes={guillotine.teams.map(t => ({ lineup: { starters: t.lineup || [] } }))} games={games} /> : null}
           {field.length ? <div className="tv-field"><small className="mini-needles-label">ON THE FIELD NOW</small>

@@ -102,7 +102,9 @@ function useQuake({ teams, games, history, historyId, p }) {
 // middle zone of its own (the median's yellow "near the line", 30-70%, as on the scoreboard). caption: the line under it (the team's name by
 // default); stakes: the teams whose players can move it (the team itself, both sides of a matchup, or the whole
 // league for the median line, which moves with every team).
-export function MiniNeedle({ team, p, from = null, sides, colors, band = null, history = [], games = [], mine = false, caption = null, stakes = null }) {
+// short: just the percentage (the Watch-mode tiles on a phone, whose header already names the teams);
+// caption false: no line under it.
+export function MiniNeedle({ team, p, from = null, sides, colors, band = null, history = [], games = [], mine = false, caption = null, stakes = null, short = false }) {
   const { live, shown } = useQuake({ teams: stakes || [team], games, history, historyId: team.teamId, p });
   if (!Number.isFinite(Number(p))) return null;
   const right = Number(p) >= 50;
@@ -125,10 +127,10 @@ export function MiniNeedle({ team, p, from = null, sides, colors, band = null, h
         </g>
         <circle cx={CX} cy={CY} r={7} className="needle-hub" />
       </svg>
-      <b style={{ color: oddsColor }}>{Math.round(right ? p : 100 - p)}% {right ? sides[1] : sides[0]}
+      <b style={{ color: oddsColor }}>{Math.round(right ? p : 100 - p)}%{short ? "" : " " + (right ? sides[1] : sides[0])}
         {Math.abs(moved) >= 0.5 ? <small className={moved > 0 ? "up" : "down"}>{moved > 0 ? "▲" : "▼"}{Math.abs(Math.round(moved))}</small> : null}
         {live ? <span className="needle-live">●</span> : null}</b>
-      <span className="mini-needle-name">{caption || team.team}</span>
+      {caption === false ? null : <span className="mini-needle-name">{caption || team.team}</span>}
     </div>
   );
 }
@@ -238,7 +240,9 @@ function useStickySet(items, max, score, onSwap) {
 // Under the needles, two columns (Jim, 2026-11-02): the good outcomes on the left (✅ and likely), the bad on the
 // right (❌ and likely the other way); good: which side is the good one ("right": above, the ticket; "left": safe).
 export function NeedleRace({ label, items, sides, colors, band = null, words, chipOdds = "side", history = [], games = [], stakes = null, mine = null,
-  max = null, pick = "odds", onSwap = null, good = "right", implied = null }) {
+  max = null, pick = "odds", onSwap = null, good = "right", implied = null, compact = false }) {
+  // compact (Watch mode on a phone): each chip column runs on one line, ending in … ; a tap shows them in full.
+  const [chipsOpen, setChipsOpen] = useState(false);
   const base = i => Number.isFinite(Number(i.from)) ? Number(i.from) : Number(i.p);
   const isMine = i => mine != null && Number(i.team.teamId) === Number(mine);
   const live = items.filter(i => Number.isFinite(Number(i.p)));
@@ -260,6 +264,7 @@ export function NeedleRace({ label, items, sides, colors, band = null, words, ch
     {label ? <small className="mini-needles-label">{label}</small> : null}
     {needles.length ? <div className="mini-needles">{needles.map(i => <MiniNeedle key={i.team.teamId} team={i.team} p={Number(i.p)} from={i.from}
       sides={sides} colors={colors} band={band} stakes={stakes} history={history} games={games} mine={isMine(i)} />)}</div> : null}
+    <div className={"race-chips" + (compact ? " compact" : "") + (chipsOpen ? " open" : "")} onClick={compact ? () => setChipsOpen(o => !o) : undefined}>
     {tier("also in it", alsoIn.map(i => withOdds(i, chipOdds === "right" || i.p >= 50)))}
     {(() => {
       const right = [tier(words.locked[1], lockedR.map(name), implied === "right"), tier(words.likely[1], likelyR.map(i => withOdds(i, true)))];
@@ -267,5 +272,6 @@ export function NeedleRace({ label, items, sides, colors, band = null, words, ch
       const [goodCol, badCol] = good === "right" ? [right, left] : [left, right];
       return goodCol.some(Boolean) || badCol.some(Boolean) ? <div className="race-tiers"><div>{goodCol}</div><div>{badCol}</div></div> : null;
     })()}
+    </div>
   </>;
 }
