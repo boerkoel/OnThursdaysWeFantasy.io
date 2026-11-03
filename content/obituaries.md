@@ -13,6 +13,13 @@ How to add one:
 - Anything inside `<!-- -->` comments is ignored, so notes and the facts
   below won't show up on the site.
 - A team with no section, or an empty one, shows "Obituary pending."
+- Double-check every number against ESPN's final box score before posting
+  (scores, margins, player points, bench totals). Monday night and stat
+  corrections can move them.
+- To keep line breaks (limericks, one-line beats), end each line with two
+  spaces; otherwise the lines run together into one paragraph.
+- The site shows a team's obituary as soon as its chop is certain, so an
+  obituary added before Monday night ends goes up the moment it's locked.
 
 ## Mama Said Knock You Out
 
@@ -29,7 +36,7 @@ He founded the league, built the guillotine, and promptly stuck his own head in 
 
 Here lies Plan B, the fantasy football experiment that proved Kevin Simpson should have stuck with Plan A: literally anything else.
 
-Kevin’s squad finally met its maker, falling to a pedestrian 119.7 points after Colston Loveland apparently decided that scoring more than a single point per game was a reasonable career goal. One touchdown, one funeral. Somewhere, Kevin is screaming into the void, wondering if he should’ve gone with Plan Casket.
+Kevin’s squad finally met its maker, falling to a pedestrian 116.43 points after Colston Loveland apparently decided that scoring more than a single point per game was a reasonable career goal. One touchdown, one funeral. Somewhere, Kevin is screaming into the void, wondering if he should’ve gone with Plan Casket.
 
 Joe Burrowed himself six feet under, Bucky Irving ran out of luck, and De’Von Achane couldn’t outrun the Grim Reaper. Chris Olave’d his last goodbye, while Ladd McConkey couldn’t connect to a lifeline. Breece Hall stumbled into the afterlife, and poor Tee Higgins couldn’t catch a break. Meanwhile, Malik Nabers discovered that nobody visits you in the fantasy graveyard.
 
@@ -61,8 +68,8 @@ That’s right: Stacey’s season was ended by a team so devoid of identity it d
 
 Let that sink in.
 
-A nameless team.
-A zombie starter.
+A nameless team.  
+A zombie starter.  
 And somehow… Stacey is the one being buried.
 
 May she rest in peace—and may her roster rest in waivers.
@@ -73,7 +80,7 @@ Today, we mourn Team Name. Billy, manager of the Moose Knucklers, has finished w
 
 James fought valiantly, but David Montgomery delivered just 1.1 points—a performance worthy of Monty Python, not a starting running back. And like Monty Hall on Let’s Make a Deal, James picked the wrong door. Behind it? Dad, waiting to send him packing.
 
-Amon-radiant effort fell short. Just-in time for the funeral, Herbert couldn’t deliver the goods. The Cowboys D/ST was wanted for defensive negligence, and even 29.9 from Isaiah Likely was unlikely to save the day. At least Derrick Henry went to work—but even the King couldn’t keep James from losing his crown.
+Amon-radiant effort fell short. Justin time for the funeral, Herbert couldn’t deliver the goods. The Cowboys D/ST was wanted for defensive negligence, and even 29.9 from Isaiah Likely was unlikely to save the day. At least Derrick Henry went to work—but even the King couldn’t keep James from losing his crown.
 
 Billy didn’t just win. He delivered a full wedgie, hiking those Moose Knucklers shorts clear up to his armpits with 19.1 from Kyren on MNF. Some dads pass down wisdom; Billy passes down L’s.
 
@@ -98,7 +105,7 @@ Billy thought his tight shorts were flaunting a full package. Turns out, his Moo
 
 Love abandoned him. Henry couldn’t carry him. Hurts was hurt. Saquon was gone. And Brock Bowers couldn’t build a bridge back to the living.
 
-And while Billy was busy showing off his own tight pants, it was Joe’s tight end stole the show. George didn’t just catch a pass — he Kittled Billy’s chances. One catch, one kill, one less team in the league.
+And while Billy was busy showing off his own tight pants, it was Joe’s tight end who stole the show. George didn’t just catch a pass — he Kittled Billy’s chances. One catch, one kill, one less team in the league.
 
 The teacher has officially been schooled.
 
@@ -116,7 +123,7 @@ He came. He drafted. He benched all of his best players.
 
 Ben fell 19.40 points short of Jacob. Justin Jefferson (7.9) vanished, Nico Collins (1.6) filed a missing persons report, and the Texans D/ST (2) provided defensive support to absolutely nobody.
 
-The collapse began in Week 3, when Ben misunderstood FAAB and blew his entire $1,000 budget on Chris Olave. A grand for 10.6 points? Wall Street is still investigating. Warren Buffet called to offer his condolences. 
+The collapse began in Week 3, when Ben misunderstood FAAB and blew his entire $1,000 budget on Chris Olave. A grand for 10.6 points? Wall Street is still investigating. Warren Buffett called to offer his condolences. 
 
 The final indignity: 73.3 points on the bench. Bucky Irving (28.5), Luther Burden III (23.7), and Cam Skattebo (21.1) could’ve saved him. Instead, Burden carried the points while Ben carried the burden of his own decisions.
 
@@ -126,13 +133,38 @@ Ben called his team Purdy Good—pretty, pretty, pretty good. Turns out, it was 
 
 Epitaph:
 
-There once was a manager named Ben,
-Who left 73 points on the Ben-ch.
-Jacob took the win,
-Ben’s season caved in—
-Now he’s broke, benched, and done in.
+There once was a manager, Ben,  
+Who benched seventy-three points, and then  
+Jacob took the win,  
+Ben’s season caved in,  
+And Ben won’t be FAABing again.
 
-Cause of death: Financial illiteracy and lineup malpractice. 
+Cause of death: Financial illiteracy and lineup malpractice.
 
+## In My Fantasy Era
 
+Is It Over Now? (Jacob’s Version)
 
+Dearly beloved, we are gathered here today to lay to rest In My Fantasy Era. For once, Jacob is not the one delivering the sermon.
+
+In Genesis, Jacob wrestled an angel all night and walked away with a blessing. This Jacob wrestled his lineup all week and walked away with 110.31 points, 16.89 behind a team that literally calls itself Mediocre. That was the bar. The Era could not clear it.
+
+Josh Allen (34.06) preached the good word and Trey McBride (18.7) passed the collection plate, but the rest of the congregation slept through the service. Drake London scored 1.3 points: Death by a Thousand Cuts, minus 999 of the cuts. Javonte Williams (8.2) and Kenneth Walker III (12.9) left a Blank Space where a backfield should be. And Jacob prayed for a Monday night miracle from the Seahawks D/ST and Jason Myers. The prayer went unanswered: they managed 3.75 points between them while the Bears hung 34 on Seattle.
+
+Meanwhile, in the back pew: Tee Higgins (37.0), Bhayshul Tuten (31.4) and Bucky Irving (24.0). That’s 92.4 points of sermon nobody heard. Higgins outscored London by 35.7 without leaving the bench. Somewhere, setting his lineup, Jacob was humming, “It’s me, hi, I’m the problem, it’s me.”
+
+The cruelest twist: the Mob survived with Patrick Mahomes (32.44) on its bench, and started the Chiefs D/ST for 1.5 anyway. A lifelong Chiefs fan, buried by a team that didn’t even need the Chiefs. Bad Blood.
+
+Not long ago, Jacob stood over Purdy Good’s grave. Karma is a relaxing thought.
+
+A pastor who preached to his bench  
+Left Higgins and Tuten entrenched.  
+London scored one,  
+The Era was done,  
+And Seattle’s rain left him drenched.
+
+Sundays are free now, Pastor. You know where to be.
+
+Rest in pieces, In My Fantasy Era. We are never, ever, ever getting back together.
+
+Cause of death: Lineup malpractice, aggravated by blind faith in the Seahawks.
