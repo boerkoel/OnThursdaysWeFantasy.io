@@ -173,8 +173,16 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
   // thing locked in), the most recently clinched first; the rest go to the results strip. Six tiles on a wide
   // screen, four on a phone.
   const capacity = narrow ? 4 : 6;
-  const doneTiles = [...done].sort(([x], [y]) => (clinchedAt.current.get(y.matchupId) || 0) - (clinchedAt.current.get(x.matchupId) || 0))
-    .slice(0, Math.max(0, capacity - open.length));
+  // When each became decided, from the week's win-odds history (the last time the winner went 99%+ and stayed):
+  // the ones clinched tonight show their ride; one decided before the night began (Brock's) waits for the strip.
+  const winHistory = scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points || [] : [];
+  const decidedAt = ([a, b]) => {
+    const w = Number(a.winProbability) >= Number(b.winProbability) ? a : b;
+    const ps = winHistory.filter(x => Number.isFinite(Number(x.p?.[w.teamId])));
+    const below = ps.findLastIndex(x => Number(x.p[w.teamId]) < LOCKED);
+    return clinchedAt.current.get(a.matchupId) || (below >= 0 && ps[below + 1] ? Date.parse(ps[below + 1].t) : 0);
+  };
+  const doneTiles = [...done].sort((x, y) => decidedAt(y) - decidedAt(x)).slice(0, Math.max(0, capacity - open.length));
   const strip = done.filter(p => !doneTiles.includes(p));
   const tiles = [...open, ...doneTiles];
   const cols = tiles.length <= 1 ? 1 : tiles.length <= 4 ? 2 : 3;
