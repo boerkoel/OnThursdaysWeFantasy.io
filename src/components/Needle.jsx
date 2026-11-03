@@ -235,8 +235,10 @@ function useStickySet(items, max, score, onSwap) {
   return shown;
 }
 
+// Under the needles, two columns (Jim, 2026-11-02): the good outcomes on the left (✅ and likely), the bad on the
+// right (❌ and likely the other way); good: which side is the good one ("right": above, the ticket; "left": safe).
 export function NeedleRace({ label, items, sides, colors, band = null, words, chipOdds = "side", history = [], games = [], stakes = null, mine = null,
-  max = null, pick = "odds", onSwap = null }) {
+  max = null, pick = "odds", onSwap = null, good = "right" }) {
   const base = i => Number.isFinite(Number(i.from)) ? Number(i.from) : Number(i.p);
   const isMine = i => mine != null && Number(i.team.teamId) === Number(mine);
   const live = items.filter(i => Number.isFinite(Number(i.p)));
@@ -257,9 +259,11 @@ export function NeedleRace({ label, items, sides, colors, band = null, words, ch
     {needles.length ? <div className="mini-needles">{needles.map(i => <MiniNeedle key={i.team.teamId} team={i.team} p={Number(i.p)} from={i.from}
       sides={sides} colors={colors} band={band} stakes={stakes} history={history} games={games} mine={isMine(i)} />)}</div> : null}
     {tier("also in it", alsoIn.map(i => withOdds(i, chipOdds === "right" || i.p >= 50)))}
-    {tier(words.likely[1], likelyR.map(i => withOdds(i, true)))}
-    {tier(words.likely[0], likelyL.map(i => withOdds(i, false)))}
-    {tier(words.locked[1], lockedR.map(name))}
-    {tier(words.locked[0], lockedL.map(name))}
+    {(() => {
+      const right = [tier(words.locked[1], lockedR.map(name)), tier(words.likely[1], likelyR.map(i => withOdds(i, true)))];
+      const left = [tier(words.locked[0], lockedL.map(name)), tier(words.likely[0], likelyL.map(i => withOdds(i, false)))];
+      const [goodCol, badCol] = good === "right" ? [right, left] : [left, right];
+      return goodCol.some(Boolean) || badCol.some(Boolean) ? <div className="race-tiers"><div>{goodCol}</div><div>{badCol}</div></div> : null;
+    })()}
   </>;
 }
