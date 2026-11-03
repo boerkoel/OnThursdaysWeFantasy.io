@@ -251,7 +251,7 @@ export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
       {/* Every team left in the guillotine (Jim, 2026-11-02): needles for 10–90% chop odds, chips for the likely
           safe and likely chopped, ✅/🪓 for the settled. */}
       <NeedleRace label="🪓 THE CHOPPING BLOCK · EACH TEAM'S ODDS" items={guillotine.teams.map(t => ({ team: { ...t, lineup: { starters: t.lineup || [] } }, p: Number(t.chopProbability), from: t.liveChopFrom }))}
-        good="left" sides={["safe", "chopped"]} colors={["#8fd087", "#d98a86"]} words={{ likely: ["likely safe", "likely chopped"], locked: ["✅ safe", "🪓 chopped"] }}
+        good="left" sides={["safe", "chopped"]} colors={["#8fd087", "#d98a86"]} words={{ likely: ["likely safe", "likely chopped"], locked: ["✅ safe", "🪓 chopped"] }} implied="left"
         stakes={guillotine.teams.map(t => ({ lineup: { starters: t.lineup || [] } }))} history={history} games={nflGames} />
       <div className="award-grid dw-details">
         {atRisk.map((t, i) => <article className="award-card" id={`dw-${t.teamId}`} key={t.teamId}>

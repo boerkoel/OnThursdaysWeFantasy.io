@@ -238,7 +238,7 @@ function useStickySet(items, max, score, onSwap) {
 // Under the needles, two columns (Jim, 2026-11-02): the good outcomes on the left (✅ and likely), the bad on the
 // right (❌ and likely the other way); good: which side is the good one ("right": above, the ticket; "left": safe).
 export function NeedleRace({ label, items, sides, colors, band = null, words, chipOdds = "side", history = [], games = [], stakes = null, mine = null,
-  max = null, pick = "odds", onSwap = null, good = "right" }) {
+  max = null, pick = "odds", onSwap = null, good = "right", implied = null }) {
   const base = i => Number.isFinite(Number(i.from)) ? Number(i.from) : Number(i.p);
   const isMine = i => mine != null && Number(i.team.teamId) === Number(mine);
   const live = items.filter(i => Number.isFinite(Number(i.p)));
@@ -252,7 +252,9 @@ export function NeedleRace({ label, items, sides, colors, band = null, words, ch
   const name = i => <b key={i.team.teamId} className={isMine(i) ? "mine" : ""}>{i.team.team}</b>;
   const withOdds = (i, right) => <span key={i.team.teamId}>{name(i)} {Math.round(chipOdds === "right" || right ? i.p : 100 - i.p)}%</span>;
   const join = list => list.flatMap((x, k) => k ? [" · ", x] : [x]);
-  const tier = (text, list) => list.length ? <p className="race-tier"><small>{text}</small> {join(list)}</p> : null;
+  // implied: the settled side that goes without saying (the ticket's ❌ out, the chop's ✅ safe: everyone not
+  // listed), hidden on phones to save room (Jim, 2026-11-02).
+  const tier = (text, list, hide = false) => list.length ? <p className={"race-tier" + (hide ? " implied" : "")}><small>{text}</small> {join(list)}</p> : null;
   if (!live.length) return null;
   return <>
     {label ? <small className="mini-needles-label">{label}</small> : null}
@@ -260,8 +262,8 @@ export function NeedleRace({ label, items, sides, colors, band = null, words, ch
       sides={sides} colors={colors} band={band} stakes={stakes} history={history} games={games} mine={isMine(i)} />)}</div> : null}
     {tier("also in it", alsoIn.map(i => withOdds(i, chipOdds === "right" || i.p >= 50)))}
     {(() => {
-      const right = [tier(words.locked[1], lockedR.map(name)), tier(words.likely[1], likelyR.map(i => withOdds(i, true)))];
-      const left = [tier(words.locked[0], lockedL.map(name)), tier(words.likely[0], likelyL.map(i => withOdds(i, false)))];
+      const right = [tier(words.locked[1], lockedR.map(name), implied === "right"), tier(words.likely[1], likelyR.map(i => withOdds(i, true)))];
+      const left = [tier(words.locked[0], lockedL.map(name), implied === "left"), tier(words.likely[0], likelyL.map(i => withOdds(i, false)))];
       const [goodCol, badCol] = good === "right" ? [right, left] : [left, right];
       return goodCol.some(Boolean) || badCol.some(Boolean) ? <div className="race-tiers"><div>{goodCol}</div><div>{badCol}</div></div> : null;
     })()}

@@ -1193,3 +1193,4 @@ section,details,.odds-block{scroll-margin-top:72px}
 .race-tiers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px;margin:2px 0 6px}.race-tiers>div{min-width:0}
 /* Watch mode on a phone or upright screen, restated last so the screen-scaled sizes above don't shrink it. */
 @media (max-width:760px),(orientation:portrait) and (max-width:1024px){.tv-side .mini-needles{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.tv-side .mini-needle{padding:8px 8px 6px}.tv-side .mini-needle .needle-dial{max-width:130px}.tv-side .mini-needle b{font-size:13px}.tv-side .mini-needle-name{font-size:10px}.tv-side .race-tier{font-size:11px}.tv-side .mini-needles-label{font-size:10px;margin-top:10px}.tv-field p{font-size:11px}.tv-ticker-track span{font-size:13px}}
+@media (max-width:760px){.race-tier.implied{display:none}}
