@@ -73,6 +73,19 @@ function useFlashes(pairs) {
   return flashing;
 }
 
+// A phone or an upright screen (the stacked layout), where the median shows its two with the most at stake.
+const NARROW = "(max-width: 760px), (orientation: portrait) and (max-width: 1024px)";
+function useNarrow() {
+  const [narrow, setNarrow] = useState(() => { try { return window.matchMedia(NARROW).matches; } catch { return false; } });
+  useEffect(() => {
+    let mq; try { mq = window.matchMedia(NARROW); } catch { return; }
+    const on = () => setNarrow(mq.matches);
+    mq.addEventListener?.("change", on);
+    return () => mq.removeEventListener?.("change", on);
+  }, []);
+  return narrow;
+}
+
 // Hide the mouse after a few idle seconds (a laptop hooked to a TV).
 function useIdleCursor() {
   const [idle, setIdle] = useState(false);
@@ -89,6 +102,7 @@ function useIdleCursor() {
 export default function TvView({ scoreboard, guillotine, livePlays, marquee, logos = {}, onClose }) {
   useWakeLock(true);
   const idle = useIdleCursor();
+  const narrow = useNarrow();
   const [fullscreen, setFullscreen] = useState(() => Boolean(document.fullscreenElement));
   useEffect(() => {
     const on = () => setFullscreen(Boolean(document.fullscreenElement));
@@ -154,7 +168,7 @@ export default function TvView({ scoreboard, guillotine, livePlays, marquee, log
           })}</div> : null}
         </section>
         <aside className="tv-side">
-          <NeedleRace label="MEDIAN LINE" max={4} pick="stake" onSwap={swapped("📏")} items={scores.map(s => ({ team: s, p: Number(s.aboveMedianProbability), from: s.liveAboveFrom }))}
+          <NeedleRace label="MEDIAN LINE" max={narrow ? 2 : 4} pick="stake" onSwap={swapped("📏")} items={scores.map(s => ({ team: s, p: Number(s.aboveMedianProbability), from: s.liveAboveFrom }))}
             sides={["below", "above"]} colors={MEDIAN_COLORS} band={[30, 70]} words={{ likely: ["likely below", "likely above"], locked: ["❌ below", "✅ above"] }}
             stakes={scores} games={games} />
           <NeedleRace label="🎟️ TICKET RACE" max={2} onSwap={swapped("🎟️")} items={scores.map(s => ({ team: s, p: Number(s.topScoreProbability), from: s.liveTopFrom }))}
