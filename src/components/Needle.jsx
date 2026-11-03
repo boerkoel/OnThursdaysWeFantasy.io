@@ -80,14 +80,25 @@ function lookAhead(stakes, wild) {
   const size = Math.min(1, Math.max(0.25, Math.sqrt(stakes.live) / 20));
   return { live, h: live ? Math.min(0.5, (stakes.live / stakes.total) * size * (0.6 + 0.8 * wild)) : stakes.total >= 0.25 ? 0.02 : 0 };
 }
+// A center of gravity (Jim, 2026-11-02: too jittery live): the walk mostly hovers near the odds (40% of its
+// reach) and now and then bursts out to the full range of futures, then settles back; a real move in the odds
+// (a play, a drive) sets off a burst right away, so the big swings land with real events.
+const CALM = 0.4, BURST_CHANCE = 0.025, BURST_DECAY = 0.88;
 function useQuake({ teams, games, history, historyId, p }) {
   const { live, h } = lookAhead(stakesLeft(teams, games), wildness(history, historyId));
   const [wobble, setWobble] = useState(0);
+  const burst = useRef(0), lastP = useRef(Number(p));
+  if (Math.abs(Number(p) - lastP.current) >= 1) { burst.current = 1; lastP.current = Number(p); }
   useEffect(() => {
     if (!(h > 0) || reducedMotion()) { setWobble(0); return; }
-    const RHO = live ? 0.7 : 0.85, gauss = () => Math.sqrt(-2 * Math.log(1 - Math.random())) * Math.cos(2 * Math.PI * Math.random());
+    const RHO = live ? 0.8 : 0.88, gauss = () => Math.sqrt(-2 * Math.log(1 - Math.random())) * Math.cos(2 * Math.PI * Math.random());
     let w = gauss();
-    const id = setInterval(() => { w = RHO * w + Math.sqrt(1 - RHO * RHO) * gauss(); setWobble(w); }, live ? 220 : 650);
+    const id = setInterval(() => {
+      w = RHO * w + Math.sqrt(1 - RHO * RHO) * gauss();
+      if (live && Math.random() < BURST_CHANCE) burst.current = 1;
+      burst.current *= BURST_DECAY;
+      setWobble(w * (CALM + (1 - CALM) * burst.current));
+    }, live ? 300 : 650);
     return () => clearInterval(id);
   }, [live, h > 0]);
   const pp = Math.min(99.9, Math.max(0.1, Number(p)));
@@ -122,7 +133,7 @@ export function MiniNeedle({ team, p, from = null, sides, colors, band = null, h
       <svg viewBox="0 0 240 128" className="needle-dial">
         {zones.map(([lo, hi, o, c]) => <path key={lo} d={wedge(lo, hi)} fill={c} fillOpacity={o} />)}
         <line x1={CX} y1={CY - R_OUT - 3} x2={CX} y2={CY - R_IN + 3} className="needle-mid" />
-        <g style={{ transform: `rotate(${deg}deg)`, transformOrigin: `${CX}px ${CY}px`, transition: `transform ${live ? 0.22 : 0.65}s linear` }}>
+        <g style={{ transform: `rotate(${deg}deg)`, transformOrigin: `${CX}px ${CY}px`, transition: `transform ${live ? 0.3 : 0.65}s ease-out` }}>
           <line x1={CX} y1={CY} x2={CX} y2={CY - R_OUT - 4} className="needle-hand" />
         </g>
         <circle cx={CX} cy={CY} r={7} className="needle-hub" />
@@ -177,7 +188,7 @@ export function Needle({ a, b, history = [], odds = null, label = null, games = 
       <svg viewBox="0 0 240 128" className="needle-dial">
         {ZONES.map(([from, to, o]) => <path key={from} d={wedge(from, to)} fill={to <= 50 ? A_COLOR : B_COLOR} fillOpacity={o} />)}
         <line x1={CX} y1={CY - R_OUT - 3} x2={CX} y2={CY - R_IN + 3} className="needle-mid" />
-        <g style={{ transform: `rotate(${deg}deg)`, transformOrigin: `${CX}px ${CY}px`, transition: `transform ${live ? 0.22 : 0.65}s linear` }}>
+        <g style={{ transform: `rotate(${deg}deg)`, transformOrigin: `${CX}px ${CY}px`, transition: `transform ${live ? 0.3 : 0.65}s ease-out` }}>
           <line x1={CX} y1={CY} x2={CX} y2={CY - R_OUT - 4} className="needle-hand" />
         </g>
         <circle cx={CX} cy={CY} r={5} className="needle-hub" />
