@@ -1,4 +1,4 @@
-import { driveChances, driveContext, normalCdf, normalQuantile, passShare } from "../../scripts/lib/simulation.js";
+import { driveChances, driveContext, normalCdf, normalQuantile, passShare, restOf } from "../../scripts/lib/simulation.js";
 
 // What to root for on a live drive (Jim, 2026-11-02, Primetime view): for a matchup still in question, the
 // plays this drive could realistically produce, what each is worth to the league starters involved (the
@@ -58,7 +58,7 @@ export function driveRooting({ game, a, b }) {
   const progress = Math.min(1, ((Number(game.period) || 1) - 1 + (900 - (Number(game.clock) || 0)) / 900) / 4);
   const drivesLeft = Math.max(4, 11 * (1 - progress));   // as the odds model counts it
   const offensive = on.filter(p => p.pos !== "D/ST");
-  const stall = offensive.map(p => [p, -Math.max(0, (Number(p.projection) || 0) - (Number(p.actual) || 0)) / drivesLeft]);
+  const stall = offensive.map(p => [p, -restOf({ projection: p.projection, actual: p.actual, game }) / drivesLeft]);
   if (offensive.length) add(`a ${offenseTeam?.abbrev || "stalled"} punt`, toGo != null && toGo <= 40 ? 0.15 : 0.35, stall);
   // Turnovers end the drive too, so they also cost the offense its share of it. Return TDs only matter when
   // the defense is a league starter; otherwise the turnover is named by who gave it up.

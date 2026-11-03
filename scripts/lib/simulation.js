@@ -213,8 +213,23 @@ export function gameScriptFactor({ positionId, proTeamId, game }) {
 
 // What a starter who hasn't finished might still add. With his NFL game
 // (and team), the remaining points are adjusted for game script.
+// A starter's points still to come before script, drives and usage (Jim, 2026-11-02: a kicker projected for 9.8
+// isn't still owed 6.8 at halftime): in a game being played, his projection times the share of the game left
+// (projections don't update in game, so projection minus points so far ignored the clock); otherwise his
+// projection less what he has. Overtime counts as a sliver.
+export function gameShareLeft(game) {
+  if (game?.state !== "in" || !(Number(game.period) >= 1) || !Number.isFinite(Number(game.clock))) return null;
+  if (Number(game.period) > 4) return 0.05;
+  return Math.min(1, Math.max(0, ((4 - Number(game.period)) * 900 + Number(game.clock)) / 3600));
+}
+export function restOf({ projection, actual, game = null }) {
+  if (!Number.isFinite(Number(projection))) return 0;
+  const share = gameShareLeft(game);
+  return share == null ? Math.max(0, Number(projection) - (Number(actual) || 0)) : Math.max(0, Number(projection)) * share;
+}
+
 export function playerOutlook({ actual, projection, positionId, game = null, proTeamId = null, usage = null }) {
-  const unscripted = Number.isFinite(projection) ? Math.max(0, projection - (Number(actual) || 0)) : 0;
+  const unscripted = restOf({ projection, actual, game });
   const shareLeft = Number.isFinite(projection) && projection > 0 ? Math.min(1, unscripted / projection) : 0.5;
   const rest = unscripted * gameScriptFactor({ positionId, proTeamId, game }) * driveFactor({ positionId, proTeamId, game }) * usageFactor({ positionId, usage, game });
   return {

@@ -1,4 +1,4 @@
-import { normalCdf, normalQuantile } from "../../scripts/lib/simulation.js";
+import { normalCdf, normalQuantile, restOf } from "../../scripts/lib/simulation.js";
 
 // Two futures (Jim, 2026-11-02): when a starter goes down in a game in progress and hasn't come back, a race
 // splits into the odds if he returns (today's, which still count his projection) and the odds if he doesn't (his
@@ -14,7 +14,7 @@ export function hurtStarters(team, livePlays, games) {
   return injuries.flatMap(i => {
     const p = (team.lineup?.starters || []).find(x => Number(x.id) === Number(i.playerId));
     const game = p && games.find(g => g.state === "in" && (g.teamIds || []).map(Number).includes(Number(p.proTeamId)));
-    const rest = p ? Math.max(0, (Number(p.projection) || 0) - (Number(p.actual) || 0)) : 0;
+    const rest = p ? restOf({ projection: p.projection, actual: p.actual, game }) : 0;
     return game && rest >= MIN_REST ? [{ name: last(p.name), rest }] : [];
   });
 }

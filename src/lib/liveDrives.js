@@ -77,7 +77,7 @@ export function adjustScoreboard(scoreboard, espn) {
   if (![...changes.values()].some(v => Math.abs(v) >= 0.05)) return { ...scoreboard, nflGames: mergeGames(baseGames, espn) };
   const byId = new Map(scores.map(s => [s.teamId, s]));
   const sds = scores.map(s => Number(s.projectionSd) || 0).sort((a, b) => a - b);
-  const typical = sds[Math.floor(sds.length / 2)] || 0;
+  const inPlay = sds.filter(v => v > 0.5), typical = inPlay[Math.floor(inPlay.length / 2)] || 0;   // teams still in play
   const adjusted = scores.map(s => {
     const mine = changes.get(s.teamId) || 0, opp = byId.get(s.opponentId), theirs = changes.get(s.opponentId) || 0;
     if (!mine && !theirs) return s;

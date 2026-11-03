@@ -61,7 +61,10 @@ function momentumByPlay(newPlays, scoresByTeam) {
 function raffleMomentum(newPlays, scoresByTeam) {
   const result = new Map();
   const sds = [...scoresByTeam.values()].map(t => Number(t.projectionSd) || 0).sort((a, b) => a - b);
-  const typicalSd = sds.length ? sds[Math.floor(sds.length / 2)] : 0;
+  // The middle spread among teams still in play (Jim, 2026-11-02): finished teams' zeros late in the week had
+  // made one play look like a third of everything left.
+  const live = sds.filter(v => v > 0.5);
+  const typicalSd = live.length ? live[Math.floor(live.length / 2)] : 0;
   const byTeam = new Map();
   for (const play of newPlays) {
     if (!play.wallclock || Date.now() - Date.parse(play.wallclock) > MOMENTUM_MAX_AGE_MS) continue;
@@ -92,7 +95,10 @@ function raffleMomentum(newPlays, scoresByTeam) {
 function medianMomentum(newPlays, scoresByTeam) {
   const result = new Map();
   const sds = [...scoresByTeam.values()].map(t => Number(t.projectionSd) || 0).sort((a, b) => a - b);
-  const typicalSd = sds.length ? sds[Math.floor(sds.length / 2)] : 0;
+  // The middle spread among teams still in play (Jim, 2026-11-02): finished teams' zeros late in the week had
+  // made one play look like a third of everything left.
+  const live = sds.filter(v => v > 0.5);
+  const typicalSd = live.length ? live[Math.floor(live.length / 2)] : 0;
   const byTeam = new Map();
   for (const play of newPlays) {
     if (!play.wallclock || Date.now() - Date.parse(play.wallclock) > MOMENTUM_MAX_AGE_MS) continue;
@@ -124,7 +130,10 @@ function chopMomentum(newPlays, guillotine) {
   const result = new Map();
   const teams = new Map((guillotine?.teams || []).map(t => [Number(t.teamId), t]));
   const sds = [...teams.values()].map(t => Number(t.projectionSd) || 0).sort((a, b) => a - b);
-  const typicalSd = sds.length ? sds[Math.floor(sds.length / 2)] : 0;
+  // The middle spread among teams still in play (Jim, 2026-11-02): finished teams' zeros late in the week had
+  // made one play look like a third of everything left.
+  const live = sds.filter(v => v > 0.5);
+  const typicalSd = live.length ? live[Math.floor(live.length / 2)] : 0;
   const byTeam = new Map();
   for (const play of newPlays) {
     if (!play.wallclock || Date.now() - Date.parse(play.wallclock) > MOMENTUM_MAX_AGE_MS) continue;
@@ -135,7 +144,9 @@ function chopMomentum(newPlays, guillotine) {
     const team = teams.get(Number(teamId));
     const chop = Number(team?.chopProbability);
     if (!team || !(chop > 0 && chop < 100)) continue;
-    const sd = Math.max(MIN_MARGIN_SD, Math.hypot(Number(team.projectionSd) || 0, typicalSd));
+    // Against the teams it's racing: the widest spread among the others still at risk.
+    const rivals = [...teams.values()].filter(t => t !== team && t.chopProbability > 0.5 && t.chopProbability < 99.5).map(t => Number(t.projectionSd) || 0);
+    const sd = Math.max(MIN_MARGIN_SD, Math.hypot(Number(team.projectionSd) || 0, rivals.length ? Math.max(...rivals) : typicalSd));
     let z = normalQuantile(Math.min(0.9999, Math.max(0.0001, chop / 100)));
     plays.sort((x, y) => Date.parse(y.wallclock) - Date.parse(x.wallclock));
     for (const play of plays) {
