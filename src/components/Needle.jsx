@@ -203,7 +203,7 @@ export function MiniNeedle({ team, p, from = null, sides, colors, band = null, h
         {Math.abs(moved) >= 0.5 ? <small className={moved > 0 ? "up" : "down"}>{moved > 0 ? "▲" : "▼"}{Math.abs(Math.round(moved))}</small> : null}
         {live ? <span className="needle-live">●</span> : null}</b>
       {caption === false ? null : <span className="mini-needle-name">{caption || team.team}</span>}
-      {peek ? <span className="mini-needle-peek">{peek.label}: {Math.round(right ? peek.p : 100 - peek.p)}%</span> : null}
+      {peeks.length ? <span className="mini-needle-peek">{peek ? `${peek.label}: ${Math.round(right ? peek.p : 100 - peek.p)}%` : "\u00a0"}</span> : null}
       {fork ? <span className="mini-needle-fork" title={`Flailing between two futures: ${Math.round(p)}% if he's back, ${Math.round(fork.pOut)}% if not`}>
         {fork.label} · {Math.round(right ? p : 100 - p)}↔{Math.round(right ? fork.pOut : 100 - fork.pOut)}%</span> : null}
     </div>
@@ -261,7 +261,7 @@ export function Needle({ a, b, history = [], odds = null, label = null, games = 
         <span style={{ color: A_COLOR }}><b>{Math.round(100 - pB)}%{arrow(-moved)}</b>{a.team}</span>
         <span style={{ color: B_COLOR }}><b>{Math.round(pB)}%{arrow(moved)}</b>{b.team}</span>
       </div>
-      {peek ? <p className="needle-peek">{peek.label}: <b style={{ color: B_COLOR }}>{b.team} {Math.round(peek.p)}%</b></p> : null}
+      {peeks.length ? <p className="needle-peek">{peek ? <>{peek.label}: <b style={{ color: B_COLOR }}>{b.team} {Math.round(peek.p)}%</b></> : "\u00a0"}</p> : null}
       {fork ? <p className="needle-fork">{fork.label} · <b style={{ color: B_COLOR }}>{b.team} {Math.round(pB)}%</b> if he's back · <b style={{ color: B_COLOR }}>{Math.round(fork.pOut)}%</b> if not</p> : null}
       {field && (field[0].length || field[1].length) ? <div className="needle-field">
         {field.map((list, i) => <span key={i}>{list.map(p => <em key={p.name} className={p.trend} title={p.title}>{p.name} {p.trend === "up" ? "↑" : p.trend === "down" ? "↓" : "→"}</em>)}</span>)}
