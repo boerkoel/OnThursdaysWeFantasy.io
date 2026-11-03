@@ -74,7 +74,7 @@ export function RaceChart({ rows, oddsLabel, line = null, total = false }) {
         const [fav, dog] = ok[0].dist.mean >= ok[1].dist.mean ? ok : [ok[1], ok[0]], m = fav.dist.mean - dog.dist.mean;
         return <p className="race-spread">Line: {m < 0.25 ? "pick'em" : `${fav.name} −${half(m)}`}{total ? ` · O/U ${half(fav.dist.mean + dog.dist.mean)}` : ""}</p>;
       })() : null}
-      <div className="race-axis"><span>{Math.round(lo)}</span>{line ? <span className="race-line-label" style={{ left: x(line.value) }}>{line.label} {money(line.value)}</span> : null}<span>{Math.round(hi)}</span></div>
+      <div className="race-axis"><span>{Math.round(lo)} pts</span>{line ? <span className="race-line-label" style={{ left: x(line.value) }}>{line.label} {money(line.value)}</span> : null}<span>{Math.round(hi)} pts</span></div>
     </div>
   );
 }
