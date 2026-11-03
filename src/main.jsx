@@ -213,9 +213,12 @@ function App() {
   // then its 5 most recent from the last 5 hours (4+ point swings, or plays that moved the odds 3%+), then the
   // week's next-biggest swings, up to 10 in all, newest first after the top 3. The win-odds swings are also
   // the 🏈 markers on the odds chart.
-  // Once a matchup is decided (final, or 99.5%+), the moment that clinched it leads (Jim, 2026-11-02): from the
-  // week's win-odds history, when the winner went over 50% for good, and the play that put them there. A winner
-  // who never trailed clinched it at kickoff; one who went ahead on Monday's last drive, with that play.
+  // Once a matchup is decided (final, or 99.5%+), its two moments, from the week's win-odds history (Jim,
+  // 2026-11-02): ✊ CLINCHED, when the winner became a heavy favorite (90%+) for good, the play that put it out of
+  // reach ("Never in doubt" if they were from kickoff); and ↗ AHEAD FOR GOOD, when they went over 50% for good,
+  // when that's a different play. The list runs newest first, the game's story in order, with those and the ⚡
+  // three biggest swings badged rather than pulled to the top; Primetime's short list and the share card take
+  // the highlights first (highlightsFor).
   const KEY_PLAY_MAX_AGE_MS = 5 * 60 * 60 * 1000;
   const KEY_PLAYS_TOP = 3;
   const KEY_PLAYS_RECENT = 5;
@@ -225,30 +228,41 @@ function App() {
   const MEDIAN_SWING_SHOWN = 2;
   const swingOf = p => Math.max(p.momentum?.shift || 0, Math.abs(p.median?.shift || 0));
   const newestFirst = (a, b) => Date.parse(b.wallclock) - Date.parse(a.wallclock);
-  // The clinching moment, as a key play flagged decider (or, with no play to point to, a note in its place).
+  // When the winner's odds crossed a line for good (50: ahead; 90: out of reach), as a key play flagged with
+  // flag, or with no play to point to, a note in its place.
   const CLINCH_SLACK_MS = 15 * 60 * 1000;   // a run's odds snapshot comes a few minutes after its plays
-  const clinchOf = (winner, plays) => {
-    const crossed = p => p.momentum?.toward === winner.team && p.momentum.winProbability >= 50 && p.momentum.winProbability - p.momentum.shift < 50;
+  const MOMENTS = {
+    50: { flag: "goAhead", never: p => `Never trailed (${p}% before kickoff)`, at: t => `Went ahead for good ${t}` },
+    90: { flag: "decider", never: p => `Never in doubt (${p}% before kickoff)`, at: t => `Put it out of reach ${t}` }
+  };
+  const momentOf = (winner, plays, line) => {
+    const { flag, never, at } = MOMENTS[line];
+    const crossed = p => p.momentum?.toward === winner.team && p.momentum.winProbability >= line && p.momentum.winProbability - p.momentum.shift < line;
     const history = scoreboard.winHistory?.week === scoreboard.week ? (scoreboard.winHistory.points || []).filter(x => Number.isFinite(Number(x.p?.[winner.teamId]))) : [];
-    if (!history.length) { const p = plays.filter(crossed).sort(newestFirst)[0]; return p ? { ...p, decider: true } : null; }
-    const below = history.findLastIndex(x => Number(x.p[winner.teamId]) < 50);
-    if (below < 0) return { id: "clinch-" + winner.teamId, decider: true, wallclock: history[0].t, clinchNote: `Never trailed (${Math.round(Number(history[0].p[winner.teamId]))}% before kickoff)` };
+    if (!history.length) { const p = plays.filter(crossed).sort(newestFirst)[0]; return p ? { ...p, [flag]: true } : null; }
+    const below = history.findLastIndex(x => Number(x.p[winner.teamId]) < line);
+    if (below < 0) return { id: `${flag}-${winner.teamId}`, [flag]: true, wallclock: history[0].t, clinchNote: never(Math.round(Number(history[0].p[winner.teamId]))) };
     const from = Date.parse(history[below].t) - CLINCH_SLACK_MS, to = Date.parse(history[below + 1]?.t || Date.now());
     const inWindow = p => Date.parse(p.wallclock) >= from && Date.parse(p.wallclock) <= to;
     const p = plays.filter(p => crossed(p) && inWindow(p)).sort(newestFirst)[0]
       || plays.filter(p => p.momentum?.toward === winner.team && inWindow(p)).sort((a, b) => b.momentum.shift - a.momentum.shift)[0];
-    if (p) return { ...p, decider: true };
-    const at = new Date(to).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });
-    return { id: "clinch-" + winner.teamId, decider: true, wallclock: new Date(to).toISOString(), clinchNote: `Went ahead for good ${at}` };
+    if (p) return { ...p, [flag]: true };
+    return { id: `${flag}-${winner.teamId}`, [flag]: true, wallclock: new Date(to).toISOString(),
+      clinchNote: at(new Date(to).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" })) };
   };
-  const keyPlaysFor = matchupId => {
+  const keyPlaySet = matchupId => {
     const plays = (Number(livePlayFeed.week) === Number(scoreboard.week) ? livePlayFeed.plays || [] : [])
       .filter(p => Number(p.matchupId) === Number(matchupId) && p.wallclock);
     const bySwing = plays.filter(p => swingOf(p) >= 0.5).sort((a, b) => swingOf(b) - swingOf(a));
     const sides = scores.filter(x => Number(x.matchupId) === Number(matchupId));
     const winner = sides.find(x => Number(x.winProbability) >= 99.5 || (x.status === "FINAL" && sides.every(y => Number(x.score) >= Number(y.score))));
-    const decider = winner ? clinchOf(winner, plays) : null;
-    const top = [...(decider ? [decider] : []), ...bySwing.filter(p => p.id !== decider?.id).slice(0, KEY_PLAYS_TOP)], topIds = new Set(top.map(p => p.id));
+    const decider = winner ? momentOf(winner, plays, 90) : null;
+    const ahead = winner ? momentOf(winner, plays, 50) : null;
+    // One badge set per play: the go-ahead folds into the clinch when it's the same play (or both are notes).
+    const goAhead = ahead && decider && (ahead.id === decider.id || (ahead.clinchNote && decider.clinchNote)) ? null : ahead;
+    if (decider && ahead && ahead.id === decider.id) decider.goAhead = true;
+    const swings = bySwing.filter(p => p.id !== decider?.id && p.id !== goAhead?.id).slice(0, KEY_PLAYS_TOP).map(p => ({ ...p, bigSwing: true }));
+    const top = [...(decider ? [decider] : []), ...(goAhead ? [goAhead] : []), ...swings], topIds = new Set(top.map(p => p.id));
     const recent = plays
       .filter(p => !topIds.has(p.id) && (Math.abs(Number(p.points)) >= 4 || swingOf(p) >= BIG_SWING) && Date.now() - Date.parse(p.wallclock) <= KEY_PLAY_MAX_AGE_MS)
       .sort(newestFirst)
@@ -264,11 +278,15 @@ function App() {
       .filter(n => Number(n.matchupId) === Number(matchupId) && n.wallclock)
       .sort(newestFirst)
       .slice(0, KEY_NEWS_MAX);
-    return [...top, ...[...chosen.values(), ...news].sort(newestFirst)];
+    return { top, rest: [...chosen.values(), ...news] };
   };
+  // The whole list, newest first; and the highlights (clinch, go-ahead, biggest swings) for the short lists.
+  const keyPlaysFor = matchupId => { const { top, rest } = keyPlaySet(matchupId); return [...top, ...rest].sort(newestFirst); };
+  const highlightsFor = matchupId => { const { top, rest } = keyPlaySet(matchupId); return [...top, ...rest.sort(newestFirst)]; };
   // A key play's line: news has no points (📰 instead) and a headline already names the player.
-  const playLabel = play => play.clinchNote ? "✊" : play.news ? "📰" : `${play.points > 0 ? "+" : ""}${money(play.points)}`;
-  const playText = play => play.clinchNote ? "Clinched: " + play.clinchNote : (play.decider ? "✊ " : "") + (play.news === "headline" ? play.text : `${play.player} ${shortPlay(play)}`);
+  const playLabel = play => play.clinchNote ? (play.decider ? "✊" : "↗") : play.news ? "📰" : `${play.points > 0 ? "+" : ""}${money(play.points)}`;
+  const playText = play => play.clinchNote ? (play.decider ? "Clinched: " : "Ahead for good: ") + play.clinchNote
+    : (play.decider ? "✊ " : play.goAhead ? "↗ " : "") + (play.news === "headline" ? play.text : `${play.player} ${shortPlay(play)}`);
   // "X 52→58%": the play's team and its win odds before → after, for plays that moved the odds at least half a point,
   // plus its median odds when they moved 2+ ("X 52→58%, median 40→47%"; the team named when it's the other one).
   const momentumLine = play => {
@@ -426,7 +444,7 @@ function App() {
     const pair = pairOf(matchupId);
     if (!pair) return null;
     const [a, b] = pair;
-    const plays = keyPlaysFor(matchupId).slice(0, 3);
+    const plays = highlightsFor(matchupId).slice(0, 3);
     const open = [a, b].every(t => Number(t.winProbability) > 0.5 && Number(t.winProbability) < 99.5);
     return <div className="primetime-expand">
       {open ? <Needle a={a} b={b} games={scoreboard.nflGames || []} history={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} /> : null}
@@ -487,7 +505,7 @@ function App() {
           })),
           lines: [
             seriesLine(a.teamId, b.teamId) ? { text: "⚔️ " + seriesLine(a.teamId, b.teamId), size: 28, color: "accent", weight: 800, gap: 36 } : null,
-            ...keyPlays.slice(0, 2).map((play, i) => ({ text: `${playLabel(play)} · ${playText(play)}${momentumLine(play) ? ` ⚡ ${momentumLine(play)}` : ""}`, size: 26, gap: i ? 8 : 30 }))
+            ...highlightsFor(matchupId).slice(0, 2).map((play, i) => ({ text: `${playLabel(play)} · ${playText(play)}${momentumLine(play) ? ` ⚡ ${momentumLine(play)}` : ""}`, size: 26, gap: i ? 8 : 30 }))
           ].filter(Boolean)
         })} />
       </div>
@@ -502,7 +520,7 @@ function App() {
               {keyPlays.map(play => (
                 <div className="key-play" key={play.id}>
                   <strong className={play.points < 0 ? "negative" : ""}>{playLabel(play)}</strong>
-                  <span title={play.news ? undefined : play.text}>{play.decider ? <em className="key-play-decider" title="Put the winner ahead for good">{play.clinchNote ? "CLINCHED: " : "✊ CLINCHED "}</em> : null}{play.clinchNote ? play.clinchNote : play.news === "headline" ? play.text : <><b>{play.player}</b> {shortPlay(play)}</>}{momentumLine(play) ? <em className="key-play-momentum">⚡ {momentumLine(play)}</em> : null}</span>
+                  <span title={play.news ? undefined : play.text}>{play.decider ? <em className="key-play-decider" title="Made the winner a heavy favorite (90%+) for good">{play.clinchNote ? "CLINCHED: " : "✊ CLINCHED "}</em> : null}{play.goAhead ? <em className="key-play-decider ahead" title="Put the winner over 50% for good">{play.clinchNote && !play.decider ? "AHEAD FOR GOOD: " : "↗ AHEAD FOR GOOD "}</em> : null}{play.bigSwing ? <em className="key-play-decider swing" title="One of this matchup's three biggest odds swings">⚡ BIG SWING </em> : null}{play.clinchNote ? play.clinchNote : play.news === "headline" ? play.text : <><b>{play.player}</b> {shortPlay(play)}</>}{momentumLine(play) ? <em className="key-play-momentum">⚡ {momentumLine(play)}</em> : null}</span>
                 </div>
               ))}
             </div>
