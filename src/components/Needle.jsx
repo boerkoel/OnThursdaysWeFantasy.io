@@ -60,6 +60,41 @@ function kickoffOdds({ a, b, history, games, twoWay }) {
   if (!Number.isFinite(pb)) return null;
   return twoWay ? (Number.isFinite(pa) && pa + pb > 0 ? 100 * pb / (pa + pb) : null) : pb;
 }
+// Since the first game in progress among these teams' players kicked off (Jim, 2026-11-02): where this odds
+// series started, and the lowest and highest it has been since, now included, for the drift arrow and the
+// band behind it that shows a swing that came back. history: snapshots { t, p: { [id]: odds } }.
+function sinceKickoff({ teams, games, history, id, now }) {
+  const ids = new Set(teams.flatMap(t => (t.lineup?.starters || []).map(p => Number(p.proTeamId))));
+  const kicks = games.filter(g => g.state === "in" && (g.teamIds || []).some(x => ids.has(Number(x)))).map(g => Date.parse(g.kickoff)).filter(Number.isFinite);
+  if (!kicks.length || !history?.length) return null;
+  const t0 = Math.min(...kicks);
+  const before = history.filter(x => Date.parse(x.t) <= t0 + 60000).at(-1);
+  const vals = [before, ...history.filter(x => Date.parse(x.t) > t0 + 60000)].filter(Boolean).map(x => Number(x.p?.[id])).filter(Number.isFinite);
+  if (!vals.length) return null;
+  vals.push(Number(now));
+  return { start: vals[0], min: Math.min(...vals), max: Math.max(...vals) };
+}
+// Drawn just outside the dial: a faint band over every odds the race has visited since kickoff, and an arrow
+// from where it started to now. A short arrow in a wide band: it swung big and came back.
+const R_ARC = R_OUT + 8;
+const arcPath = (from, to, r = R_ARC) => {
+  const [x1, y1] = point(from, r), [x2, y2] = point(to, r);
+  return `M ${x1} ${y1} A ${r} ${r} 0 0 ${to > from ? 1 : 0} ${x2} ${y2}`;
+};
+function DriftArcs({ range, now, markerId }) {
+  if (!range) return null;
+  const moved = Math.abs(now - range.start) >= 1, wide = range.max - range.min >= 2;
+  if (!moved && !wide) return null;
+  return <>
+    {wide ? <path d={arcPath(range.min, range.max)} className="needle-range" /> : null}
+    {moved ? <>
+      <defs><marker id={markerId} viewBox="0 0 6 6" refX="3" refY="3" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L6 3 L0 6 Z" className="needle-drift-head" /></marker></defs>
+      <path d={arcPath(range.start, now)} className="needle-drift" markerEnd={`url(#${markerId})`} />
+    </> : null}
+    <circle cx={point(range.start, R_ARC)[0]} cy={point(range.start, R_ARC)[1]} r={2.5} className="needle-drift-start" />
+  </>;
+}
+
 // The race's players in games being played now, each trending up (↑, 2+ pts ahead of his projected pace),
 // down (↓, 2+ behind) or on pace (→).
 function onTheField(team, games) {
@@ -117,7 +152,9 @@ function useQuake({ teams, games, history, historyId, p }) {
 // caption false: no line under it.
 export function MiniNeedle({ team, p, from = null, sides, colors, band = null, history = [], games = [], mine = false, caption = null, stakes = null, short = false }) {
   const { live, shown } = useQuake({ teams: stakes || [team], games, history, historyId: team.teamId, p });
+  const markerId = useId();
   if (!Number.isFinite(Number(p))) return null;
+  const range = live ? sinceKickoff({ teams: stakes || [team], games, history, id: team.teamId, now: Number(p) }) : null;
   const right = Number(p) >= 50;
   // With a middle color: red, yellow and green zones (stronger at the ends), and the odds colored by zone.
   const zones = colors.length === 3 && band
@@ -137,6 +174,7 @@ export function MiniNeedle({ team, p, from = null, sides, colors, band = null, h
           <line x1={CX} y1={CY} x2={CX} y2={CY - R_OUT - 4} className="needle-hand" />
         </g>
         <circle cx={CX} cy={CY} r={7} className="needle-hub" />
+        <DriftArcs range={range} now={Math.min(99.9, Math.max(0.1, Number(p)))} markerId={markerId} />
       </svg>
       <b style={{ color: oddsColor }}>{Math.round(right ? p : 100 - p)}%{short ? "" : " " + (right ? sides[1] : sides[0])}
         {Math.abs(moved) >= 0.5 ? <small className={moved > 0 ? "up" : "down"}>{moved > 0 ? "▲" : "▼"}{Math.abs(Math.round(moved))}</small> : null}
@@ -168,13 +206,10 @@ export function Needle({ a, b, history = [], odds = null, label = null, games = 
   const arrow = d => Math.abs(d) >= 0.5 ? <small className={d > 0 ? "up" : "down"} title="Since the last full update, from the drives in progress">{d > 0 ? "▲" : "▼"}{Math.abs(Math.round(d))}</small> : null;
   const deg = (shown / 100 - 0.5) * 180;
   // Drift since kickoff: an arc outside the dial from the odds then to now, and the points it's moved.
-  const startB = live ? kickoffOdds({ a, b, history, games, twoWay: Boolean(odds) }) : null;
+  const visited = !live ? null : odds ? (() => { const st = kickoffOdds({ a, b, history, games, twoWay: true }); return st == null ? null : { start: st, min: Math.min(st, pB), max: Math.max(st, pB) }; })()
+    : sinceKickoff({ teams: [a, b], games, history, id: b.teamId, now: pB });
+  const startB = visited ? visited.start : null;
   const drift = startB == null ? 0 : pB - startB;
-  const R_ARC = R_OUT + 8;
-  const arc = Math.abs(drift) >= 1 ? (() => {
-    const [x1, y1] = point(startB, R_ARC), [x2, y2] = point(pB, R_ARC);
-    return `M ${x1} ${y1} A ${R_ARC} ${R_ARC} 0 0 ${drift > 0 ? 1 : 0} ${x2} ${y2}`;
-  })() : null;
   const field = live ? [onTheField(a, games), onTheField(b, games)] : null;
   const margin = da && db ? da.mean - db.mean : null;
   const lead = margin == null ? null : Math.abs(margin) < 0.25 ? "Dead even" : `${(margin > 0 ? a : b).team} by ${half(margin)}`;
@@ -192,11 +227,7 @@ export function Needle({ a, b, history = [], odds = null, label = null, games = 
           <line x1={CX} y1={CY} x2={CX} y2={CY - R_OUT - 4} className="needle-hand" />
         </g>
         <circle cx={CX} cy={CY} r={5} className="needle-hub" />
-        {arc ? <>
-          <defs><marker id={arcId} viewBox="0 0 6 6" refX="3" refY="3" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L6 3 L0 6 Z" className="needle-drift-head" /></marker></defs>
-          <path d={arc} className="needle-drift" markerEnd={`url(#${arcId})`} />
-          <circle cx={point(startB, R_ARC)[0]} cy={point(startB, R_ARC)[1]} r={2} className="needle-drift-start" />
-        </> : null}
+        <DriftArcs range={visited} now={pB} markerId={arcId} />
       </svg>
       {Math.abs(drift) >= 1 ? <p className="needle-drift-text" title={`${b.team} ${Math.round(startB)}% when the game${games.filter(g => g.state === "in").length > 1 ? "s" : ""} kicked off, ${Math.round(pB)}% now`}>
         since kickoff {drift < 0 ? <b style={{ color: A_COLOR }}>◀ {Math.round(-drift)}</b> : <b style={{ color: B_COLOR }}>{Math.round(drift)} ▶</b>}</p> : null}
