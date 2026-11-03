@@ -63,9 +63,11 @@ function kickoffOdds({ a, b, history, games, twoWay }) {
 // Since the first game in progress among these teams' players kicked off (Jim, 2026-11-02): where this odds
 // series started, and the lowest and highest it has been since, now included, for the drift arrow and the
 // band behind it that shows a swing that came back. history: snapshots { t, p: { [id]: odds } }.
-function sinceKickoff({ teams, games, history, id, now }) {
+// finished: also count games over in the last 12 hours (a decided matchup's tile keeps its journey).
+function sinceKickoff({ teams, games, history, id, now, finished = false }) {
   const ids = new Set(teams.flatMap(t => (t.lineup?.starters || []).map(p => Number(p.proTeamId))));
-  const kicks = games.filter(g => g.state === "in" && (g.teamIds || []).some(x => ids.has(Number(x)))).map(g => Date.parse(g.kickoff)).filter(Number.isFinite);
+  const recent = g => g.state === "in" || (finished && g.completed && Date.now() - Date.parse(g.kickoff) < 12 * 3600 * 1000);
+  const kicks = games.filter(g => recent(g) && (g.teamIds || []).some(x => ids.has(Number(x)))).map(g => Date.parse(g.kickoff)).filter(Number.isFinite);
   if (!kicks.length || !history?.length) return null;
   const t0 = Math.min(...kicks);
   const before = history.filter(x => Date.parse(x.t) <= t0 + 60000).at(-1);
@@ -150,11 +152,12 @@ function useQuake({ teams, games, history, historyId, p }) {
 // league for the median line, which moves with every team).
 // short: just the percentage (the Watch-mode tiles on a phone, whose header already names the teams);
 // caption false: no line under it.
-export function MiniNeedle({ team, p, from = null, sides, colors, band = null, history = [], games = [], mine = false, caption = null, stakes = null, short = false }) {
+// journey: show the drift since kickoff even once its games are over (a decided matchup's tile).
+export function MiniNeedle({ team, p, from = null, sides, colors, band = null, history = [], games = [], mine = false, caption = null, stakes = null, short = false, journey = false }) {
   const { live, shown } = useQuake({ teams: stakes || [team], games, history, historyId: team.teamId, p });
   const markerId = useId();
   if (!Number.isFinite(Number(p))) return null;
-  const range = live ? sinceKickoff({ teams: stakes || [team], games, history, id: team.teamId, now: Number(p) }) : null;
+  const range = live || journey ? sinceKickoff({ teams: stakes || [team], games, history, id: team.teamId, now: Number(p), finished: journey }) : null;
   const right = Number(p) >= 50;
   // With a middle color: red, yellow and green zones (stronger at the ends), and the odds colored by zone.
   const zones = colors.length === 3 && band

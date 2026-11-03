@@ -32,7 +32,8 @@ function useAnnouncer() {
 }
 
 // Announce each matchup the moment it's decided (not the ones already decided when the screen opened).
-function useClinches(pairs, announce) {
+// Also notes when each one was clinched (clinchedAt: matchupId -> time), so the latest keep their tiles longest.
+function useClinches(pairs, announce, clinchedAt) {
   const seen = useRef(null);
   const decided = pairs.filter(([a, b]) => Number(a.winProbability) >= LOCKED || Number(b.winProbability) >= LOCKED);
   const key = decided.map(([a]) => a.matchupId).join(",");
@@ -41,6 +42,7 @@ function useClinches(pairs, announce) {
     if (seen.current) for (const [a, b] of decided) if (!seen.current.has(a.matchupId)) {
       const [w, l] = Number(a.winProbability) >= Number(b.winProbability) ? [a, b] : [b, a];
       announce({ icon: "✊", text: `${w.team} has clinched it`, sub: `over ${l.team} · ${money(w.score)}–${money(l.score)}` });
+      clinchedAt.current.set(a.matchupId, Date.now());
     }
     seen.current = now;
   }, [key]);
@@ -119,11 +121,20 @@ export default function TvView({ scoreboard, guillotine, livePlays, marquee, log
   const pairs = [...new Set(scores.map(s => s.matchupId))].map(id => scores.filter(s => s.matchupId === id)).filter(p => p.length === 2);
   const flashing = useFlashes(pairs);
   const [announcement, announce] = useAnnouncer();
-  useClinches(pairs, announce);
+  const clinchedAt = useRef(new Map());
+  useClinches(pairs, announce, clinchedAt);
   const swapped = icon => (inTeam, outTeam) => announce({ icon, text: `${inTeam} is in`, sub: `taking ${outTeam}'s spot` });
   const isDecided = ([a, b]) => Number(a.winProbability) >= LOCKED || Number(b.winProbability) >= LOCKED;
   const open = pairs.filter(p => !isDecided(p)), done = pairs.filter(isDecided);
-  const cols = open.length <= 1 ? 1 : open.length <= 4 ? 2 : 3;
+  // Decided matchups keep their tiles while there's room (Jim, 2026-11-02: it's fun to see one that wasn't a sure
+  // thing locked in), the most recently clinched first; the rest go to the results strip. Six tiles on a wide
+  // screen, four on a phone.
+  const capacity = narrow ? 4 : 6;
+  const doneTiles = [...done].sort(([x], [y]) => (clinchedAt.current.get(y.matchupId) || 0) - (clinchedAt.current.get(x.matchupId) || 0))
+    .slice(0, Math.max(0, capacity - open.length));
+  const strip = done.filter(p => !doneTiles.includes(p));
+  const tiles = [...open, ...doneTiles];
+  const cols = tiles.length <= 1 ? 1 : tiles.length <= 4 ? 2 : 3;
   const liveGames = games.filter(g => g.state === "in");
   const teamName = new Map(scores.map(s => [Number(s.teamId), s.team]));
 
@@ -157,21 +168,23 @@ export default function TvView({ scoreboard, guillotine, livePlays, marquee, log
       </header>
       <div className="tv-body">
         <section className="tv-left">
-          {open.length ? <div className={"tv-matchups n" + open.length} style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
-            {open.map(([a, b]) => <div key={a.matchupId} className={"tv-tile" + (flashing.has(a.matchupId) ? " flash" : "")}>
+          {tiles.length ? <div className={"tv-matchups n" + tiles.length} style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
+            {tiles.map(([a, b]) => { const settled = isDecided([a, b]), winner = Number(a.winProbability) >= Number(b.winProbability) ? a : b;
+              return <div key={a.matchupId} className={"tv-tile" + (flashing.has(a.matchupId) ? " flash" : "") + (settled ? " decided" : "")}>
               <div className="tv-score">
                 {[[a, A_COLOR], [b, B_COLOR]].map(([t, c]) => <p key={t.teamId} style={{ color: c }}>
                   <span>{logos[t.teamId] ? <img src={logos[t.teamId]} alt="" /> : null}{t.team}</span>
                   {narrow ? <small className="tv-left-count">{t.startersLeft ?? 0} left</small> : null}<b>{money(t.score)}</b></p>)}
               </div>
-              <MiniNeedle team={b} stakes={[a, b]} p={Number(b.winProbability)} from={b.liveWinFrom} sides={[a.team, b.team]} colors={[A_COLOR, B_COLOR]} short={narrow}
-                caption={narrow ? false : `${a.startersLeft ?? 0} left · ${b.startersLeft ?? 0} left`} history={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} games={games} />
-            </div>)}
+              <MiniNeedle team={b} stakes={[a, b]} p={Number(b.winProbability)} from={b.liveWinFrom} sides={[a.team, b.team]} colors={[A_COLOR, B_COLOR]} short={narrow || settled}
+                caption={settled ? `✊ ${winner.team}` : narrow ? false : `${a.startersLeft ?? 0} left · ${b.startersLeft ?? 0} left`} journey={settled}
+                history={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} games={games} />
+            </div>; })}
           </div> : <p className="tv-all-done">Every matchup is decided.</p>}
-          {done.length && narrow && !resultsOpen ? <p className="tv-results-line" onClick={() => setResultsOpen(true)}
-            title={done.map(([a, b]) => `${a.team} ${money(a.score)}–${money(b.score)} ${b.team}`).join("\n")}>
-            {done.map(([a, b]) => "✊ " + (Number(a.winProbability) >= Number(b.winProbability) ? a : b).team).join(" · ")}</p>
-          : done.length ? <div className="tv-results" onClick={narrow ? () => setResultsOpen(false) : undefined}>{done.map(([a, b]) => {
+          {strip.length && narrow && !resultsOpen ? <p className="tv-results-line" onClick={() => setResultsOpen(true)}
+            title={strip.map(([a, b]) => `${a.team} ${money(a.score)}–${money(b.score)} ${b.team}`).join("\n")}>
+            {strip.map(([a, b]) => "✊ " + (Number(a.winProbability) >= Number(b.winProbability) ? a : b).team).join(" · ")}</p>
+          : strip.length ? <div className="tv-results" onClick={narrow ? () => setResultsOpen(false) : undefined}>{strip.map(([a, b]) => {
             const [w, l] = Number(a.winProbability) >= Number(b.winProbability) ? [a, b] : [b, a];
             return <span key={a.matchupId}>✊ <b>{w.team}</b> {money(w.score)}–{money(l.score)} {l.team}</span>;
           })}</div> : null}

@@ -1197,6 +1197,7 @@ section,details,.odds-block{scroll-margin-top:72px}
 .race-chips.compact .race-tier{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}.race-chips.compact.open .race-tier{white-space:normal}.tv-left-count{margin-left:auto;margin-right:.5em;font-size:.72em;color:#8b8e86;font-weight:700;flex:none}.tv-results-line{margin:4px 0 0;font-size:12px;font-weight:700;color:#e6c85c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
 /* Watch mode on a wide screen: race cards as rows (dial beside the odds), bigger dials, chips on one line each. */
 .tv-side .mini-needle{display:grid;grid-template-columns:7.5vw minmax(0,1fr);column-gap:.6vw;align-items:center;text-align:left;padding:.4vw .6vw}.tv-side .mini-needle .needle-dial{grid-row:span 2;max-width:7.5vw!important;margin:0}.tv-side .mini-needle b{margin:0;font-size:1.05em;white-space:nowrap}.tv-side .mini-needle-name{font-size:.75em}
+.tv-side .mini-needle b{font-size:.9em}
 /* Watch mode on a phone: the snapshot (keep last so the screen-scaled rules above don't win). */
 @media (max-width:760px),(orientation:portrait) and (max-width:1024px){
 .tv{padding-bottom:0}.tv-head h1{font-size:16px}.tv-head .section-kicker{font-size:9px}
@@ -1215,3 +1216,4 @@ section,details,.odds-block{scroll-margin-top:72px}
 @media (max-width:760px),(orientation:portrait) and (max-width:1024px){.tv-side .mini-needle .needle-dial{max-width:80px!important}.tv-side .mini-needle{padding:4px 6px 3px}.tv-side .mini-needles{gap:6px;margin:4px 0}.tv-tile .mini-needle .needle-dial{max-width:100px!important}.tv-matchups{gap:6px!important}.tv-side .mini-needles-label{margin-top:6px}.race-tiers{margin:0 0 2px}.tv-results-line{margin-top:2px}}
 @media (max-width:760px),(orientation:portrait) and (max-width:1024px){.tv-side .mini-needle .needle-dial{max-width:74px!important}.tv-tile .mini-needle .needle-dial{max-width:92px!important}.tv-tile{padding:6px 8px 3px}.tv-head h1{margin-top:2px}}
 .needle-range{fill:none;stroke:#f0f3ed;stroke-width:7;stroke-linecap:round;opacity:.16}.mini-needle .needle-drift{stroke-width:4}.mini-needle .needle-range{stroke-width:11}.mini-needle .needle-drift-start{r:4}
+.tv-tile.decided{opacity:1}.tv-tile.decided .mini-needle-name{color:#e6c85c;font-weight:800;font-size:.95em}.tv-tile.decided{border-color:#4a533e}
