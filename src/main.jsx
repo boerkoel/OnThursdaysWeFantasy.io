@@ -624,10 +624,11 @@ function App() {
   // Game-day view (Jim, 2026-11-02): everything the pinned manager is in on one full screen that stays awake:
   // the matchup with its needle, drives to root for, live lineups and key plays, the other needles, the
   // guillotine and survivor lines. Over the app (the matchup sheet still opens on top), at #gameday.
-  // The league on a TV (#tv): replaces the page while open.
-  const [tv, setTv] = useState(() => { try { return window.location.hash === "#tv"; } catch { return false; } });
+  // Watch mode (#watch; #tv still works): the whole league on one screen, replacing the page while open.
+  const isWatch = () => ["#watch", "#tv"].includes(window.location.hash);
+  const [tv, setTv] = useState(() => { try { return isWatch(); } catch { return false; } });
   useEffect(() => {
-    const onHash = () => setTv(window.location.hash === "#tv");
+    const onHash = () => setTv(isWatch());
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
@@ -738,7 +739,7 @@ function App() {
         <div className="section-heading"><div><span className="section-kicker">RIGHT NOW</span><h2>Week {scoreboard.week} Scores</h2></div>
           <span className="scores-actions">
             <button type="button" className={primetimeView ? "primetime-toggle on" : "primetime-toggle"} aria-pressed={primetimeView} onClick={() => setPrimetimeView(!primetimeView)} title="Expand each matchup to the players live right now and its key plays">📺 Primetime view</button>
-            <a className="primetime-toggle tv-link" href="#tv" title="The whole league on one screen, for a TV or laptop at a watch party">🖥️ TV view</a>
+            <a className="primetime-toggle tv-link" href="#watch" title="The whole league on one screen: put it up on a TV or laptop at a watch party">👀 Watch mode</a>
             <button type="button" className={status === "LIVE" ? "live-pill is-live" : "live-pill"} onClick={refresher.run} title="Refresh now">● {status} ↻</button>
           </span></div>
         <div className="matchup-list">

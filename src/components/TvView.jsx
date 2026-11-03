@@ -7,7 +7,8 @@ import { LOCKED, MiniNeedle, NeedleRace } from "./Needle.jsx";
 // The league on a TV (Jim, 2026-11-02, for watch parties): everything live on one landscape screen, read from
 // across the room, nothing to tap. Six matchup needles, the median, ticket and chop races, who's on the field,
 // and a ticker of key plays and League Wire headlines. Keeps the screen awake, hides an idle cursor, and pulses
-// a matchup's tile when it gets a new favorite. At #tv; sized to the screen (vw units) so a laptop or a TV works.
+// a matchup's tile when it gets a new favorite. Watch mode, at #watch (Jim: not tied to a device; #tv still works);
+// sized to the screen (vw units) so a laptop or a TV works.
 // Space follows what's still in play (Jim, 2026-11-02): decided matchups announce themselves full screen, then
 // shrink into a results strip while the open ones grow (3×2, 2×2, side by side, one big needle); the side
 // races show only the median's four most at stake and the ticket's and chop's top two, and a new team taking
@@ -132,7 +133,7 @@ export default function TvView({ scoreboard, guillotine, livePlays, marquee, log
           <h1>{liveGames.length ? <><span className="needle-live">● LIVE</span> {liveGames.map(gameText).join("   ·   ")}</> : "Game day"}</h1></div>
         <div className="tv-actions">
           {!fullscreen && document.documentElement.requestFullscreen ? <button type="button" onClick={() => document.documentElement.requestFullscreen().catch(() => {})}>⛶ Full screen</button> : null}
-          <button type="button" onClick={onClose} aria-label="Leave the TV view">✕</button>
+          <button type="button" onClick={onClose} aria-label="Leave watch mode">✕</button>
         </div>
       </header>
       <div className="tv-body">
