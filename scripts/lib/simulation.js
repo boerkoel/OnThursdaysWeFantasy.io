@@ -244,8 +244,10 @@ export function playerOutlook({ actual, projection, positionId, game = null, pro
   const unscripted = restOf({ projection, actual, game }) * paceFactor({ positionId, actual, projection, game });
   const shareLeft = Number.isFinite(projection) && projection > 0 ? Math.min(1, unscripted / projection) : 0.5;
   const rest = unscripted * gameScriptFactor({ positionId, proTeamId, game }) * driveFactor({ positionId, proTeamId, game }) * usageFactor({ positionId, usage, game });
+  const live = game?.state === "in" && TD_POINTS[Number(positionId)];
   return {
     rest,
+    ...(live ? { td: { chance: tdChance(positionId, rest), points: TD_POINTS[Number(positionId)] } } : {}),
     sd: (SD_FRACTION[Number(positionId)] ?? DEFAULT_SD_FRACTION) * Math.max(rest, MIN_SPREAD_POINTS),
     floor: NEGATIVE_FLOOR[Number(positionId)] ?? DEFAULT_FLOOR,
     exitRisk: EARLY_EXIT_RATE * shareLeft
@@ -274,10 +276,23 @@ function normal(rng) {
 // already price in the usual chance of getting hurt mid-game, so the early-exit
 // draw only shapes the spread: the no-exit outcome is scaled up so the average
 // stays at the projection (exitRisk x EARLY_EXIT_SHARE / 2 is the exit draw's mean).
+// A touchdown is one lump (Jim, 2026-11-02: TDsMaGee needed 6.7 from Emanuel Wilson's last quarter and a half,
+// which a smooth spread around his ~2.4 expected called 0.5%): for a skill player in a game being played, his
+// chance of a TD in the time left and its worth in this league (a catch ~9, a run 6.5, a QB's pass 4.8). The
+// draw adds the lump that often and takes its expected value out of the smooth part, so his average holds.
+export const TD_POINTS = { 1: 4.8, 2: 6.5, 3: 9, 4: 9 };
+const TD_RATE = { 1: 0.12, 2: 0.07, 3: 0.06, 4: 0.07 };   // chance = 1 - e^(-rate x remaining points)
+export const tdChance = (positionId, rest) => TD_RATE[Number(positionId)] ? 1 - Math.exp(-TD_RATE[Number(positionId)] * Math.max(0, rest)) : 0;
+
 function drawPoints(p, rng) {
   const keep = 1 - p.exitRisk * (1 - EARLY_EXIT_SHARE / 2);
   const rest = keep > 0 ? p.rest / keep : p.rest;
-  return rng() < p.exitRisk ? rest * EARLY_EXIT_SHARE * rng() : Math.max(-p.floor, rest + p.sd * normal(rng));
+  if (rng() < p.exitRisk) return rest * EARLY_EXIT_SHARE * rng();
+  if (p.td) {
+    const smooth = Math.max(0, rest - p.td.chance * p.td.points);
+    return Math.max(-p.floor, smooth + 0.7 * p.sd * normal(rng)) + (rng() < p.td.chance ? p.td.points : 0);
+  }
+  return Math.max(-p.floor, rest + p.sd * normal(rng));
 }
 
 // team: { score, players: [playerOutlook, ...] } for starters still to play.
