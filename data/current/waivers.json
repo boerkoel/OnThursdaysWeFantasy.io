@@ -1,5 +1,90 @@
 {
   "week": 9,
-  "updatedAt": "2026-11-03T16:16:44.950Z",
-  "claims": []
+  "updatedAt": "2026-11-04T15:12:32.784Z",
+  "claims": [
+    {
+      "teamId": 7,
+      "won": true,
+      "status": "EXECUTED",
+      "processedAt": "2026-11-04T08:15:45.886Z",
+      "playerId": 4597500,
+      "droppedPlayerId": 4429835,
+      "player": "Adonai Mitchell",
+      "position": "WR",
+      "projection": 9.88,
+      "dropped": "George Holani"
+    },
+    {
+      "teamId": 7,
+      "won": false,
+      "status": "FAILED_ROSTERLIMIT",
+      "processedAt": "2026-11-04T08:15:45.887Z",
+      "playerId": 3122840,
+      "droppedPlayerId": null,
+      "player": "Deshaun Watson",
+      "position": "QB",
+      "projection": 16.47,
+      "dropped": null
+    },
+    {
+      "teamId": 7,
+      "won": true,
+      "status": "EXECUTED",
+      "processedAt": "2026-11-04T08:15:45.886Z",
+      "playerId": 4433970,
+      "droppedPlayerId": null,
+      "player": "J.J. McCarthy",
+      "position": "QB",
+      "projection": 17.7,
+      "dropped": null
+    },
+    {
+      "teamId": 9,
+      "won": true,
+      "status": "EXECUTED",
+      "processedAt": "2026-11-04T08:15:45.886Z",
+      "playerId": 4567156,
+      "droppedPlayerId": null,
+      "player": "Treylon Burks",
+      "position": "WR",
+      "projection": 10.16,
+      "dropped": null
+    },
+    {
+      "teamId": 9,
+      "won": false,
+      "status": "FAILED_INVALIDPLAYERSOURCE",
+      "processedAt": "2026-11-04T08:15:45.886Z",
+      "playerId": 4597500,
+      "droppedPlayerId": null,
+      "player": "Adonai Mitchell",
+      "position": "WR",
+      "projection": 9.88,
+      "dropped": null
+    },
+    {
+      "teamId": 7,
+      "won": false,
+      "status": "FAILED_ROSTERLIMIT",
+      "processedAt": "2026-11-04T08:15:45.886Z",
+      "playerId": 4242512,
+      "droppedPlayerId": null,
+      "player": "Malik Willis",
+      "position": "QB",
+      "projection": 17.56,
+      "dropped": null
+    },
+    {
+      "teamId": 9,
+      "won": true,
+      "status": "EXECUTED",
+      "processedAt": "2026-11-04T08:15:45.885Z",
+      "playerId": 4241555,
+      "droppedPlayerId": 4360238,
+      "player": "Elijah Mitchell",
+      "position": "RB",
+      "projection": 10.47,
+      "dropped": "Dameon Pierce"
+    }
+  ]
 }
