@@ -1,11 +1,16 @@
 {
   "week": 9,
-  "lastUpdated": "2026-11-04T16:18:35.945Z",
+  "lastUpdated": "2026-11-04T20:37:00.884Z",
   "stories": [
     {
-      "type": "PROJECTION FLIP",
-      "text": "🔮 PROJECTION FLIP: Ruffing the Passer is now projected to beat Mr. Action Jackson.",
-      "score": 98
+      "type": "MEDIAN FLIP",
+      "text": "🚨 MEDIAN FLIP: TDsMaGee just moved above the projected league median.",
+      "score": 96
+    },
+    {
+      "type": "RULED OUT",
+      "text": "🚨 RULED OUT: S. Darnold won't play, and he's in Mr. Action Jackson's lineup. Next man up Drew Lock is on waivers. Kickoff's Sunday 4:25 PM.",
+      "score": 95
     },
     {
       "type": "FRESH OBITUARY",
@@ -14,17 +19,22 @@
     },
     {
       "type": "PLAYOFF SWING",
-      "text": "🎯 PLAYOFF SWING: Ruffing the Passer vs Mr. Action Jackson. Playoff odds with a win / loss: Ruffing the Passer 44% / 21%, Mr. Action Jackson 89% / 68%.",
-      "score": 88.98
+      "text": "🎯 PLAYOFF SWING: Ruffing the Passer vs Mr. Action Jackson. Playoff odds with a win / loss: Ruffing the Passer 45% / 20%, Mr. Action Jackson 88% / 65%.",
+      "score": 89
+    },
+    {
+      "type": "PROJECTION TIGHTENING",
+      "text": "🔮 49er Faith-Fool vs Beautiful Dark Twisted Fantasy is tightening — the projected margin shrank to 8.33 pts.",
+      "score": 82
     },
     {
       "type": "TWO WINS",
-      "text": "🎯 TWO WINS: Ruffing the Passer: 46% playoff odds with 2 wins this week, 15% with none (now 33%).",
+      "text": "🎯 TWO WINS: Ruffing the Passer: 48% playoff odds with 2 wins this week, 15% with none (now 37%).",
       "score": 80
     },
     {
       "type": "LINE MOVE",
-      "text": "📈 LINE MOVE: JAX @ BAL: BAL −4.5 at open, JAX −10 now. News: \"Rookie Joe Fagnano to start Thursday night vs. Jaguars, Jesse Minter says\"",
+      "text": "📈 LINE MOVE: JAX @ BAL: BAL −4.5 at open, JAX −10 now. 9 league starters in it, led by B. Tuten (Kyle Tucker).",
       "score": 80
     },
     {
@@ -33,24 +43,14 @@
       "score": 80
     },
     {
-      "type": "GAME TO WATCH",
-      "text": "🏟️ Game to watch: JAX @ BAL (Thursday 8:15 PM), 9 league starters in action with 90.16 pts up for grabs.",
-      "score": 77
-    },
-    {
-      "type": "WHAT TO WATCH",
-      "text": "📺 Up next, Thursday 8:15 PM (JAX @ BAL): 9 league starters in action. Most riding on it: Kirbo Crushers vs Brock You Like a Hurricane (33.73 pts projected).",
-      "score": 76
-    },
-    {
       "type": "RIVALRY WEEK",
-      "text": "🤝 Rivalry week: Ramosverse leads TDsMaGee 5–2 all-time.",
+      "text": "🤝 Rivalry week: Gibb it to Me Baby leads The Mahomies 4–3 all-time.",
       "score": 67.5
     },
     {
-      "type": "REPORT CARD",
-      "text": "📝 REPORT CARD: Brock You Like a Hurricane A- (scoring A+, record A+); Kirbo Crushers D- (record F, scoring F).",
-      "score": 66
+      "type": "BYE BYE BYE",
+      "text": "🎤 BYE BYE BYE: The Mahomies has 2 starters on bye this week (Metcalf and Boswell). Somebody call *NSYNC.",
+      "score": 62
     },
     {
       "type": "LONG-TERM REGRET",
@@ -58,9 +58,9 @@
       "score": 60
     },
     {
-      "type": "STOCK FALLING",
-      "text": "📉 Stock falling: Claremont In Yo Stace!'s ESPN projection is trending down.",
-      "score": 20
+      "type": "RETRO TRADE",
+      "text": "🔁 Retro trade: If TDsMaGee and Gibb it to Me Baby had swapped Michael Wilson for Quinshon Judkins back in Week 5, both would be ahead (+2 wins each).",
+      "score": 38
     }
   ],
   "headlines": {
@@ -83,6 +83,46 @@
     "lastKickoff": null
   },
   "pregameNews": [
+    {
+      "matchupId": 52,
+      "teamId": 8,
+      "playerId": 3912547,
+      "player": "S. Darnold",
+      "id": "out-3912547",
+      "news": "out",
+      "text": "ruled out before kickoff",
+      "wallclock": "2026-11-04T20:37:00.596Z"
+    },
+    {
+      "matchupId": 52,
+      "teamId": 8,
+      "playerId": 3912547,
+      "player": "S. Darnold",
+      "id": "news-3912547-coach seahawks qb sam darnold ruled out with quad injury is week to week",
+      "news": "headline",
+      "text": "Coach: Seahawks QB Sam Darnold ruled out with quad injury, is week-to-week",
+      "wallclock": "2026-11-04T19:29:13Z"
+    },
+    {
+      "matchupId": 52,
+      "teamId": 8,
+      "playerId": 3912547,
+      "player": "S. Darnold",
+      "id": "news-3912547-seahawks qb sam darnold is going to be out sunday vs the cardinals due to a quad injury coach mike macdonald told reporters",
+      "news": "headline",
+      "text": "Seahawks QB Sam Darnold is going to be out Sunday vs. the Cardinals due to a quad injury, coach Mike Macdonald told reporters",
+      "wallclock": "2026-11-04T19:09:18.329Z"
+    },
+    {
+      "matchupId": 49,
+      "teamId": 5,
+      "playerId": 4569618,
+      "player": "G. Wilson",
+      "id": "news-4569618-jets garrett wilson in concussion protocol breece hall trending toward return",
+      "news": "headline",
+      "text": "Jets' Garrett Wilson in concussion protocol, Breece Hall trending toward return",
+      "wallclock": "2026-11-04T18:42:51Z"
+    },
     {
       "matchupId": 50,
       "teamId": 9,

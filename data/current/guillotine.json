@@ -3,7 +3,7 @@
   "leagueName": "Chop it like its Hot!",
   "draftDate": "2026-09-10T16:00:00.000Z",
   "week": 9,
-  "lastUpdated": "2026-11-04T16:14:23.943Z",
+  "lastUpdated": "2026-11-04T20:31:23.216Z",
   "simulations": 10000,
   "lineupBaseline": {
     "week": 9,
@@ -33,26 +33,26 @@
       "abbrev": "MMM",
       "logo": "/OnThursdaysWeFantasy.io/guillotine-logos/team-9.svg",
       "score": 0,
-      "projected": 126.71,
-      "projectionSd": 31.28,
+      "projected": 126.66,
+      "projectionSd": 31.27,
       "remaining": [
         {
           "name": "Ja'Marr Chase",
           "game": "CIN VS ATL",
           "actual": 0,
-          "projectedRest": 20.74
+          "projectedRest": 20.91
         },
         {
           "name": "Jonathan Taylor",
           "game": "DAL @ IND",
           "actual": 0,
-          "projectedRest": 19.74
+          "projectedRest": 19.77
         },
         {
           "name": "Dak Prescott",
           "game": "DAL @ IND",
           "actual": 0,
-          "projectedRest": 27.85
+          "projectedRest": 27.79
         },
         {
           "name": "Colston Loveland",
@@ -64,7 +64,7 @@
           "name": "Parker Washington",
           "game": "JAX @ BAL",
           "actual": 0,
-          "projectedRest": 13.57
+          "projectedRest": 13.56
         },
         {
           "name": "Christian Watson",
@@ -76,13 +76,13 @@
           "name": "Jake Bates",
           "game": "DET @ MIA",
           "actual": 0,
-          "projectedRest": 9.73
+          "projectedRest": 9.7
         },
         {
           "name": "Chiefs D/ST",
           "game": "NYJ @ KC",
           "actual": 0,
-          "projectedRest": 7.54
+          "projectedRest": 7.4
         }
       ],
       "lineup": [
@@ -172,7 +172,7 @@
           "actual": 0,
           "projection": 9.93,
           "injury": null,
-          "owned": 45
+          "owned": 46
         },
         {
           "id": -16012,
@@ -183,7 +183,7 @@
           "actual": 0,
           "projection": 5.95,
           "injury": null,
-          "owned": 55
+          "owned": 56
         }
       ],
       "lineupOutlook": {
@@ -200,52 +200,52 @@
             "chance": 0.64
           }
         ],
-        "gain": 13.8,
-        "reset": 0.41
+        "gain": 13.9,
+        "reset": 0.38
       },
-      "chopProbability": 67.44,
+      "chopProbability": 67.07,
       "swingPlayer": {
-        "name": "Christian Watson",
-        "game": "GB @ NE",
-        "projectedRest": 16.24,
-        "chopIfAbove": 52.85,
-        "chopIfBelow": 73.33,
-        "bigGame": 26.75,
-        "quietGame": 2.99
+        "name": "Ja'Marr Chase",
+        "game": "CIN VS ATL",
+        "projectedRest": 20.91,
+        "chopIfAbove": 57.27,
+        "chopIfBelow": 76.99,
+        "bigGame": 32.8,
+        "quietGame": 9.65
       },
       "gameSwings": [
+        {
+          "game": "CIN VS ATL",
+          "players": [
+            "Ja'Marr Chase"
+          ],
+          "projectedRest": 20.91,
+          "chopIfAbove": 57.27,
+          "chopIfBelow": 76.99,
+          "bigGame": 32.8,
+          "quietGame": 9.65
+        },
         {
           "game": "GB @ NE",
           "players": [
             "Christian Watson"
           ],
           "projectedRest": 16.24,
-          "chopIfAbove": 52.85,
-          "chopIfBelow": 73.33,
-          "bigGame": 26.75,
-          "quietGame": 2.99
-        },
-        {
-          "game": "CIN VS ATL",
-          "players": [
-            "Ja'Marr Chase"
-          ],
-          "projectedRest": 20.74,
-          "chopIfAbove": 58.19,
-          "chopIfBelow": 76.55,
-          "bigGame": 32.84,
-          "quietGame": 9.32
+          "chopIfAbove": 53.14,
+          "chopIfBelow": 72.74,
+          "bigGame": 26.6,
+          "quietGame": 3.03
         },
         {
           "game": "JAX @ BAL",
           "players": [
             "Parker Washington"
           ],
-          "projectedRest": 13.57,
-          "chopIfAbove": 61.51,
-          "chopIfBelow": 73.39,
-          "bigGame": 21.52,
-          "quietGame": 6.14
+          "projectedRest": 13.56,
+          "chopIfAbove": 60.84,
+          "chopIfBelow": 73.38,
+          "bigGame": 21.61,
+          "quietGame": 6.2
         }
       ],
       "swingGame": {
@@ -254,21 +254,21 @@
           "Jonathan Taylor",
           "Dak Prescott"
         ],
-        "projectedRest": 47.59,
-        "chopIfAbove": 59.47,
-        "chopIfBelow": 70.95,
-        "bigGame": 63.35,
-        "quietGame": 24.57
+        "projectedRest": 47.55,
+        "chopIfAbove": 59.05,
+        "chopIfBelow": 70.86,
+        "bigGame": 63.44,
+        "quietGame": 25.14
       },
       "rival": {
         "teamId": 7,
         "team": "Uriel's Upbeat Team",
-        "share": 57.21
+        "share": 59.61
       },
       "justAbove": {
         "teamId": 7,
         "team": "Uriel's Upbeat Team",
-        "share": 47.95
+        "share": 49.72
       },
       "playersLeft": 8
     },
@@ -278,14 +278,14 @@
       "abbrev": "UUT",
       "logo": "/OnThursdaysWeFantasy.io/guillotine-logos/team-7.svg",
       "score": 0,
-      "projected": 161.62,
-      "projectionSd": 37.41,
+      "projected": 160.99,
+      "projectionSd": 37.23,
       "remaining": [
         {
           "name": "Jaxon Smith-Njigba",
           "game": "ARI @ SEA",
           "actual": 0,
-          "projectedRest": 23.35
+          "projectedRest": 22.96
         },
         {
           "name": "Bijan Robinson",
@@ -309,13 +309,13 @@
           "name": "Malik Nabers",
           "game": "NYG @ PHI",
           "actual": 0,
-          "projectedRest": 16.35
+          "projectedRest": 16.31
         },
         {
           "name": "CeeDee Lamb",
           "game": "DAL @ IND",
           "actual": 0,
-          "projectedRest": 20.18
+          "projectedRest": 19.98
         },
         {
           "name": "Vikings D/ST",
@@ -327,13 +327,13 @@
           "name": "Chuba Hubbard",
           "game": "DEN @ CAR",
           "actual": 0,
-          "projectedRest": 19.75
+          "projectedRest": 19.76
         },
         {
           "name": "Brandon Aubrey",
           "game": "DAL @ IND",
           "actual": 0,
-          "projectedRest": 10.86
+          "projectedRest": 10.85
         }
       ],
       "lineup": [
@@ -344,7 +344,7 @@
           "proTeamId": 26,
           "slot": 23,
           "actual": 0,
-          "projection": 21.47,
+          "projection": 21,
           "injury": null,
           "owned": 100
         },
@@ -444,15 +444,15 @@
         "gain": 1,
         "reset": 0.15
       },
-      "chopProbability": 19.05,
+      "chopProbability": 19.36,
       "swingPlayer": {
         "name": "Joe Burrow",
         "game": "CIN VS ATL",
         "projectedRest": 30.56,
-        "chopIfAbove": 11.34,
-        "chopIfBelow": 27.09,
-        "bigGame": 43.29,
-        "quietGame": 17.2
+        "chopIfAbove": 11.29,
+        "chopIfBelow": 27.68,
+        "bigGame": 43.36,
+        "quietGame": 17.24
       },
       "gameSwings": [
         {
@@ -462,21 +462,21 @@
             "Joe Burrow"
           ],
           "projectedRest": 52.96,
-          "chopIfAbove": 8.99,
-          "chopIfBelow": 29.33,
-          "bigGame": 70.7,
-          "quietGame": 35.58
+          "chopIfAbove": 8.76,
+          "chopIfBelow": 30.05,
+          "bigGame": 70.51,
+          "quietGame": 35.68
         },
         {
           "game": "ARI @ SEA",
           "players": [
             "Jaxon Smith-Njigba"
           ],
-          "projectedRest": 23.35,
-          "chopIfAbove": 11.49,
-          "chopIfBelow": 26.61,
-          "bigGame": 36.92,
-          "quietGame": 10.7
+          "projectedRest": 22.96,
+          "chopIfAbove": 11.79,
+          "chopIfBelow": 26.65,
+          "bigGame": 36.67,
+          "quietGame": 10.4
         },
         {
           "game": "DAL @ IND",
@@ -484,11 +484,11 @@
             "CeeDee Lamb",
             "Brandon Aubrey"
           ],
-          "projectedRest": 31.04,
-          "chopIfAbove": 12.1,
-          "chopIfBelow": 26.15,
-          "bigGame": 44.3,
-          "quietGame": 18.81
+          "projectedRest": 30.83,
+          "chopIfAbove": 11.97,
+          "chopIfBelow": 26.48,
+          "bigGame": 43.83,
+          "quietGame": 18.59
         }
       ],
       "swingGame": {
@@ -498,20 +498,20 @@
           "Joe Burrow"
         ],
         "projectedRest": 52.96,
-        "chopIfAbove": 8.99,
-        "chopIfBelow": 29.33,
-        "bigGame": 70.7,
-        "quietGame": 35.58
+        "chopIfAbove": 8.76,
+        "chopIfBelow": 30.05,
+        "bigGame": 70.51,
+        "quietGame": 35.68
       },
       "rival": {
         "teamId": 9,
         "team": "Mel's Mediocre Mob",
-        "share": 76.21
+        "share": 78.5
       },
       "justAbove": {
         "teamId": 10,
         "team": "Joe's Scary Team",
-        "share": 43.11
+        "share": 44.14
       },
       "playersLeft": 9
     },
@@ -521,14 +521,14 @@
       "abbrev": "JST",
       "logo": "/OnThursdaysWeFantasy.io/guillotine-logos/team-10.svg",
       "score": 0,
-      "projected": 177.65,
-      "projectionSd": 41.82,
+      "projected": 177.72,
+      "projectionSd": 41.84,
       "remaining": [
         {
           "name": "Jahmyr Gibbs",
           "game": "DET @ MIA",
           "actual": 0,
-          "projectedRest": 28.52
+          "projectedRest": 28.53
         },
         {
           "name": "Puka Nacua",
@@ -540,7 +540,7 @@
           "name": "Amon-Ra St. Brown",
           "game": "DET @ MIA",
           "actual": 0,
-          "projectedRest": 19.69
+          "projectedRest": 19.68
         },
         {
           "name": "Drake Maye",
@@ -570,7 +570,7 @@
           "name": "Kenneth Walker III",
           "game": "NYJ @ KC",
           "actual": 0,
-          "projectedRest": 24.65
+          "projectedRest": 24.71
         }
       ],
       "lineup": [
@@ -678,15 +678,15 @@
         ],
         "reset": 0.85
       },
-      "chopProbability": 13.53,
+      "chopProbability": 13.59,
       "swingPlayer": {
         "name": "Jahmyr Gibbs",
         "game": "DET @ MIA",
-        "projectedRest": 28.52,
-        "chopIfAbove": 7.28,
-        "chopIfBelow": 19.87,
-        "bigGame": 43.75,
-        "quietGame": 13.59
+        "projectedRest": 28.53,
+        "chopIfAbove": 6.47,
+        "chopIfBelow": 20.44,
+        "bigGame": 44.1,
+        "quietGame": 13.87
       },
       "gameSwings": [
         {
@@ -695,22 +695,11 @@
             "Jahmyr Gibbs",
             "Amon-Ra St. Brown"
           ],
-          "projectedRest": 48.2,
-          "chopIfAbove": 5.59,
-          "chopIfBelow": 21.32,
-          "bigGame": 67.42,
-          "quietGame": 30.73
-        },
-        {
-          "game": "NYJ @ KC",
-          "players": [
-            "Kenneth Walker III"
-          ],
-          "projectedRest": 24.65,
-          "chopIfAbove": 7.8,
-          "chopIfBelow": 19.24,
-          "bigGame": 37.7,
-          "quietGame": 11.9
+          "projectedRest": 48.21,
+          "chopIfAbove": 5.21,
+          "chopIfBelow": 21.68,
+          "bigGame": 67.65,
+          "quietGame": 30.52
         },
         {
           "game": "LAR @ WSH",
@@ -718,10 +707,21 @@
             "Puka Nacua"
           ],
           "projectedRest": 22.97,
-          "chopIfAbove": 7.9,
-          "chopIfBelow": 19.08,
-          "bigGame": 36.38,
+          "chopIfAbove": 7.89,
+          "chopIfBelow": 19.31,
+          "bigGame": 36.31,
           "quietGame": 10.53
+        },
+        {
+          "game": "NYJ @ KC",
+          "players": [
+            "Kenneth Walker III"
+          ],
+          "projectedRest": 24.71,
+          "chopIfAbove": 7.91,
+          "chopIfBelow": 19.18,
+          "bigGame": 38.04,
+          "quietGame": 12.06
         }
       ],
       "swingGame": {
@@ -730,21 +730,21 @@
           "Jahmyr Gibbs",
           "Amon-Ra St. Brown"
         ],
-        "projectedRest": 48.2,
-        "chopIfAbove": 5.59,
-        "chopIfBelow": 21.32,
-        "bigGame": 67.42,
-        "quietGame": 30.73
+        "projectedRest": 48.21,
+        "chopIfAbove": 5.21,
+        "chopIfBelow": 21.68,
+        "bigGame": 67.65,
+        "quietGame": 30.52
       },
       "rival": {
         "teamId": 9,
         "team": "Mel's Mediocre Mob",
-        "share": 69.3
+        "share": 71.72
       },
       "justAbove": {
         "teamId": 7,
         "team": "Uriel's Upbeat Team",
-        "share": 33.01
+        "share": 30.93
       },
       "playersLeft": 8
     }
@@ -932,6 +932,14 @@
           "7": 19.05,
           "9": 67.44,
           "10": 13.53
+        }
+      },
+      {
+        "t": "2026-11-04T20:31:23.126Z",
+        "p": {
+          "7": 19.36,
+          "9": 67.07,
+          "10": 13.59
         }
       }
     ]
