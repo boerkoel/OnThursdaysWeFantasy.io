@@ -12,15 +12,15 @@
         "name": "Ramosverse",
         "abbrev": "MrsR",
         "logo": "/OnThursdaysWeFantasy.io/team-logos/team-1.svg",
-        "wins": 6,
-        "losses": 10,
+        "wins": 5,
+        "losses": 11,
         "ties": 0,
         "h2hWins": 2,
         "h2hLosses": 6,
-        "medianWins": 4,
-        "medianLosses": 4,
+        "medianWins": 3,
+        "medianLosses": 5,
         "games": 8,
-        "winPct": 0.375,
+        "winPct": 0.3125,
         "pointsFor": 933.96,
         "pointsAgainst": 1131.8,
         "streak": {
@@ -282,8 +282,8 @@
               "teamId": 2,
               "team": "TDsMaGee",
               "h2hWinsAdded": 0,
-              "medianWinsAdded": 0,
-              "winsAdded": 0,
+              "medianWinsAdded": 1,
+              "winsAdded": 1,
               "mutualTrade": {
                 "playerId": 4426338,
                 "player": "Bo Nix",
@@ -320,8 +320,8 @@
               "teamId": 6,
               "team": "Claremont In Yo Stace!",
               "h2hWinsAdded": 0,
-              "medianWinsAdded": 1,
-              "winsAdded": 1,
+              "medianWinsAdded": 2,
+              "winsAdded": 2,
               "mutualTrade": {
                 "playerId": 4426338,
                 "player": "Bo Nix",
@@ -343,32 +343,36 @@
               ]
             },
             {
-              "playerId": 4569559,
-              "player": "Devaughn Vele",
+              "playerId": 4373678,
+              "player": "Khalil Shakir",
               "position": "WR",
-              "startRate": 42.86,
-              "rosteredWeeks": 7,
-              "startedWeeks": 3,
-              "boost": 13.9,
-              "teamId": 9,
-              "team": "The Mahomies",
+              "startRate": 25,
+              "rosteredWeeks": 8,
+              "startedWeeks": 2,
+              "boost": 20.8,
+              "teamId": 4,
+              "team": "Kirbo Crushers",
               "h2hWinsAdded": 0,
-              "medianWinsAdded": 1,
-              "winsAdded": 1,
+              "medianWinsAdded": 0,
+              "winsAdded": 0,
               "mutualTrade": {
-                "playerId": 4429023,
-                "player": "MarShawn Lloyd",
-                "position": "RB",
-                "startRate": 50,
-                "boost": 14.8,
-                "h2hWinsAdded": 1,
-                "medianWinsAdded": 1,
-                "winsAdded": 2
+                "playerId": 4426338,
+                "player": "Bo Nix",
+                "position": "QB",
+                "startRate": 25,
+                "boost": 18.48,
+                "h2hWinsAdded": 0,
+                "medianWinsAdded": 0,
+                "winsAdded": 0
               },
               "otherNeeds": [
                 {
                   "position": "DST",
-                  "percent": -25
+                  "percent": -31.25
+                },
+                {
+                  "position": "QB",
+                  "percent": -18.05
                 }
               ],
               "needsMatch": [
@@ -378,6 +382,60 @@
           ]
         },
         "winWinTrades": [
+          {
+            "otherTeamId": 10,
+            "otherTeam": "Gibb it to Me Baby",
+            "givePlayerId": 4241478,
+            "givePlayer": "DeVonta Smith",
+            "givePosition": "WR",
+            "giveRosRank": 45,
+            "getPlayerId": 4569173,
+            "getPlayer": "Rhamondre Stevenson",
+            "getPosition": "RB",
+            "getRosRank": 52,
+            "yourBoost": 21.8,
+            "yourH2hWinsAdded": 0,
+            "yourMedianWinsAdded": 1,
+            "yourWinsAdded": 1,
+            "theirBoost": 56.1,
+            "theirH2hWinsAdded": 1,
+            "theirMedianWinsAdded": 1,
+            "theirWinsAdded": 2,
+            "weeksEvaluated": 8,
+            "fromWeek": 1,
+            "basis": {
+              "window": "season",
+              "lineup": "projected"
+            },
+            "perspective": "A"
+          },
+          {
+            "otherTeamId": 10,
+            "otherTeam": "Gibb it to Me Baby",
+            "givePlayerId": 4427095,
+            "givePlayer": "DeMario Douglas",
+            "givePosition": "WR",
+            "giveRosRank": 147,
+            "getPlayerId": 4373626,
+            "getPlayer": "Tyler Allgeier",
+            "getPosition": "RB",
+            "getRosRank": 157,
+            "yourBoost": 15.7,
+            "yourH2hWinsAdded": 0,
+            "yourMedianWinsAdded": 0,
+            "yourWinsAdded": 0,
+            "theirBoost": 44.7,
+            "theirH2hWinsAdded": 1,
+            "theirMedianWinsAdded": 1,
+            "theirWinsAdded": 2,
+            "weeksEvaluated": 3,
+            "fromWeek": 6,
+            "basis": {
+              "window": "season",
+              "lineup": "projected"
+            },
+            "perspective": "A"
+          },
           {
             "otherTeamId": 10,
             "otherTeam": "Gibb it to Me Baby",
@@ -391,12 +449,39 @@
             "getRosRank": 44,
             "yourBoost": 48.6,
             "yourH2hWinsAdded": 1,
-            "yourMedianWinsAdded": 0,
-            "yourWinsAdded": 1,
+            "yourMedianWinsAdded": 1,
+            "yourWinsAdded": 2,
             "theirBoost": 4,
             "theirH2hWinsAdded": 1,
             "theirMedianWinsAdded": 0,
             "theirWinsAdded": 1,
+            "weeksEvaluated": 4,
+            "fromWeek": 5,
+            "basis": {
+              "window": "last 4 weeks",
+              "lineup": "projected"
+            },
+            "perspective": "A"
+          },
+          {
+            "otherTeamId": 10,
+            "otherTeam": "Gibb it to Me Baby",
+            "givePlayerId": 4427366,
+            "givePlayer": "Breece Hall",
+            "givePosition": "RB",
+            "giveRosRank": 48,
+            "getPlayerId": 2976212,
+            "getPlayer": "Stefon Diggs",
+            "getPosition": "WR",
+            "getRosRank": 54,
+            "yourBoost": 16.6,
+            "yourH2hWinsAdded": 0,
+            "yourMedianWinsAdded": 1,
+            "yourWinsAdded": 1,
+            "theirBoost": 7.9,
+            "theirH2hWinsAdded": 1,
+            "theirMedianWinsAdded": 1,
+            "theirWinsAdded": 2,
             "weeksEvaluated": 4,
             "fromWeek": 5,
             "basis": {
@@ -422,22 +507,22 @@
               4432620
             ],
             "getPlayerIds": [
-              4685278,
+              4372016,
               4360310
             ],
-            "getPlayerId": "4685278+4360310",
-            "getPlayer": "Luther Burden III + Trevor Lawrence",
+            "getPlayerId": "4372016+4360310",
+            "getPlayer": "Jaylen Waddle + Trevor Lawrence",
             "getPosition": "WR/QB",
-            "getRosRank": "36 + #47",
+            "getRosRank": "55 + #47",
             "getPlayers": [
-              "Luther Burden III",
+              "Jaylen Waddle",
               "Trevor Lawrence"
             ],
-            "yourBoost": 44.6,
-            "yourH2hWinsAdded": 1,
-            "yourMedianWinsAdded": 0,
+            "yourBoost": 8.8,
+            "yourH2hWinsAdded": 0,
+            "yourMedianWinsAdded": 1,
             "yourWinsAdded": 1,
-            "theirBoost": 9.52,
+            "theirBoost": 46.92,
             "theirH2hWinsAdded": 1,
             "theirMedianWinsAdded": 0,
             "theirWinsAdded": 1,
@@ -569,7 +654,7 @@
             "week": 8,
             "score": 123.98,
             "opponentScore": 147.1,
-            "median": 123.63,
+            "median": 124.13,
             "players": [
               {
                 "id": 4361307,
@@ -686,7 +771,7 @@
             "position": "TE",
             "boost": 32.3,
             "h2hWinsAdded": 0,
-            "medianWinsAdded": 1,
+            "medianWinsAdded": 2,
             "weeks": [
               {
                 "week": 3,
@@ -714,7 +799,7 @@
                 "gain": 6.7
               }
             ],
-            "winsAdded": 1
+            "winsAdded": 2
           },
           {
             "playerId": 4362619,
@@ -722,7 +807,7 @@
             "position": "RB",
             "boost": 28.8,
             "h2hWinsAdded": 0,
-            "medianWinsAdded": 1,
+            "medianWinsAdded": 2,
             "weeks": [
               {
                 "week": 3,
@@ -745,28 +830,33 @@
                 "gain": 9.2
               }
             ],
-            "winsAdded": 1
+            "winsAdded": 2
           },
           {
-            "playerId": 4362921,
-            "player": "Tyquan Thornton",
+            "playerId": 4569371,
+            "player": "Isaiah Williams",
             "position": "WR",
-            "boost": 25.1,
+            "boost": 14.7,
             "h2hWinsAdded": 0,
-            "medianWinsAdded": 1,
+            "medianWinsAdded": 2,
             "weeks": [
               {
                 "week": 2,
-                "points": 12.6,
-                "gain": 3.6
+                "points": 10.8,
+                "gain": 1.8
               },
               {
                 "week": 4,
-                "points": 29.1,
-                "gain": 21.5
+                "points": 15.3,
+                "gain": 7.7
+              },
+              {
+                "week": 8,
+                "points": 8.8,
+                "gain": 5.2
               }
             ],
-            "winsAdded": 1
+            "winsAdded": 2
           }
         ],
         "trend": {
@@ -789,8 +879,8 @@
         },
         "luck": {
           "actualWins": 2,
-          "expectedWins": 3.09,
-          "difference": -1.09
+          "expectedWins": 3,
+          "difference": -1
         }
       }
     },
@@ -804,16 +894,16 @@
         "name": "TDsMaGee",
         "abbrev": "LISA",
         "logo": "/OnThursdaysWeFantasy.io/team-logos/team-2.svg",
-        "wins": 5,
-        "losses": 11,
+        "wins": 6,
+        "losses": 10,
         "ties": 0,
         "h2hWins": 3,
         "h2hLosses": 5,
-        "medianWins": 2,
-        "medianLosses": 6,
+        "medianWins": 3,
+        "medianLosses": 5,
         "games": 8,
-        "winPct": 0.3125,
-        "pointsFor": 990.58,
+        "winPct": 0.375,
+        "pointsFor": 991.58,
         "pointsAgainst": 1086.58,
         "streak": {
           "type": "L",
@@ -881,7 +971,7 @@
           "week": 8,
           "opponentId": 4,
           "opponent": "Kirbo Crushers",
-          "score": 123.28,
+          "score": 124.28,
           "opponentScore": 130,
           "result": "L"
         }
@@ -939,9 +1029,9 @@
         }
       },
       "startSit": {
-        "score": 90.57,
-        "actualPoints": 990.58,
-        "optimalPoints": 1093.74,
+        "score": 90.58,
+        "actualPoints": 991.58,
+        "optimalPoints": 1094.74,
         "weeks": [
           {
             "week": 1,
@@ -1015,9 +1105,9 @@
           },
           {
             "week": 8,
-            "actualPoints": 123.28,
-            "optimalPoints": 152.18,
-            "efficiency": 81.01,
+            "actualPoints": 124.28,
+            "optimalPoints": 153.18,
+            "efficiency": 81.13,
             "pointsLeft": 28.9,
             "opponentScore": 130,
             "result": "L",
@@ -1025,14 +1115,14 @@
           }
         ],
         "pointsLeft": 103.16,
-        "winsLost": 6
+        "winsLost": 5
       },
       "profileAnalytics": {
         "optimalLineup": {
-          "actualPoints": 990.58,
-          "optimalPoints": 1093.74,
+          "actualPoints": 991.58,
+          "optimalPoints": 1094.74,
           "pointsLeft": 103.16,
-          "efficiency": 90.57
+          "efficiency": 90.58
         },
         "positionFit": {
           "strengths": [],
@@ -1082,7 +1172,7 @@
                 },
                 {
                   "position": "WR",
-                  "percent": -19.88
+                  "percent": -19.9
                 },
                 {
                   "position": "K",
@@ -1147,33 +1237,6 @@
         },
         "winWinTrades": [
           {
-            "otherTeamId": 10,
-            "otherTeam": "Gibb it to Me Baby",
-            "givePlayerId": 4360761,
-            "givePlayer": "Michael Wilson",
-            "givePosition": "WR",
-            "giveRosRank": 63,
-            "getPlayerId": 4685702,
-            "getPlayer": "Quinshon Judkins",
-            "getPosition": "RB",
-            "getRosRank": 65,
-            "yourBoost": 0.22,
-            "yourH2hWinsAdded": 1,
-            "yourMedianWinsAdded": 1,
-            "yourWinsAdded": 2,
-            "theirBoost": 15.58,
-            "theirH2hWinsAdded": 1,
-            "theirMedianWinsAdded": 1,
-            "theirWinsAdded": 2,
-            "weeksEvaluated": 4,
-            "fromWeek": 5,
-            "basis": {
-              "window": "last 4 weeks",
-              "lineup": "projected"
-            },
-            "perspective": "A"
-          },
-          {
             "kind": "2-for-2",
             "otherTeamId": 6,
             "otherTeam": "Claremont In Yo Stace!",
@@ -1232,8 +1295,8 @@
             ],
             "points": 34.2,
             "h2hWins": 2,
-            "medianWins": 2,
-            "winsAdded": 4
+            "medianWins": 1,
+            "winsAdded": 3
           },
           {
             "playerId": 4360689,
@@ -1366,9 +1429,9 @@
           },
           {
             "week": 8,
-            "score": 123.28,
+            "score": 124.28,
             "opponentScore": 130,
-            "median": 123.63,
+            "median": 124.13,
             "players": [
               {
                 "id": 4379399,
@@ -1410,7 +1473,7 @@
                 "name": "Michael Wilson",
                 "pos": "WR",
                 "started": true,
-                "points": 27.8
+                "points": 28.8
               },
               {
                 "id": 4569587,
@@ -1581,7 +1644,7 @@
         "trend": {
           "teamId": 2,
           "team": "TDsMaGee",
-          "slope": -5.14,
+          "slope": -4.84,
           "weeks": [
             5,
             6,
@@ -1592,14 +1655,14 @@
             135.54,
             115.4,
             100.82,
-            123.28
+            124.28
           ],
           "direction": "down"
         },
         "luck": {
           "actualWins": 3,
-          "expectedWins": 3.18,
-          "difference": -0.18
+          "expectedWins": 3.27,
+          "difference": -0.27
         }
       }
     },
@@ -1848,7 +1911,7 @@
             {
               "position": "WR",
               "average": 19.04,
-              "percent": 37.63
+              "percent": 37.6
             },
             {
               "position": "DST",
@@ -1891,7 +1954,7 @@
                 },
                 {
                   "position": "WR",
-                  "percent": -19.88
+                  "percent": -19.9
                 },
                 {
                   "position": "K",
@@ -1933,7 +1996,7 @@
                 },
                 {
                   "position": "WR",
-                  "percent": -19.88
+                  "percent": -19.9
                 },
                 {
                   "position": "K",
@@ -1966,7 +2029,7 @@
                 },
                 {
                   "position": "WR",
-                  "percent": -19.88
+                  "percent": -19.9
                 },
                 {
                   "position": "K",
@@ -2009,48 +2072,75 @@
             "perspective": "A"
           },
           {
-            "kind": "2-for-2",
-            "otherTeamId": 9,
-            "otherTeam": "The Mahomies",
-            "givePlayerId": "4431611+4596448",
-            "givePlayer": "Caleb Williams + Bucky Irving",
-            "givePosition": "QB/RB",
-            "giveRosRank": "46 + #23",
-            "givePlayers": [
-              "Caleb Williams",
-              "Bucky Irving"
-            ],
-            "givePlayerIds": [
-              4431611,
-              4596448
-            ],
-            "getPlayerIds": [
-              4047650,
-              4362628
-            ],
-            "getPlayerId": "4047650+4362628",
-            "getPlayer": "DK Metcalf + Ja'Marr Chase",
-            "getPosition": "WR/WR",
-            "getRosRank": "64 + #5",
-            "getPlayers": [
-              "DK Metcalf",
-              "Ja'Marr Chase"
-            ],
-            "yourBoost": 7.84,
+            "otherTeamId": 1,
+            "otherTeam": "Ramosverse",
+            "givePlayerId": 4685382,
+            "givePlayer": "Omarion Hampton",
+            "givePosition": "RB",
+            "giveRosRank": 100,
+            "getPlayerId": 3126486,
+            "getPlayer": "Deebo Samuel Sr.",
+            "getPosition": "WR",
+            "getRosRank": 98,
+            "yourBoost": 16.2,
             "yourH2hWinsAdded": 1,
             "yourMedianWinsAdded": 0,
             "yourWinsAdded": 1,
-            "theirBoost": 3.94,
-            "theirH2hWinsAdded": 1,
+            "theirBoost": 0.8,
+            "theirH2hWinsAdded": 0,
             "theirMedianWinsAdded": 1,
-            "theirWinsAdded": 2,
+            "theirWinsAdded": 1,
             "weeksEvaluated": 8,
             "fromWeek": 1,
             "basis": {
               "window": "season",
               "lineup": "optimal"
             },
-            "perspective": "A"
+            "perspective": "B"
+          },
+          {
+            "kind": "2-for-2",
+            "otherTeamId": 1,
+            "otherTeam": "Ramosverse",
+            "givePlayerId": "4596448+4882093",
+            "givePlayer": "Bucky Irving + Bhayshul Tuten",
+            "givePosition": "RB/RB",
+            "giveRosRank": "23 + #33",
+            "givePlayers": [
+              "Bucky Irving",
+              "Bhayshul Tuten"
+            ],
+            "givePlayerIds": [
+              4596448,
+              4882093
+            ],
+            "getPlayerIds": [
+              4432620,
+              4361307
+            ],
+            "getPlayerId": "4432620+4361307",
+            "getPlayer": "Parker Washington + Trey McBride",
+            "getPosition": "WR/TE",
+            "getRosRank": "31 + #32",
+            "getPlayers": [
+              "Parker Washington",
+              "Trey McBride"
+            ],
+            "yourBoost": 8.1,
+            "yourH2hWinsAdded": 1,
+            "yourMedianWinsAdded": 0,
+            "yourWinsAdded": 1,
+            "theirBoost": 5.5,
+            "theirH2hWinsAdded": 1,
+            "theirMedianWinsAdded": 0,
+            "theirWinsAdded": 1,
+            "weeksEvaluated": 8,
+            "fromWeek": 1,
+            "basis": {
+              "window": "season",
+              "lineup": "optimal"
+            },
+            "perspective": "B"
           }
         ],
         "longTermRegrets": [
@@ -2192,7 +2282,7 @@
             "week": 8,
             "score": 169.28,
             "opponentScore": 90.7,
-            "median": 123.63,
+            "median": 124.13,
             "players": [
               {
                 "id": 4430878,
@@ -2304,42 +2394,6 @@
         ],
         "waiverTargets": [
           {
-            "playerId": 3116164,
-            "player": "Mike Gesicki",
-            "position": "TE",
-            "boost": 35.7,
-            "h2hWinsAdded": 1,
-            "medianWinsAdded": 1,
-            "weeks": [
-              {
-                "week": 1,
-                "points": 18.8,
-                "gain": 10.5
-              },
-              {
-                "week": 3,
-                "points": 12.7,
-                "gain": 7.1
-              },
-              {
-                "week": 4,
-                "points": 13,
-                "gain": 6.9
-              },
-              {
-                "week": 7,
-                "points": 7.6,
-                "gain": 3.3
-              },
-              {
-                "week": 8,
-                "points": 17.6,
-                "gain": 7.9
-              }
-            ],
-            "winsAdded": 2
-          },
-          {
             "playerId": 4363538,
             "player": "Chad Ryland",
             "position": "K",
@@ -2395,6 +2449,27 @@
               }
             ],
             "winsAdded": 2
+          },
+          {
+            "playerId": 2973405,
+            "player": "Kalif Raymond",
+            "position": "WR",
+            "boost": 23.5,
+            "h2hWinsAdded": 1,
+            "medianWinsAdded": 1,
+            "weeks": [
+              {
+                "week": 1,
+                "points": 16.4,
+                "gain": 8.1
+              },
+              {
+                "week": 3,
+                "points": 21,
+                "gain": 15.4
+              }
+            ],
+            "winsAdded": 2
           }
         ],
         "trend": {
@@ -2442,7 +2517,7 @@
         "games": 8,
         "winPct": 0.25,
         "pointsFor": 898.2,
-        "pointsAgainst": 1067.02,
+        "pointsAgainst": 1068.02,
         "streak": {
           "type": "W",
           "length": 1
@@ -2510,7 +2585,7 @@
           "opponentId": 2,
           "opponent": "TDsMaGee",
           "score": 130,
-          "opponentScore": 123.28,
+          "opponentScore": 124.28,
           "result": "W"
         }
       ],
@@ -2647,7 +2722,7 @@
             "optimalPoints": 159.7,
             "efficiency": 81.4,
             "pointsLeft": 29.7,
-            "opponentScore": 123.28,
+            "opponentScore": 124.28,
             "result": "W",
             "winLostToMistake": false
           }
@@ -2694,11 +2769,11 @@
               "medianWinsAdded": 1,
               "winsAdded": 2,
               "mutualTrade": {
-                "playerId": 5083076,
-                "player": "Harold Fannin Jr.",
-                "position": "TE",
-                "startRate": 75,
-                "boost": 17.7,
+                "playerId": 4373678,
+                "player": "Khalil Shakir",
+                "position": "WR",
+                "startRate": 25,
+                "boost": 18.5,
                 "h2hWinsAdded": 0,
                 "medianWinsAdded": 0,
                 "winsAdded": 0
@@ -2710,7 +2785,7 @@
                 },
                 {
                   "position": "WR",
-                  "percent": -19.88
+                  "percent": -19.9
                 },
                 {
                   "position": "K",
@@ -2733,11 +2808,11 @@
               "medianWinsAdded": 0,
               "winsAdded": 0,
               "mutualTrade": {
-                "playerId": 5083076,
-                "player": "Harold Fannin Jr.",
-                "position": "TE",
-                "startRate": 75,
-                "boost": 26,
+                "playerId": 4688813,
+                "player": "Josh Downs",
+                "position": "WR",
+                "startRate": 50,
+                "boost": 24.4,
                 "h2hWinsAdded": 0,
                 "medianWinsAdded": 0,
                 "winsAdded": 0
@@ -2758,22 +2833,40 @@
               "h2hWinsAdded": 1,
               "medianWinsAdded": 0,
               "winsAdded": 1,
-              "mutualTrade": {
-                "playerId": 5083076,
-                "player": "Harold Fannin Jr.",
-                "position": "TE",
-                "startRate": 75,
-                "boost": 21.6,
-                "h2hWinsAdded": 0,
-                "medianWinsAdded": 0,
-                "winsAdded": 0
-              },
+              "mutualTrade": null,
               "otherNeeds": [],
               "needsMatch": []
             }
           ]
         },
         "winWinTrades": [
+          {
+            "otherTeamId": 1,
+            "otherTeam": "Ramosverse",
+            "givePlayerId": 5083076,
+            "givePlayer": "Harold Fannin Jr.",
+            "givePosition": "TE",
+            "giveRosRank": 94,
+            "getPlayerId": 4869645,
+            "getPlayer": "Caleb Douglas",
+            "getPosition": "WR",
+            "getRosRank": 110,
+            "yourBoost": 27.7,
+            "yourH2hWinsAdded": 0,
+            "yourMedianWinsAdded": 0,
+            "yourWinsAdded": 0,
+            "theirBoost": 13.2,
+            "theirH2hWinsAdded": 0,
+            "theirMedianWinsAdded": 1,
+            "theirWinsAdded": 1,
+            "weeksEvaluated": 4,
+            "fromWeek": 5,
+            "basis": {
+              "window": "last 4 weeks",
+              "lineup": "projected"
+            },
+            "perspective": "B"
+          },
           {
             "otherTeamId": 10,
             "otherTeam": "Gibb it to Me Baby",
@@ -2802,31 +2895,31 @@
             "perspective": "A"
           },
           {
-            "otherTeamId": 9,
-            "otherTeam": "The Mahomies",
-            "givePlayerId": 3121023,
-            "givePlayer": "Dallas Goedert",
-            "givePosition": "TE",
-            "giveRosRank": 119,
-            "getPlayerId": 4360569,
-            "getPlayer": "Jordan Mason",
+            "otherTeamId": 1,
+            "otherTeam": "Ramosverse",
+            "givePlayerId": 4612826,
+            "givePlayer": "Ladd McConkey",
+            "givePosition": "WR",
+            "giveRosRank": 57,
+            "getPlayerId": 4427366,
+            "getPlayer": "Breece Hall",
             "getPosition": "RB",
-            "getRosRank": 101,
-            "yourBoost": 2.3,
+            "getRosRank": 48,
+            "yourBoost": 21.2,
             "yourH2hWinsAdded": 0,
-            "yourMedianWinsAdded": 1,
-            "yourWinsAdded": 1,
-            "theirBoost": 3.9,
+            "yourMedianWinsAdded": 0,
+            "yourWinsAdded": 0,
+            "theirBoost": 2.7,
             "theirH2hWinsAdded": 0,
             "theirMedianWinsAdded": 1,
             "theirWinsAdded": 1,
-            "weeksEvaluated": 8,
-            "fromWeek": 1,
+            "weeksEvaluated": 4,
+            "fromWeek": 5,
             "basis": {
-              "window": "season",
+              "window": "last 4 weeks",
               "lineup": "projected"
             },
-            "perspective": "A"
+            "perspective": "B"
           },
           {
             "kind": "2-for-2",
@@ -2875,34 +2968,21 @@
         ],
         "longTermRegrets": [
           {
-            "playerId": 4683062,
-            "player": "Xavier Worthy",
+            "playerId": 4373678,
+            "player": "Khalil Shakir",
             "position": "WR",
-            "startedWeeks": 4,
+            "startedWeeks": 2,
             "rosteredWeeks": 8,
             "weeks": [
               1,
-              4
+              4,
+              5,
+              6
             ],
-            "points": 11.7,
+            "points": 39.2,
             "h2hWins": 1,
             "medianWins": 1,
             "winsAdded": 2
-          },
-          {
-            "playerId": 5083076,
-            "player": "Harold Fannin Jr.",
-            "position": "TE",
-            "startedWeeks": 6,
-            "rosteredWeeks": 8,
-            "weeks": [
-              2,
-              8
-            ],
-            "points": 26.2,
-            "h2hWins": 0,
-            "medianWins": 1,
-            "winsAdded": 1
           }
         ],
         "recentLineups": [
@@ -3022,8 +3102,8 @@
           {
             "week": 8,
             "score": 130,
-            "opponentScore": 123.28,
-            "median": 123.63,
+            "opponentScore": 124.28,
+            "median": 124.13,
             "players": [
               {
                 "id": 4241389,
@@ -3494,7 +3574,7 @@
             {
               "position": "WR",
               "average": 11.08,
-              "percent": -19.88
+              "percent": -19.9
             },
             {
               "position": "K",
@@ -3855,7 +3935,7 @@
             "week": 8,
             "score": 147.1,
             "opponentScore": 123.98,
-            "median": 123.63,
+            "median": 124.13,
             "players": [
               {
                 "id": 4242335,
@@ -3967,6 +4047,32 @@
         ],
         "waiverTargets": [
           {
+            "playerId": 2573401,
+            "player": "Tyler Higbee",
+            "position": "TE",
+            "boost": 37,
+            "h2hWinsAdded": 1,
+            "medianWinsAdded": 2,
+            "weeks": [
+              {
+                "week": 3,
+                "points": 20.2,
+                "gain": 16.4
+              },
+              {
+                "week": 4,
+                "points": 11.7,
+                "gain": 10
+              },
+              {
+                "week": 5,
+                "points": 14.3,
+                "gain": 10.6
+              }
+            ],
+            "winsAdded": 3
+          },
+          {
             "playerId": 5083315,
             "player": "Kenyon Sadiq",
             "position": "TE",
@@ -4007,37 +4113,6 @@
               }
             ],
             "winsAdded": 2
-          },
-          {
-            "playerId": 3116164,
-            "player": "Mike Gesicki",
-            "position": "TE",
-            "boost": 39.9,
-            "h2hWinsAdded": 0,
-            "medianWinsAdded": 1,
-            "weeks": [
-              {
-                "week": 1,
-                "points": 18.8,
-                "gain": 8.8
-              },
-              {
-                "week": 3,
-                "points": 12.7,
-                "gain": 8.9
-              },
-              {
-                "week": 4,
-                "points": 13,
-                "gain": 11.3
-              },
-              {
-                "week": 8,
-                "points": 17.6,
-                "gain": 10.9
-              }
-            ],
-            "winsAdded": 1
           }
         ],
         "trend": {
@@ -4359,7 +4434,7 @@
                 },
                 {
                   "position": "WR",
-                  "percent": -19.88
+                  "percent": -19.9
                 },
                 {
                   "position": "K",
@@ -4408,24 +4483,24 @@
               ]
             },
             {
-              "playerId": 4686658,
-              "player": "Mike Washington Jr.",
-              "position": "RB",
+              "playerId": 4373678,
+              "player": "Khalil Shakir",
+              "position": "WR",
               "startRate": 25,
               "rosteredWeeks": 8,
               "startedWeeks": 2,
-              "boost": 7.6,
-              "teamId": 8,
-              "team": "Mr. Action Jackson",
-              "h2hWinsAdded": 0,
-              "medianWinsAdded": 0,
-              "winsAdded": 0,
+              "boost": 13.4,
+              "teamId": 4,
+              "team": "Kirbo Crushers",
+              "h2hWinsAdded": 1,
+              "medianWinsAdded": 1,
+              "winsAdded": 2,
               "mutualTrade": {
-                "playerId": 4430539,
-                "player": "Brenton Strange",
-                "position": "TE",
-                "startRate": 0,
-                "boost": 17.4,
+                "playerId": 4696981,
+                "player": "Cam Skattebo",
+                "position": "RB",
+                "startRate": 75,
+                "boost": 14.2,
                 "h2hWinsAdded": 1,
                 "medianWinsAdded": 1,
                 "winsAdded": 2
@@ -4433,11 +4508,11 @@
               "otherNeeds": [
                 {
                   "position": "DST",
-                  "percent": -35.42
+                  "percent": -31.25
                 },
                 {
                   "position": "QB",
-                  "percent": -17.73
+                  "percent": -18.05
                 }
               ],
               "needsMatch": [
@@ -4734,7 +4809,7 @@
             "week": 8,
             "score": 85.16,
             "opponentScore": 156.06,
-            "median": 123.63,
+            "median": 124.13,
             "players": [
               {
                 "id": 3918298,
@@ -5263,20 +5338,11 @@
               "h2hWinsAdded": 0,
               "medianWinsAdded": 0,
               "winsAdded": 0,
-              "mutualTrade": {
-                "playerId": 15818,
-                "player": "Keenan Allen",
-                "position": "WR",
-                "startRate": 14.29,
-                "boost": 24.2,
-                "h2hWinsAdded": 0,
-                "medianWinsAdded": 0,
-                "winsAdded": 0
-              },
+              "mutualTrade": null,
               "otherNeeds": [
                 {
                   "position": "WR",
-                  "percent": -16.97
+                  "percent": -16.99
                 },
                 {
                   "position": "TE",
@@ -5300,20 +5366,11 @@
               "h2hWinsAdded": 0,
               "medianWinsAdded": 0,
               "winsAdded": 0,
-              "mutualTrade": {
-                "playerId": 15818,
-                "player": "Keenan Allen",
-                "position": "WR",
-                "startRate": 14.29,
-                "boost": 24.2,
-                "h2hWinsAdded": 0,
-                "medianWinsAdded": 0,
-                "winsAdded": 0
-              },
+              "mutualTrade": null,
               "otherNeeds": [
                 {
                   "position": "WR",
-                  "percent": -16.97
+                  "percent": -16.99
                 },
                 {
                   "position": "TE",
@@ -5399,24 +5456,7 @@
             "perspective": "A"
           }
         ],
-        "longTermRegrets": [
-          {
-            "playerId": 15818,
-            "player": "Keenan Allen",
-            "position": "WR",
-            "startedWeeks": 1,
-            "rosteredWeeks": 7,
-            "weeks": [
-              3,
-              5,
-              6
-            ],
-            "points": 28.1,
-            "h2hWins": 0,
-            "medianWins": 1,
-            "winsAdded": 1
-          }
-        ],
+        "longTermRegrets": [],
         "recentLineups": [
           {
             "week": 7,
@@ -5535,7 +5575,7 @@
             "week": 8,
             "score": 128.92,
             "opponentScore": 122.54,
-            "median": 123.63,
+            "median": 124.13,
             "players": [
               {
                 "id": 4374302,
@@ -5916,7 +5956,7 @@
             {
               "position": "WR",
               "average": 16.22,
-              "percent": 17.28
+              "percent": 17.25
             }
           ],
           "needs": [
@@ -5937,11 +5977,11 @@
             {
               "teamId": 12,
               "team": "Beautiful Dark Twisted Fantasy",
-              "score": 70.43,
+              "score": 70.4,
               "give": [
                 {
                   "position": "WR",
-                  "percent": 17.28
+                  "percent": 17.25
                 }
               ],
               "get": [
@@ -5987,7 +6027,7 @@
                 },
                 {
                   "position": "WR",
-                  "percent": -19.88
+                  "percent": -19.9
                 },
                 {
                   "position": "K",
@@ -6028,7 +6068,7 @@
                 },
                 {
                   "position": "WR",
-                  "percent": -19.88
+                  "percent": -19.9
                 },
                 {
                   "position": "K",
@@ -6065,7 +6105,7 @@
               "otherNeeds": [
                 {
                   "position": "WR",
-                  "percent": -16.97
+                  "percent": -16.99
                 },
                 {
                   "position": "TE",
@@ -6253,7 +6293,7 @@
             "week": 8,
             "score": 90.7,
             "opponentScore": 169.28,
-            "median": 123.63,
+            "median": 124.13,
             "players": [
               {
                 "id": 4426515,
@@ -6750,11 +6790,11 @@
               "medianWinsAdded": 1,
               "winsAdded": 1,
               "mutualTrade": {
-                "playerId": 4569559,
-                "player": "Devaughn Vele",
+                "playerId": 5081432,
+                "player": "Antonio Williams",
                 "position": "WR",
-                "startRate": 42.86,
-                "boost": 7.7,
+                "startRate": 0,
+                "boost": 3.5,
                 "h2hWinsAdded": 0,
                 "medianWinsAdded": 0,
                 "winsAdded": 0
@@ -6776,11 +6816,11 @@
               "medianWinsAdded": 1,
               "winsAdded": 2,
               "mutualTrade": {
-                "playerId": 4569559,
-                "player": "Devaughn Vele",
+                "playerId": 4047650,
+                "player": "DK Metcalf",
                 "position": "WR",
-                "startRate": 42.86,
-                "boost": 13.5,
+                "startRate": 87.5,
+                "boost": 8.3,
                 "h2hWinsAdded": 0,
                 "medianWinsAdded": 1,
                 "winsAdded": 1
@@ -6792,7 +6832,7 @@
                 },
                 {
                   "position": "WR",
-                  "percent": -19.88
+                  "percent": -19.9
                 },
                 {
                   "position": "K",
@@ -6815,11 +6855,11 @@
               "medianWinsAdded": 0,
               "winsAdded": 0,
               "mutualTrade": {
-                "playerId": 4569559,
-                "player": "Devaughn Vele",
+                "playerId": 4047650,
+                "player": "DK Metcalf",
                 "position": "WR",
-                "startRate": 42.86,
-                "boost": 13.9,
+                "startRate": 87.5,
+                "boost": 9.9,
                 "h2hWinsAdded": 0,
                 "medianWinsAdded": 1,
                 "winsAdded": 1
@@ -6923,17 +6963,15 @@
             "winsAdded": 2
           },
           {
-            "playerId": 4569559,
-            "player": "Devaughn Vele",
+            "playerId": 4047650,
+            "player": "DK Metcalf",
             "position": "WR",
-            "startedWeeks": 3,
-            "rosteredWeeks": 7,
+            "startedWeeks": 7,
+            "rosteredWeeks": 8,
             "weeks": [
-              2,
-              4,
-              5
+              4
             ],
-            "points": 20.8,
+            "points": 14.9,
             "h2hWins": 1,
             "medianWins": 0,
             "winsAdded": 1
@@ -7057,7 +7095,7 @@
             "week": 8,
             "score": 122.54,
             "opponentScore": 128.92,
-            "median": 123.63,
+            "median": 124.13,
             "players": [
               {
                 "id": 4362628,
@@ -7169,6 +7207,32 @@
         ],
         "waiverTargets": [
           {
+            "playerId": 2573401,
+            "player": "Tyler Higbee",
+            "position": "TE",
+            "boost": 23.2,
+            "h2hWinsAdded": 1,
+            "medianWinsAdded": 1,
+            "weeks": [
+              {
+                "week": 3,
+                "points": 20.2,
+                "gain": 8.1
+              },
+              {
+                "week": 4,
+                "points": 11.7,
+                "gain": 8.2
+              },
+              {
+                "week": 5,
+                "points": 14.3,
+                "gain": 6.9
+              }
+            ],
+            "winsAdded": 2
+          },
+          {
             "playerId": -16009,
             "player": "Packers D/ST",
             "position": "DST",
@@ -7226,22 +7290,6 @@
                 "week": 5,
                 "points": 15.1,
                 "gain": 3.8
-              }
-            ],
-            "winsAdded": 2
-          },
-          {
-            "playerId": 3116389,
-            "player": "Samaje Perine",
-            "position": "RB",
-            "boost": 14.6,
-            "h2hWinsAdded": 1,
-            "medianWinsAdded": 1,
-            "weeks": [
-              {
-                "week": 5,
-                "points": 16.8,
-                "gain": 14.6
               }
             ],
             "winsAdded": 2
@@ -7588,7 +7636,7 @@
               "otherNeeds": [
                 {
                   "position": "WR",
-                  "percent": -16.97
+                  "percent": -16.99
                 },
                 {
                   "position": "TE",
@@ -7629,7 +7677,7 @@
                 },
                 {
                   "position": "WR",
-                  "percent": -19.88
+                  "percent": -19.9
                 },
                 {
                   "position": "K",
@@ -7938,7 +7986,7 @@
             "week": 8,
             "score": 104.34,
             "opponentScore": 114.88,
-            "median": 123.63,
+            "median": 124.13,
             "players": [
               {
                 "id": 4429795,
@@ -8436,7 +8484,7 @@
                 },
                 {
                   "position": "WR",
-                  "percent": -19.88
+                  "percent": -19.9
                 },
                 {
                   "position": "K",
@@ -8494,11 +8542,11 @@
               "medianWinsAdded": 0,
               "winsAdded": 0,
               "mutualTrade": {
-                "playerId": 4870795,
-                "player": "Makai Lemon",
-                "position": "WR",
-                "startRate": 0,
-                "boost": 25.7,
+                "playerId": 4429096,
+                "player": "Blake Corum",
+                "position": "RB",
+                "startRate": 25,
+                "boost": 25.6,
                 "h2hWinsAdded": 0,
                 "medianWinsAdded": 1,
                 "winsAdded": 1
@@ -8506,7 +8554,7 @@
               "otherNeeds": [
                 {
                   "position": "WR",
-                  "percent": -16.97
+                  "percent": -16.99
                 },
                 {
                   "position": "TE",
@@ -8632,16 +8680,16 @@
             "kind": "2-for-2",
             "otherTeamId": 1,
             "otherTeam": "Ramosverse",
-            "givePlayerId": "4685278+4360310",
-            "givePlayer": "Luther Burden III + Trevor Lawrence",
+            "givePlayerId": "4372016+4360310",
+            "givePlayer": "Jaylen Waddle + Trevor Lawrence",
             "givePosition": "WR/QB",
-            "giveRosRank": "36 + #47",
+            "giveRosRank": "55 + #47",
             "givePlayers": [
-              "Luther Burden III",
+              "Jaylen Waddle",
               "Trevor Lawrence"
             ],
             "givePlayerIds": [
-              4685278,
+              4372016,
               4360310
             ],
             "getPlayerIds": [
@@ -8656,13 +8704,13 @@
               "Breece Hall",
               "Parker Washington"
             ],
-            "yourBoost": 9.52,
+            "yourBoost": 46.92,
             "yourH2hWinsAdded": 1,
             "yourMedianWinsAdded": 0,
             "yourWinsAdded": 1,
-            "theirBoost": 44.6,
-            "theirH2hWinsAdded": 1,
-            "theirMedianWinsAdded": 0,
+            "theirBoost": 8.8,
+            "theirH2hWinsAdded": 0,
+            "theirMedianWinsAdded": 1,
             "theirWinsAdded": 1,
             "weeksEvaluated": 4,
             "fromWeek": 5,
@@ -8792,7 +8840,7 @@
             "week": 8,
             "score": 156.06,
             "opponentScore": 85.16,
-            "median": 123.63,
+            "median": 124.13,
             "players": [
               {
                 "id": 4430807,
@@ -9185,7 +9233,7 @@
             {
               "position": "WR",
               "average": 11.48,
-              "percent": -16.97
+              "percent": -16.99
             },
             {
               "position": "TE",
@@ -9199,7 +9247,7 @@
             {
               "teamId": 8,
               "team": "Mr. Action Jackson",
-              "score": 80.33,
+              "score": 80.35,
               "give": [
                 {
                   "position": "DST",
@@ -9213,7 +9261,7 @@
               "get": [
                 {
                   "position": "WR",
-                  "percent": -16.97
+                  "percent": -16.99
                 }
               ]
             }
@@ -9287,7 +9335,7 @@
                 },
                 {
                   "position": "WR",
-                  "percent": -19.88
+                  "percent": -19.9
                 },
                 {
                   "position": "K",
@@ -9328,7 +9376,7 @@
                 },
                 {
                   "position": "WR",
-                  "percent": -19.88
+                  "percent": -19.9
                 },
                 {
                   "position": "K",
@@ -9430,8 +9478,8 @@
             "yourWinsAdded": 1,
             "theirBoost": 0.4,
             "theirH2hWinsAdded": 1,
-            "theirMedianWinsAdded": 1,
-            "theirWinsAdded": 2,
+            "theirMedianWinsAdded": 0,
+            "theirWinsAdded": 1,
             "weeksEvaluated": 8,
             "fromWeek": 1,
             "basis": {
@@ -9579,7 +9627,7 @@
             "week": 8,
             "score": 114.88,
             "opponentScore": 104.34,
-            "median": 123.63,
+            "median": 124.13,
             "players": [
               {
                 "id": 3117251,
@@ -9722,37 +9770,6 @@
             "winsAdded": 2
           },
           {
-            "playerId": 3116164,
-            "player": "Mike Gesicki",
-            "position": "TE",
-            "boost": 49.1,
-            "h2hWinsAdded": 0,
-            "medianWinsAdded": 1,
-            "weeks": [
-              {
-                "week": 1,
-                "points": 18.8,
-                "gain": 18.8
-              },
-              {
-                "week": 3,
-                "points": 12.7,
-                "gain": 5.6
-              },
-              {
-                "week": 4,
-                "points": 13,
-                "gain": 9.7
-              },
-              {
-                "week": 8,
-                "points": 17.6,
-                "gain": 15
-              }
-            ],
-            "winsAdded": 1
-          },
-          {
             "playerId": 4362921,
             "player": "Tyquan Thornton",
             "position": "WR",
@@ -9769,6 +9786,32 @@
                 "week": 4,
                 "points": 29.1,
                 "gain": 25.8
+              }
+            ],
+            "winsAdded": 1
+          },
+          {
+            "playerId": 4715355,
+            "player": "Darius Cooper",
+            "position": "WR",
+            "boost": 30.4,
+            "h2hWinsAdded": 0,
+            "medianWinsAdded": 1,
+            "weeks": [
+              {
+                "week": 2,
+                "points": 11.6,
+                "gain": 7.6
+              },
+              {
+                "week": 4,
+                "points": 19.3,
+                "gain": 16
+              },
+              {
+                "week": 5,
+                "points": 15.1,
+                "gain": 6.8
               }
             ],
             "winsAdded": 1
