@@ -578,7 +578,7 @@ function App() {
     const gid = managerLinks[String(s.teamId)]?.guillotine;
     const g = gid != null && Number(guillotine.week) === Number(scoreboard.week) ? (guillotine.teams || []).find(t => Number(t.teamId) === Number(gid)) : null;
     if (g) needles.push(<MiniNeedle key="chop" team={{ ...g, lineup: { starters: g.lineup || [] } }} p={Number(g.chopProbability)} from={g.liveChopFrom} journey={!open(g.chopProbability)}
-      fixed sides={["safe", "chopped"]} colors={[GREEN, RED]} caption={result(g.chopProbability, `🪓 ${g.team} chopped`, `✅ ${g.team} safe`, `🪓 ${g.team}`)} history={thisWeek(guillotine.chopHistory)} games={games} />);
+      sides={["safe", "chopped"]} colors={[GREEN, RED]} caption={result(g.chopProbability, `🪓 ${g.team} chopped`, `✅ ${g.team} safe`, `🪓 ${g.team}`)} history={thisWeek(guillotine.chopHistory)} games={games} />);
     if (!needles.length) return null;
     return <><small className="mini-needles-label">YOUR NEEDLES</small><div className="mini-needles">{needles}</div></>;
   };

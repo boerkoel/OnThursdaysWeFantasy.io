@@ -185,8 +185,8 @@ function useQuake({ teams, games, history, historyId, p, fork = null, peeks = []
 // short: just the percentage (the Watch-mode tiles on a phone, whose header already names the teams);
 // caption false: no line under it.
 // journey: show the drift since kickoff even once its games are over (a decided matchup's tile).
-// fixed: always read the right side's chance, even under 50% (Jim, 2026-11-08: "30% ticket", "30% chopped",
-// not "70% no ticket"); otherwise the likelier side's.
+// fixed: always read the right side's chance, even under 50% (Jim, 2026-11-08: "30% ticket", not "70% no
+// ticket"); otherwise the likelier side's.
 export function MiniNeedle({ team, p, from = null, sides, colors, band = null, history = [], games = [], mine = false, caption = null, stakes = null, short = false, journey = false, fork = null, peeks = [], fixed = false }) {
   const { live, shown, peek } = useQuake({ teams: stakes || [team], games, history, historyId: team.teamId, p, fork, peeks });
   const markerId = useId();
