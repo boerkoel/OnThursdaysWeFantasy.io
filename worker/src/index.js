@@ -9,7 +9,8 @@
 // - scheduled (every 2 minutes): reads the latest live data, finds
 //   what's new since last time (lead changes, new favorites, finals, League
 //   Wire highlights, Death Watch changes) and pushes it to matching phones;
-//   every 30 minutes also saves this week's betting lines (lines.js, /lines).
+//   every 30 minutes also saves this week's betting lines (lines.js, /lines)
+//   and checks the Splash login (reminders before it ends, splash.js).
 //
 // KV (SUBS): "vapid" (this service's own key pair, created on first use),
 // "sub:<id>" (one per phone), "refresh-requested" (when /refresh last started a
@@ -18,7 +19,7 @@
 // Object instead (storeGet/storePut): KV's free plan allows 1,000 writes a day.
 // Secret GITHUB_TOKEN: a token allowed to run the repo's Actions workflows.
 import { generateVapidKeys, sendPush } from "./webpush.js";
-import { splashProbe, survivorFeed } from "./splash.js";
+import { loginReminder, splashLogin, splashProbe, survivorFeed } from "./splash.js";
 import { LiveStore, publishLive, readLive, serveLive, storeGet, storePut } from "./live.js";
 import { readLines, snapshotLines } from "./lines.js";
 // Main-league team -> the same manager's guillotine team and Splash handles:
@@ -38,6 +39,9 @@ const CHOP_ALERT_MOVE = 20;     // guillotine chop-odds move worth an alert (pts
 const WIN_SWING_ALERT = 30;     // matchup win-odds swing worth an alert (pts)
 const NEEDLE_MOVE = 10;         // matchup win-odds move worth a needle alert while its players are live (pts)
 const MAX_ALERTS_PER_PHONE_PER_RUN = 3;
+// The commissioner's main-league team: phones following it get the Splash login reminders.
+const COMMISSIONER_TEAM = 11;
+const LOGIN_CHECK_MS = 30 * 60 * 1000;
 // /refresh starts a live update only when the published data is older than
 // this, and at most once per gap (a run takes ~2 minutes to publish).
 const REFRESH_STALE_MS = 5 * 60 * 1000;
@@ -107,6 +111,8 @@ export default {
       }
       // Survivor contest (Splash): response shapes only, for building the feed.
       if (request.method === "GET" && pathname === "/splash/probe") return json(await splashProbe(env), 200, origin);
+      // When the Splash login started and ends (dates only).
+      if (request.method === "GET" && pathname === "/splash/login") return json(await splashLogin(env), 200, origin);
       // The Survivor tab's feed: standings and picks that have locked.
       if (request.method === "GET" && pathname === "/survivor") return json(await survivorFeed(env), 200, origin);
       // This week's betting lines: opening line and every move since (lines.js).
@@ -147,6 +153,7 @@ export default {
   async scheduled(event, env, ctx) {
     ctx.waitUntil(checkForAlerts(env));
     ctx.waitUntil(snapshotLines(env).catch(() => null));
+    ctx.waitUntil(checkSplashLogin(env).catch(() => null));
   }
 };
 
@@ -461,4 +468,26 @@ async function checkForAlerts(env) {
     for (const [key, time] of Object.entries(next.lastSent)) if (now - time > 86400000) delete next.lastSent[key];
   }
   await storePut(env, "state", next);
+}
+
+// Splash login reminders (Jim, 2026-11-08): 5, 2 and 1 days before the 30-day login
+// ends, and once if it fails anyway, to phones following the commissioner's team.
+// Sent between 8 AM and 9 PM Pacific; checked every 30 minutes.
+async function checkSplashLogin(env, now = Date.now()) {
+  const saved = await storeGet(env, "splash-reminders") || {};
+  if (saved.checkedAt && now - Date.parse(saved.checkedAt) < LOGIN_CHECK_MS) return;
+  const login = await splashLogin(env);
+  const sent = saved.seededAt === login?.seededAt ? saved.sent || [] : [];
+  const hour = Number(new Date(now).toLocaleString("en-US", { timeZone: "America/Los_Angeles", hour: "numeric", hour12: false }));
+  const due = hour >= 8 && hour < 21 ? loginReminder(login, sent, now) : null;
+  if (due) {
+    const vapid = await vapidKeys(env);
+    for (const { name } of (await env.SUBS.list({ prefix: "sub:" })).keys) {
+      const stored = await env.SUBS.get(name, "json");
+      if (!stored || !wants(stored.prefs, `team:${COMMISSIONER_TEAM}`)) continue;
+      await sendPush(stored.subscription, { title: due.title, body: due.body, url: SITE, tag: "splash-login" }, vapid, SITE).catch(() => 0);
+    }
+  }
+  await storePut(env, "splash-reminders", { checkedAt: new Date(now).toISOString(), seededAt: login?.seededAt || null,
+    sent: due ? [...new Set([...sent, due.key, ...(due.skip || [])])] : sent });
 }

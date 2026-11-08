@@ -5,6 +5,10 @@
 // token. Both are seeded once from the SPLASH_ACCESS_TOKEN / SPLASH_REFRESH_TOKEN
 // worker secrets, then kept in KV ("splash-session") and renewed here, since
 // each renewal can hand back a new refresh token.
+//
+// Splash ends a login 30 days after it starts, renewals or not (seeded Oct 5,
+// revoked Nov 4): the session remembers when its secrets were set (seededAt) so
+// the commissioner gets a reminder before then (loginReminder, Jim 2026-11-08).
 import { storeGet, storePut } from "./live.js";
 
 export const CONTEST = "contest_01M3NEWY24GPHGZ5TYKSZ220S6";
@@ -21,6 +25,8 @@ const APP_HEADERS = {
   "splash-accept-version": "3"
 };
 const RENEW_BEFORE_MS = 5 * 60 * 1000;
+const LOGIN_DAYS = 30;
+const DAY_MS = 86400000;
 
 // Access token expiry (JWT "exp"), or 0 if unreadable.
 function expiresAt(token) {
@@ -46,7 +52,7 @@ async function loadSession(env) {
   if (env.SPLASH_ACCESS_TOKEN && env.SPLASH_REFRESH_TOKEN) {
     // Developer Tools can show cookie values URL-encoded (%3D...): decode.
     const clean = v => { const t = v.trim(); try { return t.includes("%") ? decodeURIComponent(t) : t; } catch { return t; } };
-    return { accessToken: clean(env.SPLASH_ACCESS_TOKEN), refreshToken: clean(env.SPLASH_REFRESH_TOKEN), seed, seeded: true };
+    return { accessToken: clean(env.SPLASH_ACCESS_TOKEN), refreshToken: clean(env.SPLASH_REFRESH_TOKEN), seed, seeded: true, seededAt: new Date().toISOString() };
   }
   return null;
 }
@@ -70,7 +76,7 @@ async function renew(env, session) {
     const shape = `refresh token: ${session.refreshToken.length} chars, ${session.refreshToken.split(".").length - 1} dots, seeded ${Boolean(session.seeded)}`;
     throw new Error(`Splash session renewal failed (${response.status}; ${response.headers.get("content-type") || "no type"}; server ${response.headers.get("server") || "?"}; ${snippet}; ${shape})`);
   }
-  const next = { accessToken: data.accessToken, refreshToken: data.refreshToken || session.refreshToken, seed: session.seed, renewedAt: new Date().toISOString() };
+  const next = { accessToken: data.accessToken, refreshToken: data.refreshToken || session.refreshToken, seed: session.seed, seededAt: session.seededAt, renewedAt: new Date().toISOString() };
   await env.SUBS.put("splash-session", JSON.stringify(next));
   return next;
 }
@@ -79,7 +85,7 @@ async function freshSession(env) {
   let session = await loadSession(env);
   if (!session) throw new Error("No Splash session: set the SPLASH_ACCESS_TOKEN and SPLASH_REFRESH_TOKEN secrets.");
   if (expiresAt(session.accessToken) - Date.now() < RENEW_BEFORE_MS) session = await renew(env, session);
-  else if (session.seeded) await env.SUBS.put("splash-session", JSON.stringify({ accessToken: session.accessToken, refreshToken: session.refreshToken, seed: session.seed }));
+  else if (session.seeded) await env.SUBS.put("splash-session", JSON.stringify({ accessToken: session.accessToken, refreshToken: session.refreshToken, seed: session.seed, seededAt: session.seededAt }));
   return session;
 }
 
@@ -255,8 +261,41 @@ export async function survivorFeed(env) {
     await storePut(env, "survivor-feed", feed);
     return feed;
   } catch (error) {
-    // Splash or the session failing: keep serving the last good feed.
+    // Splash or the session failing: keep serving the last good feed, marked with when it first failed.
+    // Only the login itself ending counts (Splash refusing the session), not an outage.
+    const loginEnded = /renewal failed \((401|403)|No Splash session/.test(String(error?.message));
+    if (cached && loginEnded && !cached.failedAt) await storePut(env, "survivor-feed", { ...cached, failedAt: new Date().toISOString() }).catch(() => null);
     if (cached) return { ...cached, stale: true };
     throw error;
   }
+}
+
+// ---- Login reminder ----------------------------------------------------------------
+// { seededAt, expiresAt, failedAt } for the current login (no tokens). A session
+// stored before seededAt existed gets it once, from its first check.
+export async function splashLogin(env) {
+  const session = await loadSession(env);
+  if (!session) return null;
+  if (session.seeded || !session.seededAt) {
+    session.seededAt ||= new Date().toISOString();
+    const { seeded, ...keep } = session;
+    await env.SUBS.put("splash-session", JSON.stringify(keep));
+  }
+  const feed = await storeGet(env, "survivor-feed");
+  return { seededAt: session.seededAt, expiresAt: new Date(Date.parse(session.seededAt) + LOGIN_DAYS * DAY_MS).toISOString(), failedAt: feed?.failedAt > session.seededAt ? feed.failedAt : null };
+}
+
+// The reminder due now, if any: 5, 2 and 1 days before the login ends, then once
+// if renewing fails. `sent` lists what this login already got.
+export function loginReminder(login, sent, now = Date.now()) {
+  if (!login) return null;
+  const fix = "Log in to Splash, copy accessToken and refreshToken, gh secret set both, then run deploy-worker.yml.";
+  if (login.failedAt && !sent.includes("failed"))
+    return { key: "failed", title: "🔑 Splash login ended", body: `The Survivor tab is frozen. ${fix}` };
+  const days = Math.ceil((Date.parse(login.expiresAt) - now) / DAY_MS);
+  const due = [1, 2, 5].find(d => days <= d && !sent.includes(`d${d}`));   // the most urgent one due
+  if (!due || days < 1) return null;
+  const when = new Date(login.expiresAt).toLocaleString("en-US", { timeZone: "America/Los_Angeles", weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  return { key: `d${due}`, skip: [5, 2, 1].filter(d => d >= due).map(d => `d${d}`), title: "🔑 Splash login ending",
+    body: `The Survivor tab's Splash login ends in ${days} day${days === 1 ? "" : "s"} (${when} PT). ${fix}` };
 }
