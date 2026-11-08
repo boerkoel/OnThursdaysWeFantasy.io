@@ -245,7 +245,7 @@ export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
         logo: <DwLogo team={t} size="md" />,
         name: t.team,
         value: t.chopProbability,
-        label: t.chopProbability >= 100 ? "Doomed" : pct(t.chopProbability),
+        label: t.chopProbability >= 100 ? "Doomed" : null,
         sub: `${money(t.score)} pts${t.playersLeft ? ` · proj ${money(t.projected)}` : " · final"}`,
         icon: "🪦"
       }))} />

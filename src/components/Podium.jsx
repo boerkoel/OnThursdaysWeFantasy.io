@@ -3,7 +3,8 @@ import React from "react";
 // Olympic-style podium: 1st in the middle, 2nd left, 3rd right. Step heights
 // are proportional to each entry's value (odds) relative to the leader's,
 // with a minimum so a long shot still gets a visible step.
-// items: [{ key, logo, name, value, label, sub, icon }], best first.
+// items: [{ key, logo, name, value, label, sub, icon }], best first; label is optional (left out while the
+// needles below already show the odds, Jim 2026-11-08).
 // variant: "medal" (ticket race) or "tomb" (Death Watch: stone tombstones).
 const MIN_STEP = 34;
 const MAX_STEP = 112;
@@ -21,7 +22,7 @@ export default function Podium({ items, variant = "medal", ariaLabel }) {
         <div className="podium-team">
           {x.logo}
           <b>{x.name}</b>
-          <em>{x.label}</em>
+          {x.label ? <em>{x.label}</em> : null}
           {x.sub ? <small>{x.sub}</small> : null}
         </div>
         <div className="podium-step" style={{ height: height(x) }}><span>{x.icon}</span></div>

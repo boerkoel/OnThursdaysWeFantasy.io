@@ -74,7 +74,7 @@ export default function RafflePodium({ ticketFork = () => null, ticketPeeks = ()
         logo: <TeamLogo src={logos[s.teamId]} size="md" />,
         name: s.team,
         value: s.topScoreProbability,
-        label: final && i === 0 ? "🎟️ Ticket won" : pct(s.topScoreProbability),
+        label: final ? (i === 0 ? "🎟️ Ticket won" : pct(s.topScoreProbability)) : null,
         sub: `${money(s.score)} pts${final ? "" : ` · proj ${s.projectionAverage != null ? money(s.projectionAverage) : "—"}`}`,
         icon: MEDALS[i]
       }))} />
