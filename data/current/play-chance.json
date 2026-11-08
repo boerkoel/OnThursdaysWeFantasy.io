@@ -1,7 +1,7 @@
 {
  "source": "FantasyPros Are They Playing?",
  "url": "https://www.fantasypros.com/nfl/myplaybook/are-they-playing.php",
- "fetchedAt": "2026-11-07T14:52:22.208Z",
+ "fetchedAt": "2026-11-08T13:18:05.889Z",
  "players": [
   {
    "name": "Jaxon Smith-Njigba",
@@ -32,7 +32,7 @@
    "team": "LAR",
    "position": "WR",
    "status": "",
-   "chance": null,
+   "chance": 1,
    "practices": [
     "--",
     "--",
@@ -56,7 +56,7 @@
    "team": "DET",
    "position": "WR",
    "status": "Q",
-   "chance": 0.88577,
+   "chance": 0.95,
    "practices": [
     "Limit",
     "Limit",
@@ -139,12 +139,12 @@
    "name": "DJ Moore",
    "team": "BUF",
    "position": "WR",
-   "status": "Q",
-   "chance": 0.95333,
+   "status": "",
+   "chance": 1,
    "practices": [
     "Limit",
     "Limit",
-    null
+    "Limit"
    ]
   },
   {
@@ -260,7 +260,7 @@
    "team": "TB",
    "position": "WR",
    "status": "Q",
-   "chance": 0.82217,
+   "chance": 0.95,
    "practices": [
     "DNP",
     "Full",
@@ -368,7 +368,7 @@
    "team": "LAR",
    "position": "QB",
    "status": "",
-   "chance": 0.98243,
+   "chance": 1,
    "practices": [
     "Full",
     "Full",
@@ -416,23 +416,23 @@
    "team": "BUF",
    "position": "TE",
    "status": "",
-   "chance": 0.99,
+   "chance": 1,
    "practices": [
     "Limit",
     "Full",
-    null
+    "Full"
    ]
   },
   {
    "name": "Khalil Shakir",
    "team": "BUF",
    "position": "WR",
-   "status": "Q",
-   "chance": null,
+   "status": "",
+   "chance": 1,
    "practices": [
     "--",
     "DNP",
-    null
+    "Full"
    ]
   },
   {
@@ -547,12 +547,12 @@
    "name": "Keon Coleman",
    "team": "BUF",
    "position": "WR",
-   "status": "Q",
-   "chance": 0.94048,
+   "status": "",
+   "chance": 1,
    "practices": [
     "Limit",
     "Limit",
-    null
+    "Limit"
    ]
   },
   {
@@ -572,11 +572,11 @@
    "team": "LAR",
    "position": "TE",
    "status": "O",
-   "chance": 0.60749,
+   "chance": 0,
    "practices": [
     "Limit",
     "Limit",
-    "Full"
+    "Limit"
    ]
   },
   {
@@ -595,12 +595,12 @@
    "name": "Kyler Murray",
    "team": "MIN",
    "position": "QB",
-   "status": "NS",
-   "chance": 0.1001,
+   "status": "O",
+   "chance": 0,
    "practices": [
     "DNP",
     "DNP",
-    null
+    "DNP"
    ]
   },
   {
@@ -649,18 +649,6 @@
     null,
     null,
     null
-   ]
-  },
-  {
-   "name": "Hunter Henry",
-   "team": "NE",
-   "position": "TE",
-   "status": "O",
-   "chance": 0.56114,
-   "practices": [
-    "DNP",
-    "DNP",
-    "Limit"
    ]
   },
   {
@@ -788,7 +776,7 @@
    "team": "LAR",
    "position": "TE",
    "status": "",
-   "chance": null,
+   "chance": 1,
    "practices": [
     "--",
     "--",
@@ -919,12 +907,12 @@
    "name": "Jauan Jennings",
    "team": "MIN",
    "position": "WR",
-   "status": "Q",
-   "chance": 0.34903,
+   "status": "O",
+   "chance": 0,
    "practices": [
     "Limit",
     "DNP",
-    null
+    "DNP"
    ]
   },
   {
@@ -932,7 +920,7 @@
    "team": "MIA",
    "position": "RB",
    "status": "Q",
-   "chance": 0.62788,
+   "chance": 0.25,
    "practices": [
     "DNP",
     "Limit",
@@ -1064,11 +1052,11 @@
    "team": "BUF",
    "position": "RB",
    "status": "",
-   "chance": 0.95497,
+   "chance": 1,
    "practices": [
     "DNP",
     "Full",
-    null
+    "Full"
    ]
   },
   {
@@ -1207,12 +1195,12 @@
    "name": "Demond Claiborne",
    "team": "MIN",
    "position": "RB",
-   "status": "Q",
-   "chance": 0.12605,
+   "status": "O",
+   "chance": 0,
    "practices": [
     "Limit",
     "DNP",
-    null
+    "DNP"
    ]
   },
   {
@@ -1291,12 +1279,12 @@
    "name": "Joshua Palmer",
    "team": "BUF",
    "position": "WR",
-   "status": "Q",
-   "chance": 0.02115,
+   "status": "O",
+   "chance": 0,
    "practices": [
     "DNP",
     "DNP",
-    null
+    "DNP"
    ]
   },
   {
@@ -1304,7 +1292,7 @@
    "team": "BAL",
    "position": "RB",
    "status": "Q",
-   "chance": 0.43081,
+   "chance": 0.44526,
    "practices": [
     "Full",
     "Full",
@@ -1448,6 +1436,18 @@
    "team": "SF",
    "position": "WR",
    "status": "IR",
+   "chance": null,
+   "practices": [
+    null,
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Andy Dalton",
+   "team": "ATL",
+   "position": "QB",
+   "status": "O",
    "chance": null,
    "practices": [
     null,
@@ -1675,7 +1675,7 @@
    "name": "Dyami Brown",
    "team": "WAS",
    "position": "WR",
-   "status": "O",
+   "status": "IR",
    "chance": 0,
    "practices": [
     "--",
@@ -1952,7 +1952,7 @@
    "team": "LAR",
    "position": "RB",
    "status": "",
-   "chance": 0.56954,
+   "chance": 1,
    "practices": [
     "Full",
     "Full",
@@ -1993,6 +1993,18 @@
     null,
     null,
     null
+   ]
+  },
+  {
+   "name": "Velus Jones Jr.",
+   "team": "SEA",
+   "position": "WR",
+   "status": "",
+   "chance": 1,
+   "practices": [
+    "Limit",
+    "Limit",
+    "--"
    ]
   },
   {
@@ -2180,11 +2192,11 @@
    "team": "BUF",
    "position": "WR",
    "status": "PUP",
-   "chance": 0.68169,
+   "chance": 0.54348,
    "practices": [
     "Full",
     "Full",
-    null
+    "Full"
    ]
   },
   {
@@ -2516,6 +2528,18 @@
    "team": "KC",
    "position": "WR",
    "status": "IR",
+   "chance": null,
+   "practices": [
+    null,
+    null,
+    null
+   ]
+  },
+  {
+   "name": "Jack Strand",
+   "team": "ATL",
+   "position": "QB",
+   "status": "O",
    "chance": null,
    "practices": [
     null,
