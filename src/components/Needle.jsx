@@ -358,8 +358,8 @@ export function NeedleRace({ label, items, sides, colors, band = null, words, ch
   const contenders = live.filter(i => i.p >= 10 && i.p <= 90);
   const shown = useStickySet(contenders, max, pick === "stake" ? i => -Math.abs(base(i) - 50) : base, onSwap);
   // minShown (the ticket's and chop's top two, Jim 2026-11-02): those keep their needles even outside 10-90%, pinned
-  // near the end, rather than dropping into the chips.
-  const filler = minShown ? live.filter(i => !shown.includes(i)).sort((x, y) => y.p - x.p).slice(0, Math.max(0, minShown - shown.length)) : [];
+  // near the end, rather than dropping into the chips; but not a 0% needle (3%+ only, Jim 2026-11-08).
+  const filler = minShown ? live.filter(i => !shown.includes(i) && i.p >= 3).sort((x, y) => y.p - x.p).slice(0, Math.max(0, minShown - shown.length)) : [];
   const needles = [...shown, ...filler].sort((x, y) => isMine(y) - isMine(x) || base(y) - base(x));
   const alsoIn = contenders.filter(i => !shown.includes(i)).sort((x, y) => y.p - x.p);
   const chips = live.filter(i => !filler.includes(i));
