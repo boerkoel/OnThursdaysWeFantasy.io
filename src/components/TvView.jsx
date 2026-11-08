@@ -256,9 +256,9 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
             stakes={scores} history={scoreboard.medianHistory?.week === scoreboard.week ? scoreboard.medianHistory.points : []} games={games} />
           <NeedleRace minShown={2} label="🎟️ TICKET RACE" compact max={2} onSwap={swapped("🎟️")} items={scores.map(s => ({ team: s, p: Number(s.topScoreProbability), from: s.liveTopFrom, fork: forks.ticket(s), peeks: peeks.ticket(s) }))}
             sides={["no ticket", "ticket"]} colors={["#8b8e86", "#e6c85c"]} words={{ likely: ["long shots", "near lock"], locked: ["❌ out", "🎟️ locked"] }} implied="left"
-            chipOdds="right" stakes={scores} history={scoreboard.raffleHistory?.week === scoreboard.week ? scoreboard.raffleHistory.points : []} games={games} />
+            fixed chipOdds="right" stakes={scores} history={scoreboard.raffleHistory?.week === scoreboard.week ? scoreboard.raffleHistory.points : []} games={games} />
           {gWeek && guillotine.teams?.length ? <NeedleRace minShown={2} label="🪓 CHOPPING BLOCK" compact max={2} onSwap={swapped("🪓")} items={guillotine.teams.map(t => ({ team: { ...t, lineup: { starters: t.lineup || [] } }, p: Number(t.chopProbability), from: t.liveChopFrom, peeks: chopPeeks(t, guillotine.teams, games) }))}
-            good="left" sides={["safe", "chopped"]} colors={["#8fd087", "#d98a86"]} words={{ likely: ["likely safe", "likely chopped"], locked: ["✅ safe", "🪓 chopped"] }} implied="left"
+            fixed good="left" sides={["safe", "chopped"]} colors={["#8fd087", "#d98a86"]} words={{ likely: ["likely safe", "likely chopped"], locked: ["✅ safe", "🪓 chopped"] }} implied="left"
             stakes={guillotine.teams.map(t => ({ lineup: { starters: t.lineup || [] } }))} games={games} /> : null}
           {field.length ? <div className="tv-field"><small className="mini-needles-label">ON THE FIELD NOW</small>
             {field.map(f => <p key={f.id}><b>{f.head}</b>{f.on.length ? " — " + f.on.join(", ") : " — no league starters"}</p>)}</div> : null}

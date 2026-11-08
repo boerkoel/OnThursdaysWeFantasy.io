@@ -573,12 +573,12 @@ function App() {
     // The ticket while it's a real shot, or was one at any point this week (its ride stays).
     const ticketPeak = Math.max(Number(s.topScoreProbability) || 0, ...thisWeek(scoreboard.raffleHistory).map(x => Number(x.p?.[s.teamId]) || 0));
     if (ticketPeak >= 3) needles.push(<MiniNeedle key="ticket" team={s} stakes={scores} fork={open(s.topScoreProbability) ? ticketFork(s) : null} peeks={open(s.topScoreProbability) ? ticketPeeks(s) : []}
-      p={Number(s.topScoreProbability)} from={s.liveTopFrom} journey={!open(s.topScoreProbability)} sides={["no ticket", "ticket"]} colors={["#8b8e86", "#e6c85c"]}
+      p={Number(s.topScoreProbability)} from={s.liveTopFrom} journey={!open(s.topScoreProbability)} fixed sides={["no ticket", "ticket"]} colors={["#8b8e86", "#e6c85c"]}
       caption={result(s.topScoreProbability, "🎟️ Ticket locked", "🎟️ top score", "🎟️ top score")} history={thisWeek(scoreboard.raffleHistory)} games={games} />);
     const gid = managerLinks[String(s.teamId)]?.guillotine;
     const g = gid != null && Number(guillotine.week) === Number(scoreboard.week) ? (guillotine.teams || []).find(t => Number(t.teamId) === Number(gid)) : null;
     if (g) needles.push(<MiniNeedle key="chop" team={{ ...g, lineup: { starters: g.lineup || [] } }} p={Number(g.chopProbability)} from={g.liveChopFrom} journey={!open(g.chopProbability)}
-      sides={["safe", "chopped"]} colors={[GREEN, RED]} caption={result(g.chopProbability, `🪓 ${g.team} chopped`, `✅ ${g.team} safe`, `🪓 ${g.team}`)} history={thisWeek(guillotine.chopHistory)} games={games} />);
+      fixed sides={["safe", "chopped"]} colors={[GREEN, RED]} caption={result(g.chopProbability, `🪓 ${g.team} chopped`, `✅ ${g.team} safe`, `🪓 ${g.team}`)} history={thisWeek(guillotine.chopHistory)} games={games} />);
     if (!needles.length) return null;
     return <><small className="mini-needles-label">YOUR NEEDLES</small><div className="mini-needles">{needles}</div></>;
   };

@@ -185,17 +185,19 @@ function useQuake({ teams, games, history, historyId, p, fork = null, peeks = []
 // short: just the percentage (the Watch-mode tiles on a phone, whose header already names the teams);
 // caption false: no line under it.
 // journey: show the drift since kickoff even once its games are over (a decided matchup's tile).
-export function MiniNeedle({ team, p, from = null, sides, colors, band = null, history = [], games = [], mine = false, caption = null, stakes = null, short = false, journey = false, fork = null, peeks = [] }) {
+// fixed: always read the right side's chance, even under 50% (Jim, 2026-11-08: "30% ticket", "30% chopped",
+// not "70% no ticket"); otherwise the likelier side's.
+export function MiniNeedle({ team, p, from = null, sides, colors, band = null, history = [], games = [], mine = false, caption = null, stakes = null, short = false, journey = false, fork = null, peeks = [], fixed = false }) {
   const { live, shown, peek } = useQuake({ teams: stakes || [team], games, history, historyId: team.teamId, p, fork, peeks });
   const markerId = useId();
   if (!Number.isFinite(Number(p))) return null;
   const range = live || journey ? sinceKickoff({ teams: stakes || [team], games, history, id: team.teamId, now: Number(p), finished: journey }) : null;
-  const right = Number(p) >= 50;
+  const right = fixed || Number(p) >= 50;
   // With a middle color: red, yellow and green zones (stronger at the ends), and the odds colored by zone.
   const zones = colors.length === 3 && band
     ? [[0, 5, 0.9, colors[0]], [5, band[0], 0.55, colors[0]], [band[0], 50, 0.45, colors[1]], [50, band[1], 0.45, colors[1]], [band[1], 95, 0.55, colors[2]], [95, 100, 0.9, colors[2]]]
     : ZONES.map(([lo, hi, o]) => [lo, hi, o, hi <= 50 ? colors[0] : colors[colors.length - 1]]);
-  const oddsColor = colors.length === 3 && band ? (p < band[0] ? colors[0] : p > band[1] ? colors[2] : colors[1]) : right ? colors[colors.length - 1] : colors[0];
+  const oddsColor = colors.length === 3 && band ? (p < band[0] ? colors[0] : p > band[1] ? colors[2] : colors[1]) : Number(p) >= 50 ? colors[colors.length - 1] : colors[0];
   // The drives' move in the number shown (the side it favors).
   const moved = from != null && Number.isFinite(Number(from)) ? (Number(p) - Number(from)) * (right ? 1 : -1) : 0;
   const deg = (shown / 100 - 0.5) * 180;
@@ -328,7 +330,7 @@ function useStickySet(items, max, score, onSwap) {
 // Under the needles, two columns (Jim, 2026-11-02): the good outcomes on the left (✅ and likely), the bad on the
 // right (❌ and likely the other way); good: which side is the good one ("right": above, the ticket; "left": safe).
 export function NeedleRace({ label, items, sides, colors, band = null, words, chipOdds = "side", history = [], games = [], stakes = null, mine = null,
-  max = null, pick = "odds", onSwap = null, good = "right", implied = null, compact = false, minShown = 0 }) {
+  max = null, pick = "odds", onSwap = null, good = "right", implied = null, compact = false, minShown = 0, fixed = false }) {
   // compact (Watch mode on a phone): each chip column runs on one line, ending in … ; a tap shows them in full.
   const [chipsOpen, setChipsOpen] = useState(false);
   const base = i => Number.isFinite(Number(i.from)) ? Number(i.from) : Number(i.p);
@@ -355,7 +357,7 @@ export function NeedleRace({ label, items, sides, colors, band = null, words, ch
   return <>
     {label ? <small className="mini-needles-label">{label}</small> : null}
     {needles.length ? <div className="mini-needles">{needles.map(i => <MiniNeedle key={i.team.teamId} team={i.team} p={Number(i.p)} from={i.from} fork={i.fork || null} peeks={i.peeks || []}
-      sides={sides} colors={colors} band={band} stakes={stakes} history={history} games={games} mine={isMine(i)} />)}</div> : null}
+      sides={sides} colors={colors} band={band} stakes={stakes} history={history} games={games} mine={isMine(i)} fixed={fixed} />)}</div> : null}
     <div className={"race-chips" + (compact ? " compact" : "") + (chipsOpen ? " open" : "")} onClick={compact ? () => setChipsOpen(o => !o) : undefined}>
     {tier("also in it", alsoIn.map(i => withOdds(i, chipOdds === "right" || i.p >= 50)))}
     {(() => {

@@ -83,7 +83,7 @@ export default function RafflePodium({ ticketFork = () => null, ticketPeeks = ()
           long shots, 🎟️/❌ for the settled; quaking with the whole league's live action. */}
       {!final ? <NeedleRace minShown={2} label="🎟️ TICKET RACE · EACH TEAM'S SHOT" items={scores.map(s => ({ team: s, p: Number(s.topScoreProbability), from: s.liveTopFrom, fork: ticketFork(s), peeks: ticketPeeks(s) }))}
         sides={["no ticket", "ticket"]} colors={["#8b8e86", "#e6c85c"]} words={{ likely: ["long shots", "near lock"], locked: ["❌ out", "🎟️ locked"] }} implied="left"
-        chipOdds="right" stakes={scores} history={history} games={nflGames} /> : null}
+        fixed chipOdds="right" stakes={scores} history={history} games={nflGames} /> : null}
       <button type="button" className="section-toggle" aria-expanded={showDetails} onClick={() => setShowDetails(v => !v)}>{showDetails ? "Hide race details ▴" : "Race details ▾"}</button>
       {showDetails ? <>
       <div className="award-grid dw-details">
