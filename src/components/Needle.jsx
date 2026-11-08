@@ -51,9 +51,10 @@ function stakesLeft(teams, games) {
 
 // While games are on (Jim, 2026-11-02): where the odds stood when the race's first game in progress kicked off,
 // from the history (b's chance: head to head, or two-way shares for the ticket and chop races).
-function kickoffOdds({ a, b, history, games, twoWay }) {
+// at: a start time of its own instead (the day's first kickoff, for the arcs).
+function kickoffOdds({ a, b, history, games, twoWay, at = null }) {
   const ids = new Set([a, b].flatMap(t => (t.lineup?.starters || []).map(p => Number(p.proTeamId))));
-  const kicks = games.filter(g => g.state === "in" && (g.teamIds || []).some(id => ids.has(Number(id)))).map(g => Date.parse(g.kickoff)).filter(Number.isFinite);
+  const kicks = at != null ? [at] : games.filter(g => g.state === "in" && (g.teamIds || []).some(id => ids.has(Number(id)))).map(g => Date.parse(g.kickoff)).filter(Number.isFinite);
   if (!kicks.length || !history?.length) return null;
   const before = history.filter(x => Date.parse(x.t) <= Math.min(...kicks) + 60000).at(-1);
   const pa = Number(before?.p?.[a.teamId]), pb = Number(before?.p?.[b.teamId]);
@@ -63,20 +64,35 @@ function kickoffOdds({ a, b, history, games, twoWay }) {
 // Since the first game in progress among these teams' players kicked off (Jim, 2026-11-02): where this odds
 // series started, and the lowest and highest it has been since, now included, for the drift arrow and the
 // band behind it that shows a swing that came back. history: snapshots { t, p: { [id]: odds } }.
-// finished: also count games over in the last 12 hours (a decided matchup's tile keeps its journey).
-function sinceKickoff({ teams, games, history, id, now, finished = false }) {
-  const ids = new Set(teams.flatMap(t => (t.lineup?.starters || []).map(p => Number(p.proTeamId))));
-  const recent = g => g.state === "in" || (finished && g.completed && Date.now() - Date.parse(g.kickoff) < 12 * 3600 * 1000);
-  const kicks = games.filter(g => recent(g) && (g.teamIds || []).some(x => ids.has(Number(x)))).map(g => Date.parse(g.kickoff)).filter(Number.isFinite);
-  if (!kicks.length || !history?.length) return null;
-  const t0 = Math.min(...kicks);
+const raceIds = teams => new Set(teams.flatMap(t => (t.lineup?.starters || []).map(p => Number(p.proTeamId))));
+function sinceKickoff({ teams, games, history, id, now }) {
+  const ids = raceIds(teams);
+  const kicks = games.filter(g => g.state === "in" && (g.teamIds || []).some(x => ids.has(Number(x)))).map(g => Date.parse(g.kickoff)).filter(Number.isFinite);
+  return kicks.length ? rangeSince(history, id, Math.min(...kicks), now) : null;
+}
+// The day's first kickoff among the race's games that have started (New York's calendar day), or null.
+const etDay = time => new Date(time).toLocaleDateString("en-US", { timeZone: "America/New_York" });
+function dayStart(teams, games) {
+  const ids = raceIds(teams), today = etDay(Date.now());
+  const kicks = games.filter(g => g.state !== "pre" && (g.teamIds || []).some(x => ids.has(Number(x))) && etDay(Date.parse(g.kickoff)) === today)
+    .map(g => Date.parse(g.kickoff)).filter(Number.isFinite);
+  return kicks.length ? Math.min(...kicks) : null;
+}
+// The arcs outside the dial (Jim, 2026-11-08: where I started the day): the same range, but from the day's first
+// kickoff and all day long, between slates and after the last game too; the text lines stay per slate.
+function sinceDayStart({ teams, games, history, id, now }) {
+  const t0 = dayStart(teams, games);
+  return t0 == null ? null : rangeSince(history, id, t0, now);
+}
+function rangeSince(history, id, t0, now) {
+  if (!history?.length) return null;
   const before = history.filter(x => Date.parse(x.t) <= t0 + 60000).at(-1);
   const vals = [before, ...history.filter(x => Date.parse(x.t) > t0 + 60000)].filter(Boolean).map(x => Number(x.p?.[id])).filter(Number.isFinite);
   if (!vals.length) return null;
   vals.push(Number(now));
   return { start: vals[0], min: Math.min(...vals), max: Math.max(...vals) };
 }
-// Drawn just outside the dial: a faint band over every odds the race has visited since kickoff, and an arrow
+// Drawn just outside the dial: a faint band over every odds the race has visited today, and an arrow
 // from where it started to now. A short arrow in a wide band: it swung big and came back.
 const R_ARC = R_OUT + 8;
 const arcPath = (from, to, r = R_ARC) => {
@@ -184,14 +200,13 @@ function useQuake({ teams, games, history, historyId, p, fork = null, peeks = []
 // league for the median line, which moves with every team).
 // short: just the percentage (the Watch-mode tiles on a phone, whose header already names the teams);
 // caption false: no line under it.
-// journey: show the drift since kickoff even once its games are over (a decided matchup's tile).
 // fixed: always read the right side's chance, even under 50% (Jim, 2026-11-08: "30% ticket", not "70% no
 // ticket"); otherwise the likelier side's.
-export function MiniNeedle({ team, p, from = null, sides, colors, band = null, history = [], games = [], mine = false, caption = null, stakes = null, short = false, journey = false, fork = null, peeks = [], fixed = false }) {
+export function MiniNeedle({ team, p, from = null, sides, colors, band = null, history = [], games = [], mine = false, caption = null, stakes = null, short = false, fork = null, peeks = [], fixed = false }) {
   const { live, shown, peek } = useQuake({ teams: stakes || [team], games, history, historyId: team.teamId, p, fork, peeks });
   const markerId = useId();
   if (!Number.isFinite(Number(p))) return null;
-  const range = live || journey ? sinceKickoff({ teams: stakes || [team], games, history, id: team.teamId, now: Number(p), finished: journey }) : null;
+  const range = sinceDayStart({ teams: stakes || [team], games, history, id: team.teamId, now: Number(p) });
   const right = fixed || Number(p) >= 50;
   // With a middle color: red, yellow and green zones (stronger at the ends), and the odds colored by zone.
   const zones = colors.length === 3 && band
@@ -246,8 +261,12 @@ export function Needle({ a, b, history = [], odds = null, label = null, games = 
   const arrow = d => Math.abs(d) >= 0.5 ? <small className={d > 0 ? "up" : "down"} title="Since the last full update, from the drives in progress">{d > 0 ? "▲" : "▼"}{Math.abs(Math.round(d))}</small> : null;
   const deg = (shown / 100 - 0.5) * 180;
   // Drift since kickoff: an arc outside the dial from the odds then to now, and the points it's moved.
-  const visited = !live ? null : odds ? (() => { const st = kickoffOdds({ a, b, history, games, twoWay: true }); return st == null ? null : { start: st, min: Math.min(st, pB), max: Math.max(st, pB) }; })()
+  const twoWay = st => st == null ? null : { start: st, min: Math.min(st, pB), max: Math.max(st, pB) };
+  const visited = !live ? null : odds ? twoWay(kickoffOdds({ a, b, history, games, twoWay: true }))
     : sinceKickoff({ teams: [a, b], games, history, id: b.teamId, now: pB });
+  // The arcs: the whole day, from its first kickoff (the text line above stays per slate).
+  const day = odds ? (() => { const at = dayStart([a, b], games); return at == null ? null : twoWay(kickoffOdds({ a, b, history, games, twoWay: true, at })); })()
+    : sinceDayStart({ teams: [a, b], games, history, id: b.teamId, now: pB });
   const startB = visited ? visited.start : null;
   const drift = startB == null ? 0 : pB - startB;
   const field = live ? [onTheField(a, games), onTheField(b, games)] : null;
@@ -267,7 +286,7 @@ export function Needle({ a, b, history = [], odds = null, label = null, games = 
           <line x1={CX} y1={CY} x2={CX} y2={CY - R_OUT - 4} className="needle-hand" />
         </g>
         <circle cx={CX} cy={CY} r={5} className="needle-hub" />
-        <DriftArcs range={visited} now={pB} markerId={arcId} />
+        <DriftArcs range={day} now={pB} markerId={arcId} />
       </svg>
       {Math.abs(drift) >= 1 ? <p className="needle-drift-text" title={`${b.team} ${Math.round(startB)}% when the game${games.filter(g => g.state === "in").length > 1 ? "s" : ""} kicked off, ${Math.round(pB)}% now`}>
         since kickoff {drift < 0 ? <b style={{ color: A_COLOR }}>◀ {Math.round(-drift)}</b> : <b style={{ color: B_COLOR }}>{Math.round(drift)} ▶</b>}</p> : null}

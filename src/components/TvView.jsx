@@ -237,7 +237,7 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
                   {narrow ? <small className="tv-left-count">{t.startersLeft ?? 0} left</small> : null}<b>{money(t.score)}</b></p>)}
               </div>
               <MiniNeedle team={b} stakes={[a, b]} fork={settled ? null : forks.win(a, b)} peeks={settled ? [] : peeks.win(a, b)} p={Number(b.winProbability)} from={b.liveWinFrom} sides={[a.team, b.team]} colors={[A_COLOR, B_COLOR]} short={narrow || settled}
-                caption={settled ? `✊ ${winner.team}` : narrow ? false : `${a.startersLeft ?? 0} left · ${b.startersLeft ?? 0} left`} journey={settled}
+                caption={settled ? `✊ ${winner.team}` : narrow ? false : `${a.startersLeft ?? 0} left · ${b.startersLeft ?? 0} left`}
                 history={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} games={games} />
               {!settled && !narrow ? (() => {   // what each side roots for on a drive in progress (Jim, 2026-11-02), wide screens
                 const r = games.map(g => driveRooting({ game: g, a, b })).find(Boolean);

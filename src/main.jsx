@@ -565,19 +565,19 @@ function App() {
     // The head-to-head is left out only where the full needle shows it (Primetime and the game-day view draw it
     // while the matchup is open; a decided one keeps its mini needle here).
     if (opp && !(skipWin && open(s.winProbability))) needles.push(<MiniNeedle key="win" team={s} stakes={[s, opp]} fork={open(s.winProbability) ? winFork(opp, s) : null} peeks={open(s.winProbability) ? winPeeks(opp, s) : []}
-      p={Number(s.winProbability)} from={s.liveWinFrom} journey={!open(s.winProbability)} sides={["lose", "win"]} colors={[RED, GREEN]}
+      p={Number(s.winProbability)} from={s.liveWinFrom} sides={["lose", "win"]} colors={[RED, GREEN]}
       caption={result(s.winProbability, `✅ Beat ${opp.team}`, `❌ Lost to ${opp.team}`, `vs ${opp.team}`)} history={thisWeek(scoreboard.winHistory)} games={games} />);
     if (s.aboveMedianProbability != null) needles.push(<MiniNeedle key="median" team={s} stakes={scores} fork={open(s.aboveMedianProbability) ? medianFork(s) : null} peeks={open(s.aboveMedianProbability) ? medianPeeks(s) : []}
-      p={Number(s.aboveMedianProbability)} from={s.liveAboveFrom} journey={!open(s.aboveMedianProbability)} sides={["below", "above"]} colors={MEDIAN_COLORS} band={[NEAR_MEDIAN_MIN, NEAR_MEDIAN_MAX]}
+      p={Number(s.aboveMedianProbability)} from={s.liveAboveFrom} sides={["below", "above"]} colors={MEDIAN_COLORS} band={[NEAR_MEDIAN_MIN, NEAR_MEDIAN_MAX]}
       caption={result(s.aboveMedianProbability, "✅ Above the median", "❌ Below the median", "median line")} history={thisWeek(scoreboard.medianHistory)} games={games} />);
     // The ticket while it's a real shot, or was one at any point this week (its ride stays).
     const ticketPeak = Math.max(Number(s.topScoreProbability) || 0, ...thisWeek(scoreboard.raffleHistory).map(x => Number(x.p?.[s.teamId]) || 0));
     if (ticketPeak >= 3) needles.push(<MiniNeedle key="ticket" team={s} stakes={scores} fork={open(s.topScoreProbability) ? ticketFork(s) : null} peeks={open(s.topScoreProbability) ? ticketPeeks(s) : []}
-      p={Number(s.topScoreProbability)} from={s.liveTopFrom} journey={!open(s.topScoreProbability)} fixed sides={["no ticket", "ticket"]} colors={["#8b8e86", "#e6c85c"]}
+      p={Number(s.topScoreProbability)} from={s.liveTopFrom} fixed sides={["no ticket", "ticket"]} colors={["#8b8e86", "#e6c85c"]}
       caption={result(s.topScoreProbability, "🎟️ Ticket locked", "🎟️ top score", "🎟️ top score")} history={thisWeek(scoreboard.raffleHistory)} games={games} />);
     const gid = managerLinks[String(s.teamId)]?.guillotine;
     const g = gid != null && Number(guillotine.week) === Number(scoreboard.week) ? (guillotine.teams || []).find(t => Number(t.teamId) === Number(gid)) : null;
-    if (g) needles.push(<MiniNeedle key="chop" team={{ ...g, lineup: { starters: g.lineup || [] } }} p={Number(g.chopProbability)} from={g.liveChopFrom} journey={!open(g.chopProbability)}
+    if (g) needles.push(<MiniNeedle key="chop" team={{ ...g, lineup: { starters: g.lineup || [] } }} p={Number(g.chopProbability)} from={g.liveChopFrom}
       sides={["safe", "chopped"]} colors={[GREEN, RED]} caption={result(g.chopProbability, `🪓 ${g.team} chopped`, `✅ ${g.team} safe`, `🪓 ${g.team}`)} history={thisWeek(guillotine.chopHistory)} games={games} />);
     if (!needles.length) return null;
     return <><small className="mini-needles-label">YOUR NEEDLES</small><div className="mini-needles">{needles}</div></>;
