@@ -1,30 +1,30 @@
 {
   "week": 9,
-  "lastUpdated": "2026-11-08T13:18:06.710Z",
+  "lastUpdated": "2026-11-08T15:07:50.473Z",
   "scores": [
     {
       "teamId": 4,
       "opponentId": 11,
       "score": 28.08,
-      "opponentScore": 0,
+      "opponentScore": 6.9,
       "matchupId": 53,
       "team": "Kirbo Crushers",
       "opponent": "Brock You Like a Hurricane",
       "logo": "https://mystique-api.fantasy.espn.com/apis/v1/domains/lm/images/8ee3dcb0-8150-11f0-8306-0b32d1884cc7",
       "projection": {
         "espn": 114.2,
-        "otwf": 114.53,
+        "otwf": 114.4,
         "dist": {
-          "mean": 114.53,
-          "p10": 86.4,
-          "p25": 98.79,
-          "p50": 114.02,
-          "p75": 129.38,
-          "p90": 143.59
+          "mean": 114.4,
+          "p10": 86.03,
+          "p25": 98.83,
+          "p50": 113.9,
+          "p75": 129,
+          "p90": 143.62
         }
       },
-      "projectionAverage": 114.53,
-      "projectionTrend": "up",
+      "projectionAverage": 114.4,
+      "projectionTrend": null,
       "status": "LIVE",
       "lineup": {
         "starters": [
@@ -168,7 +168,7 @@
             "actual": 0,
             "projection": 10.53,
             "injury": null,
-            "owned": 76
+            "owned": 77
           }
         ],
         "regretBench": [],
@@ -243,27 +243,27 @@
         ],
         "pointsLeft": 0
       },
-      "projectionSd": 22.24,
+      "projectionSd": 22.23,
       "startersLeft": 7,
       "lineupOutlook": {
         "set": true,
         "openSlots": 7,
         "atRisk": [],
         "gain": 0,
-        "reset": 0.06
+        "reset": 0.05
       },
       "aboveMedianProbability": 26.91,
       "topScoreProbability": 0.88,
       "belowMedianProbability": 73.09,
-      "medianDistanceSd": -0.72,
+      "medianDistanceSd": -0.71,
       "closeToMedian": false,
       "nearMedian": false,
-      "winProbability": 18
+      "winProbability": 12.77
     },
     {
       "teamId": 6,
       "opponentId": 3,
-      "score": 20.9,
+      "score": 23.4,
       "opponentScore": 8.9,
       "matchupId": 54,
       "team": "Claremont In Yo Stace!",
@@ -271,18 +271,18 @@
       "logo": "https://g.espncdn.com/lm-static/logo-packs/core/BobsBurgers/Bob_OnModel.svg",
       "projection": {
         "espn": 111.05,
-        "otwf": 113.57,
+        "otwf": 110.59,
         "dist": {
-          "mean": 113.57,
-          "p10": 83.16,
-          "p25": 97.06,
-          "p50": 113.14,
-          "p75": 129.58,
-          "p90": 145.06
+          "mean": 110.59,
+          "p10": 82.45,
+          "p25": 95.2,
+          "p50": 109.91,
+          "p75": 125.48,
+          "p90": 139.4
         }
       },
-      "projectionAverage": 113.57,
-      "projectionTrend": "down",
+      "projectionAverage": 110.59,
+      "projectionTrend": null,
       "status": "LIVE",
       "lineup": {
         "starters": [
@@ -307,12 +307,12 @@
             "pos": "WR",
             "proTeamId": 1,
             "slot": 4,
-            "actual": 0,
+            "actual": 2.5,
             "projection": 16.8,
             "injury": null,
             "owned": 100,
             "usage": {
-              "touches": 0,
+              "touches": 1,
               "expected": 9.1
             }
           },
@@ -407,7 +407,7 @@
             "actual": 0,
             "projection": 13.45,
             "injury": null,
-            "owned": 37,
+            "owned": 40,
             "usage": {
               "touches": 0,
               "expected": 17.8
@@ -422,7 +422,7 @@
             "actual": 0,
             "projection": 0,
             "injury": null,
-            "owned": 24
+            "owned": 23
           }
         ],
         "regretBench": [
@@ -509,11 +509,11 @@
         ],
         "pointsLeft": 0.3
       },
-      "projectionSd": 24.02,
+      "projectionSd": 22.15,
       "startersLeft": 7,
       "lineupOutlook": {
         "set": true,
-        "openSlots": 8,
+        "openSlots": 7,
         "atRisk": [
           {
             "name": "George Pickens",
@@ -528,37 +528,37 @@
         "gain": 0,
         "reset": 0.05
       },
-      "aboveMedianProbability": 26.59,
-      "topScoreProbability": 1.2,
-      "belowMedianProbability": 73.41,
-      "medianDistanceSd": -0.71,
+      "aboveMedianProbability": 21.77,
+      "topScoreProbability": 0.48,
+      "belowMedianProbability": 78.23,
+      "medianDistanceSd": -0.88,
       "closeToMedian": false,
       "nearMedian": false,
-      "winProbability": 33.89
+      "winProbability": 30.22
     },
     {
       "teamId": 1,
       "opponentId": 2,
       "score": 14.100000000000001,
-      "opponentScore": 0,
+      "opponentScore": 1.8,
       "matchupId": 51,
       "team": "Ramosverse",
       "opponent": "TDsMaGee",
       "logo": "https://g.espncdn.com/lm-static/logo-packs/ffl/SmackTalk-LeoEspinosa/u_mad_bro-09.svg",
       "projection": {
-        "espn": 119.47,
-        "otwf": 118.3,
+        "espn": 119.52,
+        "otwf": 118.36,
         "dist": {
-          "mean": 118.3,
-          "p10": 88.48,
-          "p25": 101.71,
-          "p50": 117.88,
-          "p75": 134.4,
-          "p90": 148.98
+          "mean": 118.36,
+          "p10": 87.53,
+          "p25": 101.48,
+          "p50": 118,
+          "p75": 134.7,
+          "p90": 149.69
         }
       },
-      "projectionAverage": 118.3,
-      "projectionTrend": "up",
+      "projectionAverage": 118.36,
+      "projectionTrend": null,
       "status": "LIVE",
       "lineup": {
         "starters": [
@@ -629,7 +629,7 @@
             "proTeamId": 15,
             "slot": 4,
             "actual": 0,
-            "projection": 9.56,
+            "projection": 9.54,
             "injury": null,
             "owned": 27,
             "usage": {
@@ -670,7 +670,7 @@
             "proTeamId": 15,
             "slot": 2,
             "actual": 0,
-            "projection": 16.67,
+            "projection": 16.74,
             "injury": null,
             "owned": 88,
             "usage": {
@@ -781,46 +781,300 @@
         ],
         "pointsLeft": 0
       },
-      "projectionSd": 23.74,
+      "projectionSd": 24.18,
       "startersLeft": 9,
       "lineupOutlook": {
         "set": true,
         "openSlots": 9,
         "atRisk": [],
         "gain": 0,
-        "reset": 0.06
+        "reset": 0.05
       },
-      "aboveMedianProbability": 33.14,
-      "topScoreProbability": 1.88,
-      "belowMedianProbability": 66.86,
-      "medianDistanceSd": -0.51,
-      "closeToMedian": false,
+      "aboveMedianProbability": 34.03,
+      "topScoreProbability": 1.89,
+      "belowMedianProbability": 65.97,
+      "medianDistanceSd": -0.49,
+      "closeToMedian": true,
       "nearMedian": true,
-      "winProbability": 37.49
+      "winProbability": 36.64
+    },
+    {
+      "teamId": 9,
+      "opponentId": 10,
+      "score": 11.7,
+      "opponentScore": 0,
+      "matchupId": 50,
+      "team": "The Mahomies",
+      "opponent": "Gibb it to Me Baby",
+      "logo": "https://g.espncdn.com/lm-static/logo-packs/ffl/CrazyHelmets-ToddDetwiler/Helmets_09.svg",
+      "projection": {
+        "espn": 128.75,
+        "otwf": 134.94,
+        "dist": {
+          "mean": 134.94,
+          "p10": 101.5,
+          "p25": 116.64,
+          "p50": 134.35,
+          "p75": 152.71,
+          "p90": 169.43
+        }
+      },
+      "projectionAverage": 134.94,
+      "projectionTrend": "down",
+      "status": "LIVE",
+      "lineup": {
+        "starters": [
+          {
+            "id": 4362628,
+            "name": "J. Chase",
+            "pos": "WR",
+            "proTeamId": 4,
+            "slot": 23,
+            "actual": 11.7,
+            "projection": 23.3,
+            "injury": null,
+            "owned": 100,
+            "usage": {
+              "touches": 1,
+              "expected": 11.1
+            }
+          },
+          {
+            "id": 4361579,
+            "name": "J. Williams",
+            "pos": "RB",
+            "proTeamId": 6,
+            "slot": 2,
+            "actual": 0,
+            "projection": 17.71,
+            "injury": null,
+            "owned": 99,
+            "usage": {
+              "touches": 0,
+              "expected": 20.8
+            }
+          },
+          {
+            "id": 3139477,
+            "name": "P. Mahomes",
+            "pos": "QB",
+            "proTeamId": 12,
+            "slot": 0,
+            "actual": 0,
+            "projection": 18.48,
+            "injury": null,
+            "owned": 93,
+            "usage": {
+              "touches": 0,
+              "expected": 36.9
+            }
+          },
+          {
+            "id": 15847,
+            "name": "T. Kelce",
+            "pos": "TE",
+            "proTeamId": 12,
+            "slot": 6,
+            "actual": 0,
+            "projection": 10.69,
+            "injury": null,
+            "owned": 92,
+            "usage": {
+              "touches": 0,
+              "expected": 5.7
+            }
+          },
+          {
+            "id": 4701936,
+            "name": "M. Golden",
+            "pos": "WR",
+            "proTeamId": 9,
+            "slot": 4,
+            "actual": 0,
+            "projection": 17.58,
+            "injury": null,
+            "owned": 96,
+            "usage": {
+              "touches": 0,
+              "expected": 10.1
+            }
+          },
+          {
+            "id": 4360569,
+            "name": "J. Mason",
+            "pos": "RB",
+            "proTeamId": 16,
+            "slot": 2,
+            "actual": 0,
+            "projection": 8.11,
+            "injury": null,
+            "owned": 59,
+            "usage": {
+              "touches": 0,
+              "expected": 12.5
+            }
+          },
+          {
+            "id": 4569559,
+            "name": "D. Vele",
+            "pos": "WR",
+            "proTeamId": 18,
+            "slot": 4,
+            "actual": 0,
+            "projection": 8.77,
+            "injury": null,
+            "owned": 59,
+            "usage": {
+              "touches": 0,
+              "expected": 5.3
+            }
+          },
+          {
+            "id": -16017,
+            "name": "Patriots D/ST",
+            "pos": "D/ST",
+            "proTeamId": 17,
+            "slot": 16,
+            "actual": 0,
+            "projection": 5.17,
+            "injury": null,
+            "owned": 60
+          },
+          {
+            "id": 5083754,
+            "name": "R. Flournoy",
+            "pos": "WR",
+            "proTeamId": 6,
+            "slot": 23,
+            "actual": 0,
+            "projection": 9.31,
+            "injury": null,
+            "owned": 25,
+            "usage": {
+              "touches": 0,
+              "expected": 5.3
+            }
+          },
+          {
+            "id": 4689936,
+            "name": "J. Bates",
+            "pos": "K",
+            "proTeamId": 8,
+            "slot": 17,
+            "actual": 0,
+            "projection": 9.63,
+            "injury": null,
+            "owned": 52
+          }
+        ],
+        "regretBench": [],
+        "bench": [
+          {
+            "id": 4870808,
+            "name": "J. Love",
+            "pos": "RB",
+            "proTeamId": 22,
+            "slot": 20,
+            "actual": 0,
+            "projection": 0,
+            "injury": "IR",
+            "owned": 88
+          },
+          {
+            "id": 4047650,
+            "name": "D. Metcalf",
+            "pos": "WR",
+            "proTeamId": 23,
+            "slot": 20,
+            "actual": 0,
+            "projection": 0,
+            "injury": null,
+            "owned": 88
+          },
+          {
+            "id": 17372,
+            "name": "C. Boswell",
+            "pos": "K",
+            "proTeamId": 23,
+            "slot": 20,
+            "actual": 0,
+            "projection": 0,
+            "injury": null,
+            "owned": 46
+          },
+          {
+            "id": 5081432,
+            "name": "A. Williams",
+            "pos": "WR",
+            "proTeamId": 28,
+            "slot": 20,
+            "actual": 0,
+            "projection": 10.17,
+            "injury": null,
+            "owned": 21,
+            "usage": {
+              "touches": 0,
+              "expected": 5.7
+            }
+          },
+          {
+            "id": 4241555,
+            "name": "E. Mitchell",
+            "pos": "RB",
+            "proTeamId": 21,
+            "slot": 20,
+            "actual": 0,
+            "projection": 8.81,
+            "injury": null,
+            "owned": 13,
+            "usage": {
+              "touches": 0,
+              "expected": 10.1
+            }
+          }
+        ],
+        "pointsLeft": 0
+      },
+      "projectionSd": 26.42,
+      "startersLeft": 10,
+      "lineupOutlook": {
+        "set": true,
+        "openSlots": 9,
+        "atRisk": [],
+        "gain": 1.5,
+        "reset": 0.05
+      },
+      "aboveMedianProbability": 59.52,
+      "topScoreProbability": 8.26,
+      "belowMedianProbability": 40.48,
+      "medianDistanceSd": 0.18,
+      "closeToMedian": true,
+      "nearMedian": true,
+      "winProbability": 48.6
     },
     {
       "teamId": 3,
       "opponentId": 6,
       "score": 8.9,
-      "opponentScore": 20.9,
+      "opponentScore": 23.4,
       "matchupId": 54,
       "team": "Kyle Tucker",
       "opponent": "Claremont In Yo Stace!",
       "logo": "https://i.pinimg.com/280x280_RS/3a/d0/a9/3ad0a90c0e668da81c4e76e3fa51fbd0.jpg",
       "projection": {
         "espn": 126.6,
-        "otwf": 129.03,
+        "otwf": 129.62,
         "dist": {
-          "mean": 129.03,
-          "p10": 93.08,
-          "p25": 109.48,
-          "p50": 128.05,
-          "p75": 147.99,
-          "p90": 165.86
+          "mean": 129.62,
+          "p10": 93.1,
+          "p25": 110.29,
+          "p50": 129.4,
+          "p75": 148.83,
+          "p90": 165.82
         }
       },
-      "projectionAverage": 129.03,
-      "projectionTrend": "down",
+      "projectionAverage": 129.62,
+      "projectionTrend": null,
       "status": "LIVE",
       "lineup": {
         "starters": [
@@ -908,7 +1162,7 @@
             "actual": 0,
             "projection": 17.02,
             "injury": null,
-            "owned": 90,
+            "owned": 91,
             "usage": {
               "touches": 0,
               "expected": 37.3
@@ -1039,22 +1293,550 @@
         ],
         "pointsLeft": 0
       },
-      "projectionSd": 28.31,
+      "projectionSd": 28.42,
       "startersLeft": 9,
       "lineupOutlook": {
         "set": true,
         "openSlots": 9,
         "atRisk": [],
         "gain": 3.1,
-        "reset": 0.06
+        "reset": 0.05
       },
-      "aboveMedianProbability": 50.19,
-      "topScoreProbability": 6.46,
-      "belowMedianProbability": 49.81,
-      "medianDistanceSd": -0.05,
+      "aboveMedianProbability": 51.07,
+      "topScoreProbability": 6.32,
+      "belowMedianProbability": 48.93,
+      "medianDistanceSd": -0.02,
       "closeToMedian": true,
       "nearMedian": true,
-      "winProbability": 66.11
+      "winProbability": 69.78
+    },
+    {
+      "teamId": 11,
+      "opponentId": 4,
+      "score": 6.9,
+      "opponentScore": 28.08,
+      "matchupId": 53,
+      "team": "Brock You Like a Hurricane",
+      "opponent": "Kirbo Crushers",
+      "logo": "https://mystique-api.fantasy.espn.com/apis/v1/domains/lm/images/add1ddb0-a2f7-11f1-8ef0-19c1af2548f8",
+      "projection": {
+        "espn": 157.58,
+        "otwf": 159.06,
+        "dist": {
+          "mean": 159.06,
+          "p10": 118.27,
+          "p25": 137.23,
+          "p50": 158.47,
+          "p75": 180.15,
+          "p90": 200.32
+        }
+      },
+      "projectionAverage": 159.06,
+      "projectionTrend": "down",
+      "status": "LIVE",
+      "lineup": {
+        "starters": [
+          {
+            "id": 4430807,
+            "name": "B. Robinson",
+            "pos": "RB",
+            "proTeamId": 1,
+            "slot": 2,
+            "actual": 6.9,
+            "projection": 20.16,
+            "injury": null,
+            "owned": 100,
+            "usage": {
+              "touches": 7,
+              "expected": 22.9
+            }
+          },
+          {
+            "id": 4567048,
+            "name": "K. Walker III",
+            "pos": "RB",
+            "proTeamId": 12,
+            "slot": 2,
+            "actual": 0,
+            "projection": 23.45,
+            "injury": null,
+            "owned": 100,
+            "usage": {
+              "touches": 0,
+              "expected": 24.4
+            }
+          },
+          {
+            "id": 4432665,
+            "name": "B. Bowers",
+            "pos": "TE",
+            "proTeamId": 13,
+            "slot": 6,
+            "actual": 0,
+            "projection": 18.51,
+            "injury": null,
+            "owned": 100,
+            "usage": {
+              "touches": 0,
+              "expected": 10
+            }
+          },
+          {
+            "id": 4239993,
+            "name": "T. Higgins",
+            "pos": "WR",
+            "proTeamId": 4,
+            "slot": 4,
+            "actual": 0,
+            "projection": 17.15,
+            "injury": null,
+            "owned": 98,
+            "usage": {
+              "touches": 0,
+              "expected": 8.5
+            }
+          },
+          {
+            "id": 4685278,
+            "name": "L. Burden III",
+            "pos": "WR",
+            "proTeamId": 3,
+            "slot": 23,
+            "actual": 0,
+            "projection": 14.09,
+            "injury": null,
+            "owned": 93,
+            "usage": {
+              "touches": 0,
+              "expected": 8
+            }
+          },
+          {
+            "id": 4248528,
+            "name": "C. Watson",
+            "pos": "WR",
+            "proTeamId": 9,
+            "slot": 4,
+            "actual": 0,
+            "projection": 16.03,
+            "injury": null,
+            "owned": 97,
+            "usage": {
+              "touches": 0,
+              "expected": 9.3
+            }
+          },
+          {
+            "id": -16016,
+            "name": "Vikings D/ST",
+            "pos": "D/ST",
+            "proTeamId": 16,
+            "slot": 16,
+            "actual": 0,
+            "projection": 4.01,
+            "injury": null,
+            "owned": 84
+          },
+          {
+            "id": 4702555,
+            "name": "J. Coleman",
+            "pos": "RB",
+            "proTeamId": 7,
+            "slot": 23,
+            "actual": 0,
+            "projection": 14.57,
+            "injury": null,
+            "owned": 82,
+            "usage": {
+              "touches": 0,
+              "expected": 16.1
+            }
+          },
+          {
+            "id": 4431452,
+            "name": "D. Maye",
+            "pos": "QB",
+            "proTeamId": 17,
+            "slot": 0,
+            "actual": 0,
+            "projection": 21.19,
+            "injury": null,
+            "owned": 99,
+            "usage": {
+              "touches": 0,
+              "expected": 36.9
+            }
+          },
+          {
+            "id": 4034949,
+            "name": "E. Pineiro",
+            "pos": "K",
+            "proTeamId": 25,
+            "slot": 17,
+            "actual": 0,
+            "projection": 8.42,
+            "injury": null,
+            "owned": 35
+          }
+        ],
+        "regretBench": [],
+        "bench": [
+          {
+            "id": 4372016,
+            "name": "J. Waddle",
+            "pos": "WR",
+            "proTeamId": 7,
+            "slot": 20,
+            "actual": 0,
+            "projection": 11.51,
+            "injury": null,
+            "owned": 88,
+            "usage": {
+              "touches": 0,
+              "expected": 7.5
+            }
+          },
+          {
+            "id": 4360310,
+            "name": "T. Lawrence",
+            "pos": "QB",
+            "proTeamId": 30,
+            "slot": 20,
+            "actual": 13.58,
+            "projection": 20.63,
+            "injury": null,
+            "owned": 93,
+            "usage": {
+              "touches": 27,
+              "expected": 32.1
+            }
+          },
+          {
+            "id": 4429096,
+            "name": "B. Corum",
+            "pos": "RB",
+            "proTeamId": 14,
+            "slot": 20,
+            "actual": 0,
+            "projection": 9.95,
+            "injury": null,
+            "owned": 80,
+            "usage": {
+              "touches": 0,
+              "expected": 12.8
+            }
+          },
+          {
+            "id": 4832955,
+            "name": "E. Johnson",
+            "pos": "RB",
+            "proTeamId": 12,
+            "slot": 20,
+            "actual": 0,
+            "projection": 7.53,
+            "injury": null,
+            "owned": 23,
+            "usage": {
+              "touches": 0,
+              "expected": 6.4
+            }
+          },
+          {
+            "id": 4723820,
+            "name": "O. Cooper Jr.",
+            "pos": "WR",
+            "proTeamId": 20,
+            "slot": 20,
+            "actual": 0,
+            "projection": 11.22,
+            "injury": null,
+            "owned": 58,
+            "usage": {
+              "touches": 0,
+              "expected": 5.8
+            }
+          }
+        ],
+        "pointsLeft": 0
+      },
+      "projectionSd": 31.76,
+      "startersLeft": 10,
+      "lineupOutlook": {
+        "set": true,
+        "openSlots": 8,
+        "atRisk": [],
+        "gain": 0,
+        "reset": 0.05
+      },
+      "aboveMedianProbability": 83.8,
+      "topScoreProbability": 33.72,
+      "belowMedianProbability": 16.2,
+      "medianDistanceSd": 0.91,
+      "closeToMedian": false,
+      "nearMedian": false,
+      "winProbability": 87.23
+    },
+    {
+      "teamId": 12,
+      "opponentId": 5,
+      "score": 6.359999999999999,
+      "opponentScore": 0,
+      "matchupId": 49,
+      "team": "Beautiful Dark Twisted Fantasy",
+      "opponent": "49er Faith-Fool",
+      "logo": "https://g.espncdn.com/lm-static/logo-packs/core/OldTimeMickeyAndFriends/Football_Mickey.svg",
+      "projection": {
+        "espn": 140.77,
+        "otwf": 136.57,
+        "dist": {
+          "mean": 136.57,
+          "p10": 100.77,
+          "p25": 117.06,
+          "p50": 136.29,
+          "p75": 155.26,
+          "p90": 172.35
+        }
+      },
+      "projectionAverage": 136.57,
+      "projectionTrend": null,
+      "status": "LIVE",
+      "lineup": {
+        "starters": [
+          {
+            "id": 3117251,
+            "name": "C. McCaffrey",
+            "pos": "RB",
+            "proTeamId": 25,
+            "slot": 2,
+            "actual": 0,
+            "projection": 22.25,
+            "injury": null,
+            "owned": 100,
+            "usage": {
+              "touches": 0,
+              "expected": 19.2
+            }
+          },
+          {
+            "id": 3929630,
+            "name": "S. Barkley",
+            "pos": "RB",
+            "proTeamId": 21,
+            "slot": 2,
+            "actual": 0,
+            "projection": 12.67,
+            "injury": null,
+            "owned": 98,
+            "usage": {
+              "touches": 0,
+              "expected": 15.1
+            }
+          },
+          {
+            "id": 4595348,
+            "name": "M. Nabers",
+            "pos": "WR",
+            "proTeamId": 19,
+            "slot": 4,
+            "actual": 0,
+            "projection": 17.36,
+            "injury": null,
+            "owned": 99,
+            "usage": {
+              "touches": 0,
+              "expected": 8.9
+            }
+          },
+          {
+            "id": 4567750,
+            "name": "E. Egbuka",
+            "pos": "WR",
+            "proTeamId": 27,
+            "slot": 4,
+            "actual": 0,
+            "projection": 11.6,
+            "injury": "Q",
+            "owned": 94,
+            "usage": {
+              "touches": 0,
+              "expected": 7.5
+            }
+          },
+          {
+            "id": 4723086,
+            "name": "C. Loveland",
+            "pos": "TE",
+            "proTeamId": 3,
+            "slot": 6,
+            "actual": 0,
+            "projection": 12.2,
+            "injury": null,
+            "owned": 96,
+            "usage": {
+              "touches": 0,
+              "expected": 7.2
+            }
+          },
+          {
+            "id": 3915511,
+            "name": "J. Burrow",
+            "pos": "QB",
+            "proTeamId": 4,
+            "slot": 0,
+            "actual": 6.36,
+            "projection": 21.79,
+            "injury": null,
+            "owned": 99,
+            "usage": {
+              "touches": 4,
+              "expected": 40.9
+            }
+          },
+          {
+            "id": -16026,
+            "name": "Seahawks D/ST",
+            "pos": "D/ST",
+            "proTeamId": 26,
+            "slot": 16,
+            "actual": 0,
+            "projection": 7.77,
+            "injury": null,
+            "owned": 97
+          },
+          {
+            "id": 4429059,
+            "name": "W. Marks",
+            "pos": "RB",
+            "proTeamId": 34,
+            "slot": 23,
+            "actual": 0,
+            "projection": 14.74,
+            "injury": null,
+            "owned": 79,
+            "usage": {
+              "touches": 0,
+              "expected": 20.8
+            }
+          },
+          {
+            "id": 17427,
+            "name": "C. Santos",
+            "pos": "K",
+            "proTeamId": 3,
+            "slot": 17,
+            "actual": 0,
+            "projection": 9.32,
+            "injury": null,
+            "owned": 38
+          },
+          {
+            "id": 4429205,
+            "name": "J. Addison",
+            "pos": "WR",
+            "proTeamId": 16,
+            "slot": 23,
+            "actual": 0,
+            "projection": 11.06,
+            "injury": null,
+            "owned": 73,
+            "usage": {
+              "touches": 0,
+              "expected": 6.7
+            }
+          }
+        ],
+        "regretBench": [],
+        "bench": [
+          {
+            "id": 3128429,
+            "name": "C. Sutton",
+            "pos": "WR",
+            "proTeamId": 7,
+            "slot": 20,
+            "actual": 0,
+            "projection": 9.12,
+            "injury": null,
+            "owned": 60,
+            "usage": {
+              "touches": 0,
+              "expected": 5.1
+            }
+          },
+          {
+            "id": 4685720,
+            "name": "B. Young",
+            "pos": "QB",
+            "proTeamId": 29,
+            "slot": 20,
+            "actual": 0,
+            "projection": 16.02,
+            "injury": null,
+            "owned": 73,
+            "usage": {
+              "touches": 0,
+              "expected": 39.2
+            }
+          },
+          {
+            "id": 4685261,
+            "name": "G. Bernard",
+            "pos": "WR",
+            "proTeamId": 23,
+            "slot": 20,
+            "actual": 0,
+            "projection": 0,
+            "injury": null,
+            "owned": 63
+          },
+          {
+            "id": 4360248,
+            "name": "K. Pitts Sr.",
+            "pos": "TE",
+            "proTeamId": 1,
+            "slot": 20,
+            "actual": 0,
+            "projection": 10.2,
+            "injury": null,
+            "owned": 85,
+            "usage": {
+              "touches": 1,
+              "expected": 5.7
+            }
+          },
+          {
+            "id": 4430968,
+            "name": "K. Vidal",
+            "pos": "RB",
+            "proTeamId": 24,
+            "slot": 20,
+            "actual": 0,
+            "projection": 8.91,
+            "injury": null,
+            "owned": 13,
+            "usage": {
+              "touches": 0,
+              "expected": 11.7
+            }
+          }
+        ],
+        "pointsLeft": 0
+      },
+      "projectionSd": 27.86,
+      "startersLeft": 10,
+      "lineupOutlook": {
+        "set": true,
+        "openSlots": 9,
+        "atRisk": [],
+        "gain": 0,
+        "reset": 0.05
+      },
+      "aboveMedianProbability": 62.21,
+      "topScoreProbability": 10.36,
+      "belowMedianProbability": 37.79,
+      "medianDistanceSd": 0.23,
+      "closeToMedian": true,
+      "nearMedian": true,
+      "winProbability": 63.23
     },
     {
       "teamId": 8,
@@ -1066,19 +1848,19 @@
       "opponent": "Ruffing the Passer",
       "logo": "https://g.espncdn.com/lm-static/logo-packs/ffl/Blockparty-RobbHars/blockplayers-01.svg",
       "projection": {
-        "espn": 131.24,
-        "otwf": 129.94,
+        "espn": 131.27,
+        "otwf": 129.79,
         "dist": {
-          "mean": 129.94,
-          "p10": 93.44,
-          "p25": 110.36,
-          "p50": 129.28,
-          "p75": 148.99,
-          "p90": 166.76
+          "mean": 129.79,
+          "p10": 92.84,
+          "p25": 110.12,
+          "p50": 129.35,
+          "p75": 148.85,
+          "p90": 167.19
         }
       },
-      "projectionAverage": 129.94,
-      "projectionTrend": "up",
+      "projectionAverage": 129.79,
+      "projectionTrend": null,
       "status": "LIVE",
       "lineup": {
         "starters": [
@@ -1216,7 +1998,7 @@
             "proTeamId": 15,
             "slot": 0,
             "actual": 0,
-            "projection": 17.59,
+            "projection": 17.62,
             "injury": null,
             "owned": 23,
             "usage": {
@@ -1290,7 +2072,7 @@
             "proTeamId": 15,
             "slot": 20,
             "actual": 0,
-            "projection": 9.92,
+            "projection": 9.93,
             "injury": null,
             "owned": 40,
             "usage": {
@@ -1301,22 +2083,22 @@
         ],
         "pointsLeft": 0
       },
-      "projectionSd": 28.41,
+      "projectionSd": 28.75,
       "startersLeft": 9,
       "lineupOutlook": {
         "set": true,
         "openSlots": 9,
         "atRisk": [],
         "gain": 0,
-        "reset": 0.06
+        "reset": 0.05
       },
-      "aboveMedianProbability": 51.61,
-      "topScoreProbability": 6.97,
-      "belowMedianProbability": 48.39,
-      "medianDistanceSd": -0.02,
+      "aboveMedianProbability": 51.93,
+      "topScoreProbability": 7.17,
+      "belowMedianProbability": 48.07,
+      "medianDistanceSd": -0.01,
       "closeToMedian": true,
       "nearMedian": true,
-      "winProbability": 49.46
+      "winProbability": 49.31
     },
     {
       "teamId": 7,
@@ -1329,18 +2111,18 @@
       "logo": "https://mystique-api.fantasy.espn.com/apis/v1/domains/lm/images/7659cbc0-a1cd-11f1-9afc-5feb43d211a1",
       "projection": {
         "espn": 131.72,
-        "otwf": 130.76,
+        "otwf": 130.39,
         "dist": {
-          "mean": 130.76,
-          "p10": 93.45,
-          "p25": 110.68,
-          "p50": 130.3,
-          "p75": 150.58,
-          "p90": 168.42
+          "mean": 130.39,
+          "p10": 93.07,
+          "p25": 110.33,
+          "p50": 129.87,
+          "p75": 149.98,
+          "p90": 168.22
         }
       },
-      "projectionAverage": 130.76,
-      "projectionTrend": "up",
+      "projectionAverage": 130.39,
+      "projectionTrend": null,
       "status": "LIVE",
       "lineup": {
         "starters": [
@@ -1469,7 +2251,7 @@
             "actual": 0,
             "projection": 7.5,
             "injury": null,
-            "owned": 48
+            "owned": 49
           },
           {
             "id": 4685415,
@@ -1480,7 +2262,7 @@
             "actual": 3.9,
             "projection": 9.15,
             "injury": null,
-            "owned": 27,
+            "owned": 26,
             "usage": {
               "touches": 1,
               "expected": 2.1
@@ -1498,7 +2280,7 @@
             "actual": 0,
             "projection": 0,
             "injury": "O",
-            "owned": 94
+            "owned": 93
           },
           {
             "id": 4035538,
@@ -1559,7 +2341,7 @@
         ],
         "pointsLeft": 0
       },
-      "projectionSd": 29.27,
+      "projectionSd": 29.3,
       "startersLeft": 9,
       "lineupOutlook": {
         "set": true,
@@ -1569,38 +2351,292 @@
         "newClaims": [
           "Adonai Mitchell"
         ],
-        "reset": 0.52
+        "reset": 0.51
       },
-      "aboveMedianProbability": 53.04,
-      "topScoreProbability": 8.25,
-      "belowMedianProbability": 46.96,
+      "aboveMedianProbability": 52.73,
+      "topScoreProbability": 7.49,
+      "belowMedianProbability": 47.27,
       "medianDistanceSd": 0.01,
       "closeToMedian": true,
       "nearMedian": true,
-      "winProbability": 50.54
+      "winProbability": 50.69
+    },
+    {
+      "teamId": 2,
+      "opponentId": 1,
+      "score": 1.8,
+      "opponentScore": 14.100000000000001,
+      "matchupId": 51,
+      "team": "TDsMaGee",
+      "opponent": "Ramosverse",
+      "logo": "https://g.espncdn.com/lm-static/logo-packs/ffl/SmackTalk-LeoEspinosa/Boom-10.svg",
+      "projection": {
+        "espn": 131.11,
+        "otwf": 130.96,
+        "dist": {
+          "mean": 130.96,
+          "p10": 95.02,
+          "p25": 111.3,
+          "p50": 130.82,
+          "p75": 149.59,
+          "p90": 167.35
+        }
+      },
+      "projectionAverage": 130.96,
+      "projectionTrend": null,
+      "status": "LIVE",
+      "lineup": {
+        "starters": [
+          {
+            "id": 4379399,
+            "name": "J. Cook III",
+            "pos": "RB",
+            "proTeamId": 2,
+            "slot": 2,
+            "actual": 0,
+            "projection": 19,
+            "injury": null,
+            "owned": 100,
+            "usage": {
+              "touches": 0,
+              "expected": 22.8
+            }
+          },
+          {
+            "id": 4262921,
+            "name": "J. Jefferson",
+            "pos": "WR",
+            "proTeamId": 16,
+            "slot": 4,
+            "actual": 0,
+            "projection": 18.63,
+            "injury": null,
+            "owned": 100,
+            "usage": {
+              "touches": 0,
+              "expected": 10.1
+            }
+          },
+          {
+            "id": 4685472,
+            "name": "T. McMillan",
+            "pos": "WR",
+            "proTeamId": 29,
+            "slot": 4,
+            "actual": 0,
+            "projection": 13.75,
+            "injury": null,
+            "owned": 98,
+            "usage": {
+              "touches": 0,
+              "expected": 8
+            }
+          },
+          {
+            "id": 4430737,
+            "name": "K. Williams",
+            "pos": "RB",
+            "proTeamId": 14,
+            "slot": 2,
+            "actual": 0,
+            "projection": 17.16,
+            "injury": null,
+            "owned": 100,
+            "usage": {
+              "touches": 0,
+              "expected": 17.9
+            }
+          },
+          {
+            "id": 4685512,
+            "name": "J. Price",
+            "pos": "RB",
+            "proTeamId": 26,
+            "slot": 23,
+            "actual": 0,
+            "projection": 10.9,
+            "injury": null,
+            "owned": 74,
+            "usage": {
+              "touches": 0,
+              "expected": 14.9
+            }
+          },
+          {
+            "id": 4360761,
+            "name": "M. Wilson",
+            "pos": "WR",
+            "proTeamId": 22,
+            "slot": 23,
+            "actual": 0,
+            "projection": 13.27,
+            "injury": null,
+            "owned": 90,
+            "usage": {
+              "touches": 0,
+              "expected": 9.1
+            }
+          },
+          {
+            "id": 4360689,
+            "name": "T. Shough",
+            "pos": "QB",
+            "proTeamId": 18,
+            "slot": 0,
+            "actual": 0,
+            "projection": 15.44,
+            "injury": null,
+            "owned": 65,
+            "usage": {
+              "touches": 0,
+              "expected": 38.3
+            }
+          },
+          {
+            "id": 4249087,
+            "name": "M. Gay",
+            "pos": "K",
+            "proTeamId": 13,
+            "slot": 17,
+            "actual": 0,
+            "projection": 9.37,
+            "injury": null,
+            "owned": 58
+          },
+          {
+            "id": -16014,
+            "name": "Rams D/ST",
+            "pos": "D/ST",
+            "proTeamId": 14,
+            "slot": 16,
+            "actual": 0,
+            "projection": 5.47,
+            "injury": null,
+            "owned": 81
+          },
+          {
+            "id": 3116164,
+            "name": "M. Gesicki",
+            "pos": "TE",
+            "proTeamId": 4,
+            "slot": 6,
+            "actual": 1.8,
+            "projection": 8.14,
+            "injury": null,
+            "owned": 27,
+            "usage": {
+              "touches": 1,
+              "expected": 3.7
+            }
+          }
+        ],
+        "regretBench": [],
+        "bench": [
+          {
+            "id": 4426348,
+            "name": "J. Daniels",
+            "pos": "QB",
+            "proTeamId": 28,
+            "slot": 20,
+            "actual": 0,
+            "projection": 20.09,
+            "injury": null,
+            "owned": 95,
+            "usage": {
+              "touches": 0,
+              "expected": 39.1
+            }
+          },
+          {
+            "id": 4569587,
+            "name": "W. Robinson",
+            "pos": "WR",
+            "proTeamId": 10,
+            "slot": 20,
+            "actual": 0,
+            "projection": 0,
+            "injury": null,
+            "owned": 53
+          },
+          {
+            "id": -16033,
+            "name": "Ravens D/ST",
+            "pos": "D/ST",
+            "proTeamId": 33,
+            "slot": 20,
+            "actual": 1,
+            "projection": 3.56,
+            "injury": null,
+            "owned": 47
+          },
+          {
+            "id": 4887558,
+            "name": "E. Wilson",
+            "pos": "RB",
+            "proTeamId": 26,
+            "slot": 20,
+            "actual": 0,
+            "projection": 0,
+            "injury": null,
+            "owned": 36
+          },
+          {
+            "id": 14880,
+            "name": "K. Cousins",
+            "pos": "QB",
+            "proTeamId": 13,
+            "slot": 20,
+            "actual": 0,
+            "projection": 15.16,
+            "injury": null,
+            "owned": 63,
+            "usage": {
+              "touches": 0,
+              "expected": 39.1
+            }
+          }
+        ],
+        "pointsLeft": 0
+      },
+      "projectionSd": 28.4,
+      "startersLeft": 10,
+      "lineupOutlook": {
+        "set": true,
+        "openSlots": 9,
+        "atRisk": [],
+        "gain": 3.3,
+        "reset": 0.05
+      },
+      "aboveMedianProbability": 53.61,
+      "topScoreProbability": 7.34,
+      "belowMedianProbability": 46.39,
+      "medianDistanceSd": 0.03,
+      "closeToMedian": true,
+      "nearMedian": true,
+      "winProbability": 63.36
     },
     {
       "teamId": 5,
       "opponentId": 12,
       "score": 0,
-      "opponentScore": 0,
+      "opponentScore": 6.359999999999999,
       "matchupId": 49,
       "team": "49er Faith-Fool",
       "opponent": "Beautiful Dark Twisted Fantasy",
       "logo": "https://g.espncdn.com/lm-static/logo-packs/ffl/TeamKinny-MartinLaksman/TeamKinny-31.svg",
       "projection": {
         "espn": 130.63,
-        "otwf": 130.93,
+        "otwf": 123.27,
         "dist": {
-          "mean": 130.93,
-          "p10": 95.17,
-          "p25": 111.73,
-          "p50": 130.45,
-          "p75": 149.59,
-          "p90": 167.61
+          "mean": 123.27,
+          "p10": 89.31,
+          "p25": 104.84,
+          "p50": 122.69,
+          "p75": 141.15,
+          "p90": 157.41
         }
       },
-      "projectionAverage": 130.93,
+      "projectionAverage": 123.27,
       "projectionTrend": "up",
       "status": "LIVE",
       "lineup": {
@@ -1631,7 +2667,7 @@
             "injury": null,
             "owned": 99,
             "usage": {
-              "touches": 0,
+              "touches": 1,
               "expected": 20.1
             }
           },
@@ -1815,7 +2851,7 @@
             "actual": 0,
             "projection": 9.79,
             "injury": null,
-            "owned": 7,
+            "owned": 8,
             "usage": {
               "touches": 0,
               "expected": 4.2
@@ -1824,308 +2860,46 @@
         ],
         "pointsLeft": 0
       },
-      "projectionSd": 28.01,
+      "projectionSd": 26.57,
       "startersLeft": 10,
       "lineupOutlook": {
         "set": true,
-        "openSlots": 10,
+        "openSlots": 9,
         "atRisk": [],
         "gain": 0,
         "reset": 0.05
       },
-      "aboveMedianProbability": 53.24,
-      "topScoreProbability": 7.29,
-      "belowMedianProbability": 46.76,
-      "medianDistanceSd": 0.01,
+      "aboveMedianProbability": 42.07,
+      "topScoreProbability": 3.79,
+      "belowMedianProbability": 57.93,
+      "medianDistanceSd": -0.26,
       "closeToMedian": true,
       "nearMedian": true,
-      "winProbability": 41.99
-    },
-    {
-      "teamId": 12,
-      "opponentId": 5,
-      "score": 0,
-      "opponentScore": 0,
-      "matchupId": 49,
-      "team": "Beautiful Dark Twisted Fantasy",
-      "opponent": "49er Faith-Fool",
-      "logo": "https://g.espncdn.com/lm-static/logo-packs/core/OldTimeMickeyAndFriends/Football_Mickey.svg",
-      "projection": {
-        "espn": 140.76,
-        "otwf": 139.37,
-        "dist": {
-          "mean": 139.37,
-          "p10": 101.02,
-          "p25": 118.48,
-          "p50": 139.01,
-          "p75": 159.79,
-          "p90": 177.93
-        }
-      },
-      "projectionAverage": 139.37,
-      "projectionTrend": "up",
-      "status": "LIVE",
-      "lineup": {
-        "starters": [
-          {
-            "id": 3117251,
-            "name": "C. McCaffrey",
-            "pos": "RB",
-            "proTeamId": 25,
-            "slot": 2,
-            "actual": 0,
-            "projection": 22.25,
-            "injury": null,
-            "owned": 100,
-            "usage": {
-              "touches": 0,
-              "expected": 19.2
-            }
-          },
-          {
-            "id": 3929630,
-            "name": "S. Barkley",
-            "pos": "RB",
-            "proTeamId": 21,
-            "slot": 2,
-            "actual": 0,
-            "projection": 12.67,
-            "injury": null,
-            "owned": 98,
-            "usage": {
-              "touches": 0,
-              "expected": 15.1
-            }
-          },
-          {
-            "id": 4595348,
-            "name": "M. Nabers",
-            "pos": "WR",
-            "proTeamId": 19,
-            "slot": 4,
-            "actual": 0,
-            "projection": 17.36,
-            "injury": null,
-            "owned": 99,
-            "usage": {
-              "touches": 0,
-              "expected": 8.9
-            }
-          },
-          {
-            "id": 4567750,
-            "name": "E. Egbuka",
-            "pos": "WR",
-            "proTeamId": 27,
-            "slot": 4,
-            "actual": 0,
-            "projection": 11.6,
-            "injury": "Q",
-            "owned": 94,
-            "usage": {
-              "touches": 0,
-              "expected": 7.5
-            }
-          },
-          {
-            "id": 4723086,
-            "name": "C. Loveland",
-            "pos": "TE",
-            "proTeamId": 3,
-            "slot": 6,
-            "actual": 0,
-            "projection": 12.2,
-            "injury": null,
-            "owned": 96,
-            "usage": {
-              "touches": 0,
-              "expected": 7.2
-            }
-          },
-          {
-            "id": 3915511,
-            "name": "J. Burrow",
-            "pos": "QB",
-            "proTeamId": 4,
-            "slot": 0,
-            "actual": 0,
-            "projection": 21.79,
-            "injury": null,
-            "owned": 99,
-            "usage": {
-              "touches": 0,
-              "expected": 40.9
-            }
-          },
-          {
-            "id": -16026,
-            "name": "Seahawks D/ST",
-            "pos": "D/ST",
-            "proTeamId": 26,
-            "slot": 16,
-            "actual": 0,
-            "projection": 7.77,
-            "injury": null,
-            "owned": 97
-          },
-          {
-            "id": 4429059,
-            "name": "W. Marks",
-            "pos": "RB",
-            "proTeamId": 34,
-            "slot": 23,
-            "actual": 0,
-            "projection": 14.74,
-            "injury": null,
-            "owned": 79,
-            "usage": {
-              "touches": 0,
-              "expected": 20.8
-            }
-          },
-          {
-            "id": 17427,
-            "name": "C. Santos",
-            "pos": "K",
-            "proTeamId": 3,
-            "slot": 17,
-            "actual": 0,
-            "projection": 9.32,
-            "injury": null,
-            "owned": 38
-          },
-          {
-            "id": 4429205,
-            "name": "J. Addison",
-            "pos": "WR",
-            "proTeamId": 16,
-            "slot": 23,
-            "actual": 0,
-            "projection": 11.06,
-            "injury": null,
-            "owned": 73,
-            "usage": {
-              "touches": 0,
-              "expected": 6.7
-            }
-          }
-        ],
-        "regretBench": [],
-        "bench": [
-          {
-            "id": 3128429,
-            "name": "C. Sutton",
-            "pos": "WR",
-            "proTeamId": 7,
-            "slot": 20,
-            "actual": 0,
-            "projection": 9.12,
-            "injury": null,
-            "owned": 60,
-            "usage": {
-              "touches": 0,
-              "expected": 5.1
-            }
-          },
-          {
-            "id": 4685720,
-            "name": "B. Young",
-            "pos": "QB",
-            "proTeamId": 29,
-            "slot": 20,
-            "actual": 0,
-            "projection": 16.02,
-            "injury": null,
-            "owned": 73,
-            "usage": {
-              "touches": 0,
-              "expected": 39.2
-            }
-          },
-          {
-            "id": 4685261,
-            "name": "G. Bernard",
-            "pos": "WR",
-            "proTeamId": 23,
-            "slot": 20,
-            "actual": 0,
-            "projection": 0,
-            "injury": null,
-            "owned": 63
-          },
-          {
-            "id": 4360248,
-            "name": "K. Pitts Sr.",
-            "pos": "TE",
-            "proTeamId": 1,
-            "slot": 20,
-            "actual": 0,
-            "projection": 10.2,
-            "injury": null,
-            "owned": 85,
-            "usage": {
-              "touches": 0,
-              "expected": 5.7
-            }
-          },
-          {
-            "id": 4430968,
-            "name": "K. Vidal",
-            "pos": "RB",
-            "proTeamId": 24,
-            "slot": 20,
-            "actual": 0,
-            "projection": 8.91,
-            "injury": null,
-            "owned": 13,
-            "usage": {
-              "touches": 0,
-              "expected": 11.7
-            }
-          }
-        ],
-        "pointsLeft": 0
-      },
-      "projectionSd": 29.91,
-      "startersLeft": 10,
-      "lineupOutlook": {
-        "set": true,
-        "openSlots": 10,
-        "atRisk": [],
-        "gain": 0,
-        "reset": 0.05
-      },
-      "aboveMedianProbability": 64.27,
-      "topScoreProbability": 13.03,
-      "belowMedianProbability": 35.73,
-      "medianDistanceSd": 0.3,
-      "closeToMedian": true,
-      "nearMedian": true,
-      "winProbability": 58.01
+      "winProbability": 36.77
     },
     {
       "teamId": 10,
       "opponentId": 9,
       "score": 0,
-      "opponentScore": 0,
+      "opponentScore": 11.7,
       "matchupId": 50,
       "team": "Gibb it to Me Baby",
       "opponent": "The Mahomies",
       "logo": "https://mystique-api.fantasy.espn.com/apis/v1/domains/lm/images/a17151a0-a1ca-11f1-9afc-5feb43d211a1",
       "projection": {
         "espn": 135.95,
-        "otwf": 137.42,
+        "otwf": 136.92,
         "dist": {
-          "mean": 137.42,
-          "p10": 97.72,
-          "p25": 115.5,
-          "p50": 136.82,
-          "p75": 158.58,
-          "p90": 178.43
+          "mean": 136.92,
+          "p10": 97,
+          "p25": 114.77,
+          "p50": 136.16,
+          "p75": 158.06,
+          "p90": 178.13
         }
       },
-      "projectionAverage": 137.42,
-      "projectionTrend": "up",
+      "projectionAverage": 136.92,
+      "projectionTrend": null,
       "status": "LIVE",
       "lineup": {
         "starters": [
@@ -2355,797 +3129,19 @@
         "openSlots": 9,
         "atRisk": [],
         "gain": 4.6,
-        "reset": 0.06
+        "reset": 0.05
       },
-      "aboveMedianProbability": 60.59,
-      "topScoreProbability": 12.79,
-      "belowMedianProbability": 39.41,
+      "aboveMedianProbability": 60.35,
+      "topScoreProbability": 12.41,
+      "belowMedianProbability": 39.65,
       "medianDistanceSd": 0.22,
       "closeToMedian": true,
       "nearMedian": true,
-      "winProbability": 56.78
-    },
-    {
-      "teamId": 9,
-      "opponentId": 10,
-      "score": 0,
-      "opponentScore": 0,
-      "matchupId": 50,
-      "team": "The Mahomies",
-      "opponent": "Gibb it to Me Baby",
-      "logo": "https://g.espncdn.com/lm-static/logo-packs/ffl/CrazyHelmets-ToddDetwiler/Helmets_09.svg",
-      "projection": {
-        "espn": 128.74,
-        "otwf": 130.27,
-        "dist": {
-          "mean": 130.27,
-          "p10": 94.21,
-          "p25": 110.58,
-          "p50": 129.67,
-          "p75": 149.63,
-          "p90": 166.9
-        }
-      },
-      "projectionAverage": 130.27,
-      "projectionTrend": "down",
-      "status": "LIVE",
-      "lineup": {
-        "starters": [
-          {
-            "id": 4362628,
-            "name": "J. Chase",
-            "pos": "WR",
-            "proTeamId": 4,
-            "slot": 23,
-            "actual": 0,
-            "projection": 23.3,
-            "injury": null,
-            "owned": 100,
-            "usage": {
-              "touches": 0,
-              "expected": 11.1
-            }
-          },
-          {
-            "id": 4361579,
-            "name": "J. Williams",
-            "pos": "RB",
-            "proTeamId": 6,
-            "slot": 2,
-            "actual": 0,
-            "projection": 17.71,
-            "injury": null,
-            "owned": 99,
-            "usage": {
-              "touches": 0,
-              "expected": 20.8
-            }
-          },
-          {
-            "id": 3139477,
-            "name": "P. Mahomes",
-            "pos": "QB",
-            "proTeamId": 12,
-            "slot": 0,
-            "actual": 0,
-            "projection": 18.48,
-            "injury": null,
-            "owned": 93,
-            "usage": {
-              "touches": 0,
-              "expected": 36.9
-            }
-          },
-          {
-            "id": 15847,
-            "name": "T. Kelce",
-            "pos": "TE",
-            "proTeamId": 12,
-            "slot": 6,
-            "actual": 0,
-            "projection": 10.69,
-            "injury": null,
-            "owned": 92,
-            "usage": {
-              "touches": 0,
-              "expected": 5.7
-            }
-          },
-          {
-            "id": 4701936,
-            "name": "M. Golden",
-            "pos": "WR",
-            "proTeamId": 9,
-            "slot": 4,
-            "actual": 0,
-            "projection": 17.58,
-            "injury": null,
-            "owned": 96,
-            "usage": {
-              "touches": 0,
-              "expected": 10.1
-            }
-          },
-          {
-            "id": 4360569,
-            "name": "J. Mason",
-            "pos": "RB",
-            "proTeamId": 16,
-            "slot": 2,
-            "actual": 0,
-            "projection": 8.11,
-            "injury": null,
-            "owned": 59,
-            "usage": {
-              "touches": 0,
-              "expected": 12.5
-            }
-          },
-          {
-            "id": 4569559,
-            "name": "D. Vele",
-            "pos": "WR",
-            "proTeamId": 18,
-            "slot": 4,
-            "actual": 0,
-            "projection": 8.77,
-            "injury": null,
-            "owned": 59,
-            "usage": {
-              "touches": 0,
-              "expected": 5.3
-            }
-          },
-          {
-            "id": -16017,
-            "name": "Patriots D/ST",
-            "pos": "D/ST",
-            "proTeamId": 17,
-            "slot": 16,
-            "actual": 0,
-            "projection": 5.17,
-            "injury": null,
-            "owned": 60
-          },
-          {
-            "id": 5083754,
-            "name": "R. Flournoy",
-            "pos": "WR",
-            "proTeamId": 6,
-            "slot": 23,
-            "actual": 0,
-            "projection": 9.31,
-            "injury": null,
-            "owned": 25,
-            "usage": {
-              "touches": 0,
-              "expected": 5.3
-            }
-          },
-          {
-            "id": 4689936,
-            "name": "J. Bates",
-            "pos": "K",
-            "proTeamId": 8,
-            "slot": 17,
-            "actual": 0,
-            "projection": 9.63,
-            "injury": null,
-            "owned": 52
-          }
-        ],
-        "regretBench": [],
-        "bench": [
-          {
-            "id": 4870808,
-            "name": "J. Love",
-            "pos": "RB",
-            "proTeamId": 22,
-            "slot": 20,
-            "actual": 0,
-            "projection": 0,
-            "injury": "IR",
-            "owned": 88
-          },
-          {
-            "id": 4047650,
-            "name": "D. Metcalf",
-            "pos": "WR",
-            "proTeamId": 23,
-            "slot": 20,
-            "actual": 0,
-            "projection": 0,
-            "injury": null,
-            "owned": 88
-          },
-          {
-            "id": 17372,
-            "name": "C. Boswell",
-            "pos": "K",
-            "proTeamId": 23,
-            "slot": 20,
-            "actual": 0,
-            "projection": 0,
-            "injury": null,
-            "owned": 46
-          },
-          {
-            "id": 5081432,
-            "name": "A. Williams",
-            "pos": "WR",
-            "proTeamId": 28,
-            "slot": 20,
-            "actual": 0,
-            "projection": 10.17,
-            "injury": null,
-            "owned": 21,
-            "usage": {
-              "touches": 0,
-              "expected": 5.7
-            }
-          },
-          {
-            "id": 4241555,
-            "name": "E. Mitchell",
-            "pos": "RB",
-            "proTeamId": 21,
-            "slot": 20,
-            "actual": 0,
-            "projection": 8.81,
-            "injury": null,
-            "owned": 13,
-            "usage": {
-              "touches": 0,
-              "expected": 10.1
-            }
-          }
-        ],
-        "pointsLeft": 0
-      },
-      "projectionSd": 28.69,
-      "startersLeft": 10,
-      "lineupOutlook": {
-        "set": true,
-        "openSlots": 10,
-        "atRisk": [],
-        "gain": 1.5,
-        "reset": 0.05
-      },
-      "aboveMedianProbability": 51.9,
-      "topScoreProbability": 7.23,
-      "belowMedianProbability": 48.1,
-      "medianDistanceSd": -0.01,
-      "closeToMedian": true,
-      "nearMedian": true,
-      "winProbability": 43.22
-    },
-    {
-      "teamId": 2,
-      "opponentId": 1,
-      "score": 0,
-      "opponentScore": 14.100000000000001,
-      "matchupId": 51,
-      "team": "TDsMaGee",
-      "opponent": "Ramosverse",
-      "logo": "https://g.espncdn.com/lm-static/logo-packs/ffl/SmackTalk-LeoEspinosa/Boom-10.svg",
-      "projection": {
-        "espn": 130.83,
-        "otwf": 131.01,
-        "dist": {
-          "mean": 131.01,
-          "p10": 94.55,
-          "p25": 111.17,
-          "p50": 130.62,
-          "p75": 150.26,
-          "p90": 168.47
-        }
-      },
-      "projectionAverage": 131.01,
-      "projectionTrend": "up",
-      "status": "LIVE",
-      "lineup": {
-        "starters": [
-          {
-            "id": 4379399,
-            "name": "J. Cook III",
-            "pos": "RB",
-            "proTeamId": 2,
-            "slot": 2,
-            "actual": 0,
-            "projection": 19,
-            "injury": null,
-            "owned": 100,
-            "usage": {
-              "touches": 0,
-              "expected": 22.8
-            }
-          },
-          {
-            "id": 4262921,
-            "name": "J. Jefferson",
-            "pos": "WR",
-            "proTeamId": 16,
-            "slot": 4,
-            "actual": 0,
-            "projection": 18.63,
-            "injury": null,
-            "owned": 100,
-            "usage": {
-              "touches": 0,
-              "expected": 10.1
-            }
-          },
-          {
-            "id": 4685472,
-            "name": "T. McMillan",
-            "pos": "WR",
-            "proTeamId": 29,
-            "slot": 4,
-            "actual": 0,
-            "projection": 13.75,
-            "injury": null,
-            "owned": 98,
-            "usage": {
-              "touches": 0,
-              "expected": 8
-            }
-          },
-          {
-            "id": 4430737,
-            "name": "K. Williams",
-            "pos": "RB",
-            "proTeamId": 14,
-            "slot": 2,
-            "actual": 0,
-            "projection": 17.16,
-            "injury": null,
-            "owned": 100,
-            "usage": {
-              "touches": 0,
-              "expected": 17.9
-            }
-          },
-          {
-            "id": 4685512,
-            "name": "J. Price",
-            "pos": "RB",
-            "proTeamId": 26,
-            "slot": 23,
-            "actual": 0,
-            "projection": 10.9,
-            "injury": null,
-            "owned": 74,
-            "usage": {
-              "touches": 0,
-              "expected": 14.9
-            }
-          },
-          {
-            "id": 4360761,
-            "name": "M. Wilson",
-            "pos": "WR",
-            "proTeamId": 22,
-            "slot": 23,
-            "actual": 0,
-            "projection": 13.27,
-            "injury": null,
-            "owned": 90,
-            "usage": {
-              "touches": 0,
-              "expected": 9.1
-            }
-          },
-          {
-            "id": 4249087,
-            "name": "M. Gay",
-            "pos": "K",
-            "proTeamId": 13,
-            "slot": 17,
-            "actual": 0,
-            "projection": 9.37,
-            "injury": null,
-            "owned": 58
-          },
-          {
-            "id": -16014,
-            "name": "Rams D/ST",
-            "pos": "D/ST",
-            "proTeamId": 14,
-            "slot": 16,
-            "actual": 0,
-            "projection": 5.47,
-            "injury": null,
-            "owned": 81
-          },
-          {
-            "id": 14880,
-            "name": "K. Cousins",
-            "pos": "QB",
-            "proTeamId": 13,
-            "slot": 0,
-            "actual": 0,
-            "projection": 15.16,
-            "injury": null,
-            "owned": 63,
-            "usage": {
-              "touches": 0,
-              "expected": 39.1
-            }
-          },
-          {
-            "id": 3116164,
-            "name": "M. Gesicki",
-            "pos": "TE",
-            "proTeamId": 4,
-            "slot": 6,
-            "actual": 0,
-            "projection": 8.14,
-            "injury": null,
-            "owned": 26,
-            "usage": {
-              "touches": 0,
-              "expected": 3.7
-            }
-          }
-        ],
-        "regretBench": [],
-        "bench": [
-          {
-            "id": 4426348,
-            "name": "J. Daniels",
-            "pos": "QB",
-            "proTeamId": 28,
-            "slot": 20,
-            "actual": 0,
-            "projection": 20.09,
-            "injury": null,
-            "owned": 95,
-            "usage": {
-              "touches": 0,
-              "expected": 39.1
-            }
-          },
-          {
-            "id": 4569587,
-            "name": "W. Robinson",
-            "pos": "WR",
-            "proTeamId": 10,
-            "slot": 20,
-            "actual": 0,
-            "projection": 0,
-            "injury": null,
-            "owned": 53
-          },
-          {
-            "id": -16033,
-            "name": "Ravens D/ST",
-            "pos": "D/ST",
-            "proTeamId": 33,
-            "slot": 20,
-            "actual": 1,
-            "projection": 3.56,
-            "injury": null,
-            "owned": 47
-          },
-          {
-            "id": 4360689,
-            "name": "T. Shough",
-            "pos": "QB",
-            "proTeamId": 18,
-            "slot": 20,
-            "actual": 0,
-            "projection": 15.44,
-            "injury": null,
-            "owned": 65,
-            "usage": {
-              "touches": 0,
-              "expected": 38.3
-            }
-          },
-          {
-            "id": 4887558,
-            "name": "E. Wilson",
-            "pos": "RB",
-            "proTeamId": 26,
-            "slot": 20,
-            "actual": 0,
-            "projection": 0,
-            "injury": null,
-            "owned": 36
-          }
-        ],
-        "pointsLeft": 0
-      },
-      "projectionSd": 28.59,
-      "startersLeft": 10,
-      "lineupOutlook": {
-        "set": true,
-        "openSlots": 10,
-        "atRisk": [],
-        "gain": 3.3,
-        "reset": 0.05
-      },
-      "aboveMedianProbability": 52.95,
-      "topScoreProbability": 7.52,
-      "belowMedianProbability": 47.05,
-      "medianDistanceSd": 0.02,
-      "closeToMedian": true,
-      "nearMedian": true,
-      "winProbability": 62.51
-    },
-    {
-      "teamId": 11,
-      "opponentId": 4,
-      "score": 0,
-      "opponentScore": 28.08,
-      "matchupId": 53,
-      "team": "Brock You Like a Hurricane",
-      "opponent": "Kirbo Crushers",
-      "logo": "https://mystique-api.fantasy.espn.com/apis/v1/domains/lm/images/add1ddb0-a2f7-11f1-8ef0-19c1af2548f8",
-      "projection": {
-        "espn": 149.15,
-        "otwf": 151.82,
-        "dist": {
-          "mean": 151.82,
-          "p10": 108.7,
-          "p25": 128.48,
-          "p50": 151.31,
-          "p75": 174.39,
-          "p90": 195.83
-        }
-      },
-      "projectionAverage": 151.82,
-      "projectionTrend": "down",
-      "status": "LIVE",
-      "lineup": {
-        "starters": [
-          {
-            "id": 4430807,
-            "name": "B. Robinson",
-            "pos": "RB",
-            "proTeamId": 1,
-            "slot": 2,
-            "actual": 0,
-            "projection": 20.16,
-            "injury": null,
-            "owned": 100,
-            "usage": {
-              "touches": 0,
-              "expected": 22.9
-            }
-          },
-          {
-            "id": 4567048,
-            "name": "K. Walker III",
-            "pos": "RB",
-            "proTeamId": 12,
-            "slot": 2,
-            "actual": 0,
-            "projection": 23.45,
-            "injury": null,
-            "owned": 100,
-            "usage": {
-              "touches": 0,
-              "expected": 24.4
-            }
-          },
-          {
-            "id": 4432665,
-            "name": "B. Bowers",
-            "pos": "TE",
-            "proTeamId": 13,
-            "slot": 6,
-            "actual": 0,
-            "projection": 18.51,
-            "injury": null,
-            "owned": 100,
-            "usage": {
-              "touches": 0,
-              "expected": 10
-            }
-          },
-          {
-            "id": 4239993,
-            "name": "T. Higgins",
-            "pos": "WR",
-            "proTeamId": 4,
-            "slot": 4,
-            "actual": 0,
-            "projection": 17.14,
-            "injury": null,
-            "owned": 98,
-            "usage": {
-              "touches": 0,
-              "expected": 8.5
-            }
-          },
-          {
-            "id": 4685278,
-            "name": "L. Burden III",
-            "pos": "WR",
-            "proTeamId": 3,
-            "slot": 23,
-            "actual": 0,
-            "projection": 14.09,
-            "injury": null,
-            "owned": 93,
-            "usage": {
-              "touches": 0,
-              "expected": 8
-            }
-          },
-          {
-            "id": 4248528,
-            "name": "C. Watson",
-            "pos": "WR",
-            "proTeamId": 9,
-            "slot": 4,
-            "actual": 0,
-            "projection": 16.03,
-            "injury": null,
-            "owned": 97,
-            "usage": {
-              "touches": 0,
-              "expected": 9.3
-            }
-          },
-          {
-            "id": -16016,
-            "name": "Vikings D/ST",
-            "pos": "D/ST",
-            "proTeamId": 16,
-            "slot": 16,
-            "actual": 0,
-            "projection": 4.01,
-            "injury": null,
-            "owned": 84
-          },
-          {
-            "id": 4702555,
-            "name": "J. Coleman",
-            "pos": "RB",
-            "proTeamId": 7,
-            "slot": 23,
-            "actual": 0,
-            "projection": 14.57,
-            "injury": null,
-            "owned": 81,
-            "usage": {
-              "touches": 0,
-              "expected": 16.1
-            }
-          },
-          {
-            "id": 4431452,
-            "name": "D. Maye",
-            "pos": "QB",
-            "proTeamId": 17,
-            "slot": 0,
-            "actual": 0,
-            "projection": 21.19,
-            "injury": null,
-            "owned": 99,
-            "usage": {
-              "touches": 0,
-              "expected": 36.9
-            }
-          }
-        ],
-        "regretBench": [],
-        "bench": [
-          {
-            "id": 4372016,
-            "name": "J. Waddle",
-            "pos": "WR",
-            "proTeamId": 7,
-            "slot": 20,
-            "actual": 0,
-            "projection": 11.51,
-            "injury": null,
-            "owned": 88,
-            "usage": {
-              "touches": 0,
-              "expected": 7.5
-            }
-          },
-          {
-            "id": 4360310,
-            "name": "T. Lawrence",
-            "pos": "QB",
-            "proTeamId": 30,
-            "slot": 20,
-            "actual": 13.58,
-            "projection": 20.63,
-            "injury": null,
-            "owned": 93,
-            "usage": {
-              "touches": 27,
-              "expected": 32.1
-            }
-          },
-          {
-            "id": 4429096,
-            "name": "B. Corum",
-            "pos": "RB",
-            "proTeamId": 14,
-            "slot": 20,
-            "actual": 0,
-            "projection": 9.95,
-            "injury": null,
-            "owned": 80,
-            "usage": {
-              "touches": 0,
-              "expected": 12.8
-            }
-          },
-          {
-            "id": 4870795,
-            "name": "M. Lemon",
-            "pos": "WR",
-            "proTeamId": 21,
-            "slot": 20,
-            "actual": 0,
-            "projection": 10.36,
-            "injury": null,
-            "owned": 55,
-            "usage": {
-              "touches": 0,
-              "expected": 7.8
-            }
-          },
-          {
-            "id": 4832955,
-            "name": "E. Johnson",
-            "pos": "RB",
-            "proTeamId": 12,
-            "slot": 20,
-            "actual": 0,
-            "projection": 7.53,
-            "injury": null,
-            "owned": 23,
-            "usage": {
-              "touches": 0,
-              "expected": 6.4
-            }
-          },
-          {
-            "id": 4723820,
-            "name": "O. Cooper Jr.",
-            "pos": "WR",
-            "proTeamId": 20,
-            "slot": 20,
-            "actual": 0,
-            "projection": 11.22,
-            "injury": null,
-            "owned": 58,
-            "usage": {
-              "touches": 0,
-              "expected": 5.8
-            }
-          }
-        ],
-        "pointsLeft": 0
-      },
-      "projectionSd": 33.85,
-      "startersLeft": 9,
-      "lineupOutlook": {
-        "set": true,
-        "openSlots": 9,
-        "atRisk": [],
-        "gain": 0,
-        "reset": 0.05
-      },
-      "aboveMedianProbability": 75.56,
-      "topScoreProbability": 26.61,
-      "belowMedianProbability": 24.44,
-      "medianDistanceSd": 0.63,
-      "closeToMedian": false,
-      "nearMedian": false,
-      "winProbability": 82
+      "winProbability": 51.4
     }
   ],
-  "median": 1.95,
-  "projectedMedian": 130.51,
+  "median": 6.63,
+  "projectedMedian": 130.09,
   "projectionSources": [
     "ESPN live team projections, with ESPN player projections as fallback"
   ],
@@ -3156,35 +3152,99 @@
       "id": "401873038",
       "name": "CIN VS ATL",
       "kickoff": "2026-11-08T14:30Z",
-      "state": "pre",
+      "state": "in",
       "completed": false,
-      "detail": "11/8 - 9:30 AM EST",
-      "period": 0,
-      "clock": 0,
+      "detail": "2:51 - 1st",
+      "period": 1,
+      "clock": 171,
       "teamIds": [
         1,
         4
       ],
-      "drive": null,
+      "drive": {
+        "possession": 4,
+        "text": "2nd & 10 at CIN 30",
+        "yardLine": 70,
+        "redZone": false,
+        "down": 2,
+        "distance": 10
+      },
       "teams": [
         {
           "id": 1,
           "abbrev": "ATL",
-          "score": 0,
+          "score": 10,
           "home": true,
           "record": "3-5",
           "playoffOdds": 8,
-          "winChance": 0.384
+          "winChance": 0.308
         },
         {
           "id": 4,
           "abbrev": "CIN",
-          "score": 0,
+          "score": 7,
           "home": false,
           "record": "5-2",
           "playoffOdds": 96.6,
-          "winChance": 0.616
+          "winChance": 0.692
         }
+      ],
+      "live": {
+        "spread": 3,
+        "total": 61.5,
+        "homeWin": 41
+      },
+      "wpTrack": [
+        0.223,
+        0.242,
+        0.263,
+        0.275,
+        0.278,
+        0.278,
+        0.313,
+        0.339,
+        0.339,
+        0.35,
+        0.368,
+        0.37,
+        0.37,
+        0.37,
+        0.37,
+        0.37,
+        0.366,
+        0.368,
+        0.342,
+        0.364,
+        0.34,
+        0.34,
+        0.246,
+        0.246,
+        0.246,
+        0.246,
+        0.246,
+        0.264,
+        0.248,
+        0.248,
+        0.281,
+        0.262,
+        0.252,
+        0.27,
+        0.331,
+        0.331,
+        0.331,
+        0.346,
+        0.311,
+        0.311,
+        0.296,
+        0.297,
+        0.287,
+        0.298,
+        0.298,
+        0.298,
+        0.298,
+        0.298,
+        0.289,
+        0.308
       ]
     },
     {
@@ -3349,7 +3409,7 @@
           "home": true,
           "record": "2-6",
           "playoffOdds": 1,
-          "winChance": 0.407
+          "winChance": 0.417
         },
         {
           "id": 19,
@@ -3358,7 +3418,7 @@
           "home": false,
           "record": "4-2-1",
           "playoffOdds": 45.6,
-          "winChance": 0.593
+          "winChance": 0.583
         }
       ]
     },
@@ -3454,7 +3514,7 @@
           "home": true,
           "record": "0-7",
           "playoffOdds": 0.1,
-          "winChance": 0.325
+          "winChance": 0.331
         },
         {
           "id": 34,
@@ -3463,7 +3523,7 @@
           "home": false,
           "record": "2-5",
           "playoffOdds": 24.2,
-          "winChance": 0.675
+          "winChance": 0.669
         }
       ]
     },
@@ -3524,7 +3584,7 @@
           "home": true,
           "record": "6-1",
           "playoffOdds": 99.1,
-          "winChance": 0.791
+          "winChance": 0.787
         },
         {
           "id": 13,
@@ -3533,7 +3593,7 @@
           "home": false,
           "record": "4-4",
           "playoffOdds": 10.1,
-          "winChance": 0.209
+          "winChance": 0.213
         }
       ]
     },
@@ -3594,7 +3654,7 @@
           "home": true,
           "record": "6-2",
           "playoffOdds": 90.4,
-          "winChance": 0.696
+          "winChance": 0.7
         },
         {
           "id": 27,
@@ -3603,7 +3663,7 @@
           "home": false,
           "record": "3-5",
           "playoffOdds": 65,
-          "winChance": 0.304
+          "winChance": 0.3
         }
       ]
     },
@@ -9483,6 +9543,788 @@
           "11": 82,
           "12": 58.01
         }
+      },
+      {
+        "t": "2026-11-08T14:15:20.075Z",
+        "p": {
+          "1": 36.77,
+          "2": 63.23,
+          "3": 66.97,
+          "4": 17.88,
+          "5": 42.13,
+          "6": 33.03,
+          "7": 51.29,
+          "8": 48.71,
+          "9": 43.22,
+          "10": 56.78,
+          "11": 82.12,
+          "12": 57.87
+        }
+      },
+      {
+        "t": "2026-11-08T14:18:11.416Z",
+        "p": {
+          "1": 36.77,
+          "2": 63.23,
+          "3": 66.98,
+          "4": 17.88,
+          "5": 42.13,
+          "6": 33.02,
+          "7": 51.29,
+          "8": 48.71,
+          "9": 43.22,
+          "10": 56.78,
+          "11": 82.12,
+          "12": 57.87
+        }
+      },
+      {
+        "t": "2026-11-08T14:18:48.846Z",
+        "p": {
+          "1": 36.51,
+          "2": 63.49,
+          "3": 66.47,
+          "4": 18.9,
+          "5": 42.2,
+          "6": 33.53,
+          "7": 51.82,
+          "8": 48.18,
+          "9": 43.78,
+          "10": 56.22,
+          "11": 81.1,
+          "12": 57.8
+        }
+      },
+      {
+        "t": "2026-11-08T14:20:46.301Z",
+        "p": {
+          "1": 36.51,
+          "2": 63.49,
+          "3": 66.47,
+          "4": 18.9,
+          "5": 42.21,
+          "6": 33.53,
+          "7": 51.81,
+          "8": 48.19,
+          "9": 43.78,
+          "10": 56.22,
+          "11": 81.1,
+          "12": 57.79
+        }
+      },
+      {
+        "t": "2026-11-08T14:21:58.850Z",
+        "p": {
+          "1": 36.72,
+          "2": 63.28,
+          "3": 67.19,
+          "4": 13.89,
+          "5": 42.53,
+          "6": 32.81,
+          "7": 51.59,
+          "8": 48.41,
+          "9": 44.19,
+          "10": 55.81,
+          "11": 86.11,
+          "12": 57.47
+        }
+      },
+      {
+        "t": "2026-11-08T14:23:58.144Z",
+        "p": {
+          "1": 36.72,
+          "2": 63.28,
+          "3": 67.19,
+          "4": 13.89,
+          "5": 42.53,
+          "6": 32.81,
+          "7": 51.59,
+          "8": 48.41,
+          "9": 44.2,
+          "10": 55.8,
+          "11": 86.11,
+          "12": 57.47
+        }
+      },
+      {
+        "t": "2026-11-08T14:24:35.929Z",
+        "p": {
+          "1": 36.73,
+          "2": 63.27,
+          "3": 67.19,
+          "4": 13.89,
+          "5": 42.53,
+          "6": 32.81,
+          "7": 51.6,
+          "8": 48.4,
+          "9": 44.2,
+          "10": 55.8,
+          "11": 86.11,
+          "12": 57.47
+        }
+      },
+      {
+        "t": "2026-11-08T14:28:55.800Z",
+        "p": {
+          "1": 35.61,
+          "2": 64.39,
+          "3": 65.53,
+          "4": 13.13,
+          "5": 41.27,
+          "6": 34.47,
+          "7": 50.52,
+          "8": 49.48,
+          "9": 44.55,
+          "10": 55.45,
+          "11": 86.87,
+          "12": 58.73
+        }
+      },
+      {
+        "t": "2026-11-08T14:35:52.729Z",
+        "p": {
+          "1": 37.05,
+          "2": 62.95,
+          "3": 67.56,
+          "4": 12.97,
+          "5": 42.08,
+          "6": 32.44,
+          "7": 50.63,
+          "8": 49.37,
+          "9": 44.11,
+          "10": 55.89,
+          "11": 87.03,
+          "12": 57.92
+        }
+      },
+      {
+        "t": "2026-11-08T14:36:40.273Z",
+        "p": {
+          "1": 37.05,
+          "2": 62.95,
+          "3": 67.58,
+          "4": 12.97,
+          "5": 42.08,
+          "6": 32.42,
+          "7": 50.63,
+          "8": 49.37,
+          "9": 44.11,
+          "10": 55.89,
+          "11": 87.03,
+          "12": 57.92
+        }
+      },
+      {
+        "t": "2026-11-08T14:37:18.360Z",
+        "p": {
+          "1": 37.37,
+          "2": 62.63,
+          "3": 67.52,
+          "4": 11.05,
+          "5": 42.17,
+          "6": 32.48,
+          "7": 50.4,
+          "8": 49.6,
+          "9": 42.58,
+          "10": 57.42,
+          "11": 88.95,
+          "12": 57.83
+        }
+      },
+      {
+        "t": "2026-11-08T14:37:54.766Z",
+        "p": {
+          "1": 36.46,
+          "2": 63.54,
+          "3": 67.87,
+          "4": 8.88,
+          "5": 43.47,
+          "6": 32.13,
+          "7": 51.13,
+          "8": 48.87,
+          "9": 43.12,
+          "10": 56.88,
+          "11": 91.12,
+          "12": 56.53
+        }
+      },
+      {
+        "t": "2026-11-08T14:38:30.050Z",
+        "p": {
+          "1": 36.42,
+          "2": 63.58,
+          "3": 68.35,
+          "4": 8.02,
+          "5": 44.04,
+          "6": 31.65,
+          "7": 51.31,
+          "8": 48.69,
+          "9": 41.57,
+          "10": 58.43,
+          "11": 91.98,
+          "12": 55.96
+        }
+      },
+      {
+        "t": "2026-11-08T14:39:06.854Z",
+        "p": {
+          "1": 38.17,
+          "2": 61.83,
+          "3": 68.28,
+          "4": 7.05,
+          "5": 43.68,
+          "6": 31.72,
+          "7": 50.77,
+          "8": 49.23,
+          "9": 42.11,
+          "10": 57.89,
+          "11": 92.95,
+          "12": 56.32
+        }
+      },
+      {
+        "t": "2026-11-08T14:39:49.981Z",
+        "p": {
+          "1": 37.95,
+          "2": 62.05,
+          "3": 68.98,
+          "4": 7.41,
+          "5": 44.88,
+          "6": 31.02,
+          "7": 51.45,
+          "8": 48.55,
+          "9": 40.8,
+          "10": 59.2,
+          "11": 92.59,
+          "12": 55.12
+        }
+      },
+      {
+        "t": "2026-11-08T14:40:27.845Z",
+        "p": {
+          "1": 37.95,
+          "2": 62.05,
+          "3": 68.09,
+          "4": 7.16,
+          "5": 44.88,
+          "6": 31.91,
+          "7": 51.44,
+          "8": 48.56,
+          "9": 40.8,
+          "10": 59.2,
+          "11": 92.84,
+          "12": 55.12
+        }
+      },
+      {
+        "t": "2026-11-08T14:41:06.889Z",
+        "p": {
+          "1": 38.11,
+          "2": 61.89,
+          "3": 68.36,
+          "4": 7.33,
+          "5": 45.23,
+          "6": 31.64,
+          "7": 51.38,
+          "8": 48.62,
+          "9": 40.25,
+          "10": 59.75,
+          "11": 92.67,
+          "12": 54.77
+        }
+      },
+      {
+        "t": "2026-11-08T14:41:46.072Z",
+        "p": {
+          "1": 38.11,
+          "2": 61.89,
+          "3": 67.97,
+          "4": 7.24,
+          "5": 45.23,
+          "6": 32.03,
+          "7": 51.38,
+          "8": 48.62,
+          "9": 40.25,
+          "10": 59.75,
+          "11": 92.76,
+          "12": 54.77
+        }
+      },
+      {
+        "t": "2026-11-08T14:42:23.270Z",
+        "p": {
+          "1": 38.04,
+          "2": 61.96,
+          "3": 70.49,
+          "4": 8.49,
+          "5": 45.31,
+          "6": 29.51,
+          "7": 51.3,
+          "8": 48.7,
+          "9": 40.32,
+          "10": 59.68,
+          "11": 91.51,
+          "12": 54.69
+        }
+      },
+      {
+        "t": "2026-11-08T14:43:00.761Z",
+        "p": {
+          "1": 38.04,
+          "2": 61.96,
+          "3": 70.44,
+          "4": 8.46,
+          "5": 45.31,
+          "6": 29.56,
+          "7": 51.3,
+          "8": 48.7,
+          "9": 40.32,
+          "10": 59.68,
+          "11": 91.54,
+          "12": 54.69
+        }
+      },
+      {
+        "t": "2026-11-08T14:46:08.325Z",
+        "p": {
+          "1": 38.04,
+          "2": 61.96,
+          "3": 70.49,
+          "4": 8.49,
+          "5": 45.31,
+          "6": 29.51,
+          "7": 51.3,
+          "8": 48.7,
+          "9": 40.32,
+          "10": 59.68,
+          "11": 91.51,
+          "12": 54.69
+        }
+      },
+      {
+        "t": "2026-11-08T14:46:48.171Z",
+        "p": {
+          "1": 36.9,
+          "2": 63.1,
+          "3": 70.4,
+          "4": 8.58,
+          "5": 42.08,
+          "6": 29.6,
+          "7": 51.5,
+          "8": 48.5,
+          "9": 40.06,
+          "10": 59.94,
+          "11": 91.42,
+          "12": 57.92
+        }
+      },
+      {
+        "t": "2026-11-08T14:47:25.346Z",
+        "p": {
+          "1": 37.12,
+          "2": 62.88,
+          "3": 70.63,
+          "4": 9.3,
+          "5": 42.39,
+          "6": 29.37,
+          "7": 51.77,
+          "8": 48.23,
+          "9": 40.38,
+          "10": 59.62,
+          "11": 90.7,
+          "12": 57.61
+        }
+      },
+      {
+        "t": "2026-11-08T14:48:06.073Z",
+        "p": {
+          "1": 37.9,
+          "2": 62.1,
+          "3": 71.29,
+          "4": 9.56,
+          "5": 40.39,
+          "6": 28.71,
+          "7": 51.15,
+          "8": 48.85,
+          "9": 38.66,
+          "10": 61.34,
+          "11": 90.44,
+          "12": 59.61
+        }
+      },
+      {
+        "t": "2026-11-08T14:48:50.890Z",
+        "p": {
+          "1": 35.52,
+          "2": 64.48,
+          "3": 71.04,
+          "4": 9.95,
+          "5": 38.83,
+          "6": 28.96,
+          "7": 51.14,
+          "8": 48.86,
+          "9": 39.25,
+          "10": 60.75,
+          "11": 90.05,
+          "12": 61.17
+        }
+      },
+      {
+        "t": "2026-11-08T14:49:30.189Z",
+        "p": {
+          "1": 34.9,
+          "2": 65.1,
+          "3": 70.39,
+          "4": 9.67,
+          "5": 31.98,
+          "6": 29.61,
+          "7": 51.73,
+          "8": 48.27,
+          "9": 53.41,
+          "10": 46.59,
+          "11": 90.33,
+          "12": 68.02
+        }
+      },
+      {
+        "t": "2026-11-08T14:50:08.358Z",
+        "p": {
+          "1": 35.5,
+          "2": 64.5,
+          "3": 70.63,
+          "4": 10.26,
+          "5": 32.03,
+          "6": 29.37,
+          "7": 51.67,
+          "8": 48.33,
+          "9": 52.79,
+          "10": 47.21,
+          "11": 89.74,
+          "12": 67.97
+        }
+      },
+      {
+        "t": "2026-11-08T14:53:19.160Z",
+        "p": {
+          "1": 35.53,
+          "2": 64.47,
+          "3": 70.63,
+          "4": 10.29,
+          "5": 32.04,
+          "6": 29.37,
+          "7": 51.67,
+          "8": 48.33,
+          "9": 52.75,
+          "10": 47.25,
+          "11": 89.71,
+          "12": 67.96
+        }
+      },
+      {
+        "t": "2026-11-08T14:53:56.115Z",
+        "p": {
+          "1": 35.53,
+          "2": 64.47,
+          "3": 70.66,
+          "4": 10.31,
+          "5": 32.04,
+          "6": 29.34,
+          "7": 51.67,
+          "8": 48.33,
+          "9": 52.75,
+          "10": 47.25,
+          "11": 89.69,
+          "12": 67.96
+        }
+      },
+      {
+        "t": "2026-11-08T14:54:35.041Z",
+        "p": {
+          "1": 35.37,
+          "2": 64.63,
+          "3": 70.79,
+          "4": 10.49,
+          "5": 32.18,
+          "6": 29.21,
+          "7": 51.77,
+          "8": 48.23,
+          "9": 52.57,
+          "10": 47.43,
+          "11": 89.51,
+          "12": 67.82
+        }
+      },
+      {
+        "t": "2026-11-08T14:55:11.254Z",
+        "p": {
+          "1": 35.06,
+          "2": 64.94,
+          "3": 66.12,
+          "4": 10.88,
+          "5": 31.83,
+          "6": 33.88,
+          "7": 50.67,
+          "8": 49.33,
+          "9": 51.81,
+          "10": 48.19,
+          "11": 89.12,
+          "12": 68.17
+        }
+      },
+      {
+        "t": "2026-11-08T14:55:49.359Z",
+        "p": {
+          "1": 35.07,
+          "2": 64.93,
+          "3": 66.76,
+          "4": 10.67,
+          "5": 32.24,
+          "6": 33.24,
+          "7": 50.68,
+          "8": 49.32,
+          "9": 51.45,
+          "10": 48.55,
+          "11": 89.33,
+          "12": 67.76
+        }
+      },
+      {
+        "t": "2026-11-08T14:56:41.916Z",
+        "p": {
+          "1": 35.62,
+          "2": 64.38,
+          "3": 68.07,
+          "4": 11.63,
+          "5": 33.08,
+          "6": 31.93,
+          "7": 50.99,
+          "8": 49.01,
+          "9": 50.94,
+          "10": 49.06,
+          "11": 88.37,
+          "12": 66.92
+        }
+      },
+      {
+        "t": "2026-11-08T14:57:19.518Z",
+        "p": {
+          "1": 35.62,
+          "2": 64.38,
+          "3": 67.32,
+          "4": 11.26,
+          "5": 33.1,
+          "6": 32.68,
+          "7": 51,
+          "8": 49,
+          "9": 50.92,
+          "10": 49.08,
+          "11": 88.74,
+          "12": 66.9
+        }
+      },
+      {
+        "t": "2026-11-08T14:58:08.012Z",
+        "p": {
+          "1": 35.41,
+          "2": 64.59,
+          "3": 66.2,
+          "4": 11.44,
+          "5": 33.81,
+          "6": 33.8,
+          "7": 51.19,
+          "8": 48.81,
+          "9": 50.35,
+          "10": 49.65,
+          "11": 88.56,
+          "12": 66.19
+        }
+      },
+      {
+        "t": "2026-11-08T14:58:58.204Z",
+        "p": {
+          "1": 35.42,
+          "2": 64.58,
+          "3": 67.72,
+          "4": 10.4,
+          "5": 34.36,
+          "6": 32.28,
+          "7": 51.83,
+          "8": 48.17,
+          "9": 50.37,
+          "10": 49.63,
+          "11": 89.6,
+          "12": 65.64
+        }
+      },
+      {
+        "t": "2026-11-08T14:59:35.862Z",
+        "p": {
+          "1": 35.62,
+          "2": 64.38,
+          "3": 66.38,
+          "4": 9.18,
+          "5": 33.06,
+          "6": 33.62,
+          "7": 51.06,
+          "8": 48.94,
+          "9": 50.47,
+          "10": 49.53,
+          "11": 90.82,
+          "12": 66.94
+        }
+      },
+      {
+        "t": "2026-11-08T15:00:26.864Z",
+        "p": {
+          "1": 36.66,
+          "2": 63.34,
+          "3": 66.72,
+          "4": 9.54,
+          "5": 33.97,
+          "6": 33.28,
+          "7": 50.9,
+          "8": 49.1,
+          "9": 50.23,
+          "10": 49.77,
+          "11": 90.46,
+          "12": 66.03
+        }
+      },
+      {
+        "t": "2026-11-08T15:01:04.089Z",
+        "p": {
+          "1": 36.72,
+          "2": 63.28,
+          "3": 67.7,
+          "4": 10.18,
+          "5": 34.24,
+          "6": 32.3,
+          "7": 51.09,
+          "8": 48.91,
+          "9": 50.11,
+          "10": 49.89,
+          "11": 89.82,
+          "12": 65.76
+        }
+      },
+      {
+        "t": "2026-11-08T15:01:41.470Z",
+        "p": {
+          "1": 36.97,
+          "2": 63.03,
+          "3": 68.35,
+          "4": 10.69,
+          "5": 34.83,
+          "6": 31.65,
+          "7": 51.26,
+          "8": 48.74,
+          "9": 49.71,
+          "10": 50.29,
+          "11": 89.31,
+          "12": 65.17
+        }
+      },
+      {
+        "t": "2026-11-08T15:02:20.709Z",
+        "p": {
+          "1": 37.05,
+          "2": 62.95,
+          "3": 68.73,
+          "4": 11.02,
+          "5": 35.17,
+          "6": 31.27,
+          "7": 51.32,
+          "8": 48.68,
+          "9": 49.4,
+          "10": 50.6,
+          "11": 88.98,
+          "12": 64.83
+        }
+      },
+      {
+        "t": "2026-11-08T15:03:01.519Z",
+        "p": {
+          "1": 37.05,
+          "2": 62.95,
+          "3": 69.42,
+          "4": 11.43,
+          "5": 35.17,
+          "6": 30.58,
+          "7": 51.32,
+          "8": 48.68,
+          "9": 49.4,
+          "10": 50.6,
+          "11": 88.57,
+          "12": 64.83
+        }
+      },
+      {
+        "t": "2026-11-08T15:03:36.961Z",
+        "p": {
+          "1": 36.49,
+          "2": 63.51,
+          "3": 69.95,
+          "4": 12.71,
+          "5": 35.55,
+          "6": 30.05,
+          "7": 50.71,
+          "8": 49.29,
+          "9": 48.79,
+          "10": 51.21,
+          "11": 87.29,
+          "12": 64.45
+        }
+      },
+      {
+        "t": "2026-11-08T15:04:19.363Z",
+        "p": {
+          "1": 36.52,
+          "2": 63.48,
+          "3": 69.74,
+          "4": 12.53,
+          "5": 35.61,
+          "6": 30.26,
+          "7": 50.81,
+          "8": 49.19,
+          "9": 48.79,
+          "10": 51.21,
+          "11": 87.47,
+          "12": 64.39
+        }
+      },
+      {
+        "t": "2026-11-08T15:07:35.644Z",
+        "p": {
+          "1": 36.52,
+          "2": 63.48,
+          "3": 69.78,
+          "4": 12.59,
+          "5": 35.61,
+          "6": 30.22,
+          "7": 50.81,
+          "8": 49.19,
+          "9": 48.79,
+          "10": 51.21,
+          "11": 87.41,
+          "12": 64.39
+        }
+      },
+      {
+        "t": "2026-11-08T15:07:50.457Z",
+        "p": {
+          "1": 36.64,
+          "2": 63.36,
+          "3": 69.78,
+          "4": 12.77,
+          "5": 36.77,
+          "6": 30.22,
+          "7": 50.69,
+          "8": 49.31,
+          "9": 48.6,
+          "10": 51.4,
+          "11": 87.23,
+          "12": 63.23
+        }
       }
     ]
   },
@@ -14740,6 +15582,754 @@
           "10": 12.79,
           "11": 26.61,
           "12": 13.03
+        }
+      },
+      {
+        "t": "2026-11-08T14:15:20.075Z",
+        "p": {
+          "1": 1.66,
+          "2": 7.34,
+          "3": 6.36,
+          "4": 0.93,
+          "5": 7.18,
+          "6": 1.08,
+          "7": 7.87,
+          "8": 7.37,
+          "9": 7.37,
+          "10": 12.64,
+          "11": 27.17,
+          "12": 13.14
+        }
+      },
+      {
+        "t": "2026-11-08T14:18:48.846Z",
+        "p": {
+          "1": 1.72,
+          "2": 7.82,
+          "3": 6.66,
+          "4": 1.26,
+          "5": 7.24,
+          "6": 1.24,
+          "7": 7.75,
+          "8": 6.74,
+          "9": 8.45,
+          "10": 12.4,
+          "11": 26.14,
+          "12": 12.69
+        }
+      },
+      {
+        "t": "2026-11-08T14:20:46.301Z",
+        "p": {
+          "1": 1.72,
+          "2": 7.82,
+          "3": 6.66,
+          "4": 1.26,
+          "5": 7.25,
+          "6": 1.24,
+          "7": 7.74,
+          "8": 6.74,
+          "9": 8.45,
+          "10": 12.4,
+          "11": 26.14,
+          "12": 12.69
+        }
+      },
+      {
+        "t": "2026-11-08T14:21:58.850Z",
+        "p": {
+          "1": 1.4,
+          "2": 6.88,
+          "3": 6.43,
+          "4": 1.02,
+          "5": 6.67,
+          "6": 1.11,
+          "7": 6.82,
+          "8": 5.85,
+          "9": 7.23,
+          "10": 11.2,
+          "11": 34.04,
+          "12": 11.46
+        }
+      },
+      {
+        "t": "2026-11-08T14:24:35.929Z",
+        "p": {
+          "1": 1.4,
+          "2": 6.88,
+          "3": 6.43,
+          "4": 1.02,
+          "5": 6.67,
+          "6": 1.11,
+          "7": 6.82,
+          "8": 5.84,
+          "9": 7.23,
+          "10": 11.21,
+          "11": 34.04,
+          "12": 11.46
+        }
+      },
+      {
+        "t": "2026-11-08T14:28:55.800Z",
+        "p": {
+          "1": 1.44,
+          "2": 6.78,
+          "3": 5.85,
+          "4": 0.86,
+          "5": 6.48,
+          "6": 1.06,
+          "7": 7.08,
+          "8": 6.5,
+          "9": 6.51,
+          "10": 11.26,
+          "11": 34.08,
+          "12": 12.21
+        }
+      },
+      {
+        "t": "2026-11-08T14:35:52.729Z",
+        "p": {
+          "1": 1.4,
+          "2": 7.02,
+          "3": 6.35,
+          "4": 1,
+          "5": 6.29,
+          "6": 0.87,
+          "7": 7.79,
+          "8": 6.74,
+          "9": 6.23,
+          "10": 11.26,
+          "11": 33.77,
+          "12": 11.39
+        }
+      },
+      {
+        "t": "2026-11-08T14:37:18.360Z",
+        "p": {
+          "1": 1.58,
+          "2": 6.09,
+          "3": 5.94,
+          "4": 0.98,
+          "5": 5.33,
+          "6": 0.73,
+          "7": 6.37,
+          "8": 6.39,
+          "9": 5.45,
+          "10": 11.14,
+          "11": 39.96,
+          "12": 10.15
+        }
+      },
+      {
+        "t": "2026-11-08T14:37:54.766Z",
+        "p": {
+          "1": 1.49,
+          "2": 6.08,
+          "3": 5.71,
+          "4": 0.83,
+          "5": 4.84,
+          "6": 0.73,
+          "7": 6.32,
+          "8": 5.28,
+          "9": 5.33,
+          "10": 10.57,
+          "11": 44.16,
+          "12": 8.77
+        }
+      },
+      {
+        "t": "2026-11-08T14:38:30.050Z",
+        "p": {
+          "1": 1.14,
+          "2": 5.7,
+          "3": 5.53,
+          "4": 0.8,
+          "5": 4.92,
+          "6": 0.64,
+          "7": 6.79,
+          "8": 5.99,
+          "9": 4.36,
+          "10": 10.46,
+          "11": 45.98,
+          "12": 7.8
+        }
+      },
+      {
+        "t": "2026-11-08T14:39:06.854Z",
+        "p": {
+          "1": 1.32,
+          "2": 5.57,
+          "3": 5.12,
+          "4": 0.71,
+          "5": 4.39,
+          "6": 0.63,
+          "7": 5.49,
+          "8": 5.43,
+          "9": 3.9,
+          "10": 9.61,
+          "11": 50.59,
+          "12": 7.35
+        }
+      },
+      {
+        "t": "2026-11-08T14:39:49.981Z",
+        "p": {
+          "1": 1.29,
+          "2": 5.71,
+          "3": 5.24,
+          "4": 0.68,
+          "5": 3.94,
+          "6": 0.66,
+          "7": 5.58,
+          "8": 5.85,
+          "9": 3.95,
+          "10": 9.87,
+          "11": 50.73,
+          "12": 6.61
+        }
+      },
+      {
+        "t": "2026-11-08T14:40:27.845Z",
+        "p": {
+          "1": 1.24,
+          "2": 5.59,
+          "3": 5.13,
+          "4": 0.67,
+          "5": 3.78,
+          "6": 0.73,
+          "7": 5.39,
+          "8": 5.55,
+          "9": 3.77,
+          "10": 9.5,
+          "11": 52.34,
+          "12": 6.42
+        }
+      },
+      {
+        "t": "2026-11-08T14:41:06.889Z",
+        "p": {
+          "1": 1.25,
+          "2": 5.7,
+          "3": 5.27,
+          "4": 0.66,
+          "5": 3.83,
+          "6": 0.73,
+          "7": 5.49,
+          "8": 5.95,
+          "9": 3.78,
+          "10": 9.92,
+          "11": 51.07,
+          "12": 6.46
+        }
+      },
+      {
+        "t": "2026-11-08T14:41:46.072Z",
+        "p": {
+          "1": 1.25,
+          "2": 5.65,
+          "3": 5.25,
+          "4": 0.66,
+          "5": 3.73,
+          "6": 0.77,
+          "7": 5.43,
+          "8": 5.89,
+          "9": 3.7,
+          "10": 9.8,
+          "11": 51.63,
+          "12": 6.35
+        }
+      },
+      {
+        "t": "2026-11-08T14:42:23.270Z",
+        "p": {
+          "1": 1.46,
+          "2": 6.22,
+          "3": 5.74,
+          "4": 0.77,
+          "5": 4.23,
+          "6": 0.64,
+          "7": 6.19,
+          "8": 6.51,
+          "9": 4.13,
+          "10": 10.62,
+          "11": 46.67,
+          "12": 6.93
+        }
+      },
+      {
+        "t": "2026-11-08T14:43:00.761Z",
+        "p": {
+          "1": 1.46,
+          "2": 6.19,
+          "3": 5.73,
+          "4": 0.76,
+          "5": 4.23,
+          "6": 0.64,
+          "7": 6.18,
+          "8": 6.49,
+          "9": 4.13,
+          "10": 10.62,
+          "11": 46.79,
+          "12": 6.89
+        }
+      },
+      {
+        "t": "2026-11-08T14:46:08.325Z",
+        "p": {
+          "1": 1.46,
+          "2": 6.22,
+          "3": 5.74,
+          "4": 0.77,
+          "5": 4.23,
+          "6": 0.64,
+          "7": 6.19,
+          "8": 6.51,
+          "9": 4.13,
+          "10": 10.62,
+          "11": 46.67,
+          "12": 6.93
+        }
+      },
+      {
+        "t": "2026-11-08T14:46:48.171Z",
+        "p": {
+          "1": 1.52,
+          "2": 6.42,
+          "3": 5.44,
+          "4": 0.83,
+          "5": 4.33,
+          "6": 0.45,
+          "7": 7.17,
+          "8": 6.03,
+          "9": 4.12,
+          "10": 10.41,
+          "11": 45.48,
+          "12": 7.91
+        }
+      },
+      {
+        "t": "2026-11-08T14:47:25.346Z",
+        "p": {
+          "1": 1.45,
+          "2": 6.51,
+          "3": 5.62,
+          "4": 0.91,
+          "5": 4.13,
+          "6": 0.48,
+          "7": 7.63,
+          "8": 6.23,
+          "9": 4.18,
+          "10": 10.53,
+          "11": 44.44,
+          "12": 8
+        }
+      },
+      {
+        "t": "2026-11-08T14:48:06.073Z",
+        "p": {
+          "1": 1.6,
+          "2": 6.36,
+          "3": 6.19,
+          "4": 0.96,
+          "5": 4.22,
+          "6": 0.56,
+          "7": 6.56,
+          "8": 6.46,
+          "9": 4.24,
+          "10": 11.84,
+          "11": 42.38,
+          "12": 8.74
+        }
+      },
+      {
+        "t": "2026-11-08T14:48:50.890Z",
+        "p": {
+          "1": 1.6,
+          "2": 7.08,
+          "3": 6.3,
+          "4": 0.73,
+          "5": 3.84,
+          "6": 0.49,
+          "7": 7.12,
+          "8": 6.19,
+          "9": 4.25,
+          "10": 11.1,
+          "11": 40.99,
+          "12": 10.42
+        }
+      },
+      {
+        "t": "2026-11-08T14:49:30.189Z",
+        "p": {
+          "1": 1.29,
+          "2": 6.13,
+          "3": 5.19,
+          "4": 0.69,
+          "5": 3.54,
+          "6": 0.38,
+          "7": 6.27,
+          "8": 5.52,
+          "9": 9.25,
+          "10": 9.78,
+          "11": 38.35,
+          "12": 13.72
+        }
+      },
+      {
+        "t": "2026-11-08T14:50:08.358Z",
+        "p": {
+          "1": 1.37,
+          "2": 6.45,
+          "3": 5.31,
+          "4": 0.68,
+          "5": 3.37,
+          "6": 0.31,
+          "7": 6.55,
+          "8": 5.51,
+          "9": 9.5,
+          "10": 10.5,
+          "11": 37.1,
+          "12": 13.46
+        }
+      },
+      {
+        "t": "2026-11-08T14:51:24.305Z",
+        "p": {
+          "1": 1.37,
+          "2": 6.46,
+          "3": 5.31,
+          "4": 0.68,
+          "5": 3.37,
+          "6": 0.31,
+          "7": 6.55,
+          "8": 5.51,
+          "9": 9.5,
+          "10": 10.49,
+          "11": 37.1,
+          "12": 13.46
+        }
+      },
+      {
+        "t": "2026-11-08T14:53:19.160Z",
+        "p": {
+          "1": 1.38,
+          "2": 6.44,
+          "3": 5.32,
+          "4": 0.68,
+          "5": 3.36,
+          "6": 0.31,
+          "7": 6.56,
+          "8": 5.52,
+          "9": 9.46,
+          "10": 10.53,
+          "11": 37.11,
+          "12": 13.44
+        }
+      },
+      {
+        "t": "2026-11-08T14:53:56.115Z",
+        "p": {
+          "1": 1.38,
+          "2": 6.45,
+          "3": 5.32,
+          "4": 0.68,
+          "5": 3.36,
+          "6": 0.31,
+          "7": 6.57,
+          "8": 5.52,
+          "9": 9.47,
+          "10": 10.54,
+          "11": 37.06,
+          "12": 13.45
+        }
+      },
+      {
+        "t": "2026-11-08T14:54:35.041Z",
+        "p": {
+          "1": 1.39,
+          "2": 6.54,
+          "3": 5.42,
+          "4": 0.69,
+          "5": 3.35,
+          "6": 0.33,
+          "7": 6.58,
+          "8": 5.59,
+          "9": 9.43,
+          "10": 10.63,
+          "11": 36.74,
+          "12": 13.42
+        }
+      },
+      {
+        "t": "2026-11-08T14:55:11.254Z",
+        "p": {
+          "1": 1.62,
+          "2": 6.77,
+          "3": 5.39,
+          "4": 0.85,
+          "5": 3.34,
+          "6": 0.71,
+          "7": 6.02,
+          "8": 5.62,
+          "9": 8.82,
+          "10": 10.9,
+          "11": 36.9,
+          "12": 13.17
+        }
+      },
+      {
+        "t": "2026-11-08T14:55:49.359Z",
+        "p": {
+          "1": 1.63,
+          "2": 6.73,
+          "3": 5.48,
+          "4": 0.91,
+          "5": 3.27,
+          "6": 0.64,
+          "7": 5.91,
+          "8": 5.6,
+          "9": 8.69,
+          "10": 10.86,
+          "11": 37.78,
+          "12": 12.61
+        }
+      },
+      {
+        "t": "2026-11-08T14:56:41.916Z",
+        "p": {
+          "1": 1.6,
+          "2": 6.86,
+          "3": 6.04,
+          "4": 0.99,
+          "5": 3.37,
+          "6": 0.53,
+          "7": 6.53,
+          "8": 5.78,
+          "9": 8.99,
+          "10": 11.4,
+          "11": 35.48,
+          "12": 12.54
+        }
+      },
+      {
+        "t": "2026-11-08T14:57:19.518Z",
+        "p": {
+          "1": 1.59,
+          "2": 6.81,
+          "3": 5.91,
+          "4": 0.97,
+          "5": 3.3,
+          "6": 0.62,
+          "7": 6.47,
+          "8": 5.65,
+          "9": 8.89,
+          "10": 11.25,
+          "11": 36.35,
+          "12": 12.3
+        }
+      },
+      {
+        "t": "2026-11-08T14:58:08.012Z",
+        "p": {
+          "1": 1.67,
+          "2": 6.62,
+          "3": 5.89,
+          "4": 0.89,
+          "5": 3.41,
+          "6": 0.72,
+          "7": 6.6,
+          "8": 5.72,
+          "9": 8.49,
+          "10": 11.22,
+          "11": 37.23,
+          "12": 11.65
+        }
+      },
+      {
+        "t": "2026-11-08T14:58:58.204Z",
+        "p": {
+          "1": 1.33,
+          "2": 6.61,
+          "3": 5.73,
+          "4": 0.73,
+          "5": 3.14,
+          "6": 0.75,
+          "7": 6.5,
+          "8": 5.9,
+          "9": 8.32,
+          "10": 10.66,
+          "11": 40.4,
+          "12": 10.04
+        }
+      },
+      {
+        "t": "2026-11-08T14:59:35.862Z",
+        "p": {
+          "1": 1.64,
+          "2": 6.14,
+          "3": 5.4,
+          "4": 0.8,
+          "5": 2.73,
+          "6": 0.58,
+          "7": 6.73,
+          "8": 5.48,
+          "9": 7.97,
+          "10": 10.32,
+          "11": 42.29,
+          "12": 10.03
+        }
+      },
+      {
+        "t": "2026-11-08T15:00:26.864Z",
+        "p": {
+          "1": 1.61,
+          "2": 6,
+          "3": 5.47,
+          "4": 0.64,
+          "5": 2.92,
+          "6": 0.68,
+          "7": 6.26,
+          "8": 5.68,
+          "9": 8.16,
+          "10": 10.84,
+          "11": 42.04,
+          "12": 9.81
+        }
+      },
+      {
+        "t": "2026-11-08T15:01:04.089Z",
+        "p": {
+          "1": 1.75,
+          "2": 6.14,
+          "3": 5.88,
+          "4": 0.65,
+          "5": 3.01,
+          "6": 0.68,
+          "7": 6.64,
+          "8": 5.98,
+          "9": 8.16,
+          "10": 11.32,
+          "11": 39.92,
+          "12": 9.98
+        }
+      },
+      {
+        "t": "2026-11-08T15:01:41.470Z",
+        "p": {
+          "1": 1.84,
+          "2": 6.63,
+          "3": 5.85,
+          "4": 0.77,
+          "5": 3.13,
+          "6": 0.67,
+          "7": 7.02,
+          "8": 6.4,
+          "9": 8.18,
+          "10": 11.7,
+          "11": 38.08,
+          "12": 9.84
+        }
+      },
+      {
+        "t": "2026-11-08T15:02:20.709Z",
+        "p": {
+          "1": 1.83,
+          "2": 6.61,
+          "3": 5.99,
+          "4": 0.78,
+          "5": 3.24,
+          "6": 0.66,
+          "7": 7.22,
+          "8": 6.57,
+          "9": 8.15,
+          "10": 11.98,
+          "11": 37.25,
+          "12": 9.83
+        }
+      },
+      {
+        "t": "2026-11-08T15:03:01.519Z",
+        "p": {
+          "1": 1.87,
+          "2": 6.83,
+          "3": 6.07,
+          "4": 0.8,
+          "5": 3.28,
+          "6": 0.57,
+          "7": 7.44,
+          "8": 6.72,
+          "9": 8.38,
+          "10": 12.2,
+          "11": 35.95,
+          "12": 10
+        }
+      },
+      {
+        "t": "2026-11-08T15:03:36.961Z",
+        "p": {
+          "1": 1.92,
+          "2": 7.45,
+          "3": 6.2,
+          "4": 0.9,
+          "5": 3.49,
+          "6": 0.47,
+          "7": 7.51,
+          "8": 7.08,
+          "9": 8.46,
+          "10": 12.34,
+          "11": 33.87,
+          "12": 10.42
+        }
+      },
+      {
+        "t": "2026-11-08T15:04:19.363Z",
+        "p": {
+          "1": 1.91,
+          "2": 7.44,
+          "3": 6.19,
+          "4": 0.9,
+          "5": 3.48,
+          "6": 0.47,
+          "7": 7.49,
+          "8": 7.07,
+          "9": 8.36,
+          "10": 12.29,
+          "11": 34.14,
+          "12": 10.37
+        }
+      },
+      {
+        "t": "2026-11-08T15:07:35.644Z",
+        "p": {
+          "1": 1.91,
+          "2": 7.46,
+          "3": 6.19,
+          "4": 0.9,
+          "5": 3.48,
+          "6": 0.46,
+          "7": 7.5,
+          "8": 7.07,
+          "9": 8.36,
+          "10": 12.31,
+          "11": 34.1,
+          "12": 10.37
+        }
+      },
+      {
+        "t": "2026-11-08T15:07:50.457Z",
+        "p": {
+          "1": 1.89,
+          "2": 7.34,
+          "3": 6.32,
+          "4": 0.88,
+          "5": 3.79,
+          "6": 0.48,
+          "7": 7.49,
+          "8": 7.17,
+          "9": 8.26,
+          "10": 12.41,
+          "11": 33.72,
+          "12": 10.36
         }
       }
     ]
@@ -20628,223 +22218,971 @@
           "11": 75.56,
           "12": 64.27
         }
+      },
+      {
+        "t": "2026-11-08T14:15:20.075Z",
+        "p": {
+          "1": 32.8,
+          "2": 54.17,
+          "3": 50.42,
+          "4": 26.52,
+          "5": 53.71,
+          "6": 25.61,
+          "7": 53.31,
+          "8": 51.39,
+          "9": 51.41,
+          "10": 60.8,
+          "11": 75.64,
+          "12": 64.21
+        }
+      },
+      {
+        "t": "2026-11-08T14:18:48.846Z",
+        "p": {
+          "1": 33.83,
+          "2": 53.69,
+          "3": 50.55,
+          "4": 25.61,
+          "5": 54.27,
+          "6": 26,
+          "7": 53.17,
+          "8": 50.54,
+          "9": 52.61,
+          "10": 60.67,
+          "11": 74.68,
+          "12": 64.38
+        }
+      },
+      {
+        "t": "2026-11-08T14:20:46.301Z",
+        "p": {
+          "1": 33.84,
+          "2": 53.69,
+          "3": 50.55,
+          "4": 25.6,
+          "5": 54.27,
+          "6": 26,
+          "7": 53.17,
+          "8": 50.55,
+          "9": 52.61,
+          "10": 60.67,
+          "11": 74.68,
+          "12": 64.37
+        }
+      },
+      {
+        "t": "2026-11-08T14:21:58.850Z",
+        "p": {
+          "1": 32.44,
+          "2": 52.73,
+          "3": 50.38,
+          "4": 26.58,
+          "5": 52.7,
+          "6": 24.68,
+          "7": 52.58,
+          "8": 50.3,
+          "9": 52.34,
+          "10": 60.66,
+          "11": 82.45,
+          "12": 62.16
+        }
+      },
+      {
+        "t": "2026-11-08T14:24:35.929Z",
+        "p": {
+          "1": 32.45,
+          "2": 52.74,
+          "3": 50.37,
+          "4": 26.58,
+          "5": 52.69,
+          "6": 24.68,
+          "7": 52.58,
+          "8": 50.29,
+          "9": 52.34,
+          "10": 60.66,
+          "11": 82.46,
+          "12": 62.16
+        }
+      },
+      {
+        "t": "2026-11-08T14:28:55.800Z",
+        "p": {
+          "1": 32.25,
+          "2": 53.65,
+          "3": 48.15,
+          "4": 26.19,
+          "5": 53.05,
+          "6": 25.33,
+          "7": 52.17,
+          "8": 51.17,
+          "9": 52.1,
+          "10": 59.61,
+          "11": 82.67,
+          "12": 63.65
+        }
+      },
+      {
+        "t": "2026-11-08T14:30:07.112Z",
+        "p": {
+          "1": 32.25,
+          "2": 53.65,
+          "3": 48.14,
+          "4": 26.19,
+          "5": 53.05,
+          "6": 25.33,
+          "7": 52.17,
+          "8": 51.18,
+          "9": 52.1,
+          "10": 59.61,
+          "11": 82.67,
+          "12": 63.65
+        }
+      },
+      {
+        "t": "2026-11-08T14:35:52.729Z",
+        "p": {
+          "1": 32.76,
+          "2": 52.48,
+          "3": 50.42,
+          "4": 26.11,
+          "5": 52.86,
+          "6": 23.78,
+          "7": 52.45,
+          "8": 50.79,
+          "9": 51.28,
+          "10": 60.33,
+          "11": 83.05,
+          "12": 63.69
+        }
+      },
+      {
+        "t": "2026-11-08T14:37:18.360Z",
+        "p": {
+          "1": 32.33,
+          "2": 52.27,
+          "3": 50.76,
+          "4": 26.63,
+          "5": 52.21,
+          "6": 24.39,
+          "7": 51.28,
+          "8": 50.94,
+          "9": 50.37,
+          "10": 60.47,
+          "11": 86.06,
+          "12": 62.29
+        }
+      },
+      {
+        "t": "2026-11-08T14:37:54.766Z",
+        "p": {
+          "1": 32.3,
+          "2": 52.99,
+          "3": 50.79,
+          "4": 26.06,
+          "5": 51.33,
+          "6": 24.1,
+          "7": 52.13,
+          "8": 50.12,
+          "9": 50.78,
+          "10": 60.25,
+          "11": 88.65,
+          "12": 60.5
+        }
+      },
+      {
+        "t": "2026-11-08T14:38:30.050Z",
+        "p": {
+          "1": 32.63,
+          "2": 52.92,
+          "3": 50.75,
+          "4": 25.83,
+          "5": 50.3,
+          "6": 23.97,
+          "7": 52.75,
+          "8": 50.62,
+          "9": 50.39,
+          "10": 61.21,
+          "11": 89.7,
+          "12": 58.93
+        }
+      },
+      {
+        "t": "2026-11-08T14:39:06.854Z",
+        "p": {
+          "1": 33.35,
+          "2": 52.1,
+          "3": 51.13,
+          "4": 26.65,
+          "5": 50.08,
+          "6": 23.87,
+          "7": 51.89,
+          "8": 50.76,
+          "9": 49.76,
+          "10": 60.91,
+          "11": 91.49,
+          "12": 58.01
+        }
+      },
+      {
+        "t": "2026-11-08T14:39:49.981Z",
+        "p": {
+          "1": 33.87,
+          "2": 52.39,
+          "3": 51.64,
+          "4": 27.63,
+          "5": 48.26,
+          "6": 24.18,
+          "7": 52.78,
+          "8": 51.21,
+          "9": 48.89,
+          "10": 61.81,
+          "11": 91.44,
+          "12": 55.9
+        }
+      },
+      {
+        "t": "2026-11-08T14:40:27.845Z",
+        "p": {
+          "1": 33.78,
+          "2": 52.28,
+          "3": 51.53,
+          "4": 27.53,
+          "5": 48.16,
+          "6": 25.15,
+          "7": 52.64,
+          "8": 51.07,
+          "9": 48.72,
+          "10": 61.69,
+          "11": 91.7,
+          "12": 55.74
+        }
+      },
+      {
+        "t": "2026-11-08T14:41:06.889Z",
+        "p": {
+          "1": 34,
+          "2": 52.5,
+          "3": 51.8,
+          "4": 27.66,
+          "5": 47.78,
+          "6": 25.02,
+          "7": 52.97,
+          "8": 51.64,
+          "9": 48.26,
+          "10": 61.89,
+          "11": 91.43,
+          "12": 55.04
+        }
+      },
+      {
+        "t": "2026-11-08T14:41:46.072Z",
+        "p": {
+          "1": 33.95,
+          "2": 52.42,
+          "3": 51.76,
+          "4": 27.61,
+          "5": 47.71,
+          "6": 25.41,
+          "7": 52.88,
+          "8": 51.56,
+          "9": 48.23,
+          "10": 61.84,
+          "11": 91.65,
+          "12": 54.97
+        }
+      },
+      {
+        "t": "2026-11-08T14:42:23.270Z",
+        "p": {
+          "1": 34.45,
+          "2": 53.02,
+          "3": 52.2,
+          "4": 28.24,
+          "5": 48.14,
+          "6": 22.41,
+          "7": 53.39,
+          "8": 52.3,
+          "9": 48.51,
+          "10": 61.97,
+          "11": 90.18,
+          "12": 55.19
+        }
+      },
+      {
+        "t": "2026-11-08T14:43:00.761Z",
+        "p": {
+          "1": 34.45,
+          "2": 53.01,
+          "3": 52.2,
+          "4": 28.24,
+          "5": 48.12,
+          "6": 22.44,
+          "7": 53.38,
+          "8": 52.29,
+          "9": 48.5,
+          "10": 61.97,
+          "11": 90.22,
+          "12": 55.18
+        }
+      },
+      {
+        "t": "2026-11-08T14:46:08.325Z",
+        "p": {
+          "1": 34.45,
+          "2": 53.02,
+          "3": 52.2,
+          "4": 28.24,
+          "5": 48.14,
+          "6": 22.41,
+          "7": 53.39,
+          "8": 52.3,
+          "9": 48.51,
+          "10": 61.97,
+          "11": 90.18,
+          "12": 55.19
+        }
+      },
+      {
+        "t": "2026-11-08T14:46:48.171Z",
+        "p": {
+          "1": 34.23,
+          "2": 53.65,
+          "3": 51.58,
+          "4": 27.08,
+          "5": 47.54,
+          "6": 21.86,
+          "7": 55.09,
+          "8": 51.55,
+          "9": 47.61,
+          "10": 61.77,
+          "11": 89.19,
+          "12": 58.85
+        }
+      },
+      {
+        "t": "2026-11-08T14:47:25.346Z",
+        "p": {
+          "1": 34.04,
+          "2": 53.94,
+          "3": 51.63,
+          "4": 27.73,
+          "5": 47.77,
+          "6": 21.47,
+          "7": 55.48,
+          "8": 52.33,
+          "9": 47.32,
+          "10": 60.97,
+          "11": 88.9,
+          "12": 58.42
+        }
+      },
+      {
+        "t": "2026-11-08T14:48:06.073Z",
+        "p": {
+          "1": 35.51,
+          "2": 53.73,
+          "3": 53.46,
+          "4": 27.98,
+          "5": 46.33,
+          "6": 21,
+          "7": 53.97,
+          "8": 52.49,
+          "9": 46.45,
+          "10": 61.7,
+          "11": 88.23,
+          "12": 59.15
+        }
+      },
+      {
+        "t": "2026-11-08T14:48:50.890Z",
+        "p": {
+          "1": 34.65,
+          "2": 56.38,
+          "3": 51.8,
+          "4": 27.45,
+          "5": 46.51,
+          "6": 20.53,
+          "7": 53.39,
+          "8": 51.6,
+          "9": 45.87,
+          "10": 61.75,
+          "11": 87.71,
+          "12": 62.36
+        }
+      },
+      {
+        "t": "2026-11-08T14:49:30.189Z",
+        "p": {
+          "1": 31.31,
+          "2": 54.83,
+          "3": 47.78,
+          "4": 24.35,
+          "5": 42.94,
+          "6": 18.38,
+          "7": 50.32,
+          "8": 49.2,
+          "9": 65.25,
+          "10": 59.75,
+          "11": 86.84,
+          "12": 69.06
+        }
+      },
+      {
+        "t": "2026-11-08T14:50:08.358Z",
+        "p": {
+          "1": 32,
+          "2": 54.95,
+          "3": 48.47,
+          "4": 24.66,
+          "5": 42.04,
+          "6": 18.05,
+          "7": 51.36,
+          "8": 49.87,
+          "9": 64.69,
+          "10": 60.16,
+          "11": 85.77,
+          "12": 67.99
+        }
+      },
+      {
+        "t": "2026-11-08T14:53:19.160Z",
+        "p": {
+          "1": 32.02,
+          "2": 54.95,
+          "3": 48.5,
+          "4": 24.72,
+          "5": 42.02,
+          "6": 18.08,
+          "7": 51.36,
+          "8": 49.95,
+          "9": 64.6,
+          "10": 60.17,
+          "11": 85.76,
+          "12": 67.88
+        }
+      },
+      {
+        "t": "2026-11-08T14:53:56.115Z",
+        "p": {
+          "1": 32.04,
+          "2": 54.96,
+          "3": 48.52,
+          "4": 24.72,
+          "5": 42.02,
+          "6": 18.05,
+          "7": 51.36,
+          "8": 49.95,
+          "9": 64.6,
+          "10": 60.17,
+          "11": 85.74,
+          "12": 67.88
+        }
+      },
+      {
+        "t": "2026-11-08T14:54:35.041Z",
+        "p": {
+          "1": 32.09,
+          "2": 55.12,
+          "3": 48.68,
+          "4": 24.96,
+          "5": 41.89,
+          "6": 17.98,
+          "7": 51.46,
+          "8": 49.91,
+          "9": 64.4,
+          "10": 60.18,
+          "11": 85.45,
+          "12": 67.89
+        }
+      },
+      {
+        "t": "2026-11-08T14:55:11.254Z",
+        "p": {
+          "1": 30.7,
+          "2": 53.27,
+          "3": 49,
+          "4": 25.46,
+          "5": 41.08,
+          "6": 24.68,
+          "7": 50.41,
+          "8": 49.16,
+          "9": 64.01,
+          "10": 59.3,
+          "11": 85.83,
+          "12": 67.1
+        }
+      },
+      {
+        "t": "2026-11-08T14:55:49.359Z",
+        "p": {
+          "1": 30.98,
+          "2": 53.42,
+          "3": 49.15,
+          "4": 25.63,
+          "5": 40.68,
+          "6": 24.31,
+          "7": 50.77,
+          "8": 49.35,
+          "9": 63.59,
+          "10": 59.58,
+          "11": 86.37,
+          "12": 66.17
+        }
+      },
+      {
+        "t": "2026-11-08T14:56:41.916Z",
+        "p": {
+          "1": 31.58,
+          "2": 54.05,
+          "3": 49.42,
+          "4": 26.23,
+          "5": 40.87,
+          "6": 22.61,
+          "7": 51.88,
+          "8": 50.11,
+          "9": 63.14,
+          "10": 59.46,
+          "11": 84.95,
+          "12": 65.7
+        }
+      },
+      {
+        "t": "2026-11-08T14:57:19.518Z",
+        "p": {
+          "1": 31.46,
+          "2": 53.82,
+          "3": 49.32,
+          "4": 26.12,
+          "5": 40.76,
+          "6": 23.48,
+          "7": 51.74,
+          "8": 50.02,
+          "9": 63.01,
+          "10": 59.4,
+          "11": 85.44,
+          "12": 65.43
+        }
+      },
+      {
+        "t": "2026-11-08T14:58:08.012Z",
+        "p": {
+          "1": 31.69,
+          "2": 54.16,
+          "3": 49.61,
+          "4": 26.03,
+          "5": 40.32,
+          "6": 24.79,
+          "7": 51.92,
+          "8": 50.16,
+          "9": 62.55,
+          "10": 59.24,
+          "11": 85.32,
+          "12": 64.21
+        }
+      },
+      {
+        "t": "2026-11-08T14:58:58.204Z",
+        "p": {
+          "1": 31.86,
+          "2": 53.7,
+          "3": 49.82,
+          "4": 25.5,
+          "5": 41.25,
+          "6": 23.65,
+          "7": 51.89,
+          "8": 49.25,
+          "9": 62.26,
+          "10": 60.15,
+          "11": 87.22,
+          "12": 63.45
+        }
+      },
+      {
+        "t": "2026-11-08T14:59:35.862Z",
+        "p": {
+          "1": 32.44,
+          "2": 53.46,
+          "3": 49.96,
+          "4": 25.58,
+          "5": 39.83,
+          "6": 24.11,
+          "7": 51.34,
+          "8": 50.15,
+          "9": 61.59,
+          "10": 58.79,
+          "11": 88.31,
+          "12": 64.44
+        }
+      },
+      {
+        "t": "2026-11-08T15:00:26.864Z",
+        "p": {
+          "1": 32.18,
+          "2": 53.35,
+          "3": 49.79,
+          "4": 25.41,
+          "5": 39.92,
+          "6": 23.9,
+          "7": 51.52,
+          "8": 50.56,
+          "9": 61.85,
+          "10": 59.37,
+          "11": 87.62,
+          "12": 64.53
+        }
+      },
+      {
+        "t": "2026-11-08T15:01:04.089Z",
+        "p": {
+          "1": 32.58,
+          "2": 53.59,
+          "3": 50.03,
+          "4": 25.89,
+          "5": 40.25,
+          "6": 22.73,
+          "7": 51.91,
+          "8": 50.69,
+          "9": 61.64,
+          "10": 59.66,
+          "11": 86.73,
+          "12": 64.3
+        }
+      },
+      {
+        "t": "2026-11-08T15:01:41.470Z",
+        "p": {
+          "1": 32.92,
+          "2": 53.31,
+          "3": 50.27,
+          "4": 26.27,
+          "5": 40.61,
+          "6": 22.38,
+          "7": 52.18,
+          "8": 50.98,
+          "9": 61.1,
+          "10": 60.1,
+          "11": 85.98,
+          "12": 63.9
+        }
+      },
+      {
+        "t": "2026-11-08T15:02:20.709Z",
+        "p": {
+          "1": 33.25,
+          "2": 53.55,
+          "3": 50.53,
+          "4": 26.36,
+          "5": 40.64,
+          "6": 22.04,
+          "7": 52.45,
+          "8": 51.06,
+          "9": 60.82,
+          "10": 60.37,
+          "11": 85.39,
+          "12": 63.54
+        }
+      },
+      {
+        "t": "2026-11-08T15:03:01.519Z",
+        "p": {
+          "1": 33.4,
+          "2": 53.69,
+          "3": 50.63,
+          "4": 26.49,
+          "5": 40.79,
+          "6": 21.22,
+          "7": 52.59,
+          "8": 51.2,
+          "9": 60.94,
+          "10": 60.51,
+          "11": 84.91,
+          "12": 63.63
+        }
+      },
+      {
+        "t": "2026-11-08T15:03:36.961Z",
+        "p": {
+          "1": 34.03,
+          "2": 53.95,
+          "3": 51.19,
+          "4": 26.91,
+          "5": 40.79,
+          "6": 21.38,
+          "7": 52.62,
+          "8": 51.82,
+          "9": 60.12,
+          "10": 60.51,
+          "11": 83.87,
+          "12": 62.81
+        }
+      },
+      {
+        "t": "2026-11-08T15:04:19.363Z",
+        "p": {
+          "1": 33.95,
+          "2": 53.89,
+          "3": 51.09,
+          "4": 26.92,
+          "5": 40.66,
+          "6": 21.65,
+          "7": 52.73,
+          "8": 51.88,
+          "9": 60,
+          "10": 60.42,
+          "11": 84.07,
+          "12": 62.74
+        }
+      },
+      {
+        "t": "2026-11-08T15:07:35.644Z",
+        "p": {
+          "1": 33.96,
+          "2": 53.89,
+          "3": 51.1,
+          "4": 26.96,
+          "5": 40.67,
+          "6": 21.6,
+          "7": 52.73,
+          "8": 51.89,
+          "9": 60.01,
+          "10": 60.44,
+          "11": 84,
+          "12": 62.75
+        }
+      },
+      {
+        "t": "2026-11-08T15:07:50.457Z",
+        "p": {
+          "1": 34.03,
+          "2": 53.61,
+          "3": 51.07,
+          "4": 26.91,
+          "5": 42.07,
+          "6": 21.77,
+          "7": 52.73,
+          "8": 51.93,
+          "9": 59.52,
+          "10": 60.35,
+          "11": 83.8,
+          "12": 62.21
+        }
       }
     ]
   },
   "projectionHistory": [
     {
-      "timestamp": "2026-11-06T06:14:50.716Z",
+      "timestamp": "2026-11-08T15:06:22.279Z",
       "week": 9,
       "scores": [
         {
           "teamId": 4,
-          "projection": 113.34
+          "projection": 114.43
         },
         {
           "teamId": 6,
-          "projection": 118.58
+          "projection": 110.62
         },
         {
           "teamId": 1,
-          "projection": 116.54
-        },
-        {
-          "teamId": 3,
-          "projection": 130.25
-        },
-        {
-          "teamId": 8,
-          "projection": 126.59
-        },
-        {
-          "teamId": 7,
-          "projection": 130.28
-        },
-        {
-          "teamId": 5,
-          "projection": 128.53
-        },
-        {
-          "teamId": 12,
-          "projection": 129.08
-        },
-        {
-          "teamId": 10,
-          "projection": 136.37
+          "projection": 118.36
         },
         {
           "teamId": 9,
-          "projection": 130.82
+          "projection": 135.23
         },
         {
-          "teamId": 2,
-          "projection": 126.21
+          "teamId": 3,
+          "projection": 129.57
         },
         {
           "teamId": 11,
-          "projection": 156.02
+          "projection": 159.46
+        },
+        {
+          "teamId": 12,
+          "projection": 136.74
+        },
+        {
+          "teamId": 8,
+          "projection": 129.75
+        },
+        {
+          "teamId": 7,
+          "projection": 130.45
+        },
+        {
+          "teamId": 2,
+          "projection": 131.14
+        },
+        {
+          "teamId": 5,
+          "projection": 122.37
+        },
+        {
+          "teamId": 10,
+          "projection": 136.91
         }
       ]
     },
     {
-      "timestamp": "2026-11-06T15:53:27.689Z",
+      "timestamp": "2026-11-08T15:06:58.072Z",
       "week": 9,
       "scores": [
         {
           "teamId": 4,
-          "projection": 113.66
+          "projection": 114.43
         },
         {
           "teamId": 6,
-          "projection": 119.15
+          "projection": 110.62
         },
         {
           "teamId": 1,
-          "projection": 117.28
-        },
-        {
-          "teamId": 3,
-          "projection": 130.61
-        },
-        {
-          "teamId": 8,
-          "projection": 126.91
-        },
-        {
-          "teamId": 7,
-          "projection": 130.5
-        },
-        {
-          "teamId": 5,
-          "projection": 128.31
-        },
-        {
-          "teamId": 12,
-          "projection": 129.35
-        },
-        {
-          "teamId": 10,
-          "projection": 136.29
+          "projection": 118.36
         },
         {
           "teamId": 9,
-          "projection": 130.75
+          "projection": 135.23
         },
         {
-          "teamId": 2,
-          "projection": 126.28
+          "teamId": 3,
+          "projection": 129.57
         },
         {
           "teamId": 11,
-          "projection": 156.06
+          "projection": 159.46
+        },
+        {
+          "teamId": 12,
+          "projection": 136.74
+        },
+        {
+          "teamId": 8,
+          "projection": 129.75
+        },
+        {
+          "teamId": 7,
+          "projection": 130.45
+        },
+        {
+          "teamId": 2,
+          "projection": 131.14
+        },
+        {
+          "teamId": 5,
+          "projection": 122.37
+        },
+        {
+          "teamId": 10,
+          "projection": 136.91
         }
       ]
     },
     {
-      "timestamp": "2026-11-07T14:52:23.125Z",
+      "timestamp": "2026-11-08T15:07:35.644Z",
       "week": 9,
       "scores": [
         {
           "teamId": 4,
-          "projection": 114.7
+          "projection": 114.43
         },
         {
           "teamId": 6,
-          "projection": 120.93
+          "projection": 110.57
         },
         {
           "teamId": 1,
-          "projection": 118.52
-        },
-        {
-          "teamId": 3,
-          "projection": 130.17
-        },
-        {
-          "teamId": 8,
-          "projection": 127.46
-        },
-        {
-          "teamId": 7,
-          "projection": 130.21
-        },
-        {
-          "teamId": 5,
-          "projection": 120.2
-        },
-        {
-          "teamId": 12,
-          "projection": 139.11
-        },
-        {
-          "teamId": 10,
-          "projection": 137.43
+          "projection": 118.36
         },
         {
           "teamId": 9,
-          "projection": 131.36
+          "projection": 135.23
         },
         {
-          "teamId": 2,
-          "projection": 130.82
+          "teamId": 3,
+          "projection": 129.57
         },
         {
           "teamId": 11,
-          "projection": 157.35
+          "projection": 159.38
+        },
+        {
+          "teamId": 12,
+          "projection": 136.74
+        },
+        {
+          "teamId": 8,
+          "projection": 129.75
+        },
+        {
+          "teamId": 7,
+          "projection": 130.45
+        },
+        {
+          "teamId": 2,
+          "projection": 131.14
+        },
+        {
+          "teamId": 5,
+          "projection": 122.37
+        },
+        {
+          "teamId": 10,
+          "projection": 136.91
         }
       ]
     },
     {
-      "timestamp": "2026-11-08T13:18:06.693Z",
+      "timestamp": "2026-11-08T15:07:50.457Z",
       "week": 9,
       "scores": [
         {
           "teamId": 4,
-          "projection": 114.53
+          "projection": 114.4
         },
         {
           "teamId": 6,
-          "projection": 113.57
+          "projection": 110.59
         },
         {
           "teamId": 1,
-          "projection": 118.3
-        },
-        {
-          "teamId": 3,
-          "projection": 129.03
-        },
-        {
-          "teamId": 8,
-          "projection": 129.94
-        },
-        {
-          "teamId": 7,
-          "projection": 130.76
-        },
-        {
-          "teamId": 5,
-          "projection": 130.93
-        },
-        {
-          "teamId": 12,
-          "projection": 139.37
-        },
-        {
-          "teamId": 10,
-          "projection": 137.42
+          "projection": 118.36
         },
         {
           "teamId": 9,
-          "projection": 130.27
+          "projection": 134.94
         },
         {
-          "teamId": 2,
-          "projection": 131.01
+          "teamId": 3,
+          "projection": 129.62
         },
         {
           "teamId": 11,
-          "projection": 151.82
+          "projection": 159.06
+        },
+        {
+          "teamId": 12,
+          "projection": 136.57
+        },
+        {
+          "teamId": 8,
+          "projection": 129.79
+        },
+        {
+          "teamId": 7,
+          "projection": 130.39
+        },
+        {
+          "teamId": 2,
+          "projection": 130.96
+        },
+        {
+          "teamId": 5,
+          "projection": 123.27
+        },
+        {
+          "teamId": 10,
+          "projection": 136.92
         }
       ]
     }
