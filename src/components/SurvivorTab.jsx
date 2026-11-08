@@ -123,7 +123,7 @@ function GamesSection({ feed, games, pot }) {
     <div className="section-heading"><div><span className="section-kicker">WEEK {n} · WHO'S RIDING WHOM</span><h2>Games</h2></div>
       <span className="record-count">{revealed} OF {inPlay.length} PICKS REVEALED</span></div>
     <div className="sv-games">
-      {rows.filter(r => r.a.count + r.h.count > 0 || r.g.state !== "pre").map(({ g, a, h, winner }) => {
+      {rows.filter(r => r.a.count + r.h.count > 0).map(({ g, a, h, winner }) => {
         const swing = a.count || h.count;
         const both = new Set([a.team, h.team]);
         const ifA = swing ? valueIf(new Set([h.team]), both) : null, ifH = swing ? valueIf(new Set([a.team]), both) : null;
@@ -142,6 +142,10 @@ function GamesSection({ feed, games, pot }) {
         </div>;
       })}
     </div>
+    {/* Games nobody rode get one line, not a card each (Jim, 2026-11-08). */}
+    {rows.some(r => !(r.a.count + r.h.count) && r.g.state !== "pre") ? <p className="sv-game-later"><b>No picks:</b> {rows.filter(r => !(r.a.count + r.h.count) && r.g.state !== "pre")
+      .sort((x, y) => String(x.g.kickoff).localeCompare(String(y.g.kickoff)))
+      .map(r => `${r.a.team} ${r.a.score}–${r.h.score} ${r.h.team}${r.g.completed ? "" : ` (${r.g.detail || "live"})`}`).join(" · ")}</p> : null}
     {rows.some(r => !(r.a.count + r.h.count > 0 || r.g.state !== "pre")) ? <p className="sv-game-later"><b>Not kicked off yet:</b> {rows.filter(r => !(r.a.count + r.h.count > 0 || r.g.state !== "pre"))
       .sort((x, y) => String(x.g.kickoff).localeCompare(String(y.g.kickoff))).map(r => {
         const fav = r.a.chance != null && r.h.chance != null ? (r.a.chance >= r.h.chance ? r.a : r.h) : null;
@@ -230,7 +234,10 @@ export default function SurvivorTab({ nflGames = [], nflWeek = null }) {
     const live = team => { const x = gameFor(team); return x && !x.g.completed && x.g.state === "in" ? x : null; };
     const settledLoss = p => p.result === "lost" && !live(p.team);
     const score = x => `${x.us}–${x.them}`;
-    const chalk = picks[0];
+    // A herd and lone wolves need a crowd (Jim, 2026-11-08: with 3 picks on 3 teams, each was both): 5+ picks, and
+    // the chalk pick needs 2+ riders.
+    const crowd = field >= 5;
+    const chalk = crowd && picks[0]?.count >= 2 ? picks[0] : null;
     if (chalk) {
       const lg = live(chalk.team);
       highlights.push({ icon: "🐑", title: "Chalk check", text: `${pct(chalk.count / field * 100)} of the pool rode the ${name(chalk.team)}`
@@ -256,7 +263,7 @@ export default function SurvivorTab({ nflGames = [], nflWeek = null }) {
       return `${name(p.team)} ${x.us < x.them ? "trail" : x.us > x.them ? "lead" : "tied with"} ${x.opp} ${score(x)}${w != null ? `, ${pct(w * 100)} to win` : ""} (${p.count} ${p.count === 1 ? "entry" : "entries"})`;
     }).join(" · ") + ". These picks could be in trouble." });
     const pickers = team => (feed.entries || []).filter(e => e.picks?.[n]?.team === team).map(e => e.user);
-    const wolves = picks.filter(p => p.count === 1 && p.result === "won");
+    const wolves = crowd ? picks.filter(p => p.count === 1 && p.result === "won") : [];
     const wolfPack = new Map();
     for (const p of wolves) { const user = pickers(p.team)[0]; wolfPack.set(user, [...(wolfPack.get(user) || []), p.team]); }
     if (wolves.length) highlights.push({ icon: "🐺", title: wolfPack.size > 1 ? "Lone wolves" : "Lone wolf",
