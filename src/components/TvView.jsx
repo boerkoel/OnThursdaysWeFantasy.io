@@ -149,6 +149,13 @@ function useIdleCursor() {
 // each, results on one line, a smaller ticker that covers nothing, and no "on the field" list.
 export default function TvView({ forks = { win: () => null, median: () => null, ticket: () => null }, peeks = { win: () => [], median: () => [], ticket: () => [] }, scoreboard, guillotine, livePlays, marquee, logos = {}, onClose }) {
   useWakeLock(true);
+  // The page underneath stays put (Jim, 2026-11-08: Watch mode wouldn't scroll back down on a phone, the
+  // swipe went to the page under it).
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, []);
   const idle = useIdleCursor();
   const narrow = useNarrow();
   const [resultsOpen, setResultsOpen] = useState(false);
