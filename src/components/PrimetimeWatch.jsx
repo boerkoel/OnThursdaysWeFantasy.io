@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { money, pct } from "../lib/data.js";
 import { HALF_MEAN_SD, normalCdf, normalQuantile, playerOutlook } from "../../scripts/lib/simulation.js";
 import { ShareButton } from "./LiveBits.jsx";
-import { hasObituary } from "./DeathWatch.jsx";
 import { TEAM_NAMES, useSurvivorFeed } from "./SurvivorTab.jsx";
 
 // TNF / SNF / MNF What to Watch: every storyline the night game(s) can still
@@ -13,7 +12,8 @@ import { TEAM_NAMES, useSurvivorFeed } from "./SurvivorTab.jsx";
 //   night moves less than MIN_MOVE points is left out.
 // - Game script: what a romp, a shootout or a defensive battle would do to the league's odds.
 // - Survivor pool: how many entries are left, who rode tonight's teams (picks
-//   show only once the game kicks off) and who has the most entries left.
+//   show only once the game kicks off) and who has the most entries left; left out once one entry
+//   remains or nobody rides on tonight.
 // Big night / quiet night odds use the same normal approximation as the
 // server's swing stories: each side's players add about 0.8 SD of their
 // points in a big game and lose it in a quiet one.
@@ -66,6 +66,9 @@ const proj = side => side.rest > 0 ? ` (proj ${money(side.rest)} more)` : "";
 // Big night minus quiet night, in percentage points: below this a storyline can't really move.
 const MIN_MOVE = 10;
 const moves = odds => odds ? Math.abs(odds.big - odds.quiet) : 0;
+// Genuinely undecided (Jim, 2026-11-09): a matchup between 15% and 85%; a ticket race or chop whose favorite is under 90%.
+const undecided = p => Number(p) >= 15 && Number(p) <= 85;
+const DECIDED = 90;
 
 // 🎬 Game script (Jim, 2026-11-09): how each way a night game could go moves the league. A romp lifts the
 // winner's players and D/ST and sinks the loser's; a shootout lifts every offense and sinks both D/STs;
@@ -99,7 +102,7 @@ function gameScripts({ slot, scores, byId, guillotine, open }) {
       const seen = new Set();
       for (const a of scores) {
         const b = byId.get(a.opponentId);
-        if (!b || seen.has(a.matchupId) || !open(a.winProbability)) continue;
+        if (!b || seen.has(a.matchupId) || !undecided(a.winProbability)) continue;
         seen.add(a.matchupId);
         const marginSd = Math.hypot(Number(a.projectionSd) || 0, Number(b.projectionSd) || 0);
         if (!(marginSd > 0)) continue;
@@ -117,7 +120,7 @@ function gameScripts({ slot, scores, byId, guillotine, open }) {
       // The chop: the likeliest victim's shift against the other teams still in danger (5%+).
       const danger = (guillotine?.teams || []).filter(t => open(t.chopProbability) && Number(t.chopProbability) >= 5 && Number(t.projectionSd) > 0)
         .sort((x, y) => y.chopProbability - x.chopProbability);
-      if (danger.length > 1) {
+      if (danger.length > 1 && Number(danger[0].chopProbability) < DECIDED) {
         const [t, ...others] = danger;
         const rel = shiftOf(t.lineup, g, sc) - others.reduce((sum, o) => sum + shiftOf(o.lineup, g, sc), 0) / others.length;
         const sd = Math.hypot(Number(t.projectionSd), others.reduce((sum, o) => sum + Number(o.projectionSd), 0) / others.length);
@@ -140,12 +143,11 @@ export function primetimeStories({ scores, nflGames, guillotine }) {
   const byId = new Map(scores.map(s => [s.teamId, s]));
   const open = p => Number(p) > 0 && Number(p) < 100;
 
-  // By team (Jim, 2026-11-09): each team with something tonight can still swing 10+ points, its players in
-  // play, the stakes (head to head, median, ticket, chop) after a big or quiet night, and whom to root against.
-  // A team with nobody playing is left out: its opponent's card already has that matchup.
-  const leader = [...scores].sort((x, y) => Number(y.score) - Number(x.score))[0];
-  const raffleLocked = scores.find(s => Number(s.topScoreProbability) >= 100) || null;
-  const ticketOpen = !raffleLocked && Number(leader?.topScoreProbability) < 99;
+  // By team (Jim, 2026-11-09): each team with a genuinely undecided matchup, ticket race or chop that tonight
+  // can still swing 10+ points: its players in play, the stakes (head to head, median, ticket, chop) after a
+  // big or quiet night, and whom to root against. A median alone doesn't earn a card. A team with nobody
+  // playing is left out: its opponent's card already has that matchup.
+  const ticketOpen = Math.max(...scores.map(s => Number(s.topScoreProbability) || 0)) < DECIDED;
   const teams = [];
   for (const s of scores) {
     const opp = byId.get(s.opponentId);
@@ -157,23 +159,23 @@ export function primetimeStories({ scores, nflGames, guillotine }) {
       const odds = bigQuiet(Number(s.winProbability), mine.sd, marginSd);
       const needs = !theirs.list.length && Number(opp.startersLeft) === 0 && Number(s.score) < Number(opp.score)
         ? ` · needs ${money(Number(opp.score) - Number(s.score))}` : "";
-      if (moves(odds) >= MIN_MOVE) stakes.push({ label: `vs ${opp.team}`, now: s.winProbability, odds, extra: needs });
+      if (undecided(s.winProbability) && moves(odds) >= MIN_MOVE) stakes.push({ label: `vs ${opp.team}`, now: s.winProbability, odds, extra: needs });
     }
-    if (open(s.aboveMedianProbability)) {
+    if (Number(s.aboveMedianProbability) >= 10 && Number(s.aboveMedianProbability) <= 90) {
       const odds = bigQuiet(Number(s.aboveMedianProbability), mine.sd, Number(s.projectionSd));
       if (moves(odds) >= MIN_MOVE) stakes.push({ label: "Median", now: s.aboveMedianProbability, odds });
     }
-    if (ticketOpen && open(s.topScoreProbability) && Number(s.topScoreProbability) >= 1) {
+    if (ticketOpen && Number(s.topScoreProbability) >= 10) {
       const odds = bigQuiet(Number(s.topScoreProbability), mine.sd, Number(s.projectionSd));
       if (moves(odds) >= MIN_MOVE) stakes.push({ label: "🎟️ Ticket", now: s.topScoreProbability, odds });
     }
-    if (!stakes.length) continue;
+    if (!stakes.some(x => x.label !== "Median")) continue;
     teams.push({ team: s.team, mine, root: stakes.some(x => x.label.startsWith("vs ")) ? theirs : null, stakes,
       weight: Math.max(...stakes.map(x => moves(x.odds))) });
   }
   // The guillotine league: the chop for each team in danger, rooting against the other teams in danger.
-  const doomed = (guillotine?.teams || []).find(t => Number(t.chopProbability) >= 100) || null;
-  const danger = doomed || !Number(guillotine?.week) ? [] : (guillotine.teams || []).filter(t => open(t.chopProbability) && Number(t.chopProbability) >= 5);
+  const chopOpen = Number(guillotine?.week) && Math.max(...(guillotine.teams || []).map(t => Number(t.chopProbability) || 0)) < DECIDED;
+  const danger = !chopOpen ? [] : (guillotine.teams || []).filter(t => open(t.chopProbability) && Number(t.chopProbability) >= 10);
   for (const t of danger) {
     const mine = tonight(t.lineup, gameTeams, slot);
     if (!mine.list.length) continue;
@@ -186,8 +188,8 @@ export function primetimeStories({ scores, nflGames, guillotine }) {
   }
   teams.sort((x, y) => y.weight - x.weight);
   const script = gameScripts({ slot, scores, byId, guillotine, open });
-  if (!teams.length && !script.length && !raffleLocked && !doomed) return null;
-  return { label, games, slot, teams: teams.slice(0, 10), script, raffleLocked, doomed };
+  if (!teams.length && !script.length) return null;
+  return { label, games, slot, teams: teams.slice(0, 10), script };
 }
 
 // Survivor pool lines for tonight. Picks come from the survivor feed, which
@@ -196,7 +198,8 @@ export function primetimeStories({ scores, nflGames, guillotine }) {
 const nflAbbrev = a => ({ WSH: "WAS", JAC: "JAX", LA: "LAR" }[String(a || "").toUpperCase()] || String(a || "").toUpperCase());
 export function survivorStory(feed, slot, week) {
   const c = feed?.contest;
-  if (!c || !c.totalEntries) return null;
+  // A pool down to one entry is decided (Jim, 2026-11-09).
+  if (!c || !c.totalEntries || Number(c.alive) <= 1) return null;
   const entries = feed.entries || [];
   const items = [];
   const total = Number(c.totalEntries);
@@ -204,6 +207,8 @@ export function survivorStory(feed, slot, week) {
 
   // This week's most popular picks so far (locked ones), and how they're faring.
   const wk = (feed.weeks || []).find(w => Number(w.week) === week && w.locked);
+  // Every pick this week already settled and none hidden: nothing rides on tonight.
+  if (wk?.picks?.length && !wk.hidden && wk.picks.every(p => p.result !== "pending")) return null;
   if (wk?.picks?.length) {
     const mark = r => r === "won" ? "✓" : r === "lost" ? "✗" : "⏳";
     const top = [...wk.picks].sort((a, b) => b.count - a.count).slice(0, 3);
@@ -217,14 +222,13 @@ export function survivorStory(feed, slot, week) {
     });
   }
 
+  let pending = false, anyRiding = false;
   for (const g of slot) {
     const teams = (g.teams || []).map(t => nflAbbrev(t.abbrev));
     if (teams.length < 2) continue;
     const name = t => TEAM_NAMES[t] || t;
-    if (g.state === "pre") {
-      items.push({ head: `${teams.join(" vs ")}: picks revealed at kickoff`, detail: ["Who rode which side stays hidden until the game starts."] });
-      continue;
-    }
+    // Picks stay hidden until kickoff.
+    if (g.state === "pre") { pending = true; continue; }
     const sides = teams.map(t => {
       const on = entries.filter(e => e.picks?.[week]?.team === t);
       const users = new Map();
@@ -232,13 +236,16 @@ export function survivorStory(feed, slot, week) {
       return { t, on, who: [...users].map(([u, n]) => n > 1 ? `${u} ×${n}` : u).join(", "), result: on[0]?.picks?.[week]?.result };
     });
     const riding = sides.reduce((sum, x) => sum + x.on.length, 0);
-    if (!riding) { items.push({ head: `${teams.join(" vs ")}: nobody's survival rides on this one`, detail: [] }); continue; }
+    if (!riding) continue;
+    anyRiding = true;
     items.push({
       head: `${riding} ${riding === 1 ? "entry rides" : "entries ride"} on ${g.name || teams.join(" vs ")}`,
       detail: sides.filter(x => x.on.length).map(x => `${name(x.t)} (${x.on.length}${x.result === "won" ? " ✓ survived" : x.result === "lost" ? " ✗ out" : ""}): ${x.who}`)
     });
   }
 
+  // Nothing rides on tonight: leave the pool out.
+  if (!pending && !anyRiding) return null;
   const byUser = new Map();
   for (const e of entries) if (e.alive) byUser.set(e.user, (byUser.get(e.user) || 0) + 1);
   const ranked = [...byUser].sort((a, b) => b[1] - a[1]);
@@ -251,24 +258,16 @@ export function survivorStory(feed, slot, week) {
 
 // Plain-text lines for the panel and the share card.
 function lines(st) {
-  const out = { script: st.script || [], teams: [], locked: [], survivor: st.survivor || [] };
+  const out = { script: st.script || [], teams: [], survivor: st.survivor || [] };
   for (const t of st.teams) {
     // "vs Ramosverse 29%: big night 59% · quiet 9%"
     const bullets = t.stakes.map(x => ({ label: `${x.label} ${pct(x.now)}`, text: `big night ${pct(x.odds.big)} · quiet ${pct(x.odds.quiet)}${x.extra || ""}` }));
     out.teams.push({ head: t.team, play: `${keyNames(t.mine)}${proj(t.mine)}`, bullets, root: t.root?.list.length ? keyNames(t.root) : null });
   }
-  if (st.raffleLocked) out.locked.push({ head: `🎟️ ${st.raffleLocked.team} has clinched the ticket with ${money(st.raffleLocked.score)} pts` });
-  if (st.doomed) {
-    const written = hasObituary(st.doomed.team);
-    out.locked.push({ head: `🪓 ${st.doomed.team} is doomed: chop guaranteed with ${money(st.doomed.score)} pts`, play: written ? null : "Obituary pending.", rip: written });
-  }
   return out;
 }
 
-// RIP lives on the Death Watch tab: the hash switches tabs, then open it.
-const openRip = () => setTimeout(() => { const d = document.getElementById("rip"); if (d) { d.open = true; d.scrollIntoView({ behavior: "smooth" }); } }, 150);
-
-const SECTIONS = [["locked", "🔒 Locked"], ["teams", "📺 What's at stake"], ["script", "🎬 Game script"], ["survivor", "🛡️ Survivor pool"]];
+const SECTIONS = [["script", "🎬 Game script"], ["teams", "📺 What's at stake"], ["survivor", "🛡️ Survivor pool"]];
 // One item's lines, for the share card.
 const itemLines = item => [item.play && `In play: ${item.play}`, ...(item.bullets || []).map(b => `• ${b.label}: ${b.text}`),
   item.root && `Root against: ${item.root}`, ...(item.detail || [])].filter(Boolean);
@@ -302,10 +301,8 @@ export default function PrimetimeWatch({ scores, nflGames, guillotine, logos, we
       </div>
       <div className="primetime-summary">
         <span>{[
-          text.teams.length && `${text.teams.length} ${text.teams.length === 1 ? "team" : "teams"} with stakes`,
           text.script.length && "game script",
-          st.raffleLocked && "ticket clinched",
-          st.doomed && "chop decided",
+          text.teams.length && `${text.teams.length} ${text.teams.length === 1 ? "team" : "teams"} with stakes`,
           text.survivor.length && "survivor pool"
         ].filter(Boolean).join(" · ")}</span>
         <button type="button" className="section-toggle" aria-expanded={open} onClick={() => setOpen(v => !v)}>{open ? "Hide ▴" : "Show ▾"}</button>
@@ -319,7 +316,6 @@ export default function PrimetimeWatch({ scores, nflGames, guillotine, logos, we
             {item.bullets?.length ? <ul>{item.bullets.map((x, j) => <li key={j}><span>{x.label}</span> {x.text}</li>)}</ul> : null}
             {item.root ? <p className="primetime-root"><span>Root against</span> {item.root}</p> : null}
             {(item.detail || []).map((d, j) => <p key={j}>{d}</p>)}
-            {item.rip ? <a className="primetime-rip" href="#rip" onClick={openRip}>🪦 Read the obituary</a> : null}
           </div>)}
         </div> : null)}
       </div> : null}
