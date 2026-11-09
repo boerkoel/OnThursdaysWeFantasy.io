@@ -7,13 +7,14 @@ import { oddsMove, shortPlay } from "../lib/playText.js";
 // three teams on the podium (every team, once 4 or fewer are left) over the week,
 // one line each, with a 🏈 on each play that moved a team's chop odds 3%+
 // (hover or tap for the play), and those teams' key plays underneath: the
-// 5 most recent, topped up with the week's biggest swings (up to 10). The
+// 5 most recent that moved odds 2+ points, topped up with the week's biggest swings (up to 10). The
 // y-axis zooms to the range the lines have covered (at least 20 points tall).
 const WIDTH = 300;
 const HEIGHT = 90;
 const PAD = 6;
 const BIG_SWING = 3;
-const KEY_POINTS = 4;
+// A key play has to move someone's odds 2+ points (Jim, 2026-11-08: a safe team's "chop 3→2%" TDs crowded the list).
+const KEY_SWING = 2;
 const KEY_PLAYS_RECENT = 5;
 const KEY_PLAYS_MAX = 10;
 const KEY_PLAY_MAX_AGE_MS = 5 * 60 * 60 * 1000;
@@ -38,7 +39,7 @@ export function peakTeams(history, teams, n = 3) {
 }
 
 export function keyChopPlays(plays) {
-  const recent = plays.filter(p => p.wallclock && (Math.abs(p.points) >= KEY_POINTS || Math.abs(p.momentum?.shift || 0) >= BIG_SWING) && Date.now() - Date.parse(p.wallclock) <= KEY_PLAY_MAX_AGE_MS)
+  const recent = plays.filter(p => p.wallclock && Math.abs(p.momentum?.shift || 0) >= KEY_SWING && Date.now() - Date.parse(p.wallclock) <= KEY_PLAY_MAX_AGE_MS)
     .sort(newestFirst).slice(0, KEY_PLAYS_RECENT);
   const chosen = new Map(recent.map(p => [p.id, p]));
   for (const p of plays.filter(p => p.wallclock && Math.abs(p.momentum?.shift || 0) >= BIG_SWING).sort((a, b) => Math.abs(b.momentum.shift) - Math.abs(a.momentum.shift))) {
