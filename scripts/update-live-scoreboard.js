@@ -1,6 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { BENCH_SLOT, IR_SLOT, settledLineupRegret } from "./lib/lineup.js";
 import { altProjectionFn, buildLineupModel, calibrateAlt, chanceToPlayFn, fixAbbr, trackLineups } from "./lib/lineup-model.js";
+import { projectionScale } from "./lib/projection-bias.js";
 import { liveMarket } from "./lib/live-markets.js";
 import { SIMULATIONS, bigPlayCeiling, gameScriptInputs, keepInPlay, weeklyUsage, medianOf, normalCdf, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
 
@@ -222,6 +223,11 @@ function rosterEntriesForTeam(teamId) {
 // none left can no longer change its score. If the NFL schedule couldn't be
 // fetched, assume everyone is still playing.
 const remainingPlayersByTeam = new Map();
+// Projections scaled by how the league's finals have compared with them lately (projection-bias.js); ESPN's own
+// projection, shown and graded as "espn", stays as published.
+const archive = await readFile("data/current/week-archive.json", "utf8").then(JSON.parse).catch(() => ({ weeks: {} }));
+const projectionBias = projectionScale(archive.weeks, currentWeek);
+console.log("Projection scale:", JSON.stringify(projectionBias));
 
 for (const teamId of teams.keys()) {
   const entries = rosterEntriesForTeam(teamId)
@@ -243,7 +249,7 @@ for (const teamId of teams.keys()) {
       const nflGame = nflGamesByTeam.get(Number(player.proTeamId));
       // Teams missing from the week's schedule are on bye.
       if (!nflWeek || (nflGame && !nflGame.completed)) {
-        remainingPlayers.push(playerOutlook({ actual, projection: fullProjection, positionId: player.defaultPositionId, game: nflGame, proTeamId: player.proTeamId, usage: usageOf(player) }));
+        remainingPlayers.push(playerOutlook({ actual, projection: fullProjection * projectionBias.scale, positionId: player.defaultPositionId, game: nflGame, proTeamId: player.proTeamId, usage: usageOf(player) }));
       }
     }
     if (!Number.isFinite(fullProjection)) continue;
@@ -287,7 +293,7 @@ console.log("Second-opinion scales by position:", JSON.stringify(altProjection.s
 const lineupModels = new Map(), lineupSummaries = new Map();
 for (const teamId of teams.keys()) {
   const { model, summary } = buildLineupModel({ entries: rosterEntriesForTeam(teamId), nflWeek: Boolean(nflWeek), usageOf,
-    gameFor: id => nflGamesByTeam.get(id) || null, weeklyStat, chanceToPlay, altProjection, set: lineupBaseline.changed[teamId] });
+    gameFor: id => nflGamesByTeam.get(id) || null, weeklyStat, chanceToPlay, altProjection, set: lineupBaseline.changed[teamId], scale: projectionBias.scale });
   if (model) lineupModels.set(teamId, model);
   if (summary) lineupSummaries.set(teamId, summary);
 }
@@ -631,7 +637,6 @@ if (medianHistory.length > MAX_WIN_HISTORY) medianHistory = medianHistory.filter
 const MAX_ARCHIVE_POINTS = 200;
 const thin = points => points.length <= MAX_ARCHIVE_POINTS ? points
   : points.filter((_, i) => i === points.length - 1 || i % Math.ceil(points.length / MAX_ARCHIVE_POINTS) === 0);
-const archive = await readFile("data/current/week-archive.json", "utf8").then(JSON.parse).catch(() => ({ weeks: {} }));
 const archivedPlays = await readFile("data/current/live-plays.json", "utf8").then(JSON.parse).catch(() => null);
 const swingPlays = Number(archivedPlays?.week) === currentWeek
   ? (archivedPlays.plays || []).filter(p => p.momentum?.shift >= 3 || Math.abs(p.median?.shift || 0) >= 3).map(({ id, matchupId, fantasyTeamId, player, points, text, period, clock, wallclock, momentum, median }) =>
@@ -649,7 +654,7 @@ const impliedWin = (me, opp) => {
   return round(100 * normalCdf((Number(me.projection?.espn) - Number(opp.projection?.espn)) / sd));
 };
 const espnMedian = medianOf(currentScores.map(x => Number(x.projection?.espn)));
-const snapshot = () => ({ at: new Date().toISOString(), teams: Object.fromEntries(currentScores.map(x => {
+const snapshot = () => ({ at: new Date().toISOString(), scale: projectionBias.scale, teams: Object.fromEntries(currentScores.map(x => {
   const opp = currentScores.find(o => o.matchupId === x.matchupId && o.teamId !== x.teamId);
   return [x.teamId, { ours: x.projection?.otwf, espn: x.projection?.espn, win: x.winProbability, winEspn: opp ? impliedWin(x, opp) : null,
     above: x.aboveMedianProbability, aboveEspn: round(100 * normalCdf((Number(x.projection?.espn) - espnMedian) / (Number(x.projectionSd) || 1))) }];
@@ -674,10 +679,11 @@ for (const [key, wk] of Object.entries(archive.weeks)) {
   const finalMedian = medianOf(scores.map(([, score]) => score));
   archive.weeks[key] = { ...wk, finals: Object.fromEntries(scores.map(([id, score, opp]) => [id, { score, won: score > opp, above: score > finalMedian }])) };
 }
-// Graded so far: average projection miss (points) and Brier scores for odds (lower is better).
+// Graded so far: average projection miss (points) and Brier scores for odds (lower is better); the average bias
+// (projected minus scored: + = too high) and how the favorites did (70%+ to win, said vs won) (Jim, 2026-11-09).
 const scorecard = {};
 for (const when of ["thu", "sun"]) {
-  const t = { n: 0, weeks: 0, missOurs: 0, missEspn: 0, winN: 0, brierWin: 0, brierWinEspn: 0, aboveN: 0, brierAbove: 0, brierAboveEspn: 0 };
+  const t = { n: 0, weeks: 0, missOurs: 0, missEspn: 0, biasOurs: 0, biasEspn: 0, winN: 0, brierWin: 0, brierWinEspn: 0, aboveN: 0, brierAbove: 0, brierAboveEspn: 0, favN: 0, favSaid: 0, favWon: 0 };
   for (const wk of Object.values(archive.weeks || {})) {
     const f = wk.forecasts?.[when], fin = wk.finals;
     if (!f || !fin) continue;
@@ -686,15 +692,20 @@ for (const when of ["thu", "sun"]) {
       const r = fin[id];
       if (!r || !Number.isFinite(x.ours) || !Number.isFinite(x.espn)) continue;
       t.n++; t.missOurs += Math.abs(x.ours - r.score); t.missEspn += Math.abs(x.espn - r.score);
+      t.biasOurs += x.ours - r.score; t.biasEspn += x.espn - r.score;
+      if (r.won != null && x.win != null && x.win >= 70) { t.favN++; t.favSaid += x.win; t.favWon += r.won ? 100 : 0; }
       if (r.won != null && x.win != null && x.winEspn != null) { t.winN++; t.brierWin += (x.win / 100 - r.won) ** 2; t.brierWinEspn += (x.winEspn / 100 - r.won) ** 2; }
       if (x.above != null && x.aboveEspn != null) { t.aboveN++; t.brierAbove += (x.above / 100 - r.above) ** 2; t.brierAboveEspn += (x.aboveEspn / 100 - r.above) ** 2; }
     }
   }
   scorecard[when] = { weeks: t.weeks, teams: t.n,
     missOurs: t.n ? round(t.missOurs / t.n) : null, missEspn: t.n ? round(t.missEspn / t.n) : null,
+    biasOurs: t.n ? round(t.biasOurs / t.n) : null, biasEspn: t.n ? round(t.biasEspn / t.n) : null,
+    favorites: t.favN ? { n: t.favN, said: round(t.favSaid / t.favN), won: round(t.favWon / t.favN) } : null,
     brierWin: t.winN ? round(t.brierWin / t.winN * 1000) / 1000 : null, brierWinEspn: t.winN ? round(t.brierWinEspn / t.winN * 1000) / 1000 : null,
     brierAbove: t.aboveN ? round(t.brierAbove / t.aboveN * 1000) / 1000 : null, brierAboveEspn: t.aboveN ? round(t.brierAboveEspn / t.aboveN * 1000) / 1000 : null };
 }
+scorecard.scale = projectionBias;
 scorecard.since = Math.min(...Object.entries(archive.weeks || {}).filter(([, w]) => w.forecasts?.thu || w.forecasts?.sun).map(([k]) => Number(k)), currentWeek);
 await writeFile("data/current/week-archive.json", JSON.stringify({ updatedAt: new Date().toISOString(), weeks: archive.weeks }) + "\n");
 

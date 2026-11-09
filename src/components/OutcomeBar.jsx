@@ -84,6 +84,9 @@ export function AccuracyScorecard({ scorecard }) {
   if (!scorecard) return null;
   const cols = [["thu", "At Thursday kickoff"], ["sun", "Once Sunday starts"]];
   const graded = cols.some(([k]) => scorecard[k]?.teams);
+  // Bias: closer to 0 is better.
+  const bias = (ours, espn) => ours == null ? <td className="num">—</td> :
+    <td className="num"><b className={Math.abs(ours) <= Math.abs(espn) ? "up" : "down"}>{ours > 0 ? "+" : ""}{ours.toFixed(1)} pts</b> <small>vs {espn > 0 ? "+" : ""}{espn.toFixed(1)}</small></td>;
   const cell = (ours, espn, unit, digits) => ours == null ? <td className="num">—</td> :
     <td className="num"><b className={ours <= espn ? "up" : "down"}>{ours.toFixed(digits)}{unit}</b> <small>vs {espn.toFixed(digits)}{unit}</small></td>;
   return (
@@ -93,11 +96,14 @@ export function AccuracyScorecard({ scorecard }) {
         <thead><tr><th></th>{cols.map(([k, l]) => <th key={k} className="num">{l}<small> · {scorecard[k]?.weeks || 0} wk</small></th>)}</tr></thead>
         <tbody>
           <tr><td>Projection, average miss</td>{cols.map(([k]) => <React.Fragment key={k}>{cell(scorecard[k]?.missOurs, scorecard[k]?.missEspn, " pts", 1)}</React.Fragment>)}</tr>
+          <tr><td>Projection, average bias <small>(+ = too high)</small></td>{cols.map(([k]) => <React.Fragment key={k}>{bias(scorecard[k]?.biasOurs, scorecard[k]?.biasEspn)}</React.Fragment>)}</tr>
           <tr><td>Head-to-head odds (Brier)</td>{cols.map(([k]) => <React.Fragment key={k}>{cell(scorecard[k]?.brierWin, scorecard[k]?.brierWinEspn, "", 3)}</React.Fragment>)}</tr>
           <tr><td>Above-median odds (Brier)</td>{cols.map(([k]) => <React.Fragment key={k}>{cell(scorecard[k]?.brierAbove, scorecard[k]?.brierAboveEspn, "", 3)}</React.Fragment>)}</tr>
+          <tr><td>Favorites <small>(70%+ to win)</small></td>{cols.map(([k]) => { const f = scorecard[k]?.favorites;
+            return <td key={k} className="num">{f ? <><b>won {Math.round(f.won)}%</b> <small>· said {Math.round(f.said)}% · {f.n}</small></> : "—"}</td>; })}</tr>
         </tbody></table></div>
         : <p className="median-note">Grading starts with Week {scorecard.since}: the first results land after Monday night.</p>}
-      <Explain lead="Ours vs ESPN's, lower is better (green = we did better).">Projections are graded on each team's final score; odds by Brier score (the average squared miss on a 0–1 scale; 0.25 is a coin flip). ESPN doesn't publish odds, so its column uses the odds its projections imply with the same spread.</Explain>
+      <Explain lead="Ours vs ESPN's, lower is better (green = we did better).">Projections are graded on each team's final score; odds by Brier score (the average squared miss on a 0–1 scale; 0.25 is a coin flip). ESPN doesn't publish odds, so its column uses the odds its projections imply with the same spread. Projections have run high, so ours are scaled by how the league's finals have compared with them lately (each older week counts less){scorecard.scale ? `: ×${scorecard.scale.scale} this week` : ""}. Favorites: how often teams we gave 70%+ actually won.</Explain>
     </section>
   );
 }
