@@ -97,20 +97,24 @@ function StandingsTable({ seasonOdds, logos, liveScores = [], week }) {
       wins: live ? t.wins + ew : t.wins, losses: live ? t.losses + decided - ew : t.losses, ties: t.ties,
       winPct: live ? (t.wins + ew) / Math.max(1, t.wins + t.losses + decided) : t.winPct,
       pointsFor: live ? t.pointsFor + Number(s.score || 0) : t.pointsFor,
-      weekWins: live ? ew : null
+      weekWins: live ? ew : null,
+      // Where the playoff odds stood before this week (Live and As it stands), for the ▲▼ beside them.
+      startPlayoffOdds: isLive ? seasonOdds?.weekStart?.[String(t.id)]?.playoffOdds ?? null : null
     };
   });
   if (isLive) {   // seeds go by record (H2H + median wins), points for breaks ties
     const order = [...rows].sort((a, b) => b.wins - a.wins || b.pointsFor - a.pointsFor);
     rows = rows.map(r => ({ ...r, liveSeed: order.indexOf(r) + 1, seed: order.indexOf(r) + 1, oldSeed: r.seed }));
   }
-  // What 2 wins this week (H2H + median) would do to the playoff odds (Live view only), shown when it's still
-  // in doubt (5-95% likely) and moves the odds 3+ pts.
-  const twoWins = r => {
-    const list = isLive && !stands ? seasonOdds?.byWins?.[String(r.teamId)] : null, two = list?.[2];
-    if (!two || two.chance < 5 || two.chance > 95 || Math.abs(two.playoffOdds - r.playoffOdds) < 3) return null;
-    const tip = list.map((x, k) => x ? `${k} win${k === 1 ? "" : "s"} (${pct(x.chance)} likely): ${pct(x.playoffOdds)}` : null).filter(Boolean).join(" · ");
-    return <small className="two-wins" title={`Playoff odds by wins this week: ${tip}`}>2W → {pct(two.playoffOdds)}</small>;
+  // The playoff odds' move this week (Jim, 2026-11-08: Live didn't read as counting this week): ▲▼ points since the
+  // start of the week, with the start and the odds by wins this week (H2H + median, Live only) in the tooltip.
+  const weekMove = r => {
+    if (r.startPlayoffOdds == null || r.playoffOdds == null) return null;
+    const d = Math.round(Number(r.playoffOdds) - Number(r.startPlayoffOdds));
+    const list = !stands ? seasonOdds?.byWins?.[String(r.teamId)] : null;
+    const byWins = list ? " · By wins this week: " + list.map((x, k) => x ? `${k} (${pct(x.chance)} likely) ${pct(x.playoffOdds)}` : null).filter(Boolean).join(", ") : "";
+    return <small className={"week-move" + (d > 0 ? " up" : d < 0 ? " down" : "")} title={`${pct(r.startPlayoffOdds)} before this week${byWins}`}>
+      {d > 0 ? `▲${d}` : d < 0 ? `▼${-d}` : "—"} this wk</small>;
   };
   const column = STANDINGS_COLUMNS.find(c => c.key === sortKey);
   const sorted = [...rows].sort((a, b) => {
@@ -124,7 +128,7 @@ function StandingsTable({ seasonOdds, logos, liveScores = [], week }) {
           {[["live", "Live"], ["stands", "As it stands"], ["before", "Before this week"]].map(([k, label]) =>
             <button type="button" key={k} className={liveMode === k ? "active" : ""} onClick={() => setLiveMode(k)}>{label}</button>)}
         </span> : null}</h3>
-      {isLive && !stands ? <Explain lead={<><b>Live:</b> Week {week} counted as it goes, at its odds. ▲▼ = seed change this week.</>}>W-L adds each team's expected wins this week (head-to-head and beating the median, out of 2): a result counts in full once it's locked (99.5%+ either way), the rest at its odds. PF adds points so far, and seeds are re-ranked by that record (points break ties).</Explain> : null}
+      {isLive && !stands ? <Explain lead={<><b>Live:</b> Week {week} counted as it goes. Records add this week's expected wins (+0.7), and the odds move with them (▲▼ this wk). ▲▼ by a seed = seed change.</>}>W-L adds each team's expected wins this week (head-to-head and beating the median, out of 2): a result counts in full once it's locked (99.5%+ either way), the rest at its odds. PF adds points so far, and seeds are re-ranked by that record (points break ties).</Explain> : null}
       {isLive && stands ? <Explain lead={<><b>As it stands:</b> only locked results count. ▲▼ = seed change this week.</>}>W-L adds only this week's results that are locked (99.5%+ either way, head-to-head or the median); open games don't count yet. PF adds points so far, and seeds are re-ranked by that record (points break ties).</Explain> : null}
       <Explain lead={<>Top {playoffs.playoffTeamCount || 6} make the playoffs. Odds from {Number(seasonOdds?.simulations || 0).toLocaleString()} season simulations; click a column to sort.</>}>Seeds go by record (head-to-head + median wins), with total points breaking ties; the top {playoffs.playoffTeamCount || 6} make the playoffs and the top 2 get byes. Odds come from {Number(seasonOdds?.simulations || 0).toLocaleString()} simulations of the rest of the season, including both postseason brackets, using each team's scoring so far and, for the week in progress, live projections (Live), the points so far as if the week ended now (As it stands), or nothing from this week (Before this week). Title and Ultimate Loser odds each add up to 100%.</Explain>
       <div className="survival-table odds-table">
@@ -135,9 +139,9 @@ function StandingsTable({ seasonOdds, logos, liveScores = [], week }) {
         </div>
         {sorted.map(r => <div className={r.seed <= (playoffs.playoffTeamCount || 6) ? "odds-row in-playoffs" : "odds-row"} key={r.teamId}>
           <span>{r.seed === 99 ? "—" : r.seed}{r.seed <= 2 ? <em className="bye-badge">BYE</em> : null}{r.oldSeed && r.oldSeed !== 99 && r.oldSeed !== r.seed ? <small className={r.oldSeed > r.seed ? "seed-up" : "seed-down"}>{r.oldSeed > r.seed ? "▲" : "▼"}{Math.abs(r.oldSeed - r.seed)}</small> : null}</span>
-          <strong><TeamLogo src={logos[r.teamId]} /><span>{r.team}</span></strong>
+          <strong><TeamLogo src={logos[r.teamId]} /><span className="odds-team"><span>{r.team}</span>{r.weekWins != null ? <small className="live-record">{wl(r.wins)}–{wl(r.losses)} (+{wl(r.weekWins)})</small> : null}</span></strong>
           {STANDINGS_COLUMNS.slice(2).map(c => c.highlight
-            ? <b key={c.key}>{pct(c.value(r))}{twoWins(r)}</b>
+            ? <b key={c.key}>{pct(c.value(r))}{weekMove(r)}</b>
             : <span key={c.key}>{c.odds ? pct(c.value(r)) : c.show(r)}</span>)}
         </div>)}
       </div>
