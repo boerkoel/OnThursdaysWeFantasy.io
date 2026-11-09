@@ -174,7 +174,13 @@ function useQuake({ teams, games, history, historyId, p, fork = null, peeks = []
       if (peekLeft.current > 0) peekLeft.current -= 1;
       else {
         peeking.current = null;
-        if (live) for (const pk of peeksRef.current) if (Math.random() < PEEK_PER_TICK * pk.chance) { peeking.current = pk; peekLeft.current = PEEK_TICKS; break; }
+        // Night-game peeks (pregame, PrimetimeWatch.js nightPeeks) play before kickoff too. A random starting
+        // point, so how often each comes up follows its chance, not its place in the list.
+        const pks = peeksRef.current, start = Math.floor(Math.random() * pks.length);
+        for (let k = 0; k < pks.length; k++) {
+          const pk = pks[(start + k) % pks.length];
+          if ((live || pk.pregame) && Math.random() < PEEK_PER_TICK * pk.chance) { peeking.current = pk; peekLeft.current = PEEK_TICKS; break; }
+        }
       }
       if (live && Math.random() < BURST_CHANCE) burst.current = 1;
       burst.current *= BURST_DECAY;

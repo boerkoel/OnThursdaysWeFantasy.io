@@ -4,12 +4,10 @@ import { HALF_MEAN_SD, normalCdf, normalQuantile, playerOutlook } from "../../sc
 import { ShareButton } from "./LiveBits.jsx";
 import { TEAM_NAMES, useSurvivorFeed } from "./SurvivorTab.jsx";
 
-// TNF / SNF / MNF What to Watch: every storyline the night game(s) can still
-// swing, as one shareable panel. Shown while a night game (7 PM ET or later)
-// is live or kicks off within 30 hours.
-// - What's at stake, by team (Jim, 2026-11-09): its players in play, bullets for each stake (head to head,
-//   median, ticket, chop) after a big or quiet night, and whom to root against. Anything a big or quiet
-//   night moves less than MIN_MOVE points is left out.
+// TNF / SNF / MNF What to Watch: how the night game(s) can swing the league, as one shareable panel.
+// Shown while a night game (7 PM ET or later) is live or kicks off within 30 hours. Each team's own stakes
+// sit under its matchup instead (nightStakes), and the needles visit them before kickoff (nightPeeks)
+// (Jim, 2026-11-09: the preview stays at the game-script level; details where you need them).
 // - Game script: what a romp, a shootout or a defensive battle would do to the league's odds.
 // - Survivor pool: how many entries are left, who rode tonight's teams (picks
 //   show only once the game kicks off) and who has the most entries left; left out once one entry
@@ -81,23 +79,31 @@ function scriptSign(p, scenario) {
   if (scenario.shootout) return dst ? -1 : 1;
   return dst ? 1 : p.pos === "K" ? 0 : -1;
 }
+// A side's points shift (in points) if game g goes this way.
+const shiftOf = (players, g, scenario) => {
+  const side = tonight(players, new Set(g.teamIds.map(Number)), [g]);
+  return HALF_MEAN_SD * side.list.reduce((sum, p, i) => sum + scriptSign(p, scenario) * side.outlook[i].sd, 0);
+};
+const move = (from, z) => ({ from, to: 100 * normalCdf(normalQuantile(Math.min(0.9999, Math.max(0.0001, from / 100))) + z) });
+const nick = t => TEAM_NAMES[nflAbbrev(t.abbrev)] || t.abbrev;
+// chance: how likely each script is, so the needles visit the likely ones more often (Jim, 2026-11-09). A romp is
+// winning by 14+, from the team's win chance with an NFL margin SD of about 13.5; a shootout or a defensive
+// battle (10+ points off the total either way) about 20% each.
+const MARGIN_SD = 13.5, ROMP_BY = 14, TOTAL_SCRIPT_CHANCE = 0.2;
+const rompChance = t => {
+  const w = Number(t.winChance);
+  if (!(w > 0 && w < 1)) return TOTAL_SCRIPT_CHANCE;
+  return 1 - normalCdf((ROMP_BY - MARGIN_SD * normalQuantile(w)) / MARGIN_SD);
+};
+const scenariosFor = g => (g.teams || []).length < 2 || g.completed ? [] : [
+  ...g.teams.map(t => ({ label: `${nick(t)} romp`, peek: `🎬 if the ${nick(t)} romp`, romp: Number(t.id), chance: rompChance(t) })),
+  { label: "Shootout", peek: "🎬 if it's a shootout", shootout: true, chance: TOTAL_SCRIPT_CHANCE },
+  { label: "Defensive battle", peek: "🎬 if it's a defensive battle", defense: true, chance: TOTAL_SCRIPT_CHANCE }
+];
 function gameScripts({ slot, scores, byId, guillotine, open }) {
   const out = [];
-  const shiftOf = (players, games, scenario) => {
-    const side = tonight(players, new Set(games.teamIds.map(Number)), [games]);
-    return HALF_MEAN_SD * side.list.reduce((sum, p, i) => sum + scriptSign(p, scenario) * side.outlook[i].sd, 0);
-  };
-  const move = (from, z) => ({ from, to: 100 * normalCdf(normalQuantile(Math.min(0.9999, Math.max(0.0001, from / 100))) + z) });
   for (const g of slot) {
-    const teams = g.teams || [];
-    if (teams.length < 2 || g.completed) continue;
-    const nick = t => TEAM_NAMES[nflAbbrev(t.abbrev)] || t.abbrev;
-    const scenarios = [
-      ...teams.map(t => ({ label: `${nick(t)} romp`, romp: Number(t.id) })),
-      { label: "Shootout", shootout: true },
-      { label: "Defensive battle", defense: true }
-    ];
-    for (const sc of scenarios) {
+    for (const sc of scenariosFor(g)) {
       const items = [];
       const seen = new Set();
       for (const a of scores) {
@@ -137,59 +143,89 @@ function gameScripts({ slot, scores, byId, guillotine, open }) {
 export function primetimeStories({ scores, nflGames, guillotine }) {
   const slot = nightSlot(nflGames || []);
   if (!slot.length) return null;
-  const gameTeams = new Set(slot.flatMap(g => g.teamIds || []).map(Number));
   const label = SLOT_NAMES[etDay(slot[0].kickoff)] || "Primetime";
   const games = slot.map(g => g.name).join(" & ");
   const byId = new Map(scores.map(s => [s.teamId, s]));
   const open = p => Number(p) > 0 && Number(p) < 100;
 
-  // By team (Jim, 2026-11-09): each team with a genuinely undecided matchup, ticket race or chop that tonight
-  // can still swing 10+ points: its players in play, the stakes (head to head, median, ticket, chop) after a
-  // big or quiet night, and whom to root against. A median alone doesn't earn a card. A team with nobody
-  // playing is left out: its opponent's card already has that matchup.
-  const ticketOpen = Math.max(...scores.map(s => Number(s.topScoreProbability) || 0)) < DECIDED;
-  const teams = [];
-  for (const s of scores) {
-    const opp = byId.get(s.opponentId);
-    const mine = tonight(s.lineup?.starters, gameTeams, slot), theirs = tonight(opp?.lineup?.starters, gameTeams, slot);
-    const stakes = [];
-    if (!mine.list.length) continue;
-    if (opp && open(s.winProbability)) {
-      const marginSd = Math.hypot(Number(s.projectionSd) || 0, Number(opp.projectionSd) || 0);
-      const odds = bigQuiet(Number(s.winProbability), mine.sd, marginSd);
-      const needs = !theirs.list.length && Number(opp.startersLeft) === 0 && Number(s.score) < Number(opp.score)
-        ? ` · needs ${money(Number(opp.score) - Number(s.score))}` : "";
-      if (undecided(s.winProbability) && moves(odds) >= MIN_MOVE) stakes.push({ label: `vs ${opp.team}`, now: s.winProbability, odds, extra: needs });
-    }
-    if (Number(s.aboveMedianProbability) >= 10 && Number(s.aboveMedianProbability) <= 90) {
-      const odds = bigQuiet(Number(s.aboveMedianProbability), mine.sd, Number(s.projectionSd));
-      if (moves(odds) >= MIN_MOVE) stakes.push({ label: "Median", now: s.aboveMedianProbability, odds });
-    }
-    if (ticketOpen && Number(s.topScoreProbability) >= 10) {
-      const odds = bigQuiet(Number(s.topScoreProbability), mine.sd, Number(s.projectionSd));
-      if (moves(odds) >= MIN_MOVE) stakes.push({ label: "🎟️ Ticket", now: s.topScoreProbability, odds });
-    }
-    if (!stakes.some(x => x.label !== "Median")) continue;
-    teams.push({ team: s.team, mine, root: stakes.some(x => x.label.startsWith("vs ")) ? theirs : null, stakes,
-      weight: Math.max(...stakes.map(x => moves(x.odds))) });
-  }
-  // The guillotine league: the chop for each team in danger, rooting against the other teams in danger.
-  const chopOpen = Number(guillotine?.week) && Math.max(...(guillotine.teams || []).map(t => Number(t.chopProbability) || 0)) < DECIDED;
-  const danger = !chopOpen ? [] : (guillotine.teams || []).filter(t => open(t.chopProbability) && Number(t.chopProbability) >= 10);
-  for (const t of danger) {
-    const mine = tonight(t.lineup, gameTeams, slot);
-    if (!mine.list.length) continue;
-    const swing = (t.gameSwings || []).find(g => slot.some(x => x.name === g.game));
-    const odds = swing ? { big: swing.chopIfAbove, quiet: swing.chopIfBelow } : bigQuiet(Number(t.chopProbability), mine.sd, Number(t.projectionSd), -1);
-    if (moves(odds) < MIN_MOVE) continue;
-    const rivals = danger.filter(o => o !== t).map(o => tonight(o.lineup, gameTeams, slot));
-    const root = { list: rivals.flatMap(r => r.list), key: rivals.flatMap(r => r.key) };
-    teams.push({ team: `🪓 ${t.team}`, mine, root: root.list.length ? root : null, stakes: [{ label: "Chop", now: t.chopProbability, odds }], weight: moves(odds) });
-  }
-  teams.sort((x, y) => y.weight - x.weight);
   const script = gameScripts({ slot, scores, byId, guillotine, open });
-  if (!teams.length && !script.length) return null;
-  return { label, games, slot, teams: teams.slice(0, 10), script };
+  if (!script.length) return null;
+  return { label, games, slot, script };
+}
+
+// Tonight's night game, if one is live or kicks off within 30 hours: what the stakes and peeks below need.
+function nightContext(scores, nflGames) {
+  const slot = nightSlot(nflGames || []);
+  if (!slot.length) return null;
+  return { slot, gameTeams: new Set(slot.flatMap(g => g.teamIds || []).map(Number)), label: SLOT_NAMES[etDay(slot[0].kickoff)] || "Primetime",
+    byId: new Map(scores.map(s => [s.teamId, s])) };
+}
+
+// What's at stake tonight for one team, shown right under its matchup (Jim, 2026-11-09: "right where you need
+// them"): its players in the night game and a bullet for each stake (head to head, median, ticket) after a big
+// or quiet night. Only for a genuinely undecided matchup or ticket race (a median alone doesn't count), and
+// only stakes a big or quiet night moves MIN_MOVE+ points.
+export function nightStakes({ scores, nflGames, team: s }) {
+  const ctx = nightContext(scores, nflGames);
+  if (!ctx) return null;
+  const { slot, gameTeams, label, byId } = ctx;
+  const opp = byId.get(s.opponentId);
+  const mine = tonight(s.lineup?.starters, gameTeams, slot), theirs = tonight(opp?.lineup?.starters, gameTeams, slot);
+  if (!mine.list.length) return null;
+  const stakes = [];
+  if (opp && undecided(s.winProbability)) {
+    const odds = bigQuiet(Number(s.winProbability), mine.sd, Math.hypot(Number(s.projectionSd) || 0, Number(opp.projectionSd) || 0));
+    const needs = !theirs.list.length && Number(opp.startersLeft) === 0 && Number(s.score) < Number(opp.score)
+      ? ` · needs ${money(Number(opp.score) - Number(s.score))}` : "";
+    if (moves(odds) >= MIN_MOVE) stakes.push({ label: `Win ${pct(s.winProbability)}`, odds, extra: needs });
+  }
+  if (Number(s.aboveMedianProbability) >= 10 && Number(s.aboveMedianProbability) <= 90) {
+    const odds = bigQuiet(Number(s.aboveMedianProbability), mine.sd, Number(s.projectionSd));
+    if (moves(odds) >= MIN_MOVE) stakes.push({ label: `Median ${pct(s.aboveMedianProbability)}`, odds, median: true });
+  }
+  const ticketOpen = Math.max(...scores.map(x => Number(x.topScoreProbability) || 0)) < DECIDED;
+  if (ticketOpen && Number(s.topScoreProbability) >= 10) {
+    const odds = bigQuiet(Number(s.topScoreProbability), mine.sd, Number(s.projectionSd));
+    if (moves(odds) >= MIN_MOVE) stakes.push({ label: `🎟️ Ticket ${pct(s.topScoreProbability)}`, odds });
+  }
+  if (!stakes.some(x => !x.median)) return null;
+  return { label, team: s.team, play: `${keyNames(mine)}${proj(mine)}`,
+    bullets: stakes.map(x => ({ label: x.label, text: `big night ${pct(x.odds.big)} · quiet ${pct(x.odds.quiet)}${x.extra || ""}` })) };
+}
+
+// The needles dance with tonight's outcomes before kickoff (Jim, 2026-11-09): peeks (tdPeeks.js shape, with
+// pregame: true so the needle visits them before the game is live) at the team's odds if its players have a big
+// or a quiet night, if the opponent's do, and under each game script. kind: "win" (the team's win odds) or
+// "median". Live, the touchdown peeks take over.
+// A player's big (or quiet) night: the top (or bottom) third or so of his outcomes.
+const NIGHT_PLAYER_CHANCE = 0.3;
+export function nightPeeks({ scores, nflGames, team: s, kind }) {
+  const ctx = nightContext(scores, nflGames);
+  if (!ctx || ctx.slot.some(g => g.state !== "pre")) return [];
+  const { slot, gameTeams, byId } = ctx;
+  const opp = kind === "win" ? byId.get(s.opponentId) : null;
+  const p = Number(kind === "win" ? s.winProbability : s.aboveMedianProbability);
+  if (!(p > 0 && p < 100) || (kind === "win" && !opp)) return [];
+  const sd = kind === "win" ? Math.hypot(Number(s.projectionSd) || 0, Number(opp.projectionSd) || 0) : Number(s.projectionSd);
+  if (!(sd > 0)) return [];
+  const peeks = [];
+  const add = (label, to, chance = NIGHT_PLAYER_CHANCE) => { if (Number.isFinite(to) && Math.abs(to - p) >= MIN_MOVE / 2) peeks.push({ label, p: to, chance, pregame: true }); };
+  // One pair per key player: "🌙 big night from Josh Allen" / "🌙 quiet night from Josh Allen".
+  const players = (side, direction) => {
+    for (const pl of side.key) {
+      const odds = bigQuiet(p, side.outlook[side.list.indexOf(pl)].sd, sd, direction);
+      const name = /D\/ST/.test(pl.name) ? `the ${pl.name}` : pl.name;
+      add(`🌙 big night from ${name}`, odds?.big);
+      add(`🌙 quiet night from ${name}`, odds?.quiet);
+    }
+  };
+  players(tonight(s.lineup?.starters, gameTeams, slot), 1);
+  if (opp) players(tonight(opp.lineup?.starters, gameTeams, slot), -1);
+  for (const g of slot) for (const sc of scenariosFor(g)) {
+    const shift = shiftOf(s.lineup?.starters, g, sc) - (opp ? shiftOf(opp.lineup?.starters, g, sc) : 0);
+    add(sc.peek, move(p, shift / sd).to, sc.chance);
+  }
+  return peeks;
 }
 
 // Survivor pool lines for tonight. Picks come from the survivor feed, which
@@ -257,17 +293,9 @@ export function survivorStory(feed, slot, week) {
 }
 
 // Plain-text lines for the panel and the share card.
-function lines(st) {
-  const out = { script: st.script || [], teams: [], survivor: st.survivor || [] };
-  for (const t of st.teams) {
-    // "vs Ramosverse 29%: big night 59% · quiet 9%"
-    const bullets = t.stakes.map(x => ({ label: `${x.label} ${pct(x.now)}`, text: `big night ${pct(x.odds.big)} · quiet ${pct(x.odds.quiet)}${x.extra || ""}` }));
-    out.teams.push({ head: t.team, play: `${keyNames(t.mine)}${proj(t.mine)}`, bullets, root: t.root?.list.length ? keyNames(t.root) : null });
-  }
-  return out;
-}
+const lines = st => ({ script: st.script || [], survivor: st.survivor || [] });
 
-const SECTIONS = [["script", "🎬 Game script"], ["teams", "📺 What's at stake"], ["survivor", "🛡️ Survivor pool"]];
+const SECTIONS = [["script", "🎬 Game script"], ["survivor", "🛡️ Survivor pool"]];
 // One item's lines, for the share card.
 const itemLines = item => [item.play && `In play: ${item.play}`, ...(item.bullets || []).map(b => `• ${b.label}: ${b.text}`),
   item.root && `Root against: ${item.root}`, ...(item.detail || [])].filter(Boolean);
@@ -281,7 +309,7 @@ export default function PrimetimeWatch({ scores, nflGames, guillotine, logos, we
   const survivor = slot.length ? survivorStory(feed, slot, Number(week)) : null;
   if (!base && !survivor) return null;
   const st = base || { label: SLOT_NAMES[etDay(slot[0].kickoff)] || "Primetime", games: slot.map(g => g.name).join(" & "), slot,
-    teams: [], script: [] };
+    script: [] };
   st.survivor = survivor;
   const text = lines(st);
   const when = st.slot[0].state === "in" ? "live now" : new Date(st.slot[0].kickoff).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });
@@ -302,7 +330,6 @@ export default function PrimetimeWatch({ scores, nflGames, guillotine, logos, we
       <div className="primetime-summary">
         <span>{[
           text.script.length && "game script",
-          text.teams.length && `${text.teams.length} ${text.teams.length === 1 ? "team" : "teams"} with stakes`,
           text.survivor.length && "survivor pool"
         ].filter(Boolean).join(" · ")}</span>
         <button type="button" className="section-toggle" aria-expanded={open} onClick={() => setOpen(v => !v)}>{open ? "Hide ▴" : "Show ▾"}</button>

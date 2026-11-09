@@ -20,7 +20,7 @@ import { DeathWatch } from "./components/DeathWatch.jsx";
 import SwingChart, { tippingPoint } from "./components/SwingChart.jsx";
 import MatchupLineup, { LiveToggle, VsLineups, useLiveOnly } from "./components/MatchupLineup.jsx";
 import RafflePodium from "./components/RafflePodium.jsx";
-import PrimetimeWatch from "./components/PrimetimeWatch.jsx";
+import PrimetimeWatch, { nightPeeks, nightStakes } from "./components/PrimetimeWatch.jsx";
 import Sheet from "./components/Sheet.jsx";
 import SurvivorTab, { survivorModel, useSurvivorFeed } from "./components/SurvivorTab.jsx";
 import GamesTab from "./components/GamesTab.jsx";
@@ -453,8 +453,11 @@ function App() {
   const winFork = (a, b) => forkFor({ p: Number(b.winProbability), right: [b], left: [a], sd: Math.hypot(sdOfTeam(a), sdOfTeam(b)), livePlays: injuryFeed, games: scoreboard.nflGames || [] });
   const medianFork = t => forkFor({ p: Number(t.aboveMedianProbability), right: [t], sd: Math.hypot(sdOfTeam(t), 0.4 * typicalSd), livePlays: injuryFeed, games: scoreboard.nflGames || [] });
   // And the touchdowns that could swing them (tdPeeks.js), which the needles visit now and then.
-  const winPeeks = (a, b) => tdPeeks({ p: Number(b.winProbability), right: [b], left: [a], sd: Math.hypot(sdOfTeam(a), sdOfTeam(b)), games: scoreboard.nflGames || [] });
-  const medianPeeks = t => tdPeeks({ p: Number(t.aboveMedianProbability), right: [t], sd: Math.hypot(sdOfTeam(t), 0.4 * typicalSd), games: scoreboard.nflGames || [] });
+  // Before a night game, they also visit its big and quiet nights and game scripts (nightPeeks; Jim, 2026-11-09).
+  const winPeeks = (a, b) => [...tdPeeks({ p: Number(b.winProbability), right: [b], left: [a], sd: Math.hypot(sdOfTeam(a), sdOfTeam(b)), games: scoreboard.nflGames || [] }),
+    ...nightPeeks({ scores, nflGames: scoreboard.nflGames, team: b, kind: "win" })];
+  const medianPeeks = t => [...tdPeeks({ p: Number(t.aboveMedianProbability), right: [t], sd: Math.hypot(sdOfTeam(t), 0.4 * typicalSd), games: scoreboard.nflGames || [] }),
+    ...nightPeeks({ scores, nflGames: scoreboard.nflGames, team: t, kind: "median" })];
   const ticketPeeks = t => tdPeeks({ p: Number(t.topScoreProbability), right: [t], sd: Math.hypot(sdOfTeam(t), typicalSd), games: scoreboard.nflGames || [] });
   const ticketFork = t => forkFor({ p: Number(t.topScoreProbability), right: [t], sd: Math.hypot(sdOfTeam(t), typicalSd), livePlays: injuryFeed, games: scoreboard.nflGames || [] });
   const renderPrimetime = matchupId => {
@@ -477,6 +480,14 @@ function App() {
       {plays.length ? <ul className="primetime-plays">{plays.map((play, i) => <li key={i}><b>{playLabel(play)}</b> {playText(play)}{momentumLine(play) ? <em> ⚡ {momentumLine(play)}</em> : null}</li>)}</ul> : null}
     </div>;
   };
+  // What's at stake tonight for each side, right under the matchup (nightStakes; Jim, 2026-11-09).
+  const renderStakes = matchupId => {
+    const items = (pairOf(matchupId) || []).map(t => nightStakes({ scores, nflGames: scoreboard.nflGames, team: t })).filter(Boolean);
+    return items.length ? <div className="matchup-stakes">{items.map(x => <div key={x.team}>
+      <p><b>{x.label} · {x.team}:</b> {x.play}</p>
+      <ul>{x.bullets.map(b => <li key={b.label}><span>{b.label}</span> {b.text}</li>)}</ul>
+    </div>)}</div> : null;
+  };
   const orderedMatchups = [...matchupIds].sort((x, y) => (y === myMatchupId) - (x === myMatchupId) || isFollowed(y) - isFollowed(x));
   const renderMatchupRow = (matchupId, mine = false) => {
     const pair = pairOf(matchupId);
@@ -487,11 +498,11 @@ function App() {
       <em className="mr-odds">{t.winProbability != null ? pct(t.winProbability) : ""}</em>
       <strong className={["mr-score", flashingScores.has(t.teamId) ? "score-flash" : ""].join(" ").trim()}><span className={medianDotClass(t)} aria-hidden="true"></span>{money(t.score)}</strong>
     </div>;
-    return <button type="button" key={matchupId} className={["matchup-row", mine ? "mine" : "", !mine && isFollowed(matchupId) ? "followed" : ""].join(" ").trim()}
+    return <React.Fragment key={matchupId}><button type="button" className={["matchup-row", mine ? "mine" : "", !mine && isFollowed(matchupId) ? "followed" : ""].join(" ").trim()}
       onClick={() => setOpenMatchup(matchupId)} aria-label={`${a.team} vs ${b.team}: open the matchup`}>
       {side(a, b)}{side(b, a)}
       <span className="mr-open" aria-hidden="true">›</span>
-    </button>;
+    </button>{renderStakes(matchupId)}</React.Fragment>;
   };
   const renderMatchupDetail = matchupId => {
     const pair = pairOf(matchupId);
@@ -508,6 +519,7 @@ function App() {
       </div>
       {[a, b].some(t => t.projection?.dist && t.projection.dist.p90 > t.projection.dist.p10) ? <RaceChart oddsLabel="to win" total
         rows={[a, b].map(t => ({ key: t.teamId, name: t.team, score: t.score, dist: t.projection?.dist, odds: t.winProbability, espn: Number(t.projection?.espn) }))} /> : null}
+      {renderStakes(matchupId)}
       <div className="sheet-tabs" role="tablist">
         <button type="button" role="tab" aria-selected={view === "odds"} className={view === "odds" ? "active" : ""} onClick={() => setDetailView("odds")}>Odds & plays</button>
         {hasLineups ? <button type="button" role="tab" aria-selected={view === "lineup"} className={view === "lineup" ? "active" : ""} onClick={() => setDetailView("lineup")}>Lineups</button> : null}
