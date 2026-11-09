@@ -6,6 +6,10 @@ const AUTO_ADVANCE_MS = 6000;
 // After you tap or swipe, give the story you picked a bit longer.
 const AFTER_TAP_MS = 12000;
 const SWIPE_PX = 40;
+// The story without its own label repeated (Jim, 2026-11-08): "🚨 MEDIAN FLIP: Mr. Action Jackson..." under the
+// MEDIAN FLIP heading reads "🚨 Mr. Action Jackson...". Shares and alerts keep the full text.
+const escapeRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+export const storyBody = story => String(story.text || "").replace(new RegExp(`^(\\S+\\s+)?${escapeRe(String(story.type || ""))}:\\s*`, "i"), "$1");
 
 // Rotating live stories. Every story is rendered in the same grid cell and
 // only the active one is visible, so the box keeps the height of the longest
@@ -63,7 +67,7 @@ export default function LeagueWire({ stories, status, week, onOpen = null }) {
         {stories.map((story, i) => (
           <div className={i === active ? "marquee-story active" : "marquee-story"} aria-hidden={i !== active} key={story.type + story.text}>
             <b>{story.type}</b>
-            <span>{story.text}</span>
+            <span>{storyBody(story)}</span>
           </div>
         ))}
       </div>
