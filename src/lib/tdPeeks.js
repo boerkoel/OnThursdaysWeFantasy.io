@@ -43,11 +43,29 @@ export function tdPeeks({ p, right = [], left = [], sd, games }) {
       for (const b of BIG_PLAYS[pl.pos] || []) plays.push({ pts: b.pts, chance: 1 - Math.exp(-b.perGame * share), text: b.text(name) });
       for (const play of plays) {
         const after = 100 * normalCdf(z + sign * play.pts / Math.max(3, sd));
-        if (play.chance >= 0.02 && Math.abs(after - p) >= MIN_MOVE) peeks.push({ p: after, chance: play.chance, label: play.text });
+        if (play.chance >= 0.02 && Math.abs(after - p) >= MIN_MOVE) peeks.push({ p: after, chance: play.chance, label: play.text, pts: sign * play.pts });
       }
     }
   }
   return peeks;
+}
+
+// Median echoes (Jim, 2026-11-09: "have the other needles bounce with it"): another team's big moment (events:
+// its own median peeks, with pts and from) lifts the median line a little: its points times half the chance that
+// team is one of the two middle scores (about 2 · 4q(1−q) / teams, for its chance q of beating the median). Every
+// other team's median needle visits that, silently: the story's label stays on its own team's needle.
+export function medianEchoes(t, events, teams, sd) {
+  const p = Number(t.aboveMedianProbability);
+  if (!(p > 0 && p < 100) || !(sd > 0) || !teams) return [];
+  const z = normalQuantile(Math.min(0.999, Math.max(0.001, p / 100)));
+  const out = [];
+  for (const e of events) {
+    if (e.from.teamId === t.teamId || !Number.isFinite(e.pts)) continue;
+    const q = Math.min(1, Math.max(0, Number(e.from.aboveMedianProbability) / 100));
+    const after = 100 * normalCdf(z - e.pts * (4 * q * (1 - q)) / teams / Math.max(3, sd));
+    if (Math.abs(after - p) >= 0.5) out.push({ key: e.key ?? e.label, label: e.label, p: after, chance: e.chance, pregame: e.pregame, silent: true });
+  }
+  return out;
 }
 
 // The chop's peeks: a guillotine team's own plays move its chop odds (its points push them down), against the

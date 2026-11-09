@@ -249,16 +249,17 @@ export function nightPeeks({ scores, nflGames, team: s, kind }) {
   const sd = kind === "win" ? Math.hypot(Number(s.projectionSd) || 0, Number(opp.projectionSd) || 0) : Number(s.projectionSd);
   if (!(sd > 0)) return [];
   const peeks = [];
-  const add = (key, label, to, chance = NIGHT_PLAYER_CHANCE) => { if (Number.isFinite(to) && Math.abs(to - p) >= MIN_MOVE / 2) peeks.push({ key, label, p: to, chance, pregame: true }); };
+  const add = (key, label, to, chance = NIGHT_PLAYER_CHANCE, pts) => { if (Number.isFinite(to) && Math.abs(to - p) >= MIN_MOVE / 2) peeks.push({ key, label, p: to, chance, pregame: true, pts }); };
   // One pair per key player: "🌙 big night from J. Allen" (a night game) or "☀️ big day from …".
   const players = (side, direction) => {
     for (const pl of side.key) {
-      const odds = bigQuiet(p, side.outlook[side.list.indexOf(pl)].sd, sd, direction);
+      const plSd = side.outlook[side.list.indexOf(pl)].sd;
+      const odds = bigQuiet(p, plSd, sd, direction);
       const name = /D\/ST/.test(pl.name) ? `the ${pl.name}` : pl.name;
       const g = slot.find(x => (x.teamIds || []).map(Number).includes(Number(pl.proTeamId)));
       const [icon, when] = g && etHour(g.kickoff) >= PRIMETIME_HOUR ? ["🌙", "night"] : ["☀️", "day"];
-      add(`${pl.id}-big`, `${icon} big ${when} from ${name}`, odds?.big);
-      add(`${pl.id}-quiet`, `${icon} quiet ${when} from ${name}`, odds?.quiet);
+      add(`${pl.id}-big`, `${icon} big ${when} from ${name}`, odds?.big, NIGHT_PLAYER_CHANCE, direction * HALF_MEAN_SD * plSd);
+      add(`${pl.id}-quiet`, `${icon} quiet ${when} from ${name}`, odds?.quiet, NIGHT_PLAYER_CHANCE, -direction * HALF_MEAN_SD * plSd);
     }
   };
   players(tonight(s.lineup?.starters, gameTeams, slot), 1);

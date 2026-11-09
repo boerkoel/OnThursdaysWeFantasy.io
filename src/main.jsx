@@ -36,7 +36,7 @@ import { driveRooting } from "./lib/rooting.js";
 import { useDriveAdjusted } from "./lib/liveDrives.js";
 import { useWakeLock } from "./lib/wakeLock.js";
 import { forkFor } from "./lib/injuryForks.js";
-import { tdPeeks } from "./lib/tdPeeks.js";
+import { medianEchoes, tdPeeks } from "./lib/tdPeeks.js";
 import TvView from "./components/TvView.jsx";
 import { oddsMove, shortPlay } from "./lib/playText.js";
 
@@ -458,8 +458,13 @@ function App() {
   const lone = loneNightGame(scoreboard.nflGames);
   const winPeeks = (a, b) => syncPeeks([...tdPeeks({ p: Number(b.winProbability), right: [b], left: [a], sd: Math.hypot(sdOfTeam(a), sdOfTeam(b)), games: scoreboard.nflGames || [] }),
     ...nightPeeks({ scores, nflGames: scoreboard.nflGames, team: b, kind: "win" })], lone);
-  const medianPeeks = t => syncPeeks([...tdPeeks({ p: Number(t.aboveMedianProbability), right: [t], sd: Math.hypot(sdOfTeam(t), 0.4 * typicalSd), games: scoreboard.nflGames || [] }),
-    ...nightPeeks({ scores, nflGames: scoreboard.nflGames, team: t, kind: "median" })], lone);
+  const medianSd = t => Math.hypot(sdOfTeam(t), 0.4 * typicalSd);
+  const ownMedianPeeks = t => [...tdPeeks({ p: Number(t.aboveMedianProbability), right: [t], sd: medianSd(t), games: scoreboard.nflGames || [] }),
+    ...nightPeeks({ scores, nflGames: scoreboard.nflGames, team: t, kind: "median" })];
+  // While they dance together, every median needle also bounces (silently) with the other teams' moments, which
+  // move the median line (medianEchoes; Jim, 2026-11-09).
+  const medianEvents = lone ? scores.flatMap(j => ownMedianPeeks(j).map(pk => ({ ...pk, from: j }))) : [];
+  const medianPeeks = t => syncPeeks([...ownMedianPeeks(t), ...medianEchoes(t, medianEvents, scores.length, medianSd(t))], lone);
   const ticketPeeks = t => syncPeeks(tdPeeks({ p: Number(t.topScoreProbability), right: [t], sd: Math.hypot(sdOfTeam(t), typicalSd), games: scoreboard.nflGames || [] }), lone);
   const ticketFork = t => forkFor({ p: Number(t.topScoreProbability), right: [t], sd: Math.hypot(sdOfTeam(t), typicalSd), livePlays: injuryFeed, games: scoreboard.nflGames || [] });
   const renderPrimetime = matchupId => {

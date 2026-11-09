@@ -228,7 +228,7 @@ function useQuake({ teams, games, history, historyId, p, fork = null, peeks = []
   const forkRef = useRef(fork);
   forkRef.current = fork;
   if (!fork) forked.current = false;
-  const synced = syncLabel ? peeks.find(x => x.sync && (x.key ?? x.label) === syncLabel) || null : null;
+  const synced = syncLabel ? peeks.find(x => x.sync && !x.silent && (x.key ?? x.label) === syncLabel) || peeks.find(x => x.sync && (x.key ?? x.label) === syncLabel) || null : null;
   const peek = synced || (peeking.current && peeks.some(x => x.label === peeking.current.label) ? peeking.current : null);
   const pp = Math.min(99.9, Math.max(0.1, Number(peek ? peek.p : fork && forked.current ? fork.pOut : p)));
   const shown = h > 0 && wobble && Number.isFinite(pp) ? Math.min(99.5, Math.max(0.5, 100 * normalCdf((normalQuantile(pp / 100) + Math.sqrt(h) * wobble) / Math.sqrt(1 - h)))) : pp;
@@ -276,7 +276,7 @@ export function MiniNeedle({ team, p, from = null, sides, colors, band = null, h
         {Math.abs(moved) >= 0.5 ? <small className={moved > 0 ? "up" : "down"}>{moved > 0 ? "▲" : "▼"}{Math.abs(Math.round(moved))}</small> : null}
         {live ? <span className="needle-live">●</span> : null}</b>
       {caption === false ? null : <span className="mini-needle-name">{caption || team.team}</span>}
-      {peeks.length ? <span className="mini-needle-peek">{peek ? `${peek.label}: ${Math.round(right ? peek.p : 100 - peek.p)}%` : "\u00a0"}</span> : null}
+      {peeks.length ? <span className="mini-needle-peek">{peek && !peek.silent ? `${peek.label}: ${Math.round(right ? peek.p : 100 - peek.p)}%` : "\u00a0"}</span> : null}
       {fork ? <span className="mini-needle-fork" title={`Flailing between two futures: ${Math.round(p)}% if he's back, ${Math.round(fork.pOut)}% if not`}>
         {fork.label} · {Math.round(right ? p : 100 - p)}↔{Math.round(right ? fork.pOut : 100 - fork.pOut)}%</span> : null}
     </div>
@@ -344,7 +344,7 @@ export function Needle({ a, b, history = [], odds = null, label = null, games = 
         <span style={{ color: A_COLOR }}><b>{Math.round(100 - pB)}%{arrow(-moved)}</b>{a.team}</span>
         <span style={{ color: B_COLOR }}><b>{Math.round(pB)}%{arrow(moved)}</b>{b.team}</span>
       </div>
-      {peeks.length ? <p className="needle-peek">{peek ? <>{peek.label}: <b style={{ color: B_COLOR }}>{b.team} {Math.round(peek.p)}%</b></> : "\u00a0"}</p> : null}
+      {peeks.length ? <p className="needle-peek">{peek && !peek.silent ? <>{peek.label}: <b style={{ color: B_COLOR }}>{b.team} {Math.round(peek.p)}%</b></> : "\u00a0"}</p> : null}
       {fork ? <p className="needle-fork">{fork.label} · <b style={{ color: B_COLOR }}>{b.team} {Math.round(pB)}%</b> if he's back · <b style={{ color: B_COLOR }}>{Math.round(fork.pOut)}%</b> if not</p> : null}
       {field && (field[0].length || field[1].length) ? <div className="needle-field">
         {field.map((list, i) => <span key={i}>{list.map(p => <em key={p.name} className={p.trend} title={p.title}>{p.name} {p.trend === "up" ? "↑" : p.trend === "down" ? "↓" : "→"}</em>)}</span>)}
