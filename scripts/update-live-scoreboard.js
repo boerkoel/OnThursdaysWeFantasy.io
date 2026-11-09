@@ -379,10 +379,15 @@ const winCounts = new Map(probabilityTeams.map(s => [s.teamId, 0]));
 // Every simulated final, per team, for the outcome distribution (percentiles).
 const finalsByTeam = new Map(probabilityTeams.map(s => [s.teamId, new Float64Array(SIMULATIONS)]));
 
+// A simulated final that isn't a number loses every comparison, so a matchup could read 0% for both sides (Jim,
+// 2026-11-09: The Mahomies and Gibb it to Me Baby both sat at 0% for half an hour on a Sunday evening). Count the
+// team's points so far instead, and say so in the log with its players' inputs, to find the cause.
+const badFinals = new Map();
 for (let sim = 0; sim < SIMULATIONS; sim++) {
   const simulatedFinals = new Map();
   for (const team of probabilityTeams) {
-    const finalScore = simulateFinal(team, rng);
+    let finalScore = simulateFinal(team, rng);
+    if (!Number.isFinite(finalScore)) { badFinals.set(team.teamId, (badFinals.get(team.teamId) || 0) + 1); finalScore = team.score; }
     simulatedFinals.set(team.teamId, finalScore);
     finalsByTeam.get(team.teamId)[sim] = finalScore;
     simulationSums.set(team.teamId, simulationSums.get(team.teamId) + finalScore);
@@ -406,6 +411,12 @@ for (let sim = 0; sim < SIMULATIONS; sim++) {
     if (homeFinal > awayFinal) winCounts.set(matchup.homeTeamId, winCounts.get(matchup.homeTeamId) + 1);
     else if (awayFinal > homeFinal) winCounts.set(matchup.awayTeamId, winCounts.get(matchup.awayTeamId) + 1);
   }
+}
+for (const [teamId, n] of badFinals) {
+  const s = currentScores.find(x => x.teamId === teamId);
+  const odd = (lineupByTeam.get(teamId)?.starters || []).filter(p => !Number.isFinite(Number(p.projection)) || !Number.isFinite(Number(p.actual)))
+    .map(p => `${p.name} (proj ${p.projection}, actual ${p.actual})`);
+  console.log(`::warning title=Win odds::${s?.team || teamId}: ${n} of ${SIMULATIONS} simulated finals weren't numbers; counted its ${s?.score} so far. Odd inputs: ${odd.join("; ") || "none in the starters"}`);
 }
 
 // Our projection: the simulated mean (ESPN + RotoWire + FantasyPros, chances
@@ -575,9 +586,17 @@ const projectionHistory = [
 
 // Win-odds history for this week's swing charts and comeback stories: one
 // snapshot per update while odds are moving, thinned out if it gets long.
+// A matchup whose two sides don't add up to 100 in a snapshot came from a bad run: its odds are dropped from that
+// snapshot, so charts and comeback stories skip it (Jim, 2026-11-09).
 const MAX_WIN_HISTORY = 400;
-const winSnapshot = { t: new Date().toISOString(), p: Object.fromEntries(currentScores.map(s => [s.teamId, s.winProbability])) };
-let winHistory = Number(previousScoreboard?.winHistory?.week) === currentWeek ? [...(previousScoreboard.winHistory.points || [])] : [];
+const matchupPairs = currentWeekMatchups.map(m => [m.homeTeamId, m.awayTeamId]);
+const cleanWinPoint = point => {
+  const p = { ...(point.p || {}) };
+  for (const [h, a] of matchupPairs) if (p[h] != null && p[a] != null && Math.abs(Number(p[h]) + Number(p[a]) - 100) > 1) { delete p[h]; delete p[a]; }
+  return { ...point, p };
+};
+const winSnapshot = cleanWinPoint({ t: new Date().toISOString(), p: Object.fromEntries(currentScores.map(s => [s.teamId, s.winProbability])) });
+let winHistory = Number(previousScoreboard?.winHistory?.week) === currentWeek ? (previousScoreboard.winHistory.points || []).map(cleanWinPoint) : [];
 const lastSnapshot = winHistory[winHistory.length - 1];
 const oddsMoved = !lastSnapshot || Object.entries(winSnapshot.p).some(([id, p]) => lastSnapshot.p?.[id] !== p);
 if (oddsMoved) winHistory.push(winSnapshot);
