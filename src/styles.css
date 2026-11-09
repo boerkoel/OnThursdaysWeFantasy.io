@@ -1206,6 +1206,9 @@ section,details,.odds-block{scroll-margin-top:72px}
 .tv-side .mini-needles-label{margin-top:8px}.tv-side .race-tiers{gap:0 10px}.tv-field{display:none}
 .tv-body{padding-bottom:40px}.tv-ticker{position:fixed;left:0;right:0;bottom:0;margin:0;padding:6px 0;z-index:2}.tv-ticker-track span{font-size:12px!important}}
 @media (max-width:760px),(orientation:portrait) and (max-width:1024px){.tv-side .mini-needle b{font-size:12px;white-space:nowrap}.tv-side .mini-needle{grid-template-columns:50px minmax(0,1fr);column-gap:6px}.tv-side .mini-needle .needle-dial{max-width:50px!important}.tv-tile .mini-needle .needle-dial{max-width:110px!important}}
+/* Watch mode's live games on a phone: one line scrolling by (two copies, so -50% loops seamlessly). */
+.tv-head>div:first-child{min-width:0;flex:1}.tv-head-scroll{display:flex;align-items:center;gap:.4em;white-space:nowrap;overflow:hidden}.tv-head-scroll .needle-live{flex:none}.tv-head-window{flex:1;min-width:0;overflow:hidden}.tv-head-track{display:inline-block;animation:tv-scroll linear infinite}.tv-head-track>span{padding-right:3em;white-space:pre}
+@media (prefers-reduced-motion:reduce){.tv-head-scroll{white-space:normal}.tv-head-track{animation:none}.tv-head-track>span+span{display:none}}
 /* Watch mode scrolls on its own when it doesn't fit (an iPad on its side, a short laptop screen), never the page under it. */
 .tv{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 /* Watch mode clears the iPhone's status bar and home indicator (the home-screen app draws under them). */

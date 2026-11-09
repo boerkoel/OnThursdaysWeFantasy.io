@@ -218,8 +218,12 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
   return (
     <div className={"tv" + (idle ? " idle" : "")}>
       <header className="tv-head">
-        <div><span className="section-kicker">ON THURSDAYS WE WATCH FOOTBALL · WEEK {week}</span>
-          <h1>{liveGames.length ? <><span className="needle-live">● LIVE</span> {liveGames.map(gameText).join("   ·   ")}</> : "Game day"}</h1></div>
+        <div><span className="section-kicker">{narrow ? "" : "ON THURSDAYS WE WATCH FOOTBALL · "}WEEK {week}</span>
+          {/* On a phone, two or more live games scroll by on one line instead of wrapping (Jim, 2026-11-08). */}
+          {narrow && liveGames.length > 1
+            ? <h1 className="tv-head-scroll"><span className="needle-live">● LIVE</span><span className="tv-head-window"><span className="tv-head-track" style={{ animationDuration: `${Math.max(12, liveGames.map(gameText).join("").length / 4)}s` }}>
+                {[0, 1].map(k => <span key={k}>{liveGames.map(gameText).join("   ·   ")}</span>)}</span></span></h1>
+            : <h1>{liveGames.length ? <><span className="needle-live">● LIVE</span> {liveGames.map(gameText).join("   ·   ")}</> : "Game day"}</h1>}</div>
         <div className="tv-actions">
           {!fullscreen && document.documentElement.requestFullscreen ? <button type="button" onClick={() => document.documentElement.requestFullscreen().catch(() => {})}>⛶ Full screen</button> : null}
           <button type="button" onClick={sound.toggle} aria-pressed={sound.on} title={sound.on ? "Sound on: a chime for each clinch" : "Turn on a chime for each clinch"}>{sound.on ? "🔊" : "🔇"} Sound</button>
