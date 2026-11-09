@@ -215,15 +215,16 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
   });
 
   const gWeek = Number(guillotine?.week) === week;
+  const ticketWinner = scores.find(s => Number(s.topScoreProbability) >= LOCKED);
   return (
     <div className={"tv" + (idle ? " idle" : "")}>
       <header className="tv-head">
-        <div><span className="section-kicker">{narrow ? "" : "ON THURSDAYS WE WATCH FOOTBALL · "}WEEK {week}</span>
+        <div>{narrow ? null : <span className="section-kicker">ON THURSDAYS WE WATCH FOOTBALL · WEEK {week}</span>}
           {/* On a phone, two or more live games scroll by on one line instead of wrapping (Jim, 2026-11-08). */}
           {narrow && liveGames.length > 1
             ? <h1 className="tv-head-scroll"><span className="needle-live">● LIVE</span><span className="tv-head-window"><span className="tv-head-track" style={{ animationDuration: `${Math.max(12, liveGames.map(gameText).join("").length / 4)}s` }}>
                 {[0, 1].map(k => <span key={k}>{liveGames.map(gameText).join("   ·   ")}</span>)}</span></span></h1>
-            : <h1>{liveGames.length ? <><span className="needle-live">● LIVE</span> {liveGames.map(gameText).join("   ·   ")}</> : "Game day"}</h1>}</div>
+            : <h1>{liveGames.length ? <><span className="needle-live">● LIVE</span> {liveGames.map(gameText).join("   ·   ")}</> : narrow ? `Week ${week} game day` : "Game day"}</h1>}</div>
         <div className="tv-actions">
           {!fullscreen && document.documentElement.requestFullscreen ? <button type="button" onClick={() => document.documentElement.requestFullscreen().catch(() => {})}>⛶ Full screen</button> : null}
           <button type="button" onClick={sound.toggle} aria-pressed={sound.on} title={sound.on ? "Sound on: a chime for each clinch" : "Turn on a chime for each clinch"}>{sound.on ? "🔊" : "🔇"} Sound</button>
@@ -265,12 +266,14 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
           <NeedleRace label="MEDIAN LINE" compact max={narrow && open.length > 4 ? 2 : 4} pick="stake" onSwap={swapped("📏")} items={scores.map(s => ({ team: s, p: Number(s.aboveMedianProbability), from: s.liveAboveFrom, fork: forks.median(s), peeks: peeks.median(s) }))}
             sides={["below", "above"]} colors={MEDIAN_COLORS} band={[30, 70]} words={{ likely: ["likely below", "likely above"], locked: ["❌ below", "✅ above"] }}
             stakes={scores} history={scoreboard.medianHistory?.week === scoreboard.week ? scoreboard.medianHistory.points : []} games={games} />
-          <NeedleRace minShown={2} label="🎟️ TICKET RACE" compact max={2} onSwap={swapped("🎟️")} items={scores.map(s => ({ team: s, p: Number(s.topScoreProbability), from: s.liveTopFrom, fork: forks.ticket(s), peeks: peeks.ticket(s) }))}
+          {ticketWinner ? null : <NeedleRace minShown={2} label="🎟️ TICKET RACE" compact max={2} onSwap={swapped("🎟️")} items={scores.map(s => ({ team: s, p: Number(s.topScoreProbability), from: s.liveTopFrom, fork: forks.ticket(s), peeks: peeks.ticket(s) }))}
             sides={["no ticket", "ticket"]} colors={["#8b8e86", "#e6c85c"]} words={{ likely: ["long shots", "near lock"], locked: ["❌ out", "🎟️ locked"] }} implied="left"
-            fixed chipOdds="right" stakes={scores} history={scoreboard.raffleHistory?.week === scoreboard.week ? scoreboard.raffleHistory.points : []} games={games} />
+            fixed chipOdds="right" stakes={scores} history={scoreboard.raffleHistory?.week === scoreboard.week ? scoreboard.raffleHistory.points : []} games={games} />}
           {gWeek && guillotine.teams?.length ? <NeedleRace minShown={2} label="🪓 CHOPPING BLOCK" compact max={2} onSwap={swapped("🪓")} items={guillotine.teams.map(t => ({ team: { ...t, lineup: { starters: t.lineup || [] } }, p: Number(t.chopProbability), from: t.liveChopFrom, peeks: chopPeeks(t, guillotine.teams, games) }))}
             good="left" sides={["safe", "chopped"]} colors={["#8fd087", "#d98a86"]} words={{ likely: ["likely safe", "likely chopped"], locked: ["✅ safe", "🪓 chopped"] }} implied="left"
             stakes={guillotine.teams.map(t => ({ lineup: { starters: t.lineup || [] } }))} games={games} /> : null}
+          {/* Once the ticket is locked, the chopping block takes its place and it's one line below (Jim, 2026-11-09). */}
+          {ticketWinner ? <p className="tv-results-line">🎟️ Ticket: {ticketWinner.team}</p> : null}
           {field.length ? <div className="tv-field"><small className="mini-needles-label">ON THE FIELD NOW</small>
             {field.map(f => <p key={f.id}><b>{f.head}</b>{f.on.length ? " — " + f.on.join(", ") : " — no league starters"}</p>)}</div> : null}
         </aside>
