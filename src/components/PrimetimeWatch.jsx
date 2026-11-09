@@ -5,7 +5,7 @@ import { ShareButton } from "./LiveBits.jsx";
 import { TEAM_NAMES, useSurvivorFeed } from "./SurvivorTab.jsx";
 
 // TNF / SNF / MNF What to Watch: how the night game(s) can swing the league, as one shareable panel.
-// Shown while a night game (7 PM ET or later) is live or kicks off within 30 hours. Each team's own stakes
+// Shown while a standalone game (night, or alone in its window: standalone()) is live or kicks off within 30 hours. Each team's own stakes
 // sit under its matchup instead (nightStakes), and the needles visit them before kickoff (nightPeeks)
 // (Jim, 2026-11-09: the preview stays at the game-script level; details where you need them).
 // - Game script: what a romp, a shootout or a defensive battle would do to the league's odds.
@@ -24,15 +24,37 @@ const etDay = iso => new Date(iso).toLocaleDateString("en-US", { weekday: "short
 const SLOT_NAMES = { Thu: "TNF", Sun: "SNF", Mon: "MNF" };
 const lastName = n => /D\/ST/.test(n) ? n : n.split(" ").slice(1).join(" ") || n;
 
-// The night slot to feature: live night games, else the next night slot.
+// Standalone windows count as prime time (Jim, 2026-11-09: "treat the early morning international games like
+// prime time"): night games, plus any game with at most one other kicking off within an hour and nothing else
+// within ALONE_MS (international mornings; Thanksgiving's three, Christmas and late-season Saturdays too).
+const ALONE_MS = 3 * 60 * 60 * 1000, SLOT_MS = 60 * 60 * 1000;
+function standalone(g, games) {
+  if (!g.kickoff) return false;
+  if (etHour(g.kickoff) >= PRIMETIME_HOUR) return true;
+  const gap = o => Math.abs(Date.parse(o.kickoff) - Date.parse(g.kickoff));
+  const others = games.filter(o => o !== g && o.kickoff);
+  return others.filter(o => gap(o) <= SLOT_MS).length <= 1 && others.every(o => gap(o) <= SLOT_MS || gap(o) >= ALONE_MS);
+}
+// The window's name: TNF/SNF/MNF at night, else Thanksgiving, Christmas, Morning, or the weekday.
+function slotLabel(g) {
+  const hour = etHour(g.kickoff), day = etDay(g.kickoff);
+  if (hour >= PRIMETIME_HOUR) return SLOT_NAMES[day] || "Primetime";
+  const [month, date] = new Date(g.kickoff).toLocaleDateString("en-US", { month: "numeric", day: "numeric", timeZone: "America/New_York" }).split("/").map(Number);
+  if (day === "Thu" && month === 11 && date >= 22 && date <= 28) return "Thanksgiving";
+  if (month === 12 && date === 25) return "Christmas";
+  if (hour < 12) return "Morning";
+  return new Date(g.kickoff).toLocaleDateString("en-US", { weekday: "long", timeZone: "America/New_York" });
+}
+
+// The prime-time slot to feature: live standalone games, else the next standalone slot.
 function nightSlot(nflGames) {
-  const night = nflGames.filter(g => g.kickoff && !g.completed && etHour(g.kickoff) >= PRIMETIME_HOUR);
+  const night = nflGames.filter(g => g.kickoff && !g.completed && standalone(g, nflGames));
   const live = night.filter(g => g.state === "in");
   if (live.length) return live;
   const upcoming = night.filter(g => g.state === "pre" && Date.parse(g.kickoff) - Date.now() <= AHEAD_MS).sort((a, b) => Date.parse(a.kickoff) - Date.parse(b.kickoff));
   if (!upcoming.length) return [];
   const first = Date.parse(upcoming[0].kickoff);
-  return upcoming.filter(g => Date.parse(g.kickoff) - first <= 60 * 60 * 1000);
+  return upcoming.filter(g => Date.parse(g.kickoff) - first <= SLOT_MS);
 }
 
 // A side's players in tonight's games: names, points still projected, SD.
@@ -148,7 +170,7 @@ function gameScripts({ slot, scores, byId, guillotine, open }) {
 export function primetimeStories({ scores, nflGames, guillotine }) {
   const slot = nightSlot(nflGames || []);
   if (!slot.length) return null;
-  const label = SLOT_NAMES[etDay(slot[0].kickoff)] || "Primetime";
+  const label = slotLabel(slot[0]);
   const games = slot.map(g => g.name).join(" & ");
   const byId = new Map(scores.map(s => [s.teamId, s]));
   const open = p => Number(p) > 0 && Number(p) < 100;
@@ -159,12 +181,12 @@ export function primetimeStories({ scores, nflGames, guillotine }) {
 }
 
 // When the needles dance together (Needle.jsx sync): nothing is live and games are still to come (Jim, 2026-11-09:
-// "between TNF and kickoff on Sunday"), or a night game is the only thing on.
+// "between TNF and kickoff on Sunday"), or a standalone game (night, international morning) is the only thing on.
 export function loneNightGame(nflGames) {
   const games = nflGames || [];
   const live = games.filter(g => g.state === "in");
   if (!live.length) return games.some(g => g.state === "pre");
-  return live.length === 1 && etHour(live[0].kickoff) >= PRIMETIME_HOUR;
+  return live.length === 1 && standalone(live[0], games);
 }
 export const syncPeeks = (peeks, on) => on ? peeks.map(pk => ({ ...pk, sync: true })) : peeks;
 
@@ -172,7 +194,7 @@ export const syncPeeks = (peeks, on) => on ? peeks.map(pk => ({ ...pk, sync: tru
 function nightContext(scores, nflGames) {
   const slot = nightSlot(nflGames || []);
   if (!slot.length) return null;
-  return { slot, gameTeams: new Set(slot.flatMap(g => g.teamIds || []).map(Number)), label: SLOT_NAMES[etDay(slot[0].kickoff)] || "Primetime",
+  return { slot, gameTeams: new Set(slot.flatMap(g => g.teamIds || []).map(Number)), label: slotLabel(slot[0]),
     byId: new Map(scores.map(s => [s.teamId, s])) };
 }
 
@@ -332,7 +354,7 @@ export default function PrimetimeWatch({ scores, nflGames, guillotine, logos, we
   const slot = base?.slot || nightSlot(nflGames || []);
   const survivor = slot.length ? survivorStory(feed, slot, Number(week)) : null;
   if (!base && !survivor) return null;
-  const st = base || { label: SLOT_NAMES[etDay(slot[0].kickoff)] || "Primetime", games: slot.map(g => g.name).join(" & "), slot,
+  const st = base || { label: slotLabel(slot[0]), games: slot.map(g => g.name).join(" & "), slot,
     script: [] };
   st.survivor = survivor;
   const text = lines(st);
