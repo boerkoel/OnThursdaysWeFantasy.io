@@ -114,7 +114,8 @@ export function rateGames({ games, scores, guillotineTeams = [], svPicks = [], l
         [swing, `🎯 Swung league odds ${Math.round(oddsMoved)} pts`],
         [svOut * 3, `🛡️ Knocked out ${losers.length} survivor ${losers.length === 1 ? "entry" : "entries"}`],
         [breakout, boomer ? `Breakout: ${boomer.name} (${boomer.owned}% rostered) had ${boomer.actual.toFixed(2)}` : ""],
-        [surprise, `Off script: ${home.score + away.score} points, O/U was ${latest?.total}`],
+        // The card's line row already shows the O/U and where it moved (Jim, 2026-11-08: said twice).
+        [surprise, `Off script: ${home.score + away.score} points`],
         [fans * 0.7, `League rooting interest: ${fanTeams.map(t => `${FAN_NAMES[t.abbrev]} fans`).join(" vs ")}`]
       ] : [
         [h2h?.v || 0, h2h?.text || ""],
@@ -126,7 +127,7 @@ export function rateGames({ games, scores, guillotineTeams = [], svPicks = [], l
         [breakout, boomer ? `Breakout: ${boomer.name} (${boomer.owned}% rostered) has ${boomer.actual.toFixed(2)}` : ""],
         [playoff * 0.8, `Playoff stakes: ${away.abbrev} ${Math.round(away.playoffOdds ?? 0)}%, ${home.abbrev} ${Math.round(home.playoffOdds ?? 0)}%`],
         [g.state === "pre" ? shootout * 0.6 : 0, `Shootout watch: O/U ${latest?.total}`],
-        [surprise, `Off script: on pace for ${Math.round(pace ?? 0)} points, O/U was ${latest?.total}`],
+        [surprise, `Off script: on pace for ${Math.round(pace ?? 0)} points`],
         [fans * 0.7, `League rooting interest: ${fanTeams.map(t => `${FAN_NAMES[t.abbrev]} fans`).join(" vs ")}`]
       ] };
   };
