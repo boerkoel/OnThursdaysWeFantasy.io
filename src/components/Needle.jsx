@@ -317,9 +317,10 @@ export function Needle({ a, b, history = [], odds = null, label = null, games = 
   const margin = da && db ? da.mean - db.mean : null;
   const lead = margin == null ? null : Math.abs(margin) < 0.25 ? "Dead even" : `${(margin > 0 ? a : b).team} by ${half(margin)}`;
   const lo = margin == null ? null : margin - 0.6745 * sd, hi = margin == null ? null : margin + 0.6745 * sd;
-  // The middle half of outcomes, from the projected winner's side: "likely 3.5–17.5", or "either way" if it spans both.
+  // The middle half of outcomes, from the projected winner's side: "(likely by 3.5–17.5)", or, when it includes the
+  // other team winning, "· could go either way" (Jim, 2026-11-09: "(either way)" wasn't clear).
   const sign = margin >= 0 ? 1 : -1;
-  const range = lo == null ? null : lo * hi <= 0 ? "either way" : `likely ${half(Math.min(sign * lo, sign * hi))}–${half(Math.max(sign * lo, sign * hi))}`;
+  const range = lo == null ? null : lo * hi <= 0 ? " · could go either way" : ` (likely by ${half(Math.min(sign * lo, sign * hi))}–${half(Math.max(sign * lo, sign * hi))})`;
   return (
     <div className="needle" role="img" title={live ? "Live: the needle wanders over where the odds could be once the games in progress are over, averaging out at the current odds" : "Between games the needle only quakes; it swings while their players are in a game"} aria-label={`${label ? label + ": " : ""}${a.team} ${Math.round(100 - pB)}%, ${b.team} ${Math.round(pB)}%`}>
       {label || live ? <small className="needle-label">{label}{live ? <span className="needle-live">● LIVE</span> : null}</small> : null}
@@ -350,7 +351,7 @@ export function Needle({ a, b, history = [], odds = null, label = null, games = 
         {field.map((list, i) => <span key={i}>{list.map(p => <em key={p.name} className={p.trend} title={p.title}>{p.name} {p.trend === "up" ? "↑" : p.trend === "down" ? "↓" : "→"}</em>)}</span>)}
       </div> : null}
       {lead ? <p className="needle-line" title={`Projected ${money(da.mean)} – ${money(db.mean)}; middle half of outcomes: ${a.team} ${lo >= 0 ? "+" : "−"}${half(lo)} to ${hi >= 0 ? "+" : "−"}${half(hi)}`}>
-        Projected: <b>{lead}</b> ({range})</p> : null}
+        Projected: <b>{lead}</b>{range}</p> : null}
     </div>
   );
 }
