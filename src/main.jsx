@@ -32,11 +32,11 @@ import managerLinks from "./data/manager-links.json";
 import { BackToTop, SectionNav, TabBar } from "./components/Navigation.jsx";
 import { AccuracyScorecard, OutcomeBar, RaceChart, outcomeScale } from "./components/OutcomeBar.jsx";
 import { LOCKED, MiniNeedle, Needle, NeedleRace } from "./components/Needle.jsx";
-import { driveRooting } from "./lib/rooting.js";
+import { driveRooting, driveScenarios } from "./lib/rooting.js";
 import { useDriveAdjusted } from "./lib/liveDrives.js";
 import { useWakeLock } from "./lib/wakeLock.js";
 import { forkFor } from "./lib/injuryForks.js";
-import { medianEchoes, tdPeeks } from "./lib/tdPeeks.js";
+import { drivePeeks, medianEchoes, tdPeeks } from "./lib/tdPeeks.js";
 import TvView from "./components/TvView.jsx";
 import { oddsMove, shortPlay } from "./lib/playText.js";
 
@@ -456,16 +456,28 @@ function App() {
   // Before a night game, they also visit its big and quiet nights and game scripts (nightPeeks; Jim, 2026-11-09).
   // During a lone night game they all dance together (syncPeeks).
   const lone = loneNightGame(scoreboard.nflGames);
-  const winPeeks = (a, b) => syncPeeks([...tdPeeks({ p: Number(b.winProbability), right: [b], left: [a], sd: Math.hypot(sdOfTeam(a), sdOfTeam(b)), games: scoreboard.nflGames || [] }),
+  // Live, a lone game's needles sync to how the current drive could end instead (drivePeeks): each play's points
+  // go to whoever starts the players in it, and the median line rises with every team's share.
+  const liveGame = lone ? (scoreboard.nflGames || []).find(g => g.state === "in") : null;
+  const drivePlays = (liveGame && driveScenarios({ game: liveGame, starters: scores.flatMap(s => (s.lineup?.starters || []).map(p => ({ ...p, owner: s.teamId }))) }))?.scenarios || [];
+  const ptsOf = (sc, t) => sc.pts.reduce((sum, [pl, v]) => sum + (pl.owner === t.teamId ? v : 0), 0);
+  const lineRise = sc => sc.pts.reduce((sum, [pl, v]) => {
+    const q = Number(scores.find(x => x.teamId === pl.owner)?.aboveMedianProbability) / 100 || 0;
+    return sum + v * 4 * q * (1 - q) / scores.length;
+  }, 0);
+  const winPeeks = (a, b) => drivePlays.length ? syncPeeks(drivePeeks({ p: Number(b.winProbability), sd: Math.hypot(sdOfTeam(a), sdOfTeam(b)), scenarios: drivePlays,
+    delta: sc => ptsOf(sc, b) - ptsOf(sc, a), own: sc => Boolean(ptsOf(sc, a) || ptsOf(sc, b)) }), true) : syncPeeks([...tdPeeks({ p: Number(b.winProbability), right: [b], left: [a], sd: Math.hypot(sdOfTeam(a), sdOfTeam(b)), games: scoreboard.nflGames || [] }),
     ...nightPeeks({ scores, nflGames: scoreboard.nflGames, team: b, kind: "win" })], lone);
   const medianSd = t => Math.hypot(sdOfTeam(t), 0.4 * typicalSd);
-  const ownMedianPeeks = t => [...tdPeeks({ p: Number(t.aboveMedianProbability), right: [t], sd: medianSd(t), games: scoreboard.nflGames || [] }),
+  const ownMedianPeeks = t => drivePlays.length ? drivePeeks({ p: Number(t.aboveMedianProbability), sd: medianSd(t), scenarios: drivePlays,
+    delta: sc => ptsOf(sc, t) - lineRise(sc), own: sc => Boolean(ptsOf(sc, t)) }) : [...tdPeeks({ p: Number(t.aboveMedianProbability), right: [t], sd: medianSd(t), games: scoreboard.nflGames || [] }),
     ...nightPeeks({ scores, nflGames: scoreboard.nflGames, team: t, kind: "median" })];
   // While they dance together, every median needle also bounces (silently) with the other teams' moments, which
   // move the median line (medianEchoes; Jim, 2026-11-09).
-  const medianEvents = lone ? scores.flatMap(j => ownMedianPeeks(j).map(pk => ({ ...pk, from: j }))) : [];
+  const medianEvents = lone && !drivePlays.length ? scores.flatMap(j => ownMedianPeeks(j).map(pk => ({ ...pk, from: j }))) : [];
   const medianPeeks = t => syncPeeks([...ownMedianPeeks(t), ...medianEchoes(t, medianEvents, scores.length, medianSd(t))], lone);
-  const ticketPeeks = t => syncPeeks(tdPeeks({ p: Number(t.topScoreProbability), right: [t], sd: Math.hypot(sdOfTeam(t), typicalSd), games: scoreboard.nflGames || [] }), lone);
+  const ticketPeeks = t => syncPeeks(drivePlays.length ? drivePeeks({ p: Number(t.topScoreProbability), sd: Math.hypot(sdOfTeam(t), typicalSd), scenarios: drivePlays,
+    delta: sc => ptsOf(sc, t), own: sc => Boolean(ptsOf(sc, t)) }) : tdPeeks({ p: Number(t.topScoreProbability), right: [t], sd: Math.hypot(sdOfTeam(t), typicalSd), games: scoreboard.nflGames || [] }), lone);
   const ticketFork = t => forkFor({ p: Number(t.topScoreProbability), right: [t], sd: Math.hypot(sdOfTeam(t), typicalSd), livePlays: injuryFeed, games: scoreboard.nflGames || [] });
   const renderPrimetime = matchupId => {
     const pair = pairOf(matchupId);

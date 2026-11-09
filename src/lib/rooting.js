@@ -19,8 +19,11 @@ const fgPoints = yds => yds >= 60 ? 6 : yds >= 50 ? 5 : yds >= 40 ? 4 : 3;
 const REALISTIC = 0.08;   // at least this likely on the drive to count as a realistic hope
 const MIN_SHOWN = 2;      // win-odds points a play must move to be worth rooting for
 
-// drive: game.drive ({ possession, yardLine, redZone }); game: the NFL game; a, b: the matchup's two teams.
-export function driveRooting({ game, a, b }) {
+// The plays this drive could produce for these league starters (Jim, 2026-11-09: the needles sync to them too):
+// starters: [{ ...player, any tag like side or owner }]. Returns { offenseTeam, toGo, scenarios: [{ label,
+// chance, pts: [[player, points]] }] }, or null with no drive or nobody on it. A TD pass to one team's receiver
+// is one scenario that scores for both the QB's and the receiver's owners.
+export function driveScenarios({ game, starters }) {
   const drive = game?.drive;
   if (!drive?.possession || game.state !== "in") return null;
   const offense = Number(drive.possession), defense = (game.teams || []).map(t => Number(t.id)).find(id => id !== offense);
@@ -29,15 +32,7 @@ export function driveRooting({ game, a, b }) {
   const toGo = ctx ? ctx.toGo : null;
   const tdRate = chances ? chances.td : 0.22, fgRate = chances ? chances.fg : 0.14, pass = ctx ? passShare(ctx) : 0.6;
   const fgYds = toGo == null ? 45 : Math.max(20, toGo + 17);
-
-  // This drive's league starters on both sides: [player, fantasy side].
-  const on = [];
-  for (const [team, sideKey] of [[a, "a"], [b, "b"]]) {
-    for (const p of team.lineup?.starters || []) {
-      const pro = Number(p.proTeamId);
-      if (p.pos === "D/ST" ? pro === defense : pro === offense) on.push({ ...p, side: sideKey });
-    }
-  }
+  const on = starters.filter(p => p.pos === "D/ST" ? Number(p.proTeamId) === defense : Number(p.proTeamId) === offense);
   if (!on.length) return null;
   const qb = on.find(p => p.pos === "QB"), k = on.find(p => p.pos === "K"), dst = on.find(p => p.pos === "D/ST");
   const catchers = on.filter(p => ["WR", "TE", "RB"].includes(p.pos)), runners = on.filter(p => p.pos === "RB");
@@ -77,6 +72,15 @@ export function driveRooting({ game, a, b }) {
     add(fumbler ? `a ${lastName(fumbler.name)} fumble` : `an ${off} fumble`, 0.015, [...(fumbler ? [[fumbler, -2]] : []), ...stall]);
   }
 
+  return { offenseTeam, toGo, scenarios };
+}
+
+// drive: game.drive ({ possession, yardLine, redZone }); game: the NFL game; a, b: the matchup's two teams.
+export function driveRooting({ game, a, b }) {
+  // This drive's league starters on both sides, tagged with their fantasy side.
+  const built = driveScenarios({ game, starters: [[a, "a"], [b, "b"]].flatMap(([team, side]) => (team.lineup?.starters || []).map(p => ({ ...p, side }))) });
+  if (!built) return null;
+  const { offenseTeam, toGo, scenarios } = built;
   // Win odds after each, from the margin's spread (as the key plays' momentum is judged).
   const pa = Number(a.winProbability) / 100;
   if (!(pa > 0.005 && pa < 0.995)) return null;

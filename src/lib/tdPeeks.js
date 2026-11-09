@@ -50,6 +50,21 @@ export function tdPeeks({ p, right = [], left = [], sd, games }) {
   return peeks;
 }
 
+// Drive peeks (Jim, 2026-11-09: "during a game, this can be synced to possible drive outcomes"): while a lone game
+// is live, every needle visits how the current drive could end (rooting.js driveScenarios), all at once.
+// delta(sc): the needle's points from it (its side minus the other's, or for a median needle its own points minus
+// the median line's rise); own(sc): whether its team has a player in it (else the peek is silent, an echo).
+export function drivePeeks({ p, sd, scenarios, delta, own }) {
+  if (!(p > 0 && p < 100) || !scenarios?.length) return [];
+  const z = normalQuantile(Math.min(0.999, Math.max(0.001, p / 100)));
+  return scenarios.map(sc => {
+    const d = delta(sc);
+    if (!d) return null;
+    const after = 100 * normalCdf(z + d / Math.max(3, sd));
+    return Math.abs(after - p) >= 1 ? { key: `drive:${sc.label}`, label: `🏈 this drive: ${sc.label}`, p: after, chance: sc.chance, silent: !own(sc) } : null;
+  }).filter(Boolean);
+}
+
 // Median echoes (Jim, 2026-11-09: "have the other needles bounce with it"): another team's big moment (events:
 // its own median peeks, with pts and from) lifts the median line a little: its points times half the chance that
 // team is one of the two middle scores (about 2 · 4q(1−q) / teams, for its chance q of beating the median). Every
