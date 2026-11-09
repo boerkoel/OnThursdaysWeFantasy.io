@@ -1230,3 +1230,5 @@ section,details,.odds-block{scroll-margin-top:72px}
 .race-chart .race-spread{order:11;margin-top:2px}
 .mini-needle-peek{display:block;margin-top:1px;font-size:9.5px;font-weight:800;color:#e6c85c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.needle-peek{margin:4px 0 0;font-size:11px;color:#e6c85c;font-weight:700}
 .mini-needle-peek,.needle-peek{min-height:1.35em}
+/* Standings on a phone: team names wrap to two lines instead of cutting off at "Brock You Li…" (Jim, 2026-11-08). */
+@media(max-width:760px){.odds-row>strong span{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.2;overflow-wrap:anywhere}}
