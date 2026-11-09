@@ -614,7 +614,7 @@ function App() {
           const final = g?.completed;
           const mark = p.result === "won" && final !== false ? "✓" : p.result === "lost" && final ? "✗"
             : g?.state === "in" && me && opp && Number(me.score) < Number(opp.score) ? `⏳ down ${me.score}–${opp.score}` : "⏳";
-          return `${p.team}${p.n > 1 ? " ×" + p.n : ""} ${mark}`;
+          return `${p.team}${p.n > 1 ? " ×" + p.n : ""}\u00a0${mark}`;   // the mark stays with its team (it wrapped alone)
         });
         const aliveN = mine.filter(e => e.alive).length;
         lines.push({ key: "s", icon: "🛡️", go: "survivor", text: <><b>Survivor</b> · {aliveN} of {mine.length} {mine.length === 1 ? "entry" : "entries"} alive{picks.length ? <> · Week {n}: {picks.join(", ")}</> : null}</> });
@@ -723,7 +723,6 @@ function App() {
           })()}
           {chip("TO WIN", myScore.winProbability)}
           {chip("ABOVE MEDIAN", myScore.aboveMedianProbability)}
-          {expectedWins(myScore) != null ? <span className="my-chip" title="H2H win odds + above-median odds"><small>EXP. WINS</small><b>{expectedWins(myScore).toFixed(2)}</b></span> : null}
           {chip("RAFFLE TICKET", myScore.topScoreProbability)}
           {chip("PLAYOFFS", odds?.playoffOdds)}
           {chip("TITLE", odds?.titleOdds)}
