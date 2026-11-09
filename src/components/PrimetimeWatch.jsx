@@ -8,9 +8,12 @@ import { TEAM_NAMES, useSurvivorFeed } from "./SurvivorTab.jsx";
 // TNF / SNF / MNF What to Watch: every storyline the night game(s) can still
 // swing, as one shareable panel. Shown while a night game (7 PM ET or later)
 // is live or kicks off within 30 hours.
-// - Head-to-head: TNF ranks matchups by how much is up for grabs; SNF/MNF
-//   list every undecided matchup with someone playing tonight.
-// - Median, ticket race and Death Watch: undecided teams with players tonight.
+// - Game script: what a romp, a shootout or a defensive battle would do to the league's odds.
+// - Head-to-head: matchups ranked by how much tonight can move them, with only the players who
+//   can move it and the team's median odds alongside (Jim, 2026-11-09: cut the clutter).
+// - Median (teams not already under Head to head), ticket race and Death Watch: undecided teams
+//   with players tonight. Head-to-head, median and Death Watch drop anything a big or quiet night
+//   moves less than MIN_MOVE points.
 // - Survivor pool: how many entries are left, who rode tonight's teams (picks
 //   show only once the game kicks off) and who has the most entries left.
 // Big night / quiet night odds use the same normal approximation as the
@@ -19,7 +22,6 @@ import { TEAM_NAMES, useSurvivorFeed } from "./SurvivorTab.jsx";
 const PRIMETIME_HOUR = 19;
 const AHEAD_MS = 30 * 60 * 60 * 1000;
 const POSITION_IDS = { QB: 1, RB: 2, WR: 3, TE: 4, K: 5, "D/ST": 16 };
-const MIN_SWING = 2;
 
 const etHour = iso => Number(new Date(iso).toLocaleString("en-US", { hour: "numeric", hour12: false, timeZone: "America/New_York" }));
 const etDay = iso => new Date(iso).toLocaleDateString("en-US", { weekday: "short", timeZone: "America/New_York" });
@@ -43,8 +45,13 @@ function tonight(players, gameTeams, games = []) {
   const list = (players || []).filter(p => gameTeams.has(Number(p.proTeamId)));
   const outlook = list.map(p => playerOutlook({ actual: p.actual, projection: p.projection, positionId: POSITION_IDS[p.pos],
     game: games.find(g => (g.teamIds || []).includes(Number(p.proTeamId))), proTeamId: p.proTeamId }));
+  // The players who can move the needle (Jim, 2026-11-09): the biggest spread, plus anyone with at least half of it.
+  const top = Math.max(0, ...outlook.map(o => o.sd));
+  const key = list.map((p, i) => ({ p, sd: outlook[i].sd })).filter(x => x.sd >= top / 2).sort((a, b) => b.sd - a.sd).slice(0, 3).map(x => x.p);
   return {
     list,
+    key,
+    outlook,
     rest: outlook.reduce((sum, o) => sum + o.rest, 0),
     sd: Math.hypot(...outlook.map(o => o.sd))
   };
@@ -57,7 +64,75 @@ function bigQuiet(probabilityPct, playersSd, outcomeSd, direction = 1) {
   return { big: 100 * normalCdf(z + shift), quiet: 100 * normalCdf(z - shift) };
 }
 const names = side => side.list.map(p => lastName(p.name)).join(", ");
+const keyNames = side => (side.key?.length ? side.key : side.list).map(p => lastName(p.name)).join(", ");
 const proj = side => side.rest > 0 ? ` (proj ${money(side.rest)} more)` : "";
+// Big night minus quiet night, in percentage points: below this a storyline can't really move.
+const MIN_MOVE = 10;
+const moves = odds => odds ? Math.abs(odds.big - odds.quiet) : 0;
+
+// 🎬 Game script (Jim, 2026-11-09): how each way a night game could go moves the league. A romp lifts the
+// winner's players and D/ST and sinks the loser's; a shootout lifts every offense and sinks both D/STs;
+// a defensive battle does the reverse (kickers sit out). Each player in the script moves HALF_MEAN_SD of their
+// spread, the same size as a "big night".
+const SCRIPT_MOVES = 3;
+function scriptSign(p, scenario) {
+  const team = Number(p.proTeamId), dst = p.pos === "D/ST";
+  if (scenario.romp != null) return team === scenario.romp ? 1 : -1;
+  if (scenario.shootout) return dst ? -1 : 1;
+  return dst ? 1 : p.pos === "K" ? 0 : -1;
+}
+function gameScripts({ slot, scores, byId, guillotine, open }) {
+  const out = [];
+  const shiftOf = (players, games, scenario) => {
+    const side = tonight(players, new Set(games.teamIds.map(Number)), [games]);
+    return HALF_MEAN_SD * side.list.reduce((sum, p, i) => sum + scriptSign(p, scenario) * side.outlook[i].sd, 0);
+  };
+  const move = (from, z) => ({ from, to: 100 * normalCdf(normalQuantile(Math.min(0.9999, Math.max(0.0001, from / 100))) + z) });
+  for (const g of slot) {
+    const teams = g.teams || [];
+    if (teams.length < 2 || g.completed) continue;
+    const nick = t => TEAM_NAMES[nflAbbrev(t.abbrev)] || t.abbrev;
+    const scenarios = [
+      ...teams.map(t => ({ label: `${nick(t)} romp`, romp: Number(t.id) })),
+      { label: "Shootout", shootout: true },
+      { label: "Defensive battle", defense: true }
+    ];
+    for (const sc of scenarios) {
+      const items = [];
+      const seen = new Set();
+      for (const a of scores) {
+        const b = byId.get(a.opponentId);
+        if (!b || seen.has(a.matchupId) || !open(a.winProbability)) continue;
+        seen.add(a.matchupId);
+        const marginSd = Math.hypot(Number(a.projectionSd) || 0, Number(b.projectionSd) || 0);
+        if (!(marginSd > 0)) continue;
+        const m = move(Number(a.winProbability), (shiftOf(a.lineup?.starters, g, sc) - shiftOf(b.lineup?.starters, g, sc)) / marginSd);
+        // Name whichever side it helps.
+        items.push(m.to >= m.from ? { text: `${a.team} ${pct(m.from)}→${pct(m.to)}`, size: m.to - m.from }
+          : { text: `${b.team} ${pct(100 - m.from)}→${pct(100 - m.to)}`, size: m.from - m.to });
+      }
+      for (const s of scores) {
+        if (!open(s.aboveMedianProbability) || !(Number(s.projectionSd) > 0)) continue;
+        const m = move(Number(s.aboveMedianProbability), shiftOf(s.lineup?.starters, g, sc) / Number(s.projectionSd));
+        // Medians rank behind matchups and the chop.
+        items.push({ text: `${s.team} median ${pct(m.from)}→${pct(m.to)}`, size: Math.abs(m.to - m.from), rank: 0.6 });
+      }
+      // The chop: the likeliest victim's shift against the other teams still in danger (5%+).
+      const danger = (guillotine?.teams || []).filter(t => open(t.chopProbability) && Number(t.chopProbability) >= 5 && Number(t.projectionSd) > 0)
+        .sort((x, y) => y.chopProbability - x.chopProbability);
+      if (danger.length > 1) {
+        const [t, ...others] = danger;
+        const rel = shiftOf(t.lineup, g, sc) - others.reduce((sum, o) => sum + shiftOf(o.lineup, g, sc), 0) / others.length;
+        const sd = Math.hypot(Number(t.projectionSd), others.reduce((sum, o) => sum + Number(o.projectionSd), 0) / others.length);
+        const m = move(Number(t.chopProbability), -rel / sd);
+        items.push({ text: `🪓 ${t.team} chop ${pct(m.from)}→${pct(m.to)}`, size: Math.abs(m.to - m.from) });
+      }
+      const big = items.filter(x => x.size >= MIN_MOVE).sort((x, y) => y.size * (y.rank || 1) - x.size * (x.rank || 1));
+      if (big.length) out.push({ head: sc.label, detail: [big.slice(0, SCRIPT_MOVES).map(x => x.text).join(" · ")], weight: big.reduce((s, x) => s + x.size, 0) });
+    }
+  }
+  return out.sort((x, y) => y.weight - x.weight).slice(0, 4);
+}
 
 export function primetimeStories({ scores, nflGames, guillotine }) {
   const slot = nightSlot(nflGames || []);
@@ -79,32 +154,39 @@ export function primetimeStories({ scores, nflGames, guillotine }) {
     if (!sa.list.length && !sb.list.length) continue;
     const marginSd = Math.hypot(Number(a.projectionSd) || 0, Number(b.projectionSd) || 0);
     const [fav, dog] = Number(a.winProbability) >= Number(b.winProbability) ? [a, b] : [b, a];
+    // Only the sides whose players can really move it (Jim, 2026-11-09); each carries its median odds too,
+    // so a team isn't listed twice.
     const sides = [[a, sa], [b, sb]].filter(([, s]) => s.list.length).map(([team, s]) => {
       const odds = bigQuiet(Number(team.winProbability), s.sd, marginSd);
-      return { team, s, odds };
-    });
+      const median = open(team.aboveMedianProbability) ? bigQuiet(Number(team.aboveMedianProbability), s.sd, Number(team.projectionSd)) : null;
+      return { team, s, odds, median: moves(median) >= MIN_MOVE ? median : null };
+    }).filter(x => moves(x.odds) >= MIN_MOVE);
     // Down to one side: what the trailing team needs.
     const trailing = Number(a.score) < Number(b.score) ? [a, sa, b, sb] : [b, sb, a, sa];
     const needs = !trailing[3].list.length && trailing[1].list.length && Number(trailing[2].startersLeft) === 0
       ? `${trailing[0].team} needs ${money(Number(trailing[2].score) - Number(trailing[0].score))} from ${names(trailing[1])}${proj(trailing[1])}.` : null;
-    const upForGrabs = Math.max(...sides.map(x => x.odds ? x.odds.big - x.odds.quiet : 0));
+    if (!sides.length) continue;
+    const upForGrabs = Math.max(...sides.map(x => moves(x.odds)));
     h2h.push({ a, b, fav, dog, sides, needs, upForGrabs });
   }
-  const isTnf = label === "TNF";
-  h2h.sort((x, y) => isTnf ? y.upForGrabs - x.upForGrabs : Math.abs(Number(x.a.winProbability) - 50) - Math.abs(Number(y.a.winProbability) - 50));
-  const matchups = (isTnf ? h2h.filter(m => m.upForGrabs >= MIN_SWING) : h2h).slice(0, 6);
+  // Most up for grabs first.
+  h2h.sort((x, y) => y.upForGrabs - x.upForGrabs);
+  const matchups = h2h.slice(0, 5);
+  const shown = new Set(matchups.flatMap(m => m.sides.map(x => x.team.teamId)));
 
-  // Median races.
-  const median = scores.filter(s => open(s.aboveMedianProbability)).map(s => {
+  // Median races the night can still swing, for teams not already under Head to head.
+  const median = scores.filter(s => open(s.aboveMedianProbability) && !shown.has(s.teamId)).map(s => {
     const side = tonight(s.lineup?.starters, gameTeams, slot);
     return side.list.length ? { s, side, odds: bigQuiet(Number(s.aboveMedianProbability), side.sd, Number(s.projectionSd)) } : null;
-  }).filter(Boolean).sort((x, y) => Math.abs(Number(x.s.aboveMedianProbability) - 50) - Math.abs(Number(y.s.aboveMedianProbability) - 50)).slice(0, 5);
+  }).filter(x => x && moves(x.odds) >= MIN_MOVE).sort((x, y) => moves(y.odds) - moves(x.odds)).slice(0, 4);
+  const script = gameScripts({ slot, scores, byId, guillotine, open });
 
   // Ticket race: the leader, and everyone who can still catch them; or who
   // has already clinched it.
   const leader = [...scores].sort((x, y) => Number(y.score) - Number(x.score))[0];
   const raffleLocked = scores.find(s => Number(s.topScoreProbability) >= 100) || null;
-  const raffle = raffleLocked ? [] : scores.filter(s => open(s.topScoreProbability) && (Number(s.topScoreProbability) >= 1 || s === leader)).map(s => ({ s, side: tonight(s.lineup?.starters, gameTeams, slot) }))
+  // Nothing to watch once the leader is all but certain (Jim, 2026-11-09).
+  const raffle = raffleLocked || Number(leader?.topScoreProbability) >= 99 ? [] : scores.filter(s => open(s.topScoreProbability) && (Number(s.topScoreProbability) >= 1 || s === leader)).map(s => ({ s, side: tonight(s.lineup?.starters, gameTeams, slot) }))
     .filter(x => x.side.list.length || x.s === leader).sort((x, y) => Number(y.s.topScoreProbability) - Number(x.s.topScoreProbability)).slice(0, 4);
 
   // Death Watch: still in danger with players tonight; or already doomed.
@@ -114,10 +196,10 @@ export function primetimeStories({ scores, nflGames, guillotine }) {
     if (!side.list.length) return null;
     const swing = (t.gameSwings || []).find(g => slot.some(s => s.name === g.game));
     return { t, side, swing };
-  }).filter(Boolean).sort((x, y) => y.t.chopProbability - x.t.chopProbability).slice(0, 4) || [];
+  }).filter(x => x && (x.swing ? Math.abs(x.swing.chopIfAbove - x.swing.chopIfBelow) >= MIN_MOVE : Number(x.t.chopProbability) >= 5)).sort((x, y) => y.t.chopProbability - x.t.chopProbability).slice(0, 4) || [];
 
-  if (!matchups.length && !median.length && !raffle.length && !death.length && !raffleLocked && !doomed) return null;
-  return { label, games, slot, matchups, median, raffle, death, leader, raffleLocked, doomed };
+  if (!matchups.length && !median.length && !raffle.length && !death.length && !script.length && !raffleLocked && !doomed) return null;
+  return { label, games, slot, matchups, median, raffle, death, script, leader, raffleLocked, doomed };
 }
 
 // Survivor pool lines for tonight. Picks come from the survivor feed, which
@@ -181,15 +263,17 @@ export function survivorStory(feed, slot, week) {
 
 // Plain-text lines for the panel and the share card.
 function lines(st) {
-  const out = { h2h: [], median: [], raffle: [], death: [], survivor: st.survivor || [] };
+  const out = { script: st.script || [], h2h: [], median: [], raffle: [], death: [], survivor: st.survivor || [] };
   for (const m of st.matchups) {
     const head = `${m.fav.team} ${pct(m.fav.winProbability)} vs ${m.dog.team} (${money(m.fav.score)}–${money(m.dog.score)})`;
-    const detail = m.needs ? [m.needs] : m.sides.map(({ team, s, odds }) =>
-      `${names(s)} for ${team.team}${proj(s)}${odds ? `: big night → ${team.team.split(" ")[0]} ${pct(odds.big)}, quiet → ${pct(odds.quiet)}` : ""}`);
-    out.h2h.push({ head, detail });
+    // "TDsMaGee: Jefferson, Cook III · big night 59% (median 90%) · quiet 9% (33%)"
+    const med = (median, k, label = "") => median ? ` (${label}${pct(median[k])})` : "";
+    const detail = m.sides.map(({ team, s, odds, median }) =>
+      `${team.team}: ${keyNames(s)} · big night ${pct(odds.big)}${med(median, "big", "median ")} · quiet ${pct(odds.quiet)}${med(median, "quiet")}`);
+    out.h2h.push({ head, detail: m.needs ? [m.needs] : detail });
   }
   for (const { s, side, odds } of st.median) {
-    out.median.push({ head: `${s.team} · ${pct(s.aboveMedianProbability)} to beat the median`, detail: [`${names(side)}${proj(side)}${odds ? `: big night → ${pct(odds.big)}, quiet → ${pct(odds.quiet)}` : ""}`] });
+    out.median.push({ head: `${s.team} · ${pct(s.aboveMedianProbability)} to beat the median`, detail: [`${keyNames(side)}${proj(side)}: big night → ${pct(odds.big)}, quiet → ${pct(odds.quiet)}`] });
   }
   if (st.raffleLocked) out.raffle.push({ head: `🔒 ${st.raffleLocked.team} has clinched the ticket with ${money(st.raffleLocked.score)} pts`, detail: ["Nobody left can catch them."] });
   if (st.doomed) {
@@ -203,7 +287,7 @@ function lines(st) {
       : `${money(back)} back with ${names(side)} tonight${proj(side)}`] });
   }
   for (const { t, side, swing } of st.death) {
-    out.death.push({ head: `${t.team} · ${pct(t.chopProbability)} chop odds`, detail: [`${names(side)}${proj(side)}${swing ? `: big night → ${pct(swing.chopIfAbove)}, quiet → ${pct(swing.chopIfBelow)}` : ""}`] });
+    out.death.push({ head: `${t.team} · ${pct(t.chopProbability)} chop odds`, detail: [`${keyNames(side)}${proj(side)}${swing ? `: big night → ${pct(swing.chopIfAbove)}, quiet → ${pct(swing.chopIfBelow)}` : ""}`] });
   }
   return out;
 }
@@ -211,7 +295,7 @@ function lines(st) {
 // RIP lives on the Death Watch tab: the hash switches tabs, then open it.
 const openRip = () => setTimeout(() => { const d = document.getElementById("rip"); if (d) { d.open = true; d.scrollIntoView({ behavior: "smooth" }); } }, 150);
 
-const SECTIONS = [["h2h", "⚔️ Head to head"], ["median", "🎯 Median races"], ["raffle", "🎟️ Ticket race"], ["death", "🪓 Death Watch"], ["survivor", "🛡️ Survivor pool"]];
+const SECTIONS = [["script", "🎬 Game script"], ["h2h", "⚔️ Head to head"], ["median", "🎯 Median races"], ["raffle", "🎟️ Ticket race"], ["death", "🪓 Death Watch"], ["survivor", "🛡️ Survivor pool"]];
 
 export default function PrimetimeWatch({ scores, nflGames, guillotine, logos, week }) {
   // Starts collapsed to a one-line summary; the share image is always full.
@@ -222,7 +306,7 @@ export default function PrimetimeWatch({ scores, nflGames, guillotine, logos, we
   const survivor = slot.length ? survivorStory(feed, slot, Number(week)) : null;
   if (!base && !survivor) return null;
   const st = base || { label: SLOT_NAMES[etDay(slot[0].kickoff)] || "Primetime", games: slot.map(g => g.name).join(" & "), slot,
-    matchups: [], median: [], raffle: [], death: [] };
+    matchups: [], median: [], raffle: [], death: [], script: [] };
   st.survivor = survivor;
   const text = lines(st);
   const when = st.slot[0].state === "in" ? "live now" : new Date(st.slot[0].kickoff).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });
@@ -242,6 +326,7 @@ export default function PrimetimeWatch({ scores, nflGames, guillotine, logos, we
       </div>
       <div className="primetime-summary">
         <span>{[
+          text.script.length && "game script",
           text.h2h.length && `${text.h2h.length} ${text.h2h.length === 1 ? "matchup" : "matchups"}`,
           text.median.length && `${text.median.length} median ${text.median.length === 1 ? "race" : "races"}`,
           text.raffle.length && (st.raffleLocked ? "ticket clinched" : "ticket race"),
