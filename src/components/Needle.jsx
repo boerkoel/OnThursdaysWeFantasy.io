@@ -155,11 +155,47 @@ const FORK_SWITCH = 0.12;
 // peeks (tdPeeks.js): odds if a player scores; each tick a peek starts with chance ∝ his TD chance and holds
 // for about two seconds, so a likely scorer's TD is visited often and a long shot's now and then.
 const PEEK_PER_TICK = 0.12, PEEK_TICKS = 6;
+// Synced peeks (Jim, 2026-11-09: "needles should all dance together"): while a night game is the only game on,
+// its peeks carry sync: true and one shared clock picks one outcome at a time ("🌙 big night from J. Jefferson",
+// "🏈 if Jefferson scores"); every needle with that outcome visits it at once, so one team's jumps up while its
+// opponent's drops. Same rates as a needle's own peeks.
+// SYNC_REST: a breather between outcomes, so the needles settle back to the real odds in between.
+const SYNC_REST = 4;
+const sync = { label: null, left: 0, rest: 0, needles: new Set(), subs: new Set(), timer: null };
+function syncTick() {
+  if (sync.left > 0) {
+    sync.left -= 1;
+    if (!sync.left) { sync.label = null; sync.rest = SYNC_REST; sync.subs.forEach(f => f(n => n + 1)); }
+    return;
+  }
+  if (sync.rest > 0) { sync.rest -= 1; return; }
+  const pool = new Map();
+  for (const ref of sync.needles) for (const pk of ref.current || []) if (pk.sync && !pool.has(pk.label)) pool.set(pk.label, pk.chance);
+  const all = [...pool], start = Math.floor(Math.random() * all.length);
+  for (let k = 0; k < all.length; k++) {
+    const [label, chance] = all[(start + k) % all.length];
+    if (Math.random() < PEEK_PER_TICK * chance) { sync.label = label; sync.left = PEEK_TICKS; sync.subs.forEach(f => f(n => n + 1)); break; }
+  }
+}
+function useSyncedLabel(peeksRef, on) {
+  const [, rerender] = useState(0);
+  useEffect(() => {
+    if (!on || reducedMotion()) return;
+    sync.needles.add(peeksRef); sync.subs.add(rerender);
+    if (!sync.timer) sync.timer = setInterval(syncTick, 450);
+    return () => {
+      sync.needles.delete(peeksRef); sync.subs.delete(rerender);
+      if (!sync.subs.size) { clearInterval(sync.timer); sync.timer = null; sync.label = null; sync.left = 0; }
+    };
+  }, [on]);
+  return on ? sync.label : null;
+}
 function useQuake({ teams, games, history, historyId, p, fork = null, peeks = [] }) {
   const forked = useRef(false);
   const peeking = useRef(null), peekLeft = useRef(0);
   const peeksRef = useRef(peeks);
   peeksRef.current = peeks;
+  const syncLabel = useSyncedLabel(peeksRef, peeks.some(x => x.sync));
   const { live, h } = lookAhead(stakesLeft(teams, games), wildness(history, historyId));
   const [wobble, setWobble] = useState(0);
   const burst = useRef(0), lastP = useRef(Number(p));
@@ -179,7 +215,7 @@ function useQuake({ teams, games, history, historyId, p, fork = null, peeks = []
         const pks = peeksRef.current, start = Math.floor(Math.random() * pks.length);
         for (let k = 0; k < pks.length; k++) {
           const pk = pks[(start + k) % pks.length];
-          if ((live || pk.pregame) && Math.random() < PEEK_PER_TICK * pk.chance) { peeking.current = pk; peekLeft.current = PEEK_TICKS; break; }
+          if (!pk.sync && (live || pk.pregame) && Math.random() < PEEK_PER_TICK * pk.chance) { peeking.current = pk; peekLeft.current = PEEK_TICKS; break; }
         }
       }
       if (live && Math.random() < BURST_CHANCE) burst.current = 1;
@@ -191,7 +227,8 @@ function useQuake({ teams, games, history, historyId, p, fork = null, peeks = []
   const forkRef = useRef(fork);
   forkRef.current = fork;
   if (!fork) forked.current = false;
-  const peek = peeking.current && peeks.some(x => x.label === peeking.current.label) ? peeking.current : null;
+  const synced = syncLabel ? peeks.find(x => x.sync && x.label === syncLabel) || null : null;
+  const peek = synced || (peeking.current && peeks.some(x => x.label === peeking.current.label) ? peeking.current : null);
   const pp = Math.min(99.9, Math.max(0.1, Number(peek ? peek.p : fork && forked.current ? fork.pOut : p)));
   const shown = h > 0 && wobble && Number.isFinite(pp) ? Math.min(99.5, Math.max(0.5, 100 * normalCdf((normalQuantile(pp / 100) + Math.sqrt(h) * wobble) / Math.sqrt(1 - h)))) : pp;
   return { live, shown: peek ? pp : shown, peek };

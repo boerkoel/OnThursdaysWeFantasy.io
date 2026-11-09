@@ -153,6 +153,15 @@ export function primetimeStories({ scores, nflGames, guillotine }) {
   return { label, games, slot, script };
 }
 
+// A lone night game (Jim, 2026-11-09): the night slot is the only thing on, about to start or live with no other
+// game in progress. Then every needle's peeks dance together (Needle.jsx sync).
+export function loneNightGame(nflGames) {
+  const slot = nightSlot(nflGames || []);
+  if (slot.length !== 1) return false;
+  return (nflGames || []).every(g => g === slot[0] || g.state !== "in");
+}
+export const syncPeeks = (peeks, on) => on ? peeks.map(pk => ({ ...pk, sync: true })) : peeks;
+
 // Tonight's night game, if one is live or kicks off within 30 hours: what the stakes and peeks below need.
 function nightContext(scores, nflGames) {
   const slot = nightSlot(nflGames || []);

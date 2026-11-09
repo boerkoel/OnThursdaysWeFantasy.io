@@ -20,7 +20,7 @@ import { DeathWatch } from "./components/DeathWatch.jsx";
 import SwingChart, { tippingPoint } from "./components/SwingChart.jsx";
 import MatchupLineup, { LiveToggle, VsLineups, useLiveOnly } from "./components/MatchupLineup.jsx";
 import RafflePodium from "./components/RafflePodium.jsx";
-import PrimetimeWatch, { nightPeeks, nightStakes } from "./components/PrimetimeWatch.jsx";
+import PrimetimeWatch, { loneNightGame, nightPeeks, nightStakes, syncPeeks } from "./components/PrimetimeWatch.jsx";
 import Sheet from "./components/Sheet.jsx";
 import SurvivorTab, { survivorModel, useSurvivorFeed } from "./components/SurvivorTab.jsx";
 import GamesTab from "./components/GamesTab.jsx";
@@ -454,11 +454,13 @@ function App() {
   const medianFork = t => forkFor({ p: Number(t.aboveMedianProbability), right: [t], sd: Math.hypot(sdOfTeam(t), 0.4 * typicalSd), livePlays: injuryFeed, games: scoreboard.nflGames || [] });
   // And the touchdowns that could swing them (tdPeeks.js), which the needles visit now and then.
   // Before a night game, they also visit its big and quiet nights and game scripts (nightPeeks; Jim, 2026-11-09).
-  const winPeeks = (a, b) => [...tdPeeks({ p: Number(b.winProbability), right: [b], left: [a], sd: Math.hypot(sdOfTeam(a), sdOfTeam(b)), games: scoreboard.nflGames || [] }),
-    ...nightPeeks({ scores, nflGames: scoreboard.nflGames, team: b, kind: "win" })];
-  const medianPeeks = t => [...tdPeeks({ p: Number(t.aboveMedianProbability), right: [t], sd: Math.hypot(sdOfTeam(t), 0.4 * typicalSd), games: scoreboard.nflGames || [] }),
-    ...nightPeeks({ scores, nflGames: scoreboard.nflGames, team: t, kind: "median" })];
-  const ticketPeeks = t => tdPeeks({ p: Number(t.topScoreProbability), right: [t], sd: Math.hypot(sdOfTeam(t), typicalSd), games: scoreboard.nflGames || [] });
+  // During a lone night game they all dance together (syncPeeks).
+  const lone = loneNightGame(scoreboard.nflGames);
+  const winPeeks = (a, b) => syncPeeks([...tdPeeks({ p: Number(b.winProbability), right: [b], left: [a], sd: Math.hypot(sdOfTeam(a), sdOfTeam(b)), games: scoreboard.nflGames || [] }),
+    ...nightPeeks({ scores, nflGames: scoreboard.nflGames, team: b, kind: "win" })], lone);
+  const medianPeeks = t => syncPeeks([...tdPeeks({ p: Number(t.aboveMedianProbability), right: [t], sd: Math.hypot(sdOfTeam(t), 0.4 * typicalSd), games: scoreboard.nflGames || [] }),
+    ...nightPeeks({ scores, nflGames: scoreboard.nflGames, team: t, kind: "median" })], lone);
+  const ticketPeeks = t => syncPeeks(tdPeeks({ p: Number(t.topScoreProbability), right: [t], sd: Math.hypot(sdOfTeam(t), typicalSd), games: scoreboard.nflGames || [] }), lone);
   const ticketFork = t => forkFor({ p: Number(t.topScoreProbability), right: [t], sd: Math.hypot(sdOfTeam(t), typicalSd), livePlays: injuryFeed, games: scoreboard.nflGames || [] });
   const renderPrimetime = matchupId => {
     const pair = pairOf(matchupId);
