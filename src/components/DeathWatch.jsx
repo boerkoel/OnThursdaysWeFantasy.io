@@ -217,10 +217,6 @@ function Obituaries({ guillotine }) {
   );
 }
 
-const openObituaries = () => {
-  const details = document.getElementById("rip");
-  if (details) details.open = true;
-};
 
 export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
   const [openLineups, setOpenLineups] = useState(() => new Set());
@@ -228,6 +224,10 @@ export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
   if (!(guillotine.teams?.length)) return null;
   const toggleLineup = id => setOpenLineups(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
   const atRisk = guillotine.teams.filter(t => t.chopProbability > 0).slice(0, 3);
+  // Full cards for the real candidates (Jim, 2026-11-08: a 0.8% team got a whole card): the favorite, and anyone 5%+;
+  // the rest share a line.
+  const cards = atRisk.filter((t, i) => i === 0 || t.chopProbability >= 5);
+  const longShots = atRisk.filter(t => !cards.includes(t));
   const history = Number(guillotine.chopHistory?.week) === Number(guillotine.week) ? guillotine.chopHistory.points : [];
   // The chart follows the week's story: the teams most at risk at any point.
   const chartTeams = peakTeams(history, guillotine.teams.map(t => ({ ...t, value: t.chopProbability })));
@@ -255,7 +255,7 @@ export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
         good="left" sides={["safe", "chopped"]} colors={["#8fd087", "#d98a86"]} words={{ likely: ["likely safe", "likely chopped"], locked: ["✅ safe", "🪓 chopped"] }} implied="left"
         stakes={guillotine.teams.map(t => ({ lineup: { starters: t.lineup || [] } }))} history={history} games={nflGames} />
       <div className="award-grid dw-details">
-        {atRisk.map((t, i) => <article className="award-card" id={`dw-${t.teamId}`} key={t.teamId}>
+        {cards.map((t, i) => <article className="award-card" id={`dw-${t.teamId}`} key={t.teamId}>
           <small>{i === 0 ? "🪓 ON THE CHOPPING BLOCK" : `#${i + 1} MOST AT RISK`}</small>
           <strong className="dw-team"><DwLogo team={t} size="md" />{t.team}</strong>
           <b className="chop-odds">{t.chopProbability >= 100 ? "Chop guaranteed" : `${pct(t.chopProbability)} chance of being chopped`}</b>
@@ -296,8 +296,8 @@ export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
           </div>
         </article>)}
       </div>
+      {longShots.length ? <p className="median-note">Long shots: {longShots.map((t, i) => <React.Fragment key={t.teamId}>{i ? " · " : ""}<span id={`dw-${t.teamId}`}><b>{t.team}</b> {pct(t.chopProbability)} chop{t.playersLeft ? `, ${t.playersLeft} left` : ""}</span></React.Fragment>)}</p> : null}
       {chartTeams.length ? <ChopChart history={history} teams={chartTeams} plays={plays} title="CHOP ODDS · THIS WEEK'S DANGER ZONE" /> : null}
-      {guillotine.chopped?.length ? <p className="median-note">Already chopped: {guillotine.chopped.map(c => `${c.team} (Week ${c.week})`).join(" · ")} · <a href="#rip" onClick={openObituaries}>Rest in peace</a></p> : null}
       <SurvivalOdds teams={guillotine.teams} guillotine={guillotine} />
       <Obituaries guillotine={guillotine} />
     </section>
