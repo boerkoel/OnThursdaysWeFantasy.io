@@ -170,7 +170,8 @@ function syncTick() {
   }
   if (sync.rest > 0) { sync.rest -= 1; return; }
   const pool = new Map();
-  for (const ref of sync.needles) for (const pk of ref.current || []) if (pk.sync && !pool.has(pk.label)) pool.set(pk.label, pk.chance);
+  // Keyed by pk.key (the event: a player's big game, a game's script) when there is one, else the label.
+  for (const ref of sync.needles) for (const pk of ref.current || []) if (pk.sync && !pool.has(pk.key ?? pk.label)) pool.set(pk.key ?? pk.label, pk.chance);
   const all = [...pool], start = Math.floor(Math.random() * all.length);
   for (let k = 0; k < all.length; k++) {
     const [label, chance] = all[(start + k) % all.length];
@@ -227,7 +228,7 @@ function useQuake({ teams, games, history, historyId, p, fork = null, peeks = []
   const forkRef = useRef(fork);
   forkRef.current = fork;
   if (!fork) forked.current = false;
-  const synced = syncLabel ? peeks.find(x => x.sync && x.label === syncLabel) || null : null;
+  const synced = syncLabel ? peeks.find(x => x.sync && (x.key ?? x.label) === syncLabel) || null : null;
   const peek = synced || (peeking.current && peeks.some(x => x.label === peeking.current.label) ? peeking.current : null);
   const pp = Math.min(99.9, Math.max(0.1, Number(peek ? peek.p : fork && forked.current ? fork.pOut : p)));
   const shown = h > 0 && wobble && Number.isFinite(pp) ? Math.min(99.5, Math.max(0.5, 100 * normalCdf((normalQuantile(pp / 100) + Math.sqrt(h) * wobble) / Math.sqrt(1 - h)))) : pp;

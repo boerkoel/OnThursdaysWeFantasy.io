@@ -95,11 +95,16 @@ const rompChance = t => {
   if (!(w > 0 && w < 1)) return TOTAL_SCRIPT_CHANCE;
   return 1 - normalCdf((ROMP_BY - MARGIN_SD * normalQuantile(w)) / MARGIN_SD);
 };
-const scenariosFor = g => (g.teams || []).length < 2 || g.completed ? [] : [
-  ...g.teams.map(t => ({ label: `${nick(t)} romp`, peek: `🎬 if the ${nick(t)} romp`, romp: Number(t.id), chance: rompChance(t) })),
-  { label: "Shootout", peek: "🎬 if it's a shootout", shootout: true, chance: TOTAL_SCRIPT_CHANCE },
-  { label: "Defensive battle", peek: "🎬 if it's a defensive battle", defense: true, chance: TOTAL_SCRIPT_CHANCE }
-];
+// key: what the needles sync on (Needle.jsx); labels can repeat across games, keys can't.
+const scenariosFor = g => {
+  if ((g.teams || []).length < 2 || g.completed) return [];
+  const game = g.teams.map(nick).join("–");
+  return [
+    ...g.teams.map(t => ({ label: `${nick(t)} romp`, peek: `🎬 if the ${nick(t)} romp`, key: `${g.id}-romp-${t.id}`, romp: Number(t.id), chance: rompChance(t) })),
+    { label: "Shootout", peek: `🎬 if ${game} is a shootout`, key: `${g.id}-shootout`, shootout: true, chance: TOTAL_SCRIPT_CHANCE },
+    { label: "Defensive battle", peek: `🎬 if ${game} is a defensive battle`, key: `${g.id}-defense`, defense: true, chance: TOTAL_SCRIPT_CHANCE }
+  ];
+};
 function gameScripts({ slot, scores, byId, guillotine, open }) {
   const out = [];
   for (const g of slot) {
@@ -153,12 +158,13 @@ export function primetimeStories({ scores, nflGames, guillotine }) {
   return { label, games, slot, script };
 }
 
-// A lone night game (Jim, 2026-11-09): the night slot is the only thing on, about to start or live with no other
-// game in progress. Then every needle's peeks dance together (Needle.jsx sync).
+// When the needles dance together (Needle.jsx sync): nothing is live and games are still to come (Jim, 2026-11-09:
+// "between TNF and kickoff on Sunday"), or a night game is the only thing on.
 export function loneNightGame(nflGames) {
-  const slot = nightSlot(nflGames || []);
-  if (slot.length !== 1) return false;
-  return (nflGames || []).every(g => g === slot[0] || g.state !== "in");
+  const games = nflGames || [];
+  const live = games.filter(g => g.state === "in");
+  if (!live.length) return games.some(g => g.state === "pre");
+  return live.length === 1 && etHour(live[0].kickoff) >= PRIMETIME_HOUR;
 }
 export const syncPeeks = (peeks, on) => on ? peeks.map(pk => ({ ...pk, sync: true })) : peeks;
 
@@ -202,39 +208,48 @@ export function nightStakes({ scores, nflGames, team: s }) {
     bullets: stakes.map(x => ({ label: x.label, text: `big night ${pct(x.odds.big)} · quiet ${pct(x.odds.quiet)}${x.extra || ""}` })) };
 }
 
-// The needles dance with tonight's outcomes before kickoff (Jim, 2026-11-09): peeks (tdPeeks.js shape, with
-// pregame: true so the needle visits them before the game is live) at the team's odds if its players have a big
-// or a quiet night, if the opponent's do, and under each game script. kind: "win" (the team's win odds) or
+// The needles dance with what's to come while nothing is live (Jim, 2026-11-09): peeks (tdPeeks.js shape, with
+// pregame: true so the needle visits them before kickoff) at the team's odds if its key players have a big or a
+// quiet game, if the opponent's do, and under each upcoming game's script. Over a whole Sunday slate, only the
+// PEEKS_KEPT that matter most (the move times how likely it is). kind: "win" (the team's win odds) or
 // "median". Live, the touchdown peeks take over.
-// A player's big (or quiet) night: the top (or bottom) third or so of his outcomes.
-const NIGHT_PLAYER_CHANCE = 0.3;
+// A player's big (or quiet) game: the top (or bottom) third or so of his outcomes.
+const NIGHT_PLAYER_CHANCE = 0.3, PEEKS_KEPT = 10;
 export function nightPeeks({ scores, nflGames, team: s, kind }) {
-  const ctx = nightContext(scores, nflGames);
-  if (!ctx || ctx.slot.some(g => g.state !== "pre")) return [];
-  const { slot, gameTeams, byId } = ctx;
-  const opp = kind === "win" ? byId.get(s.opponentId) : null;
+  const games = nflGames || [];
+  if (games.some(g => g.state === "in")) return [];
+  const slot = games.filter(g => g.state === "pre");
+  if (!slot.length) return [];
+  const gameTeams = new Set(slot.flatMap(g => g.teamIds || []).map(Number));
+  const opp = kind === "win" ? scores.find(x => x.teamId === s.opponentId) : null;
   const p = Number(kind === "win" ? s.winProbability : s.aboveMedianProbability);
   if (!(p > 0 && p < 100) || (kind === "win" && !opp)) return [];
   const sd = kind === "win" ? Math.hypot(Number(s.projectionSd) || 0, Number(opp.projectionSd) || 0) : Number(s.projectionSd);
   if (!(sd > 0)) return [];
   const peeks = [];
-  const add = (label, to, chance = NIGHT_PLAYER_CHANCE) => { if (Number.isFinite(to) && Math.abs(to - p) >= MIN_MOVE / 2) peeks.push({ label, p: to, chance, pregame: true }); };
-  // One pair per key player: "🌙 big night from Josh Allen" / "🌙 quiet night from Josh Allen".
+  const add = (key, label, to, chance = NIGHT_PLAYER_CHANCE) => { if (Number.isFinite(to) && Math.abs(to - p) >= MIN_MOVE / 2) peeks.push({ key, label, p: to, chance, pregame: true }); };
+  // One pair per key player: "🌙 big night from J. Allen" (a night game) or "☀️ big day from …".
   const players = (side, direction) => {
     for (const pl of side.key) {
       const odds = bigQuiet(p, side.outlook[side.list.indexOf(pl)].sd, sd, direction);
       const name = /D\/ST/.test(pl.name) ? `the ${pl.name}` : pl.name;
-      add(`🌙 big night from ${name}`, odds?.big);
-      add(`🌙 quiet night from ${name}`, odds?.quiet);
+      const g = slot.find(x => (x.teamIds || []).map(Number).includes(Number(pl.proTeamId)));
+      const [icon, when] = g && etHour(g.kickoff) >= PRIMETIME_HOUR ? ["🌙", "night"] : ["☀️", "day"];
+      add(`${pl.id}-big`, `${icon} big ${when} from ${name}`, odds?.big);
+      add(`${pl.id}-quiet`, `${icon} quiet ${when} from ${name}`, odds?.quiet);
     }
   };
   players(tonight(s.lineup?.starters, gameTeams, slot), 1);
   if (opp) players(tonight(opp.lineup?.starters, gameTeams, slot), -1);
-  for (const g of slot) for (const sc of scenariosFor(g)) {
-    const shift = shiftOf(s.lineup?.starters, g, sc) - (opp ? shiftOf(opp.lineup?.starters, g, sc) : 0);
-    add(sc.peek, move(p, shift / sd).to, sc.chance);
+  const involved = new Set([...(s.lineup?.starters || []), ...(opp?.lineup?.starters || [])].map(x => Number(x.proTeamId)));
+  for (const g of slot) {
+    if (!(g.teamIds || []).some(t => involved.has(Number(t)))) continue;
+    for (const sc of scenariosFor(g)) {
+      const shift = shiftOf(s.lineup?.starters, g, sc) - (opp ? shiftOf(opp.lineup?.starters, g, sc) : 0);
+      if (shift) add(sc.key, sc.peek, move(p, shift / sd).to, sc.chance);
+    }
   }
-  return peeks;
+  return peeks.sort((x, y) => Math.abs(y.p - p) * y.chance - Math.abs(x.p - p) * x.chance).slice(0, PEEKS_KEPT);
 }
 
 // Survivor pool lines for tonight. Picks come from the survivor feed, which
