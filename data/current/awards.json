@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "currentWeek": 9,
+  "currentWeek": 10,
   "awards": {
     "prizePool": {
       "raffleWinner": 100,
@@ -9,12 +9,12 @@
       "thirdPlace": 100
     },
     "highestScore": {
-      "week": 5,
-      "teamId": 10,
-      "team": "Gibb it to Me Baby",
-      "opponentId": 11,
-      "opponent": "Brock You Like a Hurricane",
-      "score": 196.44,
+      "week": 9,
+      "teamId": 11,
+      "team": "Brock You Like a Hurricane",
+      "opponentId": 4,
+      "opponent": "Kirbo Crushers",
+      "score": 212.36,
       "result": "W"
     },
     "lowestScore": {
@@ -36,23 +36,23 @@
       "result": "L"
     },
     "lowestScoringWinner": {
-      "week": 7,
-      "teamId": 6,
-      "team": "Claremont In Yo Stace!",
-      "opponentId": 2,
-      "opponent": "TDsMaGee",
-      "score": 106.6,
+      "week": 9,
+      "teamId": 3,
+      "team": "Kyle Tucker",
+      "opponentId": 6,
+      "opponent": "Claremont In Yo Stace!",
+      "score": 102.06,
       "result": "W"
     },
     "blowoutKing": {
-      "week": 1,
-      "winnerTeamId": 8,
-      "winner": "Mr. Action Jackson",
-      "loserTeamId": 12,
-      "loser": "Beautiful Dark Twisted Fantasy",
-      "winnerScore": 168.66,
-      "loserScore": 83.06,
-      "margin": 85.6
+      "week": 9,
+      "winnerTeamId": 11,
+      "winner": "Brock You Like a Hurricane",
+      "loserTeamId": 4,
+      "loser": "Kirbo Crushers",
+      "winnerScore": 212.36,
+      "loserScore": 117.58,
+      "margin": 94.78
     },
     "narrowestLoss": {
       "week": 3,
@@ -67,7 +67,7 @@
     "benchWarmerChampion": {
       "teamId": 11,
       "team": "Brock You Like a Hurricane",
-      "points": 738.46,
+      "points": 856.34,
       "weeks": [
         {
           "week": 1,
@@ -321,6 +321,37 @@
               "points": 19.4
             }
           ]
+        },
+        {
+          "week": 9,
+          "points": 117.88,
+          "players": [
+            {
+              "playerId": 4832955,
+              "name": "Emmett Johnson",
+              "points": 36.7
+            },
+            {
+              "playerId": 4360310,
+              "name": "Trevor Lawrence",
+              "points": 32.98
+            },
+            {
+              "playerId": 4429096,
+              "name": "Blake Corum",
+              "points": 25.1
+            },
+            {
+              "playerId": 4372016,
+              "name": "Jaylen Waddle",
+              "points": 18.1
+            },
+            {
+              "playerId": 4880281,
+              "name": "Jordyn Tyson",
+              "points": 5
+            }
+          ]
         }
       ]
     },
@@ -337,52 +368,52 @@
       "moves": 46
     },
     "heatingUp": {
-      "teamId": 4,
-      "team": "Kirbo Crushers",
-      "slope": 17.06,
+      "teamId": 11,
+      "team": "Brock You Like a Hurricane",
+      "slope": 20.26,
       "weeks": [
-        5,
         6,
         7,
-        8
+        8,
+        9
       ],
       "scores": [
-        81.5,
-        70.86,
-        95.92,
-        130
+        144.3,
+        157.64,
+        156.06,
+        212.36
       ]
     },
     "coolingOff": {
-      "teamId": 6,
-      "team": "Claremont In Yo Stace!",
-      "slope": -30.82,
+      "teamId": 12,
+      "team": "Beautiful Dark Twisted Fantasy",
+      "slope": -18.63,
       "weeks": [
-        5,
         6,
         7,
-        8
+        8,
+        9
       ],
       "scores": [
-        188.9,
-        103.6,
-        106.6,
-        85.16
+        170.24,
+        145.18,
+        114.88,
+        118.24
       ]
     },
     "luckBox": {
       "actual": 6,
-      "expected": 3.8181818181818183,
-      "teamId": 5,
-      "team": "49er Faith-Fool",
-      "luck": 2.1818181818181817
+      "expected": 3.6363636363636362,
+      "teamId": 12,
+      "team": "Beautiful Dark Twisted Fantasy",
+      "luck": 2.3636363636363638
     },
     "unluckiest": {
       "actual": 1,
-      "expected": 3,
+      "expected": 3.5454545454545454,
       "teamId": 4,
       "team": "Kirbo Crushers",
-      "luck": -2
+      "luck": -2.5454545454545454
     }
   }
 }

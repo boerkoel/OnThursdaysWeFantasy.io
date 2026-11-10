@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "currentWeek": 9,
+  "currentWeek": 10,
   "weeks": [
     {
       "week": 1,
@@ -1196,6 +1196,137 @@
         "winnerScore": 169.28,
         "loserScore": 90.7,
         "margin": 78.58
+      }
+    },
+    {
+      "week": 9,
+      "recap": [
+        {
+          "type": "HIGH SCORE",
+          "text": "🔥 Brock You Like a Hurricane dropped 212.36 points — the week's highest score."
+        },
+        {
+          "type": "CLOSEST MATCHUP",
+          "text": "⚔️ Ruffing the Passer edged Mr. Action Jackson by just 5.66 points."
+        },
+        {
+          "type": "INSTANT REGRET",
+          "text": "🤦 Mr. Action Jackson would have finished above the median by starting Juwan Johnson (11.40) over DJ Moore (6.60)."
+        },
+        {
+          "type": "BIGGEST REGRET",
+          "text": "🪑 Gibb it to Me Baby left 25.28 points on the bench with Brock Purdy."
+        },
+        {
+          "type": "TOUGH LUCK",
+          "text": "😬 Kirbo Crushers scored 117.58 and still took the L."
+        },
+        {
+          "type": "BLOWOUT",
+          "text": "💥 Brock You Like a Hurricane beat Kirbo Crushers 212.36-117.58 (94.78 points)."
+        }
+      ],
+      "regrets": [
+        {
+          "teamId": 8,
+          "team": "Mr. Action Jackson",
+          "matchupId": 52,
+          "benchPlayer": "Juwan Johnson",
+          "benchPoints": 11.4,
+          "starter": "DJ Moore",
+          "starterPoints": 6.6,
+          "gain": 4.8,
+          "flips": [
+            "median"
+          ]
+        }
+      ],
+      "matchups": [
+        {
+          "id": 49,
+          "week": 9,
+          "homeTeamId": 5,
+          "awayTeamId": 12,
+          "homeScore": 97.8,
+          "awayScore": 118.24,
+          "margin": 20.439999999999998,
+          "winner": "AWAY",
+          "completed": true
+        },
+        {
+          "id": 50,
+          "week": 9,
+          "homeTeamId": 10,
+          "awayTeamId": 9,
+          "homeScore": 93.9,
+          "awayScore": 160.38,
+          "margin": 66.47999999999999,
+          "winner": "AWAY",
+          "completed": true
+        },
+        {
+          "id": 51,
+          "week": 9,
+          "homeTeamId": 1,
+          "awayTeamId": 2,
+          "homeScore": 133.46,
+          "awayScore": 115.8,
+          "margin": 17.66000000000001,
+          "winner": "HOME",
+          "completed": true
+        },
+        {
+          "id": 52,
+          "week": 9,
+          "homeTeamId": 7,
+          "awayTeamId": 8,
+          "homeScore": 118.58,
+          "awayScore": 112.92,
+          "margin": 5.659999999999997,
+          "winner": "HOME",
+          "completed": true
+        },
+        {
+          "id": 53,
+          "week": 9,
+          "homeTeamId": 4,
+          "awayTeamId": 11,
+          "homeScore": 117.58,
+          "awayScore": 212.36,
+          "margin": 94.78000000000002,
+          "winner": "AWAY",
+          "completed": true
+        },
+        {
+          "id": 54,
+          "week": 9,
+          "homeTeamId": 3,
+          "awayTeamId": 6,
+          "homeScore": 102.06,
+          "awayScore": 91.66,
+          "margin": 10.400000000000006,
+          "winner": "HOME",
+          "completed": true
+        }
+      ],
+      "highestScore": {
+        "week": 9,
+        "teamId": 11,
+        "team": "Brock You Like a Hurricane",
+        "opponentId": 4,
+        "opponent": "Kirbo Crushers",
+        "score": 212.36,
+        "result": "W"
+      },
+      "largestBlowout": {
+        "week": 9,
+        "winnerTeamId": 11,
+        "winner": "Brock You Like a Hurricane",
+        "loserTeamId": 4,
+        "loser": "Kirbo Crushers",
+        "winnerScore": 212.36,
+        "loserScore": 117.58,
+        "margin": 94.78
       }
     }
   ]
