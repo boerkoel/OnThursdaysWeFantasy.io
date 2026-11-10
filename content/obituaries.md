@@ -168,3 +168,29 @@ Sundays are free now, Pastor. You know where to be.
 Rest in pieces, In My Fantasy Era. This roster is never, ever, ever getting back together: Allen, McBride and Higgins are off to the waiver wire.
 
 Cause of death: Lineup malpractice, aggravated by blind faith in the Seahawks.
+
+## Mel's Mediocre Mob
+
+The Goffather
+
+Mel had never played fantasy football before this season. She signed up anyway, named her crew the Mediocre Mob, and outlasted seven veterans, including the commissioner, and Ben. Third place as a rookie. Not mediocre at all.
+
+But in this league, third place gets you a box. The Mob finished with 133.00 points, 13.24 behind Uriel’s Upbeat Team.
+
+It started with an offer she should have refused: the Goffather, Jared Goff, started and delivered 8.8 points while Dak Prescott (25.0) watched from the bench. Jonathan Taylor (7.9) was Taylor-made for the chopping block. Ja’Marr Chase (30.5) was the only made man in the lineup. With two Chases on the roster, the Mob still couldn’t chase down Uriel.
+
+On Thursday, the Mob settled all family business: eight free-agent moves in one night. Christian Watson got whacked for Ashton Jeanty. Watson scored 29.1; Jeanty scored 5.5. Elementary, my dear Watson. Jake Bates (15.0) checked out of the Bates Motel for James Cook III. And Patrick Mahomes finally slept with the fishes; his replacement, Javonte Williams (22.9), was the one hit.
+
+Ben blew his entire $1,000 FAAB on Chris Olave in Week 3. Mel spent $5 all season. Ben and Mel: a package deal, two FAAB philosophies, one cemetery. They say you can’t take it with you. Mel took $995.
+
+Colston Loveland (7.9) showed no love on Sunday night. On Monday, Cook (19.2) cooked, but Justin Jefferson (8.8) never set the table. Too little, too late.
+
+There once was a Mob boss named Mel  
+Who guarded her FAAB very well.  
+Ben spent his in a flash,  
+Mel died with the cash,  
+And now both of them rest here. Farewell.
+
+It’s not personal, Mel. It’s strictly business.
+
+Cause of death: Died with $995 in the mattress. Complications from the Goffather.
