@@ -86,7 +86,8 @@ export default function SwingChart({ points, teamId, teamName, opponentName, pla
           return <span key={"bang-" + i} className="swing-bang" style={{ left: `${(x({ t }) / WIDTH) * 100}%`, top: "50%" }}
             title={`${who} took over (${new Date(t).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" })})`}>💥</span>;
         }) : null}
-        <PlayMarkers plays={plays} t0={t0} end={last.t} width={WIDTH} height={HEIGHT}
+        {/* Only plays that moved the odds: an archived play without momentum crashed the page (Jim, 2026-11-10). */}
+        <PlayMarkers plays={plays.filter(p => p.momentum)} t0={t0} end={last.t} width={WIDTH} height={HEIGHT}
           x={t => x({ t })} y={p => y({ p })} valueAt={(play, t) => (series.find(pt => pt.t >= t) || last).p}
           swingText={play => `${play.momentum.toward} ${oddsMove(play.momentum.winProbability, play.momentum.shift)}`} />
       </div>
