@@ -165,7 +165,9 @@ const SYNC_REST = 4;
 // if it moves some needle at least this many odds points. Then (Jim, 2026-11-12: "keep what ifs cycling through
 // all players in play") the clock always picks one, taking turns by player (who) so everyone on the field comes up
 // before anyone repeats, and picks among a player's outcomes by how likely each is on this drive.
-const SYNC_MIN_SWAY = 2;
+// Low (2) when one game is on, with few players in it; with several games on, only the bigger swings (5; Jim,
+// 2026-11-12: "lowering makes sense on a single game").
+const SYNC_MIN_SWAY = 2, SYNC_MIN_SWAY_MANY = 5;
 // Replays (the last play, Jim 2026-11-12): its needles sit at their odds before the play for REPLAY_PIN ticks, then
 // swing to now while its text stays up REPLAY_TICKS in all. A new play goes first; it comes back now and then
 // (REPLAY_AGAIN, as if that likely) while it's the last play, and needs no minimum sway, since it happened.
@@ -204,7 +206,9 @@ function syncTick() {
   // The last play comes back now and then; otherwise a what-if from whoever's turn it is.
   const replay = [...pool].find(([, e]) => e.replay);
   if (replay && Math.random() < REPLAY_AGAIN) return start(...replay);
-  const all = [...pool].filter(([, e]) => !e.replay && e.sway >= SYNC_MIN_SWAY);
+  const games = new Set([...pool.values()].map(e => e.game).filter(Boolean));
+  const minSway = games.size > 1 ? SYNC_MIN_SWAY_MANY : SYNC_MIN_SWAY;
+  const all = [...pool].filter(([, e]) => !e.replay && e.sway >= minSway);
   if (!all.length) return;
   const whos = new Set(all.map(([, e]) => e.who));
   sync.turns = sync.turns.filter(w => whos.has(w));
