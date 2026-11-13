@@ -195,6 +195,11 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
   const tiles = [...open, ...doneTiles];
   const cols = tiles.length <= 1 ? 1 : tiles.length <= 4 ? 2 : 3;
   const liveGames = games.filter(g => g.state === "in");
+  // Watch mode is about what's live (Jim, 2026-11-12): the "if X scores" lines only for teams with a starter in a
+  // game in progress, so idle matchups and races don't spend a line on them; their needles still quake.
+  const liveTeams = new Set(liveGames.flatMap(teamIdsOf));
+  const inPlay = (...teams) => teams.some(t => (t.lineup?.starters || []).some(p => liveTeams.has(Number(p.proTeamId))));
+  const livePeeks = (peeks, ...teams) => inPlay(...teams) ? peeks : [];
   const teamName = new Map(scores.map(s => [Number(s.teamId), s.team]));
 
   // The ticker: the newest key plays (6+ points, or a 3+ point odds move) and the League Wire's top stories.
@@ -241,7 +246,7 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
                   <span>{logos[t.teamId] ? <img src={logos[t.teamId]} alt="" /> : null}{t.team}</span>
                   {narrow ? <small className="tv-left-count">{t.startersLeft ?? 0} left</small> : null}<b>{money(t.score)}</b></p>)}
               </div>
-              <MiniNeedle team={b} stakes={[a, b]} fork={settled ? null : forks.win(a, b)} peeks={settled ? [] : peeks.win(a, b)} p={Number(b.winProbability)} from={b.liveWinFrom} sides={[a.team, b.team]} colors={[A_COLOR, B_COLOR]} short={narrow || settled}
+              <MiniNeedle team={b} stakes={[a, b]} fork={settled ? null : forks.win(a, b)} peeks={settled ? [] : livePeeks(peeks.win(a, b), a, b)} p={Number(b.winProbability)} from={b.liveWinFrom} sides={[a.team, b.team]} colors={[A_COLOR, B_COLOR]} short={narrow || settled}
                 caption={settled ? `✊ ${winner.team}` : narrow ? false : `${a.startersLeft ?? 0} left · ${b.startersLeft ?? 0} left`}
                 history={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} games={games} />
               {!settled && !narrow ? (() => {   // what each side roots for on a drive in progress (Jim, 2026-11-02), wide screens
@@ -263,13 +268,13 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
           })}</div> : null}
         </section>
         <aside className="tv-side">
-          <NeedleRace label="MEDIAN LINE" compact max={narrow && open.length > 4 ? 2 : 4} pick="stake" onSwap={swapped("📏")} items={scores.map(s => ({ team: s, p: Number(s.aboveMedianProbability), from: s.liveAboveFrom, fork: forks.median(s), peeks: peeks.median(s) }))}
+          <NeedleRace label="MEDIAN LINE" compact max={narrow && open.length > 4 ? 2 : 4} pick="stake" onSwap={swapped("📏")} items={scores.map(s => ({ team: s, p: Number(s.aboveMedianProbability), from: s.liveAboveFrom, fork: forks.median(s), peeks: livePeeks(peeks.median(s), s) }))}
             sides={["below", "above"]} colors={MEDIAN_COLORS} band={[30, 70]} words={{ likely: ["likely below", "likely above"], locked: ["❌ below", "✅ above"] }}
             stakes={scores} history={scoreboard.medianHistory?.week === scoreboard.week ? scoreboard.medianHistory.points : []} games={games} />
-          {ticketWinner ? null : <NeedleRace minShown={2} label="🎟️ TICKET RACE" compact max={2} onSwap={swapped("🎟️")} items={scores.map(s => ({ team: s, p: Number(s.topScoreProbability), from: s.liveTopFrom, fork: forks.ticket(s), peeks: peeks.ticket(s) }))}
+          {ticketWinner ? null : <NeedleRace minShown={2} label="🎟️ TICKET RACE" compact max={2} onSwap={swapped("🎟️")} items={scores.map(s => ({ team: s, p: Number(s.topScoreProbability), from: s.liveTopFrom, fork: forks.ticket(s), peeks: livePeeks(peeks.ticket(s), s) }))}
             sides={["no ticket", "ticket"]} colors={["#8b8e86", "#e6c85c"]} words={{ likely: ["long shots", "near lock"], locked: ["❌ out", "🎟️ locked"] }} implied="left"
             fixed chipOdds="right" stakes={scores} history={scoreboard.raffleHistory?.week === scoreboard.week ? scoreboard.raffleHistory.points : []} games={games} />}
-          {gWeek && guillotine.teams?.length ? <NeedleRace minShown={2} label="🪓 CHOPPING BLOCK" compact max={2} onSwap={swapped("🪓")} items={guillotine.teams.map(t => ({ team: { ...t, lineup: { starters: t.lineup || [] } }, p: Number(t.chopProbability), from: t.liveChopFrom, peeks: chopPeeks(t, guillotine.teams, games) }))}
+          {gWeek && guillotine.teams?.length ? <NeedleRace minShown={2} label="🪓 CHOPPING BLOCK" compact max={2} onSwap={swapped("🪓")} items={guillotine.teams.map(t => ({ team: { ...t, lineup: { starters: t.lineup || [] } }, p: Number(t.chopProbability), from: t.liveChopFrom, peeks: livePeeks(chopPeeks(t, guillotine.teams, games), { lineup: { starters: t.lineup || [] } }) }))}
             good="left" sides={["safe", "chopped"]} colors={["#8fd087", "#d98a86"]} words={{ likely: ["likely safe", "likely chopped"], locked: ["✅ safe", "🪓 chopped"] }} implied="left"
             stakes={guillotine.teams.map(t => ({ lineup: { starters: t.lineup || [] } }))} games={games} /> : null}
           {/* Once the ticket is locked, the chopping block takes its place and it's one line below (Jim, 2026-11-09). */}
