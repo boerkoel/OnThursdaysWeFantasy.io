@@ -63,7 +63,7 @@ export function drivePeeks({ p, sd, scenarios, delta, own }) {
     const after = 100 * normalCdf(z + d / Math.max(3, sd));
     // A replay (the last play, scenario.replay) carries its own key and label and the game it's from.
     return Math.abs(after - p) >= 1 ? { key: sc.key || `drive:${sc.label}`, label: sc.replay ? sc.label : `🏈 this drive: ${sc.label}`, p: after, chance: sc.chance,
-      silent: !own(sc), game: sc.gameId ?? null, replay: Boolean(sc.replay) } : null;
+      silent: !own(sc), game: sc.gameId ?? null, replay: Boolean(sc.replay), who: sc.who ?? null } : null;
   }).filter(Boolean);
 }
 

@@ -39,15 +39,20 @@ export function driveScenarios({ game, starters }) {
 
   // Each scenario: label, chance on this drive, points by player.
   const scenarios = [];
-  const add = (label, chance, pts) => { if (pts.some(([p]) => p)) scenarios.push({ label, chance, pts: pts.filter(([p]) => p) }); };
+  // who: the league player it's about, so Watch mode can cycle through everyone in play (Jim, 2026-11-12).
+  const add = (label, chance, pts, who = null) => { if (pts.some(([p]) => p)) scenarios.push({ label, chance, pts: pts.filter(([p]) => p), who: who && lastName(who.name) }); };
   const pat = k ? [[k, 1]] : [];
-  for (const r of catchers) add(`TD catch by ${lastName(r.name)}`, tdRate * pass * 0.3, [[r, 6 + 1 + 2], [qb, 4.8], ...pat]);
-  for (const r of runners) add(`TD run by ${lastName(r.name)}`, tdRate * (1 - pass) * 0.6, [[r, 6.5], ...pat]);
-  if (qb) add(`TD pass by ${lastName(qb.name)}`, tdRate * pass, [[qb, 4.8], ...pat]);
+  for (const r of catchers) add(`TD catch by ${lastName(r.name)}`, tdRate * pass * 0.3, [[r, 6 + 1 + 2], [qb, 4.8], ...pat], r);
+  for (const r of runners) add(`TD run by ${lastName(r.name)}`, tdRate * (1 - pass) * 0.6, [[r, 6.5], ...pat], r);
+  if (qb) add(`TD pass by ${lastName(qb.name)}`, tdRate * pass, [[qb, 4.8], ...pat], qb);
+  // Not just touchdowns: everyone on the field has a plausible bigger play on this drive (Jim, 2026-11-12).
+  for (const r of catchers) add(`a 25-yd catch by ${lastName(r.name)}`, r.pos === "RB" ? 0.05 : 0.12, [[r, 1 + 2.5], [qb, 1]], r);
+  for (const r of runners) add(`a 15-yd run by ${lastName(r.name)}`, 0.12, [[r, 1.5]], r);
+  if (qb) add(`a ${lastName(qb.name)} 15-yd scramble`, 0.06, [[qb, 1.5]], qb);
   if (k) {
-    if (fgYds <= 58) add(`${lastName(k.name)} ${fgYds}-yd FG`, fgRate, [[k, fgPoints(fgYds)]]);
-    if (fgYds < 50) add(`${lastName(k.name)} 50+ yd FG`, 0.04, [[k, 5]]);
-    add(`${lastName(k.name)} misses a FG`, 0.03, [[k, -1]]);
+    if (fgYds <= 58) add(`${lastName(k.name)} ${fgYds}-yd FG`, fgRate, [[k, fgPoints(fgYds)]], k);
+    if (fgYds < 50) add(`${lastName(k.name)} 50+ yd FG`, 0.04, [[k, 5]], k);
+    add(`${lastName(k.name)} misses a FG`, 0.03, [[k, -1]], k);
   }
   // A punt: this drive's expected share of the offense's remaining projections, gone. A team gets about 11 drives.
   const progress = Math.min(1, ((Number(game.period) || 1) - 1 + (900 - (Number(game.clock) || 0)) / 900) / 4);

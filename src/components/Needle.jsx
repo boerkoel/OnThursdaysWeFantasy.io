@@ -162,15 +162,17 @@ const PEEK_PER_TICK = 0.12, PEEK_TICKS = 6;
 // SYNC_REST: a breather between outcomes, so the needles settle back to the real odds in between.
 const SYNC_REST = 4;
 // SYNC_MIN_SWAY (Jim, 2026-11-12: "filtered by how much it'll sway one or more matchups"): an outcome comes up only
-// if it moves some needle at least this many odds points; among those, as often as it's likely.
-const SYNC_MIN_SWAY = 5;
+// if it moves some needle at least this many odds points. Then (Jim, 2026-11-12: "keep what ifs cycling through
+// all players in play") the clock always picks one, taking turns by player (who) so everyone on the field comes up
+// before anyone repeats, and picks among a player's outcomes by how likely each is on this drive.
+const SYNC_MIN_SWAY = 2;
 // Replays (the last play, Jim 2026-11-12): its needles sit at their odds before the play for REPLAY_PIN ticks, then
 // swing to now while its text stays up REPLAY_TICKS in all. A new play goes first; it comes back now and then
 // (REPLAY_AGAIN, as if that likely) while it's the last play, and needs no minimum sway, since it happened.
 const REPLAY_PIN = 2, REPLAY_TICKS = 8, REPLAY_AGAIN = 0.25;
 // label: the outcome the needles visit now (null: real odds); text, game, replay: what a one-spot display shows,
 // which outlasts label for a replay; left: ticks the text has; pin: ticks the needles have.
-const sync = { label: null, text: null, game: null, replay: false, left: 0, pin: 0, rest: 0, played: new Set(), needles: new Set(), subs: new Set(), timer: null };
+const sync = { label: null, text: null, game: null, replay: false, left: 0, pin: 0, rest: 0, played: new Set(), turns: [], needles: new Set(), subs: new Set(), timer: null };
 const notify = () => sync.subs.forEach(f => f(n => n + 1));
 function syncTick() {
   if (sync.left > 0) {
@@ -186,7 +188,7 @@ function syncTick() {
   // label from a needle it names (not a silent echo).
   for (const ref of sync.needles) for (const pk of ref.current?.peeks || []) {
     if (!pk.sync) continue;
-    const key = pk.key ?? pk.label, e = pool.get(key) || { chance: pk.chance, sway: 0, text: null, game: pk.game ?? null, replay: Boolean(pk.replay) };
+    const key = pk.key ?? pk.label, e = pool.get(key) || { chance: pk.chance, sway: 0, text: null, game: pk.game ?? null, replay: Boolean(pk.replay), who: pk.who ?? "" };
     e.sway = Math.max(e.sway, Math.abs(Number(pk.p) - Number(ref.current.p)) || 0);
     if (!pk.silent && !e.text) e.text = pk.label;
     e.echo = e.echo || pk.label;
@@ -199,11 +201,19 @@ function syncTick() {
   };
   const fresh = [...pool].find(([key, e]) => e.replay && !sync.played.has(key));
   if (fresh) return start(...fresh);
-  const all = [...pool].filter(([, e]) => e.replay || e.sway >= SYNC_MIN_SWAY), from = Math.floor(Math.random() * all.length);
-  for (let k = 0; k < all.length; k++) {
-    const [key, e] = all[(from + k) % all.length];
-    if (Math.random() < PEEK_PER_TICK * (e.replay ? REPLAY_AGAIN : e.chance)) return start(key, e);
-  }
+  // The last play comes back now and then; otherwise a what-if from whoever's turn it is.
+  const replay = [...pool].find(([, e]) => e.replay);
+  if (replay && Math.random() < REPLAY_AGAIN) return start(...replay);
+  const all = [...pool].filter(([, e]) => !e.replay && e.sway >= SYNC_MIN_SWAY);
+  if (!all.length) return;
+  const whos = new Set(all.map(([, e]) => e.who));
+  sync.turns = sync.turns.filter(w => whos.has(w));
+  if (sync.turns.length >= whos.size) sync.turns = [];
+  const due = all.filter(([, e]) => !sync.turns.includes(e.who));
+  let r = Math.random() * due.reduce((sum, [, e]) => sum + (Number(e.chance) || 0.01), 0);
+  const pick = due.find(([, e]) => (r -= Number(e.chance) || 0.01) <= 0) || due[due.length - 1];
+  sync.turns.push(pick[1].who);
+  start(...pick);
 }
 function useSyncedLabel(needleRef, on) {
   const [, rerender] = useState(0);
