@@ -1274,3 +1274,5 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .tv-whatif.replay{color:#f7f7f2}.tv-whatif.replay small{color:#e6c85c}
 @keyframes tv-whatif{from{opacity:0;transform:translateY(4px)}}
 @media (max-width:760px),(orientation:portrait) and (max-width:1024px){.tv-drive{padding:5px 16px 4px}.tv-drive-line{font-size:11px}.tv-whatif{font-size:13px}.tv-field-strip>span{width:64px}}
+/* Watch mode on a phone drops the ticker altogether (Jim, 2026-11-12); the footer is just the drive panel, when a game is on. */
+@media (max-width:760px),(orientation:portrait) and (max-width:1024px){.tv-ticker-window{display:none}.tv-ticker{padding:0!important;border-top:0}.tv-ticker:not(:has(.tv-drive)){display:none}.tv-drive{border-bottom:0;border-top:1px solid #30332d;padding-bottom:6px}.tv-body{padding-bottom:52px}}
