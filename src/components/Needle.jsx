@@ -427,8 +427,11 @@ export function NeedleRace({ label, items, sides, colors, band = null, words, ch
     {(() => {
       const right = [tier(words.locked[1], lockedR.map(name), implied === "right"), tier(words.likely[1], likelyR.map(i => withOdds(i, true)))];
       const left = [tier(words.locked[0], lockedL.map(name), implied === "left"), tier(words.likely[0], likelyL.map(i => withOdds(i, false)))];
-      const [goodCol, badCol] = good === "right" ? [right, left] : [left, right];
-      return goodCol.some(Boolean) || badCol.some(Boolean) ? <div className="race-tiers"><div>{goodCol}</div><div>{badCol}</div></div> : null;
+      // A lone column runs full width rather than leaving a blank one beside it; one holding only the implied tier
+      // (hidden on phones) is marked so a phone drops it too (Jim, 2026-11-12: "long shots" sat alone on the right).
+      const col = (list, side) => ({ list, impliedOnly: implied === side && !list[1] });
+      const cols = (good === "right" ? [col(right, "right"), col(left, "left")] : [col(left, "left"), col(right, "right")]).filter(c => c.list.some(Boolean));
+      return cols.length ? <div className={"race-tiers" + (cols.length === 1 ? " one" : "")}>{cols.map((c, k) => <div key={k} className={c.impliedOnly ? "implied-only" : undefined}>{c.list}</div>)}</div> : null;
     })()}
     </div>
   </>;

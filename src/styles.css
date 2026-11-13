@@ -1248,3 +1248,8 @@ section,details,.odds-block{scroll-margin-top:72px}
 /* Watch mode on a phone (Jim, 2026-11-09): the header starts below the status bar's blur (no kicker; the week is in
    the title), and the ticker sits closer to the home indicator instead of a full safe-area gap above it. */
 @media (max-width:760px),(orientation:portrait) and (max-width:1024px){.tv{padding-top:calc(env(safe-area-inset-top) + 26px)}.tv-ticker{padding-bottom:max(6px,calc(env(safe-area-inset-bottom) - 16px))}.tv-body{padding-bottom:max(40px,calc(env(safe-area-inset-bottom) + 18px))}}
+/* Race chips (Jim, 2026-11-12): a lone column runs full width; on a phone a column of only the implied tier drops out. */
+.race-tiers.one{grid-template-columns:minmax(0,1fr)}
+@media (max-width:760px){.race-tiers>div.implied-only{display:none}.race-tiers:has(>div.implied-only){grid-template-columns:minmax(0,1fr)}}
+/* iOS enlarges text in the ticker's very wide line; keep text at the size the CSS sets (Jim, 2026-11-12). */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
