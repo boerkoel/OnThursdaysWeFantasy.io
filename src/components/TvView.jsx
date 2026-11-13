@@ -215,6 +215,9 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
   const inPlay = (...teams) => teams.some(t => (t.lineup?.starters || []).some(p => liveTeams.has(Number(p.proTeamId))));
   const livePeeks = (peeks, ...teams) => inPlay(...teams) ? peeks : [];
   const teamName = new Map(scores.map(s => [Number(s.teamId), s.team]));
+  // Starters yet to play (Jim, 2026-11-12: Gibb showed 10 left with 2 already in the game; ESPN says 8): the
+  // feed's startersLeft counts every starter whose game isn't final, so take out those in a game under way.
+  const toPlay = t => Math.max(0, (Number(t.startersLeft) || 0) - (t.lineup?.starters || []).filter(p => liveTeams.has(Number(p.proTeamId))).length);
   // A lineup's players on the field this drive (the offense, or the D/ST against it), so the chop's what-ifs stay
   // with the drive like the rest (Jim, 2026-11-12: "if Likely scores" came up with Washington's ball).
   const onDrive = lineup => (lineup || []).filter(p => liveGames.some(g => {
@@ -284,10 +287,10 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
               <div className="tv-score">
                 {[[a, A_COLOR], [b, B_COLOR]].map(([t, c]) => <p key={t.teamId} style={{ color: c }}>
                   <span>{logos[t.teamId] ? <img src={logos[t.teamId]} alt="" /> : null}{t.team}</span>
-                  {narrow ? <small className="tv-left-count">{t.startersLeft ?? 0} left</small> : null}<b>{money(t.score)}</b></p>)}
+                  {narrow ? <small className="tv-left-count">{toPlay(t)} left</small> : null}<b>{money(t.score)}</b></p>)}
               </div>
               <MiniNeedle team={b} stakes={[a, b]} fork={settled ? null : forks.win(a, b)} peeks={settled ? [] : livePeeks(peeks.win(a, b), a, b)} p={Number(b.winProbability)} from={b.liveWinFrom} sides={[a.team, b.team]} colors={[A_COLOR, B_COLOR]} short={narrow || settled}
-                caption={settled ? `✊ ${winner.team}` : narrow ? false : `${a.startersLeft ?? 0} left · ${b.startersLeft ?? 0} left`}
+                caption={settled ? `✊ ${winner.team}` : narrow ? false : `${toPlay(a)} left · ${toPlay(b)} left`}
                 history={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} games={games} />
               {!settled && !narrow ? (() => {   // what each side roots for on a drive in progress (Jim, 2026-11-02), wide screens
                 const r = games.map(g => driveRooting({ game: g, a, b })).find(Boolean);
