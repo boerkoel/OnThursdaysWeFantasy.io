@@ -461,10 +461,12 @@ export function NeedleRace({ label, items, sides, colors, band = null, words, ch
     {needles.length ? <div className="mini-needles">{needles.map(i => <MiniNeedle key={i.team.teamId} team={i.team} p={Number(i.p)} from={i.from} fork={i.fork || null} peeks={i.peeks || []}
       sides={sides} colors={colors} band={band} stakes={stakes} history={history} games={games} mine={isMine(i)} fixed={fixed} />)}</div> : null}
     <div className={"race-chips" + (compact ? " compact" : "") + (chipsOpen ? " open" : "")} onClick={compact ? () => setChipsOpen(o => !o) : undefined}>
-    {tier("also in it", alsoIn.map(i => withOdds(i, chipOdds === "right" || i.p >= 50)))}
+    {/* Watch mode (compact) drops "also in it": the needles shown are the top contenders, the rest implied (Jim, 2026-11-12). */}
+    {compact ? null : tier("also in it", alsoIn.map(i => withOdds(i, chipOdds === "right" || i.p >= 50)))}
     {(() => {
-      const right = [tier(words.locked[1], lockedR.map(name), implied === "right"), tier(words.likely[1], likelyR.map(i => withOdds(i, true)))];
-      const left = [tier(words.locked[0], lockedL.map(name), implied === "left"), tier(words.likely[0], likelyL.map(i => withOdds(i, false)))];
+      // In Watch mode the implied side's likely tier goes too (the ticket's "long shots"; Jim, 2026-11-12).
+      const right = [tier(words.locked[1], lockedR.map(name), implied === "right"), compact && implied === "right" ? null : tier(words.likely[1], likelyR.map(i => withOdds(i, true)))];
+      const left = [tier(words.locked[0], lockedL.map(name), implied === "left"), compact && implied === "left" ? null : tier(words.likely[0], likelyL.map(i => withOdds(i, false)))];
       // A lone column runs full width rather than leaving a blank one beside it; one holding only the implied tier
       // (hidden on phones) is marked so a phone drops it too (Jim, 2026-11-12: "long shots" sat alone on the right).
       const col = (list, side) => ({ list, impliedOnly: implied === side && !list[1] });
