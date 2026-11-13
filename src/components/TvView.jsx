@@ -97,6 +97,32 @@ const gameText = g => {
 };
 
 const GAME_TURN_MS = 12000;
+// The strip of screen below what iOS lets the page pin to (Jim, 2026-11-12: "there's still room below, use the part
+// of the screen that curves"): the screen's height less the window's, when the page already runs under the status
+// bar (so the whole difference is at the bottom); published as --tv-below for the bottom panel to reach into.
+function useScreenBelow() {
+  useEffect(() => {
+    const root = document.documentElement;
+    const probe = document.createElement("div");
+    probe.style.cssText = "position:fixed;top:0;height:env(safe-area-inset-top);visibility:hidden;pointer-events:none";
+    document.body.appendChild(probe);
+    const measure = () => {
+      const underStatusBar = probe.offsetHeight > 0;
+      const gap = Math.round((window.screen?.height || 0) - window.innerHeight);
+      const portrait = window.innerHeight > window.innerWidth;
+      root.style.setProperty("--tv-below", underStatusBar && portrait && gap > 0 && gap <= 140 ? `${gap}px` : "0px");
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    window.visualViewport?.addEventListener("resize", measure);
+    return () => {
+      window.removeEventListener("resize", measure);
+      window.visualViewport?.removeEventListener("resize", measure);
+      root.style.removeProperty("--tv-below");
+      probe.remove();
+    };
+  }, []);
+}
 // One live game's situation (Jim, 2026-11-12): a little field (home end zone on the left, since yardLine counts
 // from the home goal line) with the ball, then "BUF 14–10 KC · 4:12 - 2nd · BUF ball · 2nd & 7 at KC 34".
 function DriveLine({ game }) {
@@ -163,6 +189,7 @@ function useIdleCursor() {
 // each, results on one line, a smaller ticker that covers nothing, and no "on the field" list.
 export default function TvView({ forks = { win: () => null, median: () => null, ticket: () => null }, peeks = { win: () => [], median: () => [], ticket: () => [] }, scoreboard, guillotine, livePlays, marquee, logos = {}, onClose }) {
   useWakeLock(true);
+  useScreenBelow();
   // The page underneath stays put (Jim, 2026-11-08: Watch mode wouldn't scroll back down on a phone, the
   // swipe went to the page under it).
   useEffect(() => {
