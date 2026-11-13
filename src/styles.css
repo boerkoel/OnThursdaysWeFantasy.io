@@ -1255,3 +1255,6 @@ section,details,.odds-block{scroll-margin-top:72px}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 /* Watch mode on a phone: the ticker runs to the very bottom, through the rounded corners and home indicator (Jim, 2026-11-12). */
 @media (max-width:760px),(orientation:portrait) and (max-width:1024px){.tv-ticker{padding-bottom:6px}.tv-body{padding-bottom:40px}}
+/* iOS's layout viewport stops short of the screen's bottom (room for a toolbar that may slide in), leaving a dark band
+   below a bottom:0 ticker. Watch mode on a phone is screen-tall (100lvh) and the ticker sticks to its bottom (Jim, 2026-11-12). */
+@media (max-width:760px),(orientation:portrait) and (max-width:1024px){.tv{bottom:auto;height:100vh;height:100lvh}.tv-ticker{position:sticky;left:auto;right:auto;bottom:0;margin:0 -16px;flex:none}.tv-body{flex:1 0 auto;padding-bottom:8px}}
