@@ -341,7 +341,7 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
         {driveGame || whatIf ? <div className="tv-drive">
           {driveGame ? <DriveLine game={driveGame} /> : null}
           <p className={"tv-whatif" + (whatIf?.replay ? " replay" : "")} key={whatIf?.text || ""} aria-live="polite">
-            {whatIf ? whatIf.replay ? <><small>LAST PLAY</small> {whatIf.text}</> : <><small>WHAT IF</small> {whatIf.text.replace(/^🏈 this drive: /, "")}</>
+            {whatIf ? whatIf.replay ? <><small>LAST PLAY</small> {whatIf.text}{whatIf.move ? <em> · {whatIf.move}</em> : null}</> : <><small>WHAT IF</small> {whatIf.text.replace(/^🏈 this drive: /, "")}</>
               : lastInGame ? <span className="tv-lastplay"><small>LAST PLAY</small> {lastInGame}</span> : "\u00a0"}</p>
         </div> : null}
         <div className="tv-ticker-window"><div className="tv-ticker-track" style={{ animationDuration: `${Math.max(40, ticker.join(" ").length / 6)}s` }}>

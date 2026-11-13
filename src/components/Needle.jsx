@@ -169,18 +169,23 @@ const SYNC_REST = 4;
 // 2026-11-12: "lowering makes sense on a single game"), unless a screen focuses on one game at a time (focus).
 const SYNC_MIN_SWAY = 2, SYNC_MIN_SWAY_MANY = 5;
 // Replays (the last play, Jim 2026-11-12): its needles sit at their odds before the play for REPLAY_PIN ticks, then
-// swing to now while its text stays up REPLAY_TICKS in all. A new play goes first; it comes back now and then
-// (REPLAY_AGAIN, as if that likely) while it's the last play, and needs no minimum sway, since it happened.
-const REPLAY_PIN = 2, REPLAY_TICKS = 8, REPLAY_AGAIN = 0.25;
+// swing to now while its text stays up REPLAY_TICKS in all. A new play goes first; it comes back
+// while it's the last play, and needs no minimum sway, since it happened.
+// Then (Jim, 2026-11-12: "latest play and what if can alternate; the live play can more slowly animate how things
+// adjust, and/or show it a few times"): turns alternate what-if / last play; a last play that moved needles replays
+// with a slow swing (REPLAY_SWING_S) and no jitter, a new one REPLAY_REPS times; one that moved nothing just rests
+// on its text (the screen shows it between outcomes). move: its biggest needle move, "Gibb it to Me Baby 61→68%".
+const REPLAY_PIN = 3, REPLAY_TICKS = 8, REPLAY_REPS = 3, REPLAY_SWING_S = 1.5;
 // label: the outcome the needles visit now (null: real odds); text, game, replay: what a one-spot display shows,
 // which outlasts label for a replay; left: ticks the text has; pin: ticks the needles have.
-const sync = { label: null, text: null, game: null, replay: false, left: 0, pin: 0, rest: 0, played: new Set(), turns: [], focus: null, needles: new Set(), subs: new Set(), timer: null };
+const sync = { label: null, key: null, text: null, game: null, replay: false, move: null, reps: 0, playTurn: false, left: 0, pin: 0, rest: 0, played: new Set(), turns: [], focus: null, needles: new Set(), subs: new Set(), timer: null };
 const notify = () => sync.subs.forEach(f => f(n => n + 1));
 function syncTick() {
   if (sync.left > 0) {
     sync.left -= 1;
     if (sync.pin > 0 && !--sync.pin) { sync.label = null; notify(); }
-    if (!sync.left) { sync.label = sync.text = sync.game = null; sync.replay = false; sync.rest = SYNC_REST; notify(); }
+    if (!sync.left && sync.reps > 1) { sync.reps -= 1; sync.label = sync.key; sync.pin = REPLAY_PIN; sync.left = REPLAY_TICKS; notify(); return; }
+    if (!sync.left) { sync.label = sync.key = sync.text = sync.game = sync.move = null; sync.replay = false; sync.reps = 0; sync.rest = SYNC_REST; notify(); }
     return;
   }
   if (sync.rest > 0) { sync.rest -= 1; return; }
@@ -190,22 +195,30 @@ function syncTick() {
   // label from a needle it names (not a silent echo).
   for (const ref of sync.needles) for (const pk of ref.current?.peeks || []) {
     if (!pk.sync) continue;
-    const key = pk.key ?? pk.label, e = pool.get(key) || { chance: pk.chance, sway: 0, text: null, game: pk.game ?? null, replay: Boolean(pk.replay), who: pk.who ?? "" };
-    e.sway = Math.max(e.sway, Math.abs(Number(pk.p) - Number(ref.current.p)) || 0);
+    const key = pk.key ?? pk.label, e = pool.get(key) || { chance: pk.chance, sway: 0, text: null, game: pk.game ?? null, replay: Boolean(pk.replay), who: pk.who ?? "", move: null };
+    const sway = Math.abs(Number(pk.p) - Number(ref.current.p)) || 0;
+    if (sway > e.sway && ref.current.name) e.move = `${ref.current.name} ${Math.round(pk.p)}→${Math.round(ref.current.p)}%`;
+    e.sway = Math.max(e.sway, sway);
     if (!pk.silent && !e.text) e.text = pk.label;
     e.echo = e.echo || pk.label;
     pool.set(key, e);
   }
-  const start = (key, e) => {
-    Object.assign(sync, { label: key, text: e.text || e.echo, game: e.game, replay: e.replay, left: e.replay ? REPLAY_TICKS : PEEK_TICKS, pin: e.replay ? REPLAY_PIN : PEEK_TICKS });
+  const start = (key, e, reps = 1) => {
+    Object.assign(sync, { label: key, key, text: e.text || e.echo, game: e.game, replay: e.replay, move: e.replay ? e.move : null, reps,
+      left: e.replay ? REPLAY_TICKS : PEEK_TICKS, pin: e.replay ? REPLAY_PIN : PEEK_TICKS });
     if (e.replay) sync.played.add(key);
     notify();
   };
   const fresh = [...pool].find(([key, e]) => e.replay && !sync.played.has(key));
-  if (fresh) return start(...fresh);
-  // The last play comes back now and then; otherwise a what-if from whoever's turn it is.
-  const replay = [...pool].find(([, e]) => e.replay);
-  if (replay && Math.random() < REPLAY_AGAIN) return start(...replay);
+  if (fresh) { sync.playTurn = false; return start(...fresh, REPLAY_REPS); }
+  // Turns alternate: the last play (replayed if it moved needles, else its text rests on screen), then a what-if.
+  sync.playTurn = !sync.playTurn;
+  if (sync.playTurn) {
+    const replay = [...pool].find(([, e]) => e.replay);
+    if (replay) return start(...replay);
+    sync.rest = PEEK_TICKS;
+    return;
+  }
   const games = new Set([...pool.values()].map(e => e.game).filter(Boolean));
   const minSway = games.size > 1 ? SYNC_MIN_SWAY_MANY : SYNC_MIN_SWAY;
   const all = [...pool].filter(([, e]) => !e.replay && (!sync.focus || !e.game || String(e.game) === sync.focus) && e.sway >= (sync.focus ? SYNC_MIN_SWAY : minSway));
@@ -247,14 +260,14 @@ export function useSyncedPeek() {
     sync.subs.add(rerender);
     return () => { sync.subs.delete(rerender); };
   }, []);
-  return sync.text ? { text: sync.text, game: sync.game, replay: sync.replay } : null;
+  return sync.text ? { text: sync.text, game: sync.game, replay: sync.replay, move: sync.move } : null;
 }
-function useQuake({ teams, games, history, historyId, p, fork = null, peeks = [] }) {
+function useQuake({ teams, games, history, historyId, p, fork = null, peeks = [], name = null }) {
   const forked = useRef(false);
   const peeking = useRef(null), peekLeft = useRef(0);
   const peeksRef = useRef(peeks), needleRef = useRef(null);
   peeksRef.current = peeks;
-  needleRef.current = { peeks, p };
+  needleRef.current = { peeks, p, name };
   const syncLabel = useSyncedLabel(needleRef, peeks.some(x => x.sync));
   const { live, h } = lookAhead(stakesLeft(teams, games), wildness(history, historyId));
   const [wobble, setWobble] = useState(0);
@@ -291,7 +304,9 @@ function useQuake({ teams, games, history, historyId, p, fork = null, peeks = []
   const peek = synced || (peeking.current && peeks.some(x => x.label === peeking.current.label) ? peeking.current : null);
   const pp = Math.min(99.9, Math.max(0.1, Number(peek ? peek.p : fork && forked.current ? fork.pOut : p)));
   const shown = h > 0 && wobble && Number.isFinite(pp) ? Math.min(99.5, Math.max(0.5, 100 * normalCdf((normalQuantile(pp / 100) + Math.sqrt(h) * wobble) / Math.sqrt(1 - h)))) : pp;
-  return { live, shown: peek ? pp : shown, peek };
+  // A replay snaps the needle back to before the play, then swings it slowly to now with no jitter muddying it.
+  const replaying = Boolean(sync.replay && sync.text && peeks.some(x => x.sync && (x.key ?? x.label) === sync.key));
+  return { live, shown: peek || replaying ? pp : shown, peek, slow: replaying && !peek };
 }
 
 // One team's own needle (Jim, 2026-11-02: everyone within reach of the median line, every team in danger of the
@@ -306,7 +321,8 @@ function useQuake({ teams, games, history, historyId, p, fork = null, peeks = []
 // fixed: always read the right side's chance, even under 50% (Jim, 2026-11-08: "30% ticket", not "70% no
 // ticket"); otherwise the likelier side's.
 export function MiniNeedle({ team, p, from = null, sides, colors, band = null, history = [], games = [], mine = false, caption = null, stakes = null, short = false, fork = null, peeks = [], fixed = false }) {
-  const { live, shown, peek } = useQuake({ teams: stakes || [team], games, history, historyId: team.teamId, p, fork, peeks });
+  const { live, shown, peek, slow } = useQuake({ teams: stakes || [team], games, history, historyId: team.teamId, p, fork, peeks,
+    name: team.team + (sides[1] === team.team ? "" : " " + sides[1]) });
   const markerId = useId();
   if (!Number.isFinite(Number(p))) return null;
   const range = sinceDayStart({ teams: stakes || [team], games, history, id: team.teamId, now: Number(p) });
@@ -325,7 +341,7 @@ export function MiniNeedle({ team, p, from = null, sides, colors, band = null, h
       <svg viewBox="0 0 240 128" className="needle-dial">
         {zones.map(([lo, hi, o, c]) => <path key={lo} d={wedge(lo, hi)} fill={c} fillOpacity={o} />)}
         <line x1={CX} y1={CY - R_OUT - 3} x2={CX} y2={CY - R_IN + 3} className="needle-mid" />
-        <g style={{ transform: `rotate(${deg}deg)`, transformOrigin: `${CX}px ${CY}px`, transition: `transform ${live ? 0.3 : 0.65}s ease-out` }}>
+        <g style={{ transform: `rotate(${deg}deg)`, transformOrigin: `${CX}px ${CY}px`, transition: `transform ${slow ? REPLAY_SWING_S : live ? 0.3 : 0.65}s ease-${slow ? "in-out" : "out"}` }}>
           <line x1={CX} y1={CY} x2={CX} y2={CY - R_OUT - 4} className="needle-hand" />
         </g>
         <circle cx={CX} cy={CY} r={7} className="needle-hub" />
@@ -356,7 +372,7 @@ export function Needle({ a, b, history = [], odds = null, label = null, games = 
   // sweeps a coin flip about 25–75%; one RB, about 40–60%.
   // Between games it's a muted quake (h 2%, slower: a coin flip drifts 46–54%), none once nothing is left.
   // The needle walks Z as an AR(1) process that stays standard normal, so over time it shows that spread.
-  const { live, shown, peek } = useQuake({ teams: [a, b], games, history, historyId: a.teamId, p: pB, fork, peeks });
+  const { live, shown, peek, slow } = useQuake({ teams: [a, b], games, history, historyId: a.teamId, p: pB, fork, peeks, name: b.team });
   const arcId = useId();
   if (!Number.isFinite(pB)) return null;
   // The steady odds, and how far plays have moved them since the last full update.
@@ -386,7 +402,7 @@ export function Needle({ a, b, history = [], odds = null, label = null, games = 
       <svg viewBox="0 0 240 128" className="needle-dial">
         {ZONES.map(([from, to, o]) => <path key={from} d={wedge(from, to)} fill={to <= 50 ? A_COLOR : B_COLOR} fillOpacity={o} />)}
         <line x1={CX} y1={CY - R_OUT - 3} x2={CX} y2={CY - R_IN + 3} className="needle-mid" />
-        <g style={{ transform: `rotate(${deg}deg)`, transformOrigin: `${CX}px ${CY}px`, transition: `transform ${live ? 0.3 : 0.65}s ease-out` }}>
+        <g style={{ transform: `rotate(${deg}deg)`, transformOrigin: `${CX}px ${CY}px`, transition: `transform ${slow ? REPLAY_SWING_S : live ? 0.3 : 0.65}s ease-${slow ? "in-out" : "out"}` }}>
           <line x1={CX} y1={CY} x2={CX} y2={CY - R_OUT - 4} className="needle-hand" />
         </g>
         <circle cx={CX} cy={CY} r={5} className="needle-hub" />
