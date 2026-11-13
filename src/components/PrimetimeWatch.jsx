@@ -394,6 +394,10 @@ export default function PrimetimeWatch({ scores, nflGames, guillotine, logos, we
     ...stake.matchups.map(m => `${m.head}: ${pct(m.share)} ${stakeOf} (${m.play})`),
     stake.teams.length && `Teams: ${stake.teams.map(t => `${t.team} ${pct(t.share)}`).join(" · ")}`
   ].filter(Boolean);
+  // The collapsed line (Jim, 2026-11-12): one high-level sentence, the details behind Show.
+  const top = stake.teams[0];
+  const headline = top ? `Most riding on tonight: ${top.team}, ${pct(top.share)} ${live ? "of its points still to come" : "of its projected points"}`
+    : text.script.length ? "How tonight's game can swing the league" : "Survivor pool riders tonight";
   const share = () => ({
     kicker: `Week ${week} · ${st.label} What to Watch`,
     title: `${st.label}: ${st.games}`,
@@ -409,22 +413,19 @@ export default function PrimetimeWatch({ scores, nflGames, guillotine, logos, we
         <div><span className="section-kicker">{st.games} · {when}</span><h2>{st.label} What to Watch</h2></div>
         <ShareButton section="primetime" iconOnly label={`Share the ${st.label} What to Watch`} filename={`week-${week}-${st.label.toLowerCase()}-what-to-watch`} build={share} />
       </div>
-      {stake.matchups.length || stake.teams.length ? <div className="primetime-card primetime-stake">
-        <h3>🎯 On the line tonight</h3>
-        {stake.matchups.map((m, i) => <div className="primetime-item" key={i} title={`In play: ${m.play}`}>
-          <b>{m.head}: {pct(m.share)}</b>
-          <p>{stakeOf} · {m.play}</p>
-        </div>)}
-        {stake.teams.length ? <p className="primetime-teams">Teams: {stake.teams.map(t => `${t.team} ${pct(t.share)}`).join(" · ")}</p> : null}
-      </div> : null}
-      {text.script.length || text.survivor.length ? <div className="primetime-summary">
-        <span>{[
-          text.script.length && "game script",
-          text.survivor.length && "survivor pool"
-        ].filter(Boolean).join(" · ")}</span>
+      <div className="primetime-summary">
+        <span>{headline}</span>
         <button type="button" className="section-toggle" aria-expanded={open} onClick={() => setOpen(v => !v)}>{open ? "Hide ▴" : "Show ▾"}</button>
-      </div> : null}
+      </div>
       {open ? <div className="primetime-grid">
+        {stake.matchups.length || stake.teams.length ? <div className="primetime-card">
+          <h3>🎯 On the line tonight</h3>
+          {stake.matchups.map((m, i) => <div className="primetime-item" key={i} title={`In play: ${m.play}`}>
+            <b>{m.head}: {pct(m.share)}</b>
+            <p>{stakeOf} · {m.play}</p>
+          </div>)}
+          {stake.teams.length ? <p className="primetime-teams">Teams: {stake.teams.map(t => `${t.team} ${pct(t.share)}`).join(" · ")}</p> : null}
+        </div> : null}
         {SECTIONS.map(([key, title]) => text[key].length ? <div className="primetime-card" key={key}>
           <h3>{title}</h3>
           {text[key].map((item, i) => <div className="primetime-item" key={i}>
