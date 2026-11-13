@@ -161,42 +161,65 @@ const PEEK_PER_TICK = 0.12, PEEK_TICKS = 6;
 // opponent's drops. Same rates as a needle's own peeks.
 // SYNC_REST: a breather between outcomes, so the needles settle back to the real odds in between.
 const SYNC_REST = 4;
-const sync = { label: null, left: 0, rest: 0, needles: new Set(), subs: new Set(), timer: null };
+// SYNC_MIN_SWAY (Jim, 2026-11-12: "filtered by how much it'll sway one or more matchups"): an outcome comes up only
+// if it moves some needle at least this many odds points; among those, as often as it's likely.
+const SYNC_MIN_SWAY = 5;
+const sync = { label: null, text: null, left: 0, rest: 0, needles: new Set(), subs: new Set(), timer: null };
 function syncTick() {
   if (sync.left > 0) {
     sync.left -= 1;
-    if (!sync.left) { sync.label = null; sync.rest = SYNC_REST; sync.subs.forEach(f => f(n => n + 1)); }
+    if (!sync.left) { sync.label = sync.text = null; sync.rest = SYNC_REST; sync.subs.forEach(f => f(n => n + 1)); }
     return;
   }
   if (sync.rest > 0) { sync.rest -= 1; return; }
   const pool = new Map();
   // Keyed by pk.key (the event: a player's big game, a game's script) when there is one, else the label.
-  for (const ref of sync.needles) for (const pk of ref.current || []) if (pk.sync && !pool.has(pk.key ?? pk.label)) pool.set(pk.key ?? pk.label, pk.chance);
-  const all = [...pool], start = Math.floor(Math.random() * all.length);
+  // Each needle registers { peeks, p }; an outcome's sway is its biggest move on any needle, and its text the
+  // label from a needle it names (not a silent echo).
+  for (const ref of sync.needles) for (const pk of ref.current?.peeks || []) {
+    if (!pk.sync) continue;
+    const key = pk.key ?? pk.label, e = pool.get(key) || { chance: pk.chance, sway: 0, text: null };
+    e.sway = Math.max(e.sway, Math.abs(Number(pk.p) - Number(ref.current.p)) || 0);
+    if (!pk.silent && !e.text) e.text = pk.label;
+    e.echo = e.echo || pk.label;
+    pool.set(key, e);
+  }
+  const all = [...pool].filter(([, e]) => e.sway >= SYNC_MIN_SWAY), start = Math.floor(Math.random() * all.length);
   for (let k = 0; k < all.length; k++) {
-    const [label, chance] = all[(start + k) % all.length];
-    if (Math.random() < PEEK_PER_TICK * chance) { sync.label = label; sync.left = PEEK_TICKS; sync.subs.forEach(f => f(n => n + 1)); break; }
+    const [label, e] = all[(start + k) % all.length];
+    if (Math.random() < PEEK_PER_TICK * e.chance) { sync.label = label; sync.text = e.text || e.echo; sync.left = PEEK_TICKS; sync.subs.forEach(f => f(n => n + 1)); break; }
   }
 }
-function useSyncedLabel(peeksRef, on) {
+function useSyncedLabel(needleRef, on) {
   const [, rerender] = useState(0);
   useEffect(() => {
     if (!on || reducedMotion()) return;
-    sync.needles.add(peeksRef); sync.subs.add(rerender);
+    sync.needles.add(needleRef); sync.subs.add(rerender);
     if (!sync.timer) sync.timer = setInterval(syncTick, 450);
     return () => {
-      sync.needles.delete(peeksRef); sync.subs.delete(rerender);
-      if (!sync.subs.size) { clearInterval(sync.timer); sync.timer = null; sync.label = null; sync.left = 0; }
+      sync.needles.delete(needleRef); sync.subs.delete(rerender);
+      if (!sync.subs.size) { clearInterval(sync.timer); sync.timer = null; sync.label = sync.text = null; sync.left = 0; }
     };
   }, [on]);
   return on ? sync.label : null;
 }
+// The synced outcome's text, for a screen that shows it in one spot (Watch mode, Jim 2026-11-12) rather than under
+// each needle; null between outcomes.
+export function useSyncedPeek() {
+  const [, rerender] = useState(0);
+  useEffect(() => {
+    sync.subs.add(rerender);
+    return () => { sync.subs.delete(rerender); };
+  }, []);
+  return sync.label ? sync.text : null;
+}
 function useQuake({ teams, games, history, historyId, p, fork = null, peeks = [] }) {
   const forked = useRef(false);
   const peeking = useRef(null), peekLeft = useRef(0);
-  const peeksRef = useRef(peeks);
+  const peeksRef = useRef(peeks), needleRef = useRef(null);
   peeksRef.current = peeks;
-  const syncLabel = useSyncedLabel(peeksRef, peeks.some(x => x.sync));
+  needleRef.current = { peeks, p };
+  const syncLabel = useSyncedLabel(needleRef, peeks.some(x => x.sync));
   const { live, h } = lookAhead(stakesLeft(teams, games), wildness(history, historyId));
   const [wobble, setWobble] = useState(0);
   const burst = useRef(0), lastP = useRef(Number(p));

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { money } from "../lib/data.js";
 import { oddsMove, shortPlay } from "../lib/playText.js";
 import { useWakeLock } from "../lib/wakeLock.js";
-import { LOCKED, MiniNeedle, NeedleRace } from "./Needle.jsx";
+import { LOCKED, MiniNeedle, NeedleRace, useSyncedPeek } from "./Needle.jsx";
 import { chopPeeks } from "../lib/tdPeeks.js";
 import { driveRooting } from "../lib/rooting.js";
 
@@ -221,6 +221,9 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
 
   const gWeek = Number(guillotine?.week) === week;
   const ticketWinner = scores.find(s => Number(s.topScoreProbability) >= LOCKED);
+  // Every needle dances to one outcome at a time, named once in a pill above the ticker (Jim, 2026-11-12), not
+  // under each needle, which saves a line per needle.
+  const whatIf = useSyncedPeek();
   return (
     <div className={"tv" + (idle ? " idle" : "")}>
       <header className="tv-head">
@@ -274,7 +277,7 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
           {ticketWinner ? null : <NeedleRace minShown={2} label="🎟️ TICKET RACE" compact max={2} onSwap={swapped("🎟️")} items={scores.map(s => ({ team: s, p: Number(s.topScoreProbability), from: s.liveTopFrom, fork: forks.ticket(s), peeks: livePeeks(peeks.ticket(s), s) }))}
             sides={["no ticket", "ticket"]} colors={["#8b8e86", "#e6c85c"]} words={{ likely: ["long shots", "near lock"], locked: ["❌ out", "🎟️ locked"] }} implied="left"
             fixed chipOdds="right" stakes={scores} history={scoreboard.raffleHistory?.week === scoreboard.week ? scoreboard.raffleHistory.points : []} games={games} />}
-          {gWeek && guillotine.teams?.length ? <NeedleRace minShown={2} label="🪓 CHOPPING BLOCK" compact max={2} onSwap={swapped("🪓")} items={guillotine.teams.map(t => ({ team: { ...t, lineup: { starters: t.lineup || [] } }, p: Number(t.chopProbability), from: t.liveChopFrom, peeks: livePeeks(chopPeeks(t, guillotine.teams, games), { lineup: { starters: t.lineup || [] } }) }))}
+          {gWeek && guillotine.teams?.length ? <NeedleRace minShown={2} label="🪓 CHOPPING BLOCK" compact max={2} onSwap={swapped("🪓")} items={guillotine.teams.map(t => ({ team: { ...t, lineup: { starters: t.lineup || [] } }, p: Number(t.chopProbability), from: t.liveChopFrom, peeks: livePeeks(chopPeeks(t, guillotine.teams, games), { lineup: { starters: t.lineup || [] } }).map(pk => ({ ...pk, sync: true })) }))}
             good="left" sides={["safe", "chopped"]} colors={["#8fd087", "#d98a86"]} words={{ likely: ["likely safe", "likely chopped"], locked: ["✅ safe", "🪓 chopped"] }} implied="left"
             stakes={guillotine.teams.map(t => ({ lineup: { starters: t.lineup || [] } }))} games={games} /> : null}
           {/* Once the ticket is locked, the chopping block takes its place and it's one line below (Jim, 2026-11-09). */}
@@ -286,10 +289,11 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
       {announcement ? <div className="tv-announce" key={announcement.text + announcement.sub}>
         <span>{announcement.icon}</span><b>{announcement.text}</b>{announcement.sub ? <small>{announcement.sub}</small> : null}
       </div> : null}
-      {ticker.length ? <footer className="tv-ticker" aria-label="Key plays and League Wire">
-        <div className="tv-ticker-track" style={{ animationDuration: `${Math.max(40, ticker.join(" ").length / 6)}s` }}>
+      {ticker.length || whatIf ? <footer className="tv-ticker" aria-label="Key plays and League Wire">
+        {whatIf ? <p className="tv-whatif" key={whatIf} aria-live="polite">{whatIf}</p> : null}
+        <div className="tv-ticker-window"><div className="tv-ticker-track" style={{ animationDuration: `${Math.max(40, ticker.join(" ").length / 6)}s` }}>
           {[...ticker, ...ticker].map((t, i) => <span key={i}>{t}</span>)}
-        </div>
+        </div></div>
       </footer> : null}
     </div>
   );
