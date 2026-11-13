@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { money } from "../lib/data.js";
 import { oddsMove, shortPlay } from "../lib/playText.js";
 import { useWakeLock } from "../lib/wakeLock.js";
-import { LOCKED, MiniNeedle, NeedleRace, useSyncedPeek } from "./Needle.jsx";
+import { LOCKED, MiniNeedle, NeedleRace, useSyncFocus, useSyncedPeek } from "./Needle.jsx";
 import { chopPeeks } from "../lib/tdPeeks.js";
 import { driveRooting } from "../lib/rooting.js";
 
@@ -96,8 +96,9 @@ const gameText = g => {
   return away && home ? `${away.abbrev} ${away.score}–${home.score} ${home.abbrev}${g.detail ? " · " + g.detail : ""}` : g.name;
 };
 
+const GAME_TURN_MS = 12000;
 // One live game's situation (Jim, 2026-11-12): a little field (home end zone on the left, since yardLine counts
-// from the home goal line) with the ball, then "BUF ball · 2nd & 7 at KC 34 · 4:12 - 2nd".
+// from the home goal line) with the ball, then "BUF 14–10 KC · 4:12 - 2nd · BUF ball · 2nd & 7 at KC 34".
 function DriveLine({ game }) {
   const d = game.drive, away = (game.teams || []).find(t => !t.home), home = (game.teams || []).find(t => t.home);
   const ball = d ? (game.teams || []).find(t => Number(t.id) === Number(d.possession)) : null;
@@ -105,7 +106,7 @@ function DriveLine({ game }) {
   return <p className="tv-drive-line">
     {at != null && home && away ? <span className={"tv-field-strip" + (d.redZone ? " red" : "")} aria-hidden="true">
       <i>{home.abbrev}</i><span><b style={{ left: `${at}%` }}>{ball?.home ? "▶" : "◀"}</b></span><i>{away.abbrev}</i></span> : null}
-    <span className="tv-drive-text">{ball ? <b>{ball.abbrev} ball</b> : <b>{gameText(game)}</b>}{d?.text ? ` · ${d.text}` : ""}{ball && game.detail ? ` · ${game.detail}` : ""}</span>
+    <span className="tv-drive-text"><b>{gameText(game)}</b>{ball ? ` · ${ball.abbrev} ball` : ""}{d?.text ? ` · ${d.text}` : ""}</span>
   </p>;
 }
 
@@ -237,10 +238,23 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
   // Every needle dances to one outcome at a time, named once in a panel above the ticker (Jim, 2026-11-12), not
   // under each needle, which saves a line per needle. The panel follows that outcome's game: the clock, who has
   // the ball, down and distance and where on the field; then the what-if, or the last play as its needles jump.
+  // With several games on (Jim, 2026-11-12: "cycle through score boards"), the panel takes turns through the live
+  // games with league starters in them, GAME_TURN_MS each, and the what-ifs come from that game's drive alone; a
+  // new last play from any game still cuts in, showing its own game.
   const whatIf = useSyncedPeek();
-  const featured = useRef(null);
-  if (whatIf?.game && liveGames.some(g => String(g.id) === String(whatIf.game))) featured.current = String(whatIf.game);
-  const driveGame = liveGames.find(g => String(g.id) === featured.current) || liveGames[0] || null;
+  const starterTeams = new Set(scores.flatMap(s => (s.lineup?.starters || []).map(p => Number(p.proTeamId))));
+  const turnGames = liveGames.filter(g => teamIdsOf(g).some(id => starterTeams.has(id)));
+  const rotation = turnGames.length ? turnGames : liveGames;
+  const [turn, setTurn] = useState(0);
+  useEffect(() => {
+    if (rotation.length < 2) return;
+    const id = setInterval(() => setTurn(t => t + 1), GAME_TURN_MS);
+    return () => clearInterval(id);
+  }, [rotation.length]);
+  const turnGame = rotation.length ? rotation[turn % rotation.length] : null;
+  useSyncFocus(rotation.length > 1 && turnGame ? String(turnGame.id) : null);
+  const shownGame = whatIf?.game ? liveGames.find(g => String(g.id) === String(whatIf.game)) : null;
+  const driveGame = shownGame || turnGame;
   return (
     <div className={"tv" + (idle ? " idle" : "")}>
       <header className="tv-head">

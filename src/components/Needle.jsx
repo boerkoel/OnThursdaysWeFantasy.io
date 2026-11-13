@@ -166,7 +166,7 @@ const SYNC_REST = 4;
 // all players in play") the clock always picks one, taking turns by player (who) so everyone on the field comes up
 // before anyone repeats, and picks among a player's outcomes by how likely each is on this drive.
 // Low (2) when one game is on, with few players in it; with several games on, only the bigger swings (5; Jim,
-// 2026-11-12: "lowering makes sense on a single game").
+// 2026-11-12: "lowering makes sense on a single game"), unless a screen focuses on one game at a time (focus).
 const SYNC_MIN_SWAY = 2, SYNC_MIN_SWAY_MANY = 5;
 // Replays (the last play, Jim 2026-11-12): its needles sit at their odds before the play for REPLAY_PIN ticks, then
 // swing to now while its text stays up REPLAY_TICKS in all. A new play goes first; it comes back now and then
@@ -174,7 +174,7 @@ const SYNC_MIN_SWAY = 2, SYNC_MIN_SWAY_MANY = 5;
 const REPLAY_PIN = 2, REPLAY_TICKS = 8, REPLAY_AGAIN = 0.25;
 // label: the outcome the needles visit now (null: real odds); text, game, replay: what a one-spot display shows,
 // which outlasts label for a replay; left: ticks the text has; pin: ticks the needles have.
-const sync = { label: null, text: null, game: null, replay: false, left: 0, pin: 0, rest: 0, played: new Set(), turns: [], needles: new Set(), subs: new Set(), timer: null };
+const sync = { label: null, text: null, game: null, replay: false, left: 0, pin: 0, rest: 0, played: new Set(), turns: [], focus: null, needles: new Set(), subs: new Set(), timer: null };
 const notify = () => sync.subs.forEach(f => f(n => n + 1));
 function syncTick() {
   if (sync.left > 0) {
@@ -208,7 +208,7 @@ function syncTick() {
   if (replay && Math.random() < REPLAY_AGAIN) return start(...replay);
   const games = new Set([...pool.values()].map(e => e.game).filter(Boolean));
   const minSway = games.size > 1 ? SYNC_MIN_SWAY_MANY : SYNC_MIN_SWAY;
-  const all = [...pool].filter(([, e]) => !e.replay && e.sway >= minSway);
+  const all = [...pool].filter(([, e]) => !e.replay && (!sync.focus || !e.game || String(e.game) === sync.focus) && e.sway >= (sync.focus ? SYNC_MIN_SWAY : minSway));
   if (!all.length) return;
   const whos = new Set(all.map(([, e]) => e.who));
   sync.turns = sync.turns.filter(w => whos.has(w));
@@ -231,6 +231,13 @@ function useSyncedLabel(needleRef, on) {
     };
   }, [on]);
   return on ? sync.label : null;
+}
+// A screen showing one game at a time (Watch mode's game turns) keeps the what-ifs to that game; null: every game.
+export function useSyncFocus(gameId) {
+  useEffect(() => {
+    sync.focus = gameId;
+    return () => { if (sync.focus === gameId) sync.focus = null; };
+  }, [gameId]);
 }
 // The synced outcome, for a screen that shows it in one spot (Watch mode, Jim 2026-11-12) rather than under each
 // needle: { text, game (its NFL game id, if known), replay (the last play) }, or null between outcomes.
