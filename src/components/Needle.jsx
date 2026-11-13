@@ -209,16 +209,16 @@ function syncTick() {
     if (e.replay) sync.played.add(key);
     notify();
   };
+  // A new league play that meaningfully moved the odds cuts in, replayed (Jim, 2026-11-12: "the odds shift message
+  // can come up only when odds meaningfully shift"); otherwise turns alternate between the game's last play, any
+  // play, which the screen shows while the needles rest, and a what-if.
   const fresh = [...pool].find(([key, e]) => e.replay && !sync.played.has(key));
-  if (fresh) { sync.playTurn = false; return start(...fresh, REPLAY_REPS); }
-  // Turns alternate: the last play (replayed if it moved needles, else its text rests on screen), then a what-if.
-  sync.playTurn = !sync.playTurn;
-  if (sync.playTurn) {
-    const replay = [...pool].find(([, e]) => e.replay);
-    if (replay) return start(...replay);
-    sync.rest = PEEK_TICKS;
-    return;
+  if (fresh) {
+    sync.played.add(fresh[0]);
+    if (fresh[1].sway >= SYNC_MIN_SWAY) { sync.playTurn = false; return start(...fresh, REPLAY_REPS); }
   }
+  sync.playTurn = !sync.playTurn;
+  if (sync.playTurn) { sync.rest = PEEK_TICKS + 2; return; }
   const games = new Set([...pool.values()].map(e => e.game).filter(Boolean));
   const minSway = games.size > 1 ? SYNC_MIN_SWAY_MANY : SYNC_MIN_SWAY;
   const all = [...pool].filter(([, e]) => !e.replay && (!sync.focus || !e.game || String(e.game) === sync.focus) && e.sway >= (sync.focus ? SYNC_MIN_SWAY : minSway));

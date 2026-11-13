@@ -8,7 +8,7 @@ import { gameScriptInputs, normalCdf, normalQuantile, playerOutlook } from "../.
 // main league, chop odds in the guillotine. The next live run replaces it all with a fresh simulation.
 // A game whose score has changed since the run is left alone: who got the points only arrives with the run.
 const ESPN_SCOREBOARD = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard";
-const POLL_MS = 15000;
+const POLL_MS = 10000;   // every play shows in Watch mode's drive panel (Jim, 2026-11-12; was 15 s)
 const POSITION_IDS = { QB: 1, RB: 2, WR: 3, TE: 4, K: 5, "D/ST": 16 };
 const z = p => normalQuantile(Math.min(0.9999, Math.max(0.0001, p / 100)));
 const odds = (p, shift) => p <= 0 || p >= 100 || !shift ? p : Math.round(1000 * normalCdf(z(p) + shift)) / 10;
@@ -25,7 +25,9 @@ export function useEspnGames(active) {
         const r = await fetch(ESPN_SCOREBOARD, { cache: "no-store" });
         const data = r.ok ? await r.json() : null;
         if (!data || stopped) return;
-        setGames(new Map((data.events || []).map(e => [String(e.id), { ...gameScriptInputs(e.competitions?.[0]), at: Date.now() }])));
+        // Plus the clock as shown and the last play, any play (Watch mode's drive panel; Jim, 2026-11-12).
+        setGames(new Map((data.events || []).map(e => { const c = e.competitions?.[0];
+          return [String(e.id), { ...gameScriptInputs(c), detail: c?.status?.type?.shortDetail || null, lastPlay: c?.situation?.lastPlay?.text || null, at: Date.now() }]; })));
       } catch {}
     };
     load();
@@ -115,7 +117,8 @@ function mergeGames(baseGames, espn) {
   return baseGames.map(g => {
     const e = espn.get(String(g.id));
     if (!e || e.state === "pre") return g;
-    return { ...g, state: e.state, completed: e.state === "post" || g.completed, period: e.period, clock: e.clock, drive: e.drive,
+    return { ...g, state: e.state, completed: e.state === "post" || g.completed, period: e.period, clock: e.clock, detail: e.detail || g.detail,
+      drive: e.drive ? { ...e.drive, lastPlay: e.lastPlay ? String(e.lastPlay).trim().replace(/^\([^)]*\)\s*/, "") : g.drive?.lastPlay ?? null } : e.drive,
       teams: (g.teams || []).map(t => ({ ...t, score: e.teams.find(x => Number(x.id) === Number(t.id))?.score ?? t.score })) };
   });
 }
