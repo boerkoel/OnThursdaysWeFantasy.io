@@ -96,6 +96,19 @@ const gameText = g => {
   return away && home ? `${away.abbrev} ${away.score}–${home.score} ${home.abbrev}${g.detail ? " · " + g.detail : ""}` : g.name;
 };
 
+// One live game's situation (Jim, 2026-11-12): a little field (home end zone on the left, since yardLine counts
+// from the home goal line) with the ball, then "BUF ball · 2nd & 7 at KC 34 · 4:12 - 2nd".
+function DriveLine({ game }) {
+  const d = game.drive, away = (game.teams || []).find(t => !t.home), home = (game.teams || []).find(t => t.home);
+  const ball = d ? (game.teams || []).find(t => Number(t.id) === Number(d.possession)) : null;
+  const at = Number.isFinite(d?.yardLine) ? Math.min(100, Math.max(0, d.yardLine)) : null;
+  return <p className="tv-drive-line">
+    {at != null && home && away ? <span className={"tv-field-strip" + (d.redZone ? " red" : "")} aria-hidden="true">
+      <i>{home.abbrev}</i><span><b style={{ left: `${at}%` }}>{ball?.home ? "▶" : "◀"}</b></span><i>{away.abbrev}</i></span> : null}
+    <span className="tv-drive-text">{ball ? <b>{ball.abbrev} ball</b> : <b>{gameText(game)}</b>}{d?.text ? ` · ${d.text}` : ""}{ball && game.detail ? ` · ${game.detail}` : ""}</span>
+  </p>;
+}
+
 // Pulse a matchup when its favorite changes (crossing 50%) between updates.
 function useFlashes(pairs) {
   const favorites = useRef(new Map());
@@ -221,9 +234,13 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
 
   const gWeek = Number(guillotine?.week) === week;
   const ticketWinner = scores.find(s => Number(s.topScoreProbability) >= LOCKED);
-  // Every needle dances to one outcome at a time, named once in a pill above the ticker (Jim, 2026-11-12), not
-  // under each needle, which saves a line per needle.
+  // Every needle dances to one outcome at a time, named once in a panel above the ticker (Jim, 2026-11-12), not
+  // under each needle, which saves a line per needle. The panel follows that outcome's game: the clock, who has
+  // the ball, down and distance and where on the field; then the what-if, or the last play as its needles jump.
   const whatIf = useSyncedPeek();
+  const featured = useRef(null);
+  if (whatIf?.game && liveGames.some(g => String(g.id) === String(whatIf.game))) featured.current = String(whatIf.game);
+  const driveGame = liveGames.find(g => String(g.id) === featured.current) || liveGames[0] || null;
   return (
     <div className={"tv" + (idle ? " idle" : "")}>
       <header className="tv-head">
@@ -289,8 +306,12 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
       {announcement ? <div className="tv-announce" key={announcement.text + announcement.sub}>
         <span>{announcement.icon}</span><b>{announcement.text}</b>{announcement.sub ? <small>{announcement.sub}</small> : null}
       </div> : null}
-      {ticker.length || whatIf ? <footer className="tv-ticker" aria-label="Key plays and League Wire">
-        {whatIf ? <p className="tv-whatif" key={whatIf} aria-live="polite">{whatIf}</p> : null}
+      {ticker.length || whatIf || driveGame ? <footer className="tv-ticker" aria-label="Key plays and League Wire">
+        {driveGame || whatIf ? <div className="tv-drive">
+          {driveGame ? <DriveLine game={driveGame} /> : null}
+          <p className={"tv-whatif" + (whatIf?.replay ? " replay" : "")} key={whatIf?.text || ""} aria-live="polite">
+            {whatIf ? whatIf.replay ? <><small>LAST PLAY</small> {whatIf.text}</> : <><small>WHAT IF</small> {whatIf.text.replace(/^🏈 this drive: /, "")}</> : "\u00a0"}</p>
+        </div> : null}
         <div className="tv-ticker-window"><div className="tv-ticker-track" style={{ animationDuration: `${Math.max(40, ticker.join(" ").length / 6)}s` }}>
           {[...ticker, ...ticker].map((t, i) => <span key={i}>{t}</span>)}
         </div></div>

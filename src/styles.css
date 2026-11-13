@@ -1259,8 +1259,18 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 /* iOS's layout viewport stops short of the screen's bottom (room for a toolbar that may slide in), leaving a dark band
    below a bottom:0 ticker. Watch mode on a phone is screen-tall (100lvh) and the ticker sticks to its bottom (Jim, 2026-11-12). */
 @media (max-width:760px),(orientation:portrait) and (max-width:1024px){.tv{bottom:auto;height:100vh;height:100lvh}.tv-ticker{position:sticky;left:auto;right:auto;bottom:0;margin:0 -16px;flex:none}.tv-body{flex:1 0 auto;padding-bottom:8px}}
-/* Watch mode's what-if pill (Jim, 2026-11-12): one spot above the ticker names the outcome every needle is visiting. */
-.tv-ticker{overflow:visible}.tv-ticker-window{overflow:hidden}.tv .mini-needle-peek{display:none}
-.tv-whatif{position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);max-width:calc(100% - 32px);margin:0;padding:.35em 1em;border:1px solid #e6c85c;border-radius:999px;background:#1c1b12f2;color:#e6c85c;font-weight:800;font-size:1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 4px 18px #000a;animation:tv-whatif .25s ease-out;pointer-events:none}
-@keyframes tv-whatif{from{opacity:0;transform:translate(-50%,6px)}}
-@media (max-width:760px),(orientation:portrait) and (max-width:1024px){.tv-whatif{font-size:13px}}
+/* Watch mode's drive panel (Jim, 2026-11-12): above the ticker, the featured game's situation and the outcome every
+   needle is visiting (a what-if, or the last play as its needles jump). */
+.tv .mini-needle-peek{display:none}
+.tv-drive{padding:.35em 1.8vw .3em;border-bottom:1px solid #30332d;background:#141510}
+.tv-drive p{margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tv-drive-line{display:flex;align-items:center;gap:.6em;font-size:.9em;color:#c7c9c1}.tv-drive-line b{color:#f0f3ed}.tv-drive-text{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.tv-field-strip{flex:none;display:flex;align-items:stretch;height:1.3em;font-size:.7em;font-weight:800;color:#8b8e86;border:1px solid #3a3d36;border-radius:4px;overflow:hidden}
+.tv-field-strip i{font-style:normal;padding:0 .35em;display:flex;align-items:center;background:#ffffff0d}
+.tv-field-strip>span{position:relative;width:7em;background:repeating-linear-gradient(90deg,#24301f 0 10%,#1f2a1b 10% 20%)}
+.tv-field-strip b{position:absolute;top:50%;transform:translate(-50%,-50%);color:#e6c85c;font-size:1.1em;transition:left .6s ease-out}
+.tv-field-strip.red>span{box-shadow:inset 0 0 0 1px #d98a8666}
+.tv-whatif{margin-top:.15em!important;font-weight:800;color:#e6c85c;animation:tv-whatif .25s ease-out}.tv-whatif small{font-size:.7em;letter-spacing:.08em;color:#b8c69b;margin-right:.3em}
+.tv-whatif.replay{color:#f7f7f2}.tv-whatif.replay small{color:#e6c85c}
+@keyframes tv-whatif{from{opacity:0;transform:translateY(4px)}}
+@media (max-width:760px),(orientation:portrait) and (max-width:1024px){.tv-drive{padding:5px 16px 4px}.tv-drive-line{font-size:11px}.tv-whatif{font-size:13px}.tv-field-strip>span{width:64px}}

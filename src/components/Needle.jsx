@@ -164,11 +164,19 @@ const SYNC_REST = 4;
 // SYNC_MIN_SWAY (Jim, 2026-11-12: "filtered by how much it'll sway one or more matchups"): an outcome comes up only
 // if it moves some needle at least this many odds points; among those, as often as it's likely.
 const SYNC_MIN_SWAY = 5;
-const sync = { label: null, text: null, left: 0, rest: 0, needles: new Set(), subs: new Set(), timer: null };
+// Replays (the last play, Jim 2026-11-12): its needles sit at their odds before the play for REPLAY_PIN ticks, then
+// swing to now while its text stays up REPLAY_TICKS in all. A new play goes first; it comes back now and then
+// (REPLAY_AGAIN, as if that likely) while it's the last play, and needs no minimum sway, since it happened.
+const REPLAY_PIN = 2, REPLAY_TICKS = 8, REPLAY_AGAIN = 0.25;
+// label: the outcome the needles visit now (null: real odds); text, game, replay: what a one-spot display shows,
+// which outlasts label for a replay; left: ticks the text has; pin: ticks the needles have.
+const sync = { label: null, text: null, game: null, replay: false, left: 0, pin: 0, rest: 0, played: new Set(), needles: new Set(), subs: new Set(), timer: null };
+const notify = () => sync.subs.forEach(f => f(n => n + 1));
 function syncTick() {
   if (sync.left > 0) {
     sync.left -= 1;
-    if (!sync.left) { sync.label = sync.text = null; sync.rest = SYNC_REST; sync.subs.forEach(f => f(n => n + 1)); }
+    if (sync.pin > 0 && !--sync.pin) { sync.label = null; notify(); }
+    if (!sync.left) { sync.label = sync.text = sync.game = null; sync.replay = false; sync.rest = SYNC_REST; notify(); }
     return;
   }
   if (sync.rest > 0) { sync.rest -= 1; return; }
@@ -178,16 +186,23 @@ function syncTick() {
   // label from a needle it names (not a silent echo).
   for (const ref of sync.needles) for (const pk of ref.current?.peeks || []) {
     if (!pk.sync) continue;
-    const key = pk.key ?? pk.label, e = pool.get(key) || { chance: pk.chance, sway: 0, text: null };
+    const key = pk.key ?? pk.label, e = pool.get(key) || { chance: pk.chance, sway: 0, text: null, game: pk.game ?? null, replay: Boolean(pk.replay) };
     e.sway = Math.max(e.sway, Math.abs(Number(pk.p) - Number(ref.current.p)) || 0);
     if (!pk.silent && !e.text) e.text = pk.label;
     e.echo = e.echo || pk.label;
     pool.set(key, e);
   }
-  const all = [...pool].filter(([, e]) => e.sway >= SYNC_MIN_SWAY), start = Math.floor(Math.random() * all.length);
+  const start = (key, e) => {
+    Object.assign(sync, { label: key, text: e.text || e.echo, game: e.game, replay: e.replay, left: e.replay ? REPLAY_TICKS : PEEK_TICKS, pin: e.replay ? REPLAY_PIN : PEEK_TICKS });
+    if (e.replay) sync.played.add(key);
+    notify();
+  };
+  const fresh = [...pool].find(([key, e]) => e.replay && !sync.played.has(key));
+  if (fresh) return start(...fresh);
+  const all = [...pool].filter(([, e]) => e.replay || e.sway >= SYNC_MIN_SWAY), from = Math.floor(Math.random() * all.length);
   for (let k = 0; k < all.length; k++) {
-    const [label, e] = all[(start + k) % all.length];
-    if (Math.random() < PEEK_PER_TICK * e.chance) { sync.label = label; sync.text = e.text || e.echo; sync.left = PEEK_TICKS; sync.subs.forEach(f => f(n => n + 1)); break; }
+    const [key, e] = all[(from + k) % all.length];
+    if (Math.random() < PEEK_PER_TICK * (e.replay ? REPLAY_AGAIN : e.chance)) return start(key, e);
   }
 }
 function useSyncedLabel(needleRef, on) {
@@ -198,20 +213,20 @@ function useSyncedLabel(needleRef, on) {
     if (!sync.timer) sync.timer = setInterval(syncTick, 450);
     return () => {
       sync.needles.delete(needleRef); sync.subs.delete(rerender);
-      if (!sync.subs.size) { clearInterval(sync.timer); sync.timer = null; sync.label = sync.text = null; sync.left = 0; }
+      if (!sync.subs.size) { clearInterval(sync.timer); sync.timer = null; sync.label = sync.text = sync.game = null; sync.left = sync.pin = 0; }
     };
   }, [on]);
   return on ? sync.label : null;
 }
-// The synced outcome's text, for a screen that shows it in one spot (Watch mode, Jim 2026-11-12) rather than under
-// each needle; null between outcomes.
+// The synced outcome, for a screen that shows it in one spot (Watch mode, Jim 2026-11-12) rather than under each
+// needle: { text, game (its NFL game id, if known), replay (the last play) }, or null between outcomes.
 export function useSyncedPeek() {
   const [, rerender] = useState(0);
   useEffect(() => {
     sync.subs.add(rerender);
     return () => { sync.subs.delete(rerender); };
   }, []);
-  return sync.label ? sync.text : null;
+  return sync.text ? { text: sync.text, game: sync.game, replay: sync.replay } : null;
 }
 function useQuake({ teams, games, history, historyId, p, fork = null, peeks = [] }) {
   const forked = useRef(false);

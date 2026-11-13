@@ -466,7 +466,21 @@ function App() {
   const liveGame = lone ? (scoreboard.nflGames || []).find(g => g.state === "in") : null;
   const drivePlays = (liveGame && driveScenarios({ game: liveGame, starters: leagueStarters }))?.scenarios || [];
   // Watch mode syncs every needle to every live game's drive at once (Jim, 2026-11-12), not only a lone night game's.
-  const allDrivePlays = (scoreboard.nflGames || []).filter(g => g.state === "in").flatMap(g => driveScenarios({ game: g, starters: leagueStarters })?.scenarios || []);
+  const allDrivePlays = (scoreboard.nflGames || []).filter(g => g.state === "in").flatMap(g => (driveScenarios({ game: g, starters: leagueStarters })?.scenarios || []).map(sc => ({ ...sc, gameId: g.id })));
+  // And the last league play (Jim, 2026-11-12: "show the last play, and as it's displayed show needles jumped in
+  // response"): a replay whose points are taken back out, so each needle it moved starts at its odds before the
+  // play and swings to now. One play can score for several starters (a QB and his receiver); grouped by play.
+  const lastPlay = (() => {
+    const fresh = (Number(livePlayFeed?.week) === Number(scoreboard.week) ? livePlayFeed.plays || [] : [])
+      .filter(p => p.wallclock && Date.now() - Date.parse(p.wallclock) < 5 * 60 * 1000 && Number(p.points));
+    if (!fresh.length) return [];
+    const newest = fresh.reduce((x, y) => Date.parse(y.wallclock) > Date.parse(x.wallclock) ? y : x);
+    const group = String(newest.id).split("-").slice(0, 2).join("-");
+    const same = fresh.filter(p => String(p.id).split("-").slice(0, 2).join("-") === group).sort((x, y) => Math.abs(y.points) - Math.abs(x.points));
+    const ownerOf = id => scores.find(s => Number(s.teamId) === Number(id))?.teamId;
+    return [{ label: `${same[0].player} ${shortPlay(same[0])}`, key: `play:${group}`, chance: 1, replay: true, gameId: String(newest.eventId),
+      pts: same.map(p => [{ owner: ownerOf(p.fantasyTeamId) }, -Number(p.points)]) }];
+  })();
   const ptsOf = (sc, t) => sc.pts.reduce((sum, [pl, v]) => sum + (pl.owner === t.teamId ? v : 0), 0);
   const lineRise = sc => sc.pts.reduce((sum, [pl, v]) => {
     const q = Number(scores.find(x => x.teamId === pl.owner)?.aboveMedianProbability) / 100 || 0;
@@ -490,7 +504,7 @@ function App() {
   };
   const medianSd = t => Math.hypot(sdOfTeam(t), 0.4 * typicalSd);
   const { win: winPeeks, median: medianPeeks, ticket: ticketPeeks } = buildPeeks(drivePlays, lone);
-  const watchPeeks = buildPeeks(allDrivePlays, true);
+  const watchPeeks = buildPeeks([...allDrivePlays, ...lastPlay], true);
   const ticketFork = t => forkFor({ p: Number(t.topScoreProbability), right: [t], sd: Math.hypot(sdOfTeam(t), typicalSd), livePlays: injuryFeed, games: scoreboard.nflGames || [] });
   const renderPrimetime = matchupId => {
     const pair = pairOf(matchupId);
