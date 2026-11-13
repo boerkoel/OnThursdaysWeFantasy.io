@@ -1289,3 +1289,4 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 /* Watch mode on a phone: the bottom panel reaches down into the strip below what iOS pins to (--tv-below, measured in
    TvView), keeping 14px clear of the home indicator (Jim, 2026-11-12). */
 @media (max-width:760px),(orientation:portrait) and (max-width:1024px){.tv-ticker{bottom:calc(-1 * var(--tv-below, 0px))!important;padding-bottom:min(14px,var(--tv-below, 0px))!important}}
+.tv-field-strip b{font-size:1em;line-height:1}

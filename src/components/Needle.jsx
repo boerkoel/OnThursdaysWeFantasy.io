@@ -195,7 +195,7 @@ function syncTick() {
   // label from a needle it names (not a silent echo).
   for (const ref of sync.needles) for (const pk of ref.current?.peeks || []) {
     if (!pk.sync) continue;
-    const key = pk.key ?? pk.label, e = pool.get(key) || { chance: pk.chance, sway: 0, text: null, game: pk.game ?? null, replay: Boolean(pk.replay), who: pk.who ?? "", move: null };
+    const key = pk.key ?? pk.label, e = pool.get(key) || { chance: pk.chance, sway: 0, text: null, game: pk.game ?? null, replay: Boolean(pk.replay), who: pk.who ?? "", move: null, at: pk.at ?? null };
     const sway = Math.abs(Number(pk.p) - Number(ref.current.p)) || 0;
     if (sway > e.sway && ref.current.name) e.move = `${ref.current.name} ${Math.round(pk.p)}→${Math.round(ref.current.p)}%`;
     e.sway = Math.max(e.sway, sway);
@@ -204,7 +204,7 @@ function syncTick() {
     pool.set(key, e);
   }
   const start = (key, e, reps = 1) => {
-    Object.assign(sync, { label: key, key, text: e.text || e.echo, game: e.game, replay: e.replay, move: e.replay ? e.move : null, reps,
+    Object.assign(sync, { label: key, key, text: e.text || e.echo, game: e.game, replay: e.replay, move: e.replay ? e.move : null, at: e.at, reps,
       left: e.replay ? REPLAY_TICKS : PEEK_TICKS, pin: e.replay ? REPLAY_PIN : PEEK_TICKS });
     if (e.replay) sync.played.add(key);
     notify();
@@ -260,7 +260,7 @@ export function useSyncedPeek() {
     sync.subs.add(rerender);
     return () => { sync.subs.delete(rerender); };
   }, []);
-  return sync.text ? { text: sync.text, game: sync.game, replay: sync.replay, move: sync.move } : null;
+  return sync.text ? { text: sync.text, game: sync.game, replay: sync.replay, move: sync.move, at: sync.at } : null;
 }
 function useQuake({ teams, games, history, historyId, p, fork = null, peeks = [], name = null }) {
   const forked = useRef(false);

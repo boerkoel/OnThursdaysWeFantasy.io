@@ -478,7 +478,7 @@ function App() {
     const group = String(newest.id).split("-").slice(0, 2).join("-");
     const same = fresh.filter(p => String(p.id).split("-").slice(0, 2).join("-") === group).sort((x, y) => Math.abs(y.points) - Math.abs(x.points));
     const ownerOf = id => scores.find(s => Number(s.teamId) === Number(id))?.teamId;
-    return [{ label: `${same[0].player} ${shortPlay(same[0])}`, key: `play:${group}`, chance: 1, replay: true, gameId: String(newest.eventId),
+    return [{ label: `${same[0].player} ${shortPlay(same[0])}`, key: `play:${group}`, chance: 1, replay: true, gameId: String(newest.eventId), at: newest.wallclock,
       pts: same.map(p => [{ owner: ownerOf(p.fantasyTeamId) }, -Number(p.points)]) }];
   })();
   const ptsOf = (sc, t) => sc.pts.reduce((sum, [pl, v]) => sum + (pl.owner === t.teamId ? v : 0), 0);

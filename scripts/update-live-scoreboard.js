@@ -152,7 +152,7 @@ for (const event of nflWeek?.events || []) {
       ? { possession: Number(s.possession), text: s.downDistanceText || s.possessionText || "", yardLine: Number.isFinite(s.yardLine) ? s.yardLine : null, redZone: s.isRedZone === true,
         down: Number(s.down) || null, distance: Number.isFinite(Number(s.distance)) ? Number(s.distance) : null,
         // The game's last play, any play (Watch mode's drive panel; Jim, 2026-11-12).
-        lastPlay: s.lastPlay?.text ? String(s.lastPlay.text).replace(/^\([^)]*\)\s*/, "").slice(0, 200) : null } : null; })(),
+        lastPlay: s.lastPlay?.text ? String(s.lastPlay.text).trim().replace(/^\([^)]*\)\s*/, "").slice(0, 200) : null } : null; })(),
     // For the matchup cards' lineups: "@CLE 24-27 Final".
     teams: (competition.competitors || []).map(c => ({ id: Number(c.team?.id), abbrev: c.team?.abbreviation || "", score: Number(c.score) || 0, home: c.homeAway === "home",
       record: (c.records || []).find(r => r.type === "total")?.summary || null,

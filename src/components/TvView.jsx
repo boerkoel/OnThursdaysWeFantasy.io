@@ -97,6 +97,7 @@ const gameText = g => {
 };
 
 const GAME_TURN_MS = 12000;
+const ago = at => { const m = Math.round((Date.now() - Date.parse(at)) / 60000); return m < 1 ? "just now" : `${m} min ago`; };
 // The strip of screen below what iOS lets the page pin to (Jim, 2026-11-12: "there's still room below, use the part
 // of the screen that curves"): the screen's height less the window's, when the page already runs under the status
 // bar (so the whole difference is at the bottom); published as --tv-below for the bottom panel to reach into.
@@ -131,8 +132,9 @@ function DriveLine({ game }) {
   const at = Number.isFinite(d?.yardLine) ? Math.min(100, Math.max(0, d.yardLine)) : null;
   return <p className="tv-drive-line">
     {at != null && home && away ? <span className={"tv-field-strip" + (d.redZone ? " red" : "")} aria-hidden="true">
-      <i>{home.abbrev}</i><span><b style={{ left: `${at}%` }}>{ball?.home ? "▶" : "◀"}</b></span><i>{away.abbrev}</i></span> : null}
-    <span className="tv-drive-text"><b>{gameText(game)}</b>{ball ? ` · ${ball.abbrev} ball` : ""}{d?.text ? ` · ${d.text}` : ""}</span>
+      <i>{home.abbrev}</i><span><b style={{ left: `${at}%` }}>🏈</b></span><i>{away.abbrev}</i></span> : null}
+    {/* A football beside the team with the ball (Jim, 2026-11-12), in place of "WSH ball". */}
+    <span className="tv-drive-text"><b>{away && home ? <>{ball === away ? "🏈 " : ""}{away.abbrev} {away.score}–{home.score} {home.abbrev}{ball === home ? " 🏈" : ""}{game.detail ? " · " + game.detail : ""}</> : gameText(game)}</b>{d?.text ? ` · ${d.text}` : ""}</span>
   </p>;
 }
 
@@ -295,7 +297,7 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
   // from the scoreboard, else the newest league play in it.
   const lastInGame = (() => {
     if (!driveGame) return null;
-    if (driveGame.drive?.lastPlay) return driveGame.drive.lastPlay;
+    if (driveGame.drive?.lastPlay) return String(driveGame.drive.lastPlay).trim().replace(/^\([^)]*\)\s*/, "");
     const p = plays.filter(x => String(x.eventId) === String(driveGame.id)).sort((x, y) => Date.parse(y.wallclock) - Date.parse(x.wallclock))[0];
     return p ? `${p.player} ${shortPlay(p)}` : null;
   })();
@@ -368,7 +370,9 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
         {driveGame || whatIf ? <div className="tv-drive">
           {driveGame ? <DriveLine game={driveGame} /> : null}
           <p className={"tv-whatif" + (whatIf?.replay ? " replay" : "")} key={whatIf?.text || ""} aria-live="polite">
-            {whatIf ? whatIf.replay ? <><span><small>LAST PLAY</small> {whatIf.text}</span>{whatIf.move ? <em>{whatIf.move}</em> : null}</> : <><small>WHAT IF</small> {whatIf.text.replace(/^🏈 this drive: /, "")}</>
+            {/* A replay is the last play with a league player in it, not always the game's last play (Jim, 2026-11-12:
+                Nabers showed while Washington had the ball), so it says so, and how long ago. */}
+            {whatIf ? whatIf.replay ? <><span><small>LEAGUE PLAY{whatIf.at ? ` · ${ago(whatIf.at)}` : ""}</small> {whatIf.text}</span>{whatIf.move ? <em>{whatIf.move}</em> : null}</> : <><small>WHAT IF</small> {whatIf.text.replace(/^🏈 this drive: /, "")}</>
               : lastInGame ? <span className="tv-lastplay"><small>LAST PLAY</small> {lastInGame}</span> : "\u00a0"}</p>
         </div> : null}
         <div className="tv-ticker-window"><div className="tv-ticker-track" style={{ animationDuration: `${Math.max(40, ticker.join(" ").length / 6)}s` }}>
