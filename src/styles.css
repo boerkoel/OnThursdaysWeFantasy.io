@@ -1253,3 +1253,5 @@ section,details,.odds-block{scroll-margin-top:72px}
 @media (max-width:760px){.race-tiers>div.implied-only{display:none}.race-tiers:has(>div.implied-only){grid-template-columns:minmax(0,1fr)}}
 /* iOS enlarges text in the ticker's very wide line; keep text at the size the CSS sets (Jim, 2026-11-12). */
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+/* Watch mode on a phone: the ticker runs to the very bottom, through the rounded corners and home indicator (Jim, 2026-11-12). */
+@media (max-width:760px),(orientation:portrait) and (max-width:1024px){.tv-ticker{padding-bottom:6px}.tv-body{padding-bottom:40px}}
