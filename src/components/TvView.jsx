@@ -264,6 +264,14 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
   useSyncFocus(rotation.length > 1 && turnGame ? String(turnGame.id) : null);
   const shownGame = whatIf?.game ? liveGames.find(g => String(g.id) === String(whatIf.game)) : null;
   const driveGame = shownGame || turnGame;
+  // Between what-ifs the line shows that game's last play (Jim, 2026-11-12: "not seeing the latest play"): any play,
+  // from the scoreboard, else the newest league play in it.
+  const lastInGame = (() => {
+    if (!driveGame) return null;
+    if (driveGame.drive?.lastPlay) return driveGame.drive.lastPlay;
+    const p = plays.filter(x => String(x.eventId) === String(driveGame.id)).sort((x, y) => Date.parse(y.wallclock) - Date.parse(x.wallclock))[0];
+    return p ? `${p.player} ${shortPlay(p)}` : null;
+  })();
   return (
     <div className={"tv" + (idle ? " idle" : "")}>
       <header className="tv-head">
@@ -333,7 +341,8 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
         {driveGame || whatIf ? <div className="tv-drive">
           {driveGame ? <DriveLine game={driveGame} /> : null}
           <p className={"tv-whatif" + (whatIf?.replay ? " replay" : "")} key={whatIf?.text || ""} aria-live="polite">
-            {whatIf ? whatIf.replay ? <><small>LAST PLAY</small> {whatIf.text}</> : <><small>WHAT IF</small> {whatIf.text.replace(/^🏈 this drive: /, "")}</> : "\u00a0"}</p>
+            {whatIf ? whatIf.replay ? <><small>LAST PLAY</small> {whatIf.text}</> : <><small>WHAT IF</small> {whatIf.text.replace(/^🏈 this drive: /, "")}</>
+              : lastInGame ? <span className="tv-lastplay"><small>LAST PLAY</small> {lastInGame}</span> : "\u00a0"}</p>
         </div> : null}
         <div className="tv-ticker-window"><div className="tv-ticker-track" style={{ animationDuration: `${Math.max(40, ticker.join(" ").length / 6)}s` }}>
           {[...ticker, ...ticker].map((t, i) => <span key={i}>{t}</span>)}

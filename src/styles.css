@@ -1281,3 +1281,5 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 @media (max-width:760px),(orientation:portrait) and (max-width:1024px){.tv-drive{padding:8px 16px 8px}.tv-drive p{white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}
 .tv-drive-line{display:flex!important;font-size:13px;line-height:1.3}.tv-drive-text{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal}.tv-field-strip>span{width:72px}
 .tv-whatif{margin-top:5px!important;font-size:16px;line-height:1.25;min-height:2.5em}.tv-whatif small{font-size:10px}.tv-body{padding-bottom:110px}}
+/* The drive panel's resting line: the game's last play, quieter than a what-if (Jim, 2026-11-12). */
+.tv-lastplay{color:#c7c9c1;font-weight:700}

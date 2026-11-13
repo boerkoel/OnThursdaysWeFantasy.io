@@ -472,7 +472,7 @@ function App() {
   // play and swings to now. One play can score for several starters (a QB and his receiver); grouped by play.
   const lastPlay = (() => {
     const fresh = (Number(livePlayFeed?.week) === Number(scoreboard.week) ? livePlayFeed.plays || [] : [])
-      .filter(p => p.wallclock && Date.now() - Date.parse(p.wallclock) < 5 * 60 * 1000 && Number(p.points));
+      .filter(p => p.wallclock && Date.now() - Date.parse(p.wallclock) < 10 * 60 * 1000 && Number(p.points));
     if (!fresh.length) return [];
     const newest = fresh.reduce((x, y) => Date.parse(y.wallclock) > Date.parse(x.wallclock) ? y : x);
     const group = String(newest.id).split("-").slice(0, 2).join("-");
