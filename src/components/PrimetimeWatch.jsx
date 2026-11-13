@@ -167,6 +167,33 @@ function gameScripts({ slot, scores, byId, guillotine, open }) {
   return out.sort((x, y) => y.weight - x.weight).slice(0, 4);
 }
 
+// 🎯 On the line tonight (Jim, 2026-11-12: the scripts went too far; lead with how much is at play): the share of
+// each matchup's and each team's points still to come that play in tonight's game(s). Shown up top, always open.
+const STAKE_MIN = 3, STAKE_MATCHUPS = 3, STAKE_TEAMS = 4;
+export function atStake({ scores, slot }) {
+  const gameTeams = new Set(slot.flatMap(g => g.teamIds || []).map(Number));
+  const all = { has: () => true };
+  const side = s => {
+    const night = tonight(s.lineup?.starters, gameTeams, slot), every = tonight(s.lineup?.starters, all, slot);
+    return { night, rest: every.rest };
+  };
+  const by = new Map(scores.map(s => [s.teamId, { s, ...side(s) }]));
+  const share = (night, rest) => rest > 0 ? 100 * night / rest : 0;
+  const matchups = [], seen = new Set();
+  for (const a of by.values()) {
+    const b = by.get(a.s.opponentId);
+    if (!b || seen.has(a.s.matchupId)) continue;
+    seen.add(a.s.matchupId);
+    const pctTonight = share(a.night.rest + b.night.rest, a.rest + b.rest);
+    if (pctTonight < STAKE_MIN) continue;
+    const names = [a, b].map(x => x.night.list.map(p => lastName(p.name)).join(", ") || "—").join(" vs ");
+    matchups.push({ head: `${a.s.team} vs ${b.s.team}`, share: pctTonight, play: names });
+  }
+  const teams = [...by.values()].map(x => ({ team: x.s.team, share: share(x.night.rest, x.rest) }))
+    .filter(x => x.share >= STAKE_MIN).sort((x, y) => y.share - x.share).slice(0, STAKE_TEAMS);
+  return { matchups: matchups.sort((x, y) => y.share - x.share).slice(0, STAKE_MATCHUPS), teams };
+}
+
 export function primetimeStories({ scores, nflGames, guillotine }) {
   const slot = nightSlot(nflGames || []);
   if (!slot.length) return null;
@@ -354,19 +381,27 @@ export default function PrimetimeWatch({ scores, nflGames, guillotine, logos, we
   const base = primetimeStories({ scores, nflGames, guillotine });
   const slot = base?.slot || nightSlot(nflGames || []);
   const survivor = slot.length ? survivorStory(feed, slot, Number(week)) : null;
-  if (!base && !survivor) return null;
+  const stake = slot.length ? atStake({ scores, slot }) : { matchups: [], teams: [] };
+  if (!base && !survivor && !stake.matchups.length && !stake.teams.length) return null;
   const st = base || { label: slotLabel(slot[0]), games: slot.map(g => g.name).join(" & "), slot,
     script: [] };
   st.survivor = survivor;
   const text = lines(st);
-  const when = st.slot[0].state === "in" ? "live now" : new Date(st.slot[0].kickoff).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });
+  const live = st.slot[0].state === "in";
+  const when = live ? "live now" : new Date(st.slot[0].kickoff).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });
+  const stakeOf = live ? "of their points still to come" : "of their projected points";
+  const stakeLines = [
+    ...stake.matchups.map(m => `${m.head}: ${pct(m.share)} ${stakeOf} (${m.play})`),
+    stake.teams.length && `Teams: ${stake.teams.map(t => `${t.team} ${pct(t.share)}`).join(" · ")}`
+  ].filter(Boolean);
   const share = () => ({
     kicker: `Week ${week} · ${st.label} What to Watch`,
     title: `${st.label}: ${st.games}`,
-    lines: SECTIONS.flatMap(([key, title]) => text[key].length ? [
+    lines: [...(stakeLines.length ? [{ text: "🎯 On the line tonight", size: 28, color: "accent", weight: 800, gap: 26 },
+      ...stakeLines.map(d => ({ text: d, size: 22, gap: 4 }))] : []), ...SECTIONS.flatMap(([key, title]) => text[key].length ? [
       { text: title, size: 28, color: "accent", weight: 800, gap: 26 },
       ...text[key].flatMap(item => [{ text: item.head, size: 24, color: "ink", weight: 800, gap: 10 }, ...itemLines(item).map(d => ({ text: d, size: 21, gap: 2 }))])
-    ] : [])
+    ] : [])]
   });
   return (
     <section id="primetime" className="section">
@@ -374,13 +409,21 @@ export default function PrimetimeWatch({ scores, nflGames, guillotine, logos, we
         <div><span className="section-kicker">{st.games} · {when}</span><h2>{st.label} What to Watch</h2></div>
         <ShareButton section="primetime" iconOnly label={`Share the ${st.label} What to Watch`} filename={`week-${week}-${st.label.toLowerCase()}-what-to-watch`} build={share} />
       </div>
-      <div className="primetime-summary">
+      {stake.matchups.length || stake.teams.length ? <div className="primetime-card primetime-stake">
+        <h3>🎯 On the line tonight</h3>
+        {stake.matchups.map((m, i) => <div className="primetime-item" key={i} title={`In play: ${m.play}`}>
+          <b>{m.head}: {pct(m.share)}</b>
+          <p>{stakeOf} · {m.play}</p>
+        </div>)}
+        {stake.teams.length ? <p className="primetime-teams">Teams: {stake.teams.map(t => `${t.team} ${pct(t.share)}`).join(" · ")}</p> : null}
+      </div> : null}
+      {text.script.length || text.survivor.length ? <div className="primetime-summary">
         <span>{[
           text.script.length && "game script",
           text.survivor.length && "survivor pool"
         ].filter(Boolean).join(" · ")}</span>
         <button type="button" className="section-toggle" aria-expanded={open} onClick={() => setOpen(v => !v)}>{open ? "Hide ▴" : "Show ▾"}</button>
-      </div>
+      </div> : null}
       {open ? <div className="primetime-grid">
         {SECTIONS.map(([key, title]) => text[key].length ? <div className="primetime-card" key={key}>
           <h3>{title}</h3>
