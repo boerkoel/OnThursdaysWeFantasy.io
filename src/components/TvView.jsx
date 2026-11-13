@@ -215,6 +215,12 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
   const inPlay = (...teams) => teams.some(t => (t.lineup?.starters || []).some(p => liveTeams.has(Number(p.proTeamId))));
   const livePeeks = (peeks, ...teams) => inPlay(...teams) ? peeks : [];
   const teamName = new Map(scores.map(s => [Number(s.teamId), s.team]));
+  // A lineup's players on the field this drive (the offense, or the D/ST against it), so the chop's what-ifs stay
+  // with the drive like the rest (Jim, 2026-11-12: "if Likely scores" came up with Washington's ball).
+  const onDrive = lineup => (lineup || []).filter(p => liveGames.some(g => {
+    const ball = Number(g.drive?.possession);
+    return ball && teamIdsOf(g).includes(Number(p.proTeamId)) && (p.pos === "D/ST" ? Number(p.proTeamId) !== ball : Number(p.proTeamId) === ball);
+  }));
 
   // The ticker: the newest key plays (6+ points, or a 3+ point odds move) and the League Wire's top stories.
   const plays = Number(livePlays?.week) === week ? livePlays.plays || [] : [];
@@ -308,7 +314,7 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
           {ticketWinner ? null : <NeedleRace minShown={2} label="🎟️ TICKET RACE" compact max={2} onSwap={swapped("🎟️")} items={scores.map(s => ({ team: s, p: Number(s.topScoreProbability), from: s.liveTopFrom, fork: forks.ticket(s), peeks: livePeeks(peeks.ticket(s), s) }))}
             sides={["no ticket", "ticket"]} colors={["#8b8e86", "#e6c85c"]} words={{ likely: ["long shots", "near lock"], locked: ["❌ out", "🎟️ locked"] }} implied="left"
             fixed chipOdds="right" stakes={scores} history={scoreboard.raffleHistory?.week === scoreboard.week ? scoreboard.raffleHistory.points : []} games={games} />}
-          {gWeek && guillotine.teams?.length ? <NeedleRace minShown={2} label="🪓 CHOPPING BLOCK" compact max={2} onSwap={swapped("🪓")} items={guillotine.teams.map(t => ({ team: { ...t, lineup: { starters: t.lineup || [] } }, p: Number(t.chopProbability), from: t.liveChopFrom, peeks: livePeeks(chopPeeks(t, guillotine.teams, games), { lineup: { starters: t.lineup || [] } }).map(pk => ({ ...pk, sync: true })) }))}
+          {gWeek && guillotine.teams?.length ? <NeedleRace minShown={2} label="🪓 CHOPPING BLOCK" compact max={2} onSwap={swapped("🪓")} items={guillotine.teams.map(t => ({ team: { ...t, lineup: { starters: t.lineup || [] } }, p: Number(t.chopProbability), from: t.liveChopFrom, peeks: livePeeks(chopPeeks({ ...t, lineup: onDrive(t.lineup) }, guillotine.teams, games), { lineup: { starters: t.lineup || [] } }).map(pk => ({ ...pk, sync: true })) }))}
             good="left" sides={["safe", "chopped"]} colors={["#8fd087", "#d98a86"]} words={{ likely: ["likely safe", "likely chopped"], locked: ["✅ safe", "🪓 chopped"] }} implied="left"
             stakes={guillotine.teams.map(t => ({ lineup: { starters: t.lineup || [] } }))} games={games} /> : null}
           {/* Once the ticket is locked, the chopping block takes its place and it's one line below (Jim, 2026-11-09). */}
