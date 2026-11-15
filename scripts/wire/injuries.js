@@ -1,5 +1,5 @@
 import { injuryShareFn, normalCdf, normalQuantile } from "../lib/simulation.js";
-import { clockNow, currentScores, currentWeek, fit, guillotineData, listNames, liveScoreboard, liveTeams, money, name, pct, surname } from "./context.js";
+import { clockNow, currentScores, currentWeek, fit, guillotineData, listNames, liveScoreboard, liveTeams, money, name, nflGameByProTeam, pct, surname } from "./context.js";
 import { livePlayFeed } from "./early-momentum.js";
 
 // League Wire: mid-game injury alerts.
@@ -77,6 +77,7 @@ export function addInjuryStories(add) {
 
 // 🚑 INJURY RIPPLE: the league's starters (both leagues) on a ruled-out player's NFL team, still playing, who lose
 // out: a QB's pass catchers (now with a backup). Other positions' teammates pick up work, so they're left alone.
+// The other side's D/ST gains (facing a backup), named only when someone starts it (Jim, 2026-11-15).
 const PASS_CATCHERS = new Set([3, 4]);   // WR, TE
 const GUILLOTINE_POS = new Set(["WR", "TE"]);
 function addRipples(add, ripples) {
@@ -86,14 +87,23 @@ function addRipples(add, ripples) {
     const chop = Number(guillotineData?.week) === currentWeek ? (guillotineData.teams || []).flatMap(t => (t.lineup || [])
       .filter(p => Number(p.proTeamId) === r.proTeamId && GUILLOTINE_POS.has(p.pos)).map(p => ({ name: surname(p.name), team: "🪓 " + t.team }))) : [];
     const hit = [...main, ...chop];
-    if (!hit.length) continue;
+    const foe = (nflGameByProTeam.get(r.proTeamId)?.teamIds || []).map(Number).find(id => id !== r.proTeamId);
+    const dst = [...[...liveTeams.values()].flatMap(t => t.players).filter(p => !p.bench && p.playing && p.proTeamId === foe && p.positionId === 16)
+        .map(p => p.name + " (" + name(p.teamId) + ")"),
+      ...(Number(guillotineData?.week) === currentWeek ? (guillotineData.teams || []).flatMap(t => (t.lineup || [])
+        .filter(p => Number(p.proTeamId) === foe && p.pos === "D/ST").map(p => p.name + " (🪓 " + t.team + ")")) : [])];
+    if (!hit.length && !dst.length) continue;
     const byTeam = new Map();
     for (const h of hit) byTeam.set(h.team, [...(byTeam.get(h.team) || []), h.name]);
     const list = [...byTeam].map(([team, names]) => listNames(names) + " (" + team + ")");
+    const who = surname(r.player.name);
+    const helps = dst.length ? listNames(dst) + " " + (dst.length > 1 ? "face" : "faces") + " a backup" : "";
     add("INJURY RIPPLE", fit(
-      "🚑 " + surname(r.player.name) + "'s exit hits more than " + r.team + ": " + listNames(list) + " now catch passes from a backup.",
-      "🚑 " + surname(r.player.name) + "'s exit also hits " + listNames(list) + ": a backup QB now.",
-      "🚑 " + surname(r.player.name) + " out: " + hit.length + " more league starters now have a backup QB."
+      list.length ? "🚑 " + who + "'s exit hits more than " + r.team + ": " + listNames(list) + " now catch passes from a backup." + (helps ? " Upside: " + helps + "." : "")
+        : "🚑 " + who + "'s exit has an upside: " + helps + ".",
+      list.length ? "🚑 " + who + "'s exit also hits " + listNames(list) + ": a backup QB now." + (helps ? " " + helps + "." : "") : "🚑 " + who + " out: " + helps + ".",
+      "🚑 " + who + "'s exit also hits " + listNames(list) + ": a backup QB now.",
+      "🚑 " + who + " out: " + hit.length + " more league starters now have a backup QB" + (dst.length ? "; " + dst.length + " D/ST gains" : "") + "."
     ), 88);
   }
 }
