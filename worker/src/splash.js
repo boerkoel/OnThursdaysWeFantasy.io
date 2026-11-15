@@ -9,6 +9,11 @@
 // Splash ends a login 30 days after it starts, renewals or not (seeded Oct 5,
 // revoked Nov 4): the session remembers when its secrets were set (seededAt) so
 // the commissioner gets a reminder before then (loginReminder, Jim 2026-11-08).
+//
+// Only the cron renews (Jim, 2026-11-15: the Nov 8 login died at its first renewal and the tab froze for a week):
+// each renewal can rotate the refresh token, so phones, the alert check and syncs renewing at once could leave
+// someone holding a dead one. The session lives in the LiveStore Durable Object (one consistent copy), not KV,
+// whose edge copies can lag a minute behind a rotation.
 import { storeGet, storePut } from "./live.js";
 
 export const CONTEST = "contest_01M3NEWY24GPHGZ5TYKSZ220S6";
@@ -47,7 +52,7 @@ async function seedId(env) {
 
 async function loadSession(env) {
   const seed = await seedId(env);
-  const stored = await env.SUBS.get("splash-session", "json");
+  const stored = await storeGet(env, "splash-session");
   if (stored?.accessToken && stored?.refreshToken && (!env.SPLASH_REFRESH_TOKEN || stored.seed === seed)) return stored;
   if (env.SPLASH_ACCESS_TOKEN && env.SPLASH_REFRESH_TOKEN) {
     // Developer Tools can show cookie values URL-encoded (%3D...): decode.
@@ -77,24 +82,30 @@ async function renew(env, session) {
     throw new Error(`Splash session renewal failed (${response.status}; ${response.headers.get("content-type") || "no type"}; server ${response.headers.get("server") || "?"}; ${snippet}; ${shape})`);
   }
   const next = { accessToken: data.accessToken, refreshToken: data.refreshToken || session.refreshToken, seed: session.seed, seededAt: session.seededAt, renewedAt: new Date().toISOString() };
-  await env.SUBS.put("splash-session", JSON.stringify(next));
+  await storePut(env, "splash-session", next);
   return next;
 }
 
-async function freshSession(env) {
+// canRenew: false everywhere but the cron (see the top); a session that needs renewing then waits for it.
+const DEFERRED = "Splash renewal left to the cron";
+async function freshSession(env, canRenew) {
   let session = await loadSession(env);
   if (!session) throw new Error("No Splash session: set the SPLASH_ACCESS_TOKEN and SPLASH_REFRESH_TOKEN secrets.");
-  if (expiresAt(session.accessToken) - Date.now() < RENEW_BEFORE_MS) session = await renew(env, session);
-  else if (session.seeded) await env.SUBS.put("splash-session", JSON.stringify({ accessToken: session.accessToken, refreshToken: session.refreshToken, seed: session.seed, seededAt: session.seededAt }));
+  if (expiresAt(session.accessToken) - Date.now() < RENEW_BEFORE_MS) {
+    if (!canRenew) throw new Error(DEFERRED);
+    session = await renew(env, session);
+  }
+  else if (session.seeded) await storePut(env, "splash-session", { accessToken: session.accessToken, refreshToken: session.refreshToken, seed: session.seed, seededAt: session.seededAt });
   return session;
 }
 
-// GET an entrant-only route; renews once and retries on 401.
-export async function splashGet(env, path) {
-  let session = await freshSession(env);
+// GET an entrant-only route; with canRenew, renews once and retries on 401.
+export async function splashGet(env, path, canRenew = false) {
+  let session = await freshSession(env, canRenew);
   const call = token => fetch(`${API}${path}`, { headers: { ...APP_HEADERS, Authorization: `Bearer ${token}` } });
   let response = await call(session.accessToken);
   if (response.status === 401) {
+    if (!canRenew) throw new Error(DEFERRED);
     session = await renew(env, session);
     response = await call(session.accessToken);
   }
@@ -134,7 +145,7 @@ export async function splashProbe(env) {
       const { status, body } = await splashGet(env, route);
       result.routes[route.split("?")[0]] = status >= 400 ? { status, error: body?.error, message: body?.message } : { status, shape: shape(body) };
     }
-    const session = await env.SUBS.get("splash-session", "json");
+    const session = await storeGet(env, "splash-session");
     result.session = { renewedAt: session?.renewedAt || null, accessExpires: session ? new Date(expiresAt(session.accessToken)).toISOString() : null };
   } catch (error) {
     result.error = String(error?.message || error);
@@ -176,8 +187,8 @@ async function startedTeams(week) {
   }
 }
 
-async function buildSurvivorFeed(env) {
-  const contest = await splashGet(env, `/contests/${CONTEST}`);
+async function buildSurvivorFeed(env, canRenew) {
+  const contest = await splashGet(env, `/contests/${CONTEST}`, canRenew);
   if (contest.status >= 400) throw new Error(`Splash contest ${contest.status}`);
   const rows = [];
   let slates = [];
@@ -185,7 +196,7 @@ async function buildSurvivorFeed(env) {
   for (let page = 0; page < 10; page++) {
     const query = new URLSearchParams({ contestId: CONTEST, limit: String(STANDINGS_PAGE) });
     if (cursor) query.set("cursor", cursor);
-    const { status, body } = await splashGet(env, `/team-survivor/standings?${query}`);
+    const { status, body } = await splashGet(env, `/team-survivor/standings?${query}`, canRenew);
     if (status >= 400) throw new Error(`Splash standings ${status}`);
     rows.push(...(body?.data || []));
     if (body?.metadata?.slates?.length) slates = body.metadata.slates;
@@ -253,17 +264,21 @@ async function buildSurvivorFeed(env) {
   };
 }
 
-export async function survivorFeed(env) {
+// cron: the scheduled refresh, the only caller allowed to renew the session; it rebuilds a feed over 90 s old.
+export async function survivorFeed(env, { cron = false } = {}) {
   const cached = await storeGet(env, "survivor-feed");
-  if (cached && Date.now() - Date.parse(cached.contest?.updatedAt) < FEED_MAX_AGE_MS) return cached;
+  if (cached && Date.now() - Date.parse(cached.contest?.updatedAt) < (cron ? 90 * 1000 : FEED_MAX_AGE_MS)) return cached;
   try {
-    const feed = await buildSurvivorFeed(env);
+    const feed = await buildSurvivorFeed(env, cron);
     await storePut(env, "survivor-feed", feed);
     return feed;
   } catch (error) {
+    // Waiting on the cron's renewal: the last feed is at most a couple of minutes old.
+    if (cached && String(error?.message) === DEFERRED) return cached;
     // Splash or the session failing: keep serving the last good feed, marked with when it first failed.
-    // Only the login itself ending counts (Splash refusing the session), not an outage.
-    const loginEnded = /renewal failed \((401|403)|No Splash session/.test(String(error?.message));
+    // Only the login itself ending counts (Splash refusing the session), not an outage; a dead refresh
+    // token comes back as a 400 INVALID_REFRESH_TOKEN, which missed this check on Nov 8.
+    const loginEnded = /renewal failed \((401|403)|INVALID_REFRESH_TOKEN|No Splash session/.test(String(error?.message));
     if (cached && loginEnded && !cached.failedAt) await storePut(env, "survivor-feed", { ...cached, failedAt: new Date().toISOString() }).catch(() => null);
     if (cached) return { ...cached, stale: true };
     throw error;
@@ -279,7 +294,7 @@ export async function splashLogin(env) {
   if (session.seeded || !session.seededAt) {
     session.seededAt ||= new Date().toISOString();
     const { seeded, ...keep } = session;
-    await env.SUBS.put("splash-session", JSON.stringify(keep));
+    await storePut(env, "splash-session", keep);
   }
   const feed = await storeGet(env, "survivor-feed");
   return { seededAt: session.seededAt, expiresAt: new Date(Date.parse(session.seededAt) + LOGIN_DAYS * DAY_MS).toISOString(), failedAt: feed?.failedAt > session.seededAt ? feed.failedAt : null };

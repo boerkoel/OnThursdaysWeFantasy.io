@@ -154,6 +154,7 @@ export default {
     ctx.waitUntil(checkForAlerts(env));
     ctx.waitUntil(snapshotLines(env).catch(() => null));
     ctx.waitUntil(checkSplashLogin(env).catch(() => null));
+    ctx.waitUntil(survivorFeed(env, { cron: true }).catch(() => null));   // the only Splash renewals (splash.js)
   }
 };
 
