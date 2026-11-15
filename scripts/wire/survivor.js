@@ -1,5 +1,5 @@
 import { currentWeek, fit, nflGames, pickLine, readJson } from "./context.js";
-import { survivorModel } from "../lib/survivor-model.js";
+import { survivorModel, withManualPicks } from "../lib/survivor-model.js";
 
 // League Wire: the league's Splash survivor pool (Jim, 2026-10-25).
 // - SURVIVOR PICKS: once this week's picks are revealed (a pick shows once its
@@ -13,9 +13,11 @@ const FEED = process.env.SURVIVOR_FEED || "https://otwf-notify.otwf.workers.dev/
 const SCARE_BELOW = 0.4;
 const FEED_ABBR = { WSH: "WAS", JAC: "JAX", LA: "LAR" };
 const team = a => FEED_ABBR[a] || a;
-const feed = process.env.SURVIVOR_FEED_FILE   // tests: a saved feed
+const rawFeed = process.env.SURVIVOR_FEED_FILE   // tests: a saved feed
   ? await readJson(process.env.SURVIVOR_FEED_FILE).catch(() => null)
   : await fetch(FEED, { signal: AbortSignal.timeout(10000) }).then(r => r.ok ? r.json() : null).catch(() => null);
+// picks Jim relays while the Splash feed is stale (survivor-model.js withManualPicks)
+const feed = withManualPicks(rawFeed, await readJson("src/data/survivor-manual.json").catch(() => null), nflGames);
 const week = Number(feed?.contest?.currentWeek);
 const entries = feed?.entries || [];
 const revealed = week !== currentWeek ? [] : entries.map(e => ({ user: e.user, pick: e.picks?.[week] })).filter(x => x.pick);

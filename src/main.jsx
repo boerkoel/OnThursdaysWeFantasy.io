@@ -213,7 +213,7 @@ function App() {
   const refresher = useRefresh(live.refresh, scoreboard.lastUpdated);
   const flashingScores = useChangedScores(scores);
   const [tab, goToTab] = useTabs();
-  const { feed: survivorFeed } = useSurvivorFeed();   // for the pinned team's survivor line
+  const { feed: survivorFeed } = useSurvivorFeed(scoreboard.nflGames || []);   // for the pinned team's survivor line
   const [myTeamId, setMyTeamId] = useMyTeam();
   const matchupIds = [...new Set(scores.map(s => s.matchupId))];
   const myScore = scores.find(s => Number(s.teamId) === Number(myTeamId)) || null;

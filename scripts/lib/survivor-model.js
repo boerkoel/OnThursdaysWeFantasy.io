@@ -4,6 +4,35 @@ const ENTRY_FEE = 5;
 const FEED_ABBR = { WSH: "WAS", JAC: "JAX", LA: "LAR" };
 export const feedTeam = a => FEED_ABBR[a] || a;
 
+// Picks relayed by hand (Jim, 2026-11-15: the Splash login keeps dying, "allow me to tell you who picked who"):
+// src/data/survivor-manual.json { week, picks: { handle: team } } layered over the worker's feed. A stale feed is
+// moved to that week; each handle's live entry gets its pick once the pick's game has kicked off (same privacy
+// rule as the worker), graded from the NFL final, and an entry whose team lost is eliminated. Picks the feed
+// already has win.
+export function withManualPicks(feed, manual, nflGames) {
+  const week = Number(manual?.week);
+  if (!feed || !week || !manual.picks || Number(feed.contest?.currentWeek) > week) return feed;
+  const gameOf = team => (nflGames || []).find(g => (g.teams || []).some(x => feedTeam(x.abbrev) === team));
+  const entries = (feed.entries || []).map(e => {
+    const team = manual.picks[e.user] || manual.picks[e.user?.toLowerCase?.()] || Object.entries(manual.picks).find(([u]) => u.toLowerCase() === String(e.user).toLowerCase())?.[1];
+    if (!team || !e.alive || e.picks?.[week]) return e;
+    const g = gameOf(team);
+    if (!g || g.state === "pre") return e;
+    const side = (g.teams || []).find(x => feedTeam(x.abbrev) === team);
+    const result = g.completed ? (side?.winner || (side?.winChance ?? 0) >= 0.5 ? "won" : "lost") : "pending";
+    return { ...e, picks: { ...e.picks, [week]: { team, result, manual: true } },
+      ...(result === "lost" ? { alive: false, eliminatedWeek: week } : {}) };
+  });
+  const live = entries.filter(e => e.alive || e.eliminatedWeek === week);
+  const counts = new Map();
+  for (const e of live) { const p = e.picks?.[week]; if (p) counts.set(p.team, { team: p.team, count: (counts.get(p.team)?.count || 0) + 1, result: p.result }); }
+  const weekRow = { week, locked: counts.size > 0, final: false, hidden: live.filter(e => !e.picks?.[week]).length, picks: [...counts.values()] };
+  const weeks = [...(feed.weeks || []).filter(w => Number(w.week) !== week).map(w => w.week < week ? { ...w, final: true } : w), weekRow].sort((a, b) => a.week - b.week);
+  const alive = entries.filter(e => e.alive).length;
+  return { ...feed, entries, weeks, manual: true,
+    contest: { ...feed.contest, currentWeek: week, alive, eliminated: (Number(feed.contest?.totalEntries) || entries.length) - alive } };
+}
+
 // The pool's money and this week's odds, shared by the Survivor tab and the pinned card's Expected winnings.
 // Money: every live entry gets an equal share of the pot (a fair price when nobody knows who'll outlast whom).
 export function survivorModel(feed, nflGames, nflWeek) {

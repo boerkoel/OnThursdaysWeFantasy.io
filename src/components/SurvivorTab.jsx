@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { NOTIFY_SERVICE, pct } from "../lib/data.js";
 import { Explain } from "./LiveBits.jsx";
-import { feedTeam, survivorModel } from "../../scripts/lib/survivor-model.js";
+import { feedTeam, survivorModel, withManualPicks } from "../../scripts/lib/survivor-model.js";
+import MANUAL_PICKS from "../data/survivor-manual.json";
 
 export { survivorModel };
 
@@ -26,7 +27,8 @@ export const TEAM_NAMES = {
 // ESPN's logo CDN (WAS is "wsh" there).
 const logo = team => `https://a.espncdn.com/i/teamlogos/nfl/500/${team === "WAS" ? "wsh" : String(team).toLowerCase()}.png`;
 
-export function useSurvivorFeed() {
+// nflGames: grades the picks relayed by hand (withManualPicks) while the Splash feed is stale.
+export function useSurvivorFeed(nflGames = []) {
   const [feed, setFeed] = useState(() => (typeof window !== "undefined" && window.__SURVIVOR_MOCK__) || null);
   const [failed, setFailed] = useState(false);
   useEffect(() => {
@@ -48,7 +50,7 @@ export function useSurvivorFeed() {
     document.addEventListener("visibilitychange", load);
     return () => { cancelled = true; clearInterval(timer); document.removeEventListener("visibilitychange", load); };
   }, []);
-  return { feed, failed };
+  return { feed: withManualPicks(feed, MANUAL_PICKS, nflGames), failed };
 }
 
 function TeamChip({ pick, small = false }) {
@@ -156,7 +158,7 @@ function GamesSection({ feed, games, pot }) {
 }
 
 export default function SurvivorTab({ nflGames = [], nflWeek = null }) {
-  const { feed, failed } = useSurvivorFeed();
+  const { feed, failed } = useSurvivorFeed(nflGames);
   const weeks = feed?.weeks || [];
   const lockedWeeks = weeks.filter(w => w.locked);
   const [selectedWeek, setSelectedWeek] = useState(null);

@@ -377,7 +377,7 @@ const itemLines = item => [item.play && `In play: ${item.play}`, ...(item.bullet
 export default function PrimetimeWatch({ scores, nflGames, guillotine, logos, week }) {
   // Starts collapsed to a one-line summary; the share image is always full.
   const [open, setOpen] = useState(false);
-  const { feed } = useSurvivorFeed();
+  const { feed } = useSurvivorFeed(nflGames || []);
   const base = primetimeStories({ scores, nflGames, guillotine });
   const slot = base?.slot || nightSlot(nflGames || []);
   const survivor = slot.length ? survivorStory(feed, slot, Number(week)) : null;
