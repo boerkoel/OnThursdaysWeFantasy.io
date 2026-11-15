@@ -84,6 +84,9 @@ for (const g of allLiveSchedules) for (const side of [g.home, g.away]) {
         projection:Number.isFinite(projection) ? round(projection) : null,
         eligibleSlots:(player.eligibleSlots || []).map(Number),
         positionId:Number(player.defaultPositionId),
+        proTeamId:Number(player.proTeamId),
+        // live scoring leaves injuryStatus out; mRoster has it (OUT mid-game once he's ruled out)
+        injuryStatus:player.injuryStatus || rosterByPlayer.get(Number(entry.playerId))?.player?.injuryStatus || null,
         game,
         // No game this week (bye) counts as finished with its current points.
         finished:game ? game.completed : nflGames.length > 0,
