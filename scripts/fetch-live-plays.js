@@ -628,7 +628,7 @@ try {
       previousGuillotine = previous.guillotinePlays || [];
       // games re-read this run get their injuries from this run's (fixed) parse
       const reread = new Set(relevantGames.map(e => String(e.id)));
-      previousInjuries = (previous.injuries || []).filter(i => !reread.has(String(i.eventId)));
+      previousInjuries = (previous.injuries || []).filter(i => i.source === "news" || !reread.has(String(i.eventId)));
       previousSwings = previous.gameSwings || {};
     }
   } catch {}

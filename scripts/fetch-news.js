@@ -73,3 +73,45 @@ items.length = 0;
 items.push(...unique);
 await writeFile(OUT, JSON.stringify({ updatedAt: new Date().toISOString(), items }, null, 2) + "\n");
 console.log(`News: ${items.length} player headlines in the last 48 hours (${insiderCount} from insiders on Bluesky).`);
+
+// Ruled out mid-game (Jim, 2026-11-15): a fresh headline or insider post saying a player in a game in progress is
+// ruled out / won't return goes into live-plays.json's injuries as "out", so the next live run's odds drop his
+// remaining points (simulation.js injuryShareFn) even before ESPN's play-by-play says so. Main league and guillotine.
+const RULED_OUT = /\b(ruled out|won't return|will not return|out for the (?:rest of the )?(?:game|day|night)|done for the (?:day|night|game))\b/i;
+const FRESH_MS = 3 * 60 * 60 * 1000;
+try {
+  const livePath = "data/current/live-plays.json";
+  const live = JSON.parse(await readFile(livePath, "utf8"));
+  const board = JSON.parse(await readFile("data/current/scoreboard.json", "utf8"));
+  const guillotine = JSON.parse(await readFile("data/current/guillotine.json", "utf8").catch(() => "null"));
+  const playing = new Map((board.nflGames || []).filter(g => g.state === "in").flatMap(g => (g.teamIds || []).map(id => [Number(id), g])));
+  // who rosters whom: main league from mRoster, guillotine from its lineups
+  const owners = [];
+  for (const t of roster.teams || []) for (const e of t.roster?.entries || []) {
+    const p = e.playerPoolEntry?.player;
+    if (p) owners.push({ id: Number(e.playerId), name: p.fullName, proTeamId: Number(p.proTeamId), league: "main", teamId: Number(t.id) });
+  }
+  if (Number(guillotine?.week) === Number(live.week)) for (const t of guillotine.teams || []) for (const p of t.lineup || [])
+    owners.push({ id: Number(p.id), name: null, proTeamId: Number(p.proTeamId), league: "guillotine", teamId: Number(t.teamId) });
+  const added = [];
+  for (const item of items) {
+    if (!RULED_OUT.test(item.headline) || Date.now() - Date.parse(item.published) > FRESH_MS) continue;
+    for (const pl of item.players) {
+      for (const o of owners.filter(o => o.id === Number(pl.id))) {
+        const game = playing.get(o.proTeamId);
+        if (!game || Date.parse(item.published) < Date.parse(game.kickoff)) continue;
+        const id = `news-${o.id}-${o.league}-${Date.parse(item.published)}`;
+        if ((live.injuries || []).some(i => i.id === id)) continue;
+        added.push({ id, source: "news", eventId: String(game.id), status: "out", text: item.headline, playerId: o.id, player: pl.name,
+          league: o.league, teamId: o.teamId, matchupId: null, wallclock: item.published });
+      }
+    }
+  }
+  if (added.length) {
+    live.injuries = [...added, ...(live.injuries || [])];
+    await writeFile(livePath, JSON.stringify(live, null, 2) + "\n");
+    console.log(`News: ruled out mid-game: ${added.map(a => a.player).join(", ")}`);
+  }
+} catch (error) {
+  console.warn(`News: ruled-out check skipped: ${error.message}`);
+}
