@@ -91,9 +91,12 @@ function useClinches(pairs, announce, clinchedAt) {
 }
 
 const teamIdsOf = g => (g.teamIds || (g.teams || []).map(t => Number(t.id))).map(Number);
+// A 🏈 beside the team with the ball, in the top ticker too (Jim, 2026-11-15), while the game's in progress.
 const gameText = g => {
   const away = (g.teams || []).find(t => !t.home), home = (g.teams || []).find(t => t.home);
-  return away && home ? `${away.abbrev} ${away.score}–${home.score} ${home.abbrev}${g.detail ? " · " + g.detail : ""}` : g.name;
+  const ball = g.state === "in" ? Number(g.drive?.possession) : null;
+  const has = t => ball != null && Number(t.id) === ball;
+  return away && home ? `${has(away) ? "🏈 " : ""}${away.abbrev} ${away.score}–${home.score} ${home.abbrev}${has(home) ? " 🏈" : ""}${g.detail ? " · " + g.detail : ""}` : g.name;
 };
 
 const GAME_TURN_MS = 12000;
