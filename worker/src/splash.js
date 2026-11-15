@@ -271,8 +271,12 @@ export async function survivorFeed(env, { cron = false } = {}) {
   try {
     const feed = await buildSurvivorFeed(env, cron);
     await storePut(env, "survivor-feed", feed);
+    if (cron) await storePut(env, "splash-last-error", null).catch(() => null);
     return feed;
   } catch (error) {
+    // The cron's own failures were invisible (Jim, 2026-11-15: re-seeded, still stale): keep the last one, tokens
+    // already redacted by renew(), for GET /splash/login.
+    if (cron) await storePut(env, "splash-last-error", { at: new Date().toISOString(), message: String(error?.message).slice(0, 400) }).catch(() => null);
     // Waiting on the cron's renewal: the last feed is at most a couple of minutes old.
     if (cached && String(error?.message) === DEFERRED)
       return Date.now() - Date.parse(cached.contest?.updatedAt) > 10 * 60 * 1000 ? { ...cached, stale: true } : cached;
@@ -298,7 +302,8 @@ export async function splashLogin(env) {
     await storePut(env, "splash-session", keep);
   }
   const feed = await storeGet(env, "survivor-feed");
-  return { seededAt: session.seededAt, expiresAt: new Date(Date.parse(session.seededAt) + LOGIN_DAYS * DAY_MS).toISOString(), failedAt: feed?.failedAt > session.seededAt ? feed.failedAt : null };
+  const lastError = await storeGet(env, "splash-last-error").catch(() => null);
+  return { lastError, renewedAt: session.renewedAt || null, seededAt: session.seededAt, expiresAt: new Date(Date.parse(session.seededAt) + LOGIN_DAYS * DAY_MS).toISOString(), failedAt: feed?.failedAt > session.seededAt ? feed.failedAt : null };
 }
 
 // The reminder due now, if any: 5, 2 and 1 days before the login ends, then once
