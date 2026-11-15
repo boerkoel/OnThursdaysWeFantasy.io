@@ -1,14 +1,14 @@
 {
  "source": "FantasyPros Are They Playing?",
  "url": "https://www.fantasypros.com/nfl/myplaybook/are-they-playing.php",
- "fetchedAt": "2026-11-14T15:00:06.032Z",
+ "fetchedAt": "2026-11-15T13:18:06.541Z",
  "players": [
   {
    "name": "Kenneth Walker III",
    "team": "KC",
    "position": "RB",
-   "status": "Q",
-   "chance": 0.70716,
+   "status": "O",
+   "chance": 0,
    "practices": [
     "--",
     "--",
@@ -20,7 +20,7 @@
    "team": "SEA",
    "position": "WR",
    "status": "",
-   "chance": 1,
+   "chance": 0.999,
    "practices": [
     "DNP",
     "Full",
@@ -32,7 +32,7 @@
    "team": "SF",
    "position": "RB",
    "status": "",
-   "chance": 1,
+   "chance": 0.999,
    "practices": [
     "DNP",
     "Full",
@@ -44,7 +44,7 @@
    "team": "DET",
    "position": "WR",
    "status": "Q",
-   "chance": 0.97437,
+   "chance": 0.95,
    "practices": [
     "Limit",
     "Limit",
@@ -80,7 +80,7 @@
    "team": "IND",
    "position": "RB",
    "status": "",
-   "chance": 1,
+   "chance": 0.999,
    "practices": [
     "Limit",
     "Full",
@@ -140,7 +140,7 @@
    "team": "TEN",
    "position": "RB",
    "status": "",
-   "chance": 1,
+   "chance": 0.999,
    "practices": [
     "Full",
     "DNP",
@@ -224,7 +224,7 @@
    "team": "NE",
    "position": "WR",
    "status": "Q",
-   "chance": 0.80923,
+   "chance": 0.95,
    "practices": [
     "Limit",
     "Limit",
@@ -272,11 +272,11 @@
    "team": "LAC",
    "position": "WR",
    "status": "Q",
-   "chance": 0.38883,
+   "chance": 0.34979,
    "practices": [
     "DNP",
     "DNP",
-    null
+    "DNP"
    ]
   },
   {
@@ -296,7 +296,7 @@
    "team": "NO",
    "position": "RB",
    "status": "Q",
-   "chance": 0.7519,
+   "chance": 0.95,
    "practices": [
     "Limit",
     "Limit",
@@ -463,7 +463,7 @@
    "name": "David Montgomery",
    "team": "HOU",
    "position": "RB",
-   "status": "Q",
+   "status": "O",
    "chance": 0.63211,
    "practices": [
     "DNP",
@@ -536,7 +536,7 @@
    "team": "NO",
    "position": "RB",
    "status": "",
-   "chance": 1,
+   "chance": 0.999,
    "practices": [
     "DNP",
     "Full",
@@ -628,6 +628,18 @@
    ]
   },
   {
+   "name": "Pat Freiermuth",
+   "team": "PIT",
+   "position": "TE",
+   "status": "Q",
+   "chance": null,
+   "practices": [
+    "--",
+    "--",
+    "--"
+   ]
+  },
+  {
    "name": "Jacoby Brissett",
    "team": "BAL",
    "position": "QB",
@@ -636,7 +648,7 @@
    "practices": [
     "--",
     "--",
-    null
+    "--"
    ]
   },
   {
@@ -692,11 +704,11 @@
    "team": "LAC",
    "position": "WR",
    "status": "",
-   "chance": 0.98889,
+   "chance": 1,
    "practices": [
     "Limit",
     "Full",
-    null
+    "Full"
    ]
   },
   {
@@ -788,7 +800,7 @@
    "team": "PIT",
    "position": "TE",
    "status": "",
-   "chance": 1,
+   "chance": 0.999,
    "practices": [
     "DNP",
     "Full",
@@ -835,12 +847,12 @@
    "name": "Keaton Mitchell",
    "team": "LAC",
    "position": "RB",
-   "status": "Q",
-   "chance": 0.88913,
+   "status": "",
+   "chance": 1,
    "practices": [
     "Limit",
     "Limit",
-    null
+    "Full"
    ]
   },
   {
@@ -848,11 +860,11 @@
    "team": "BAL",
    "position": "WR",
    "status": "",
-   "chance": 0.98912,
+   "chance": 1,
    "practices": [
     "Limit",
     "Full",
-    null
+    "Full"
    ]
   },
   {
@@ -919,7 +931,7 @@
    "name": "Jonathon Brooks",
    "team": "CAR",
    "position": "RB",
-   "status": "D",
+   "status": "O",
    "chance": 0.01463,
    "practices": [
     "Limit",
@@ -967,7 +979,7 @@
    "name": "Tyler Goodson",
    "team": "DAL",
    "position": "RB",
-   "status": "O",
+   "status": "IR",
    "chance": 0,
    "practices": [
     "DNP",
@@ -1052,11 +1064,11 @@
    "team": "LAC",
    "position": "TE",
    "status": "Q",
-   "chance": 0.44831,
+   "chance": 0.75569,
    "practices": [
     "Limit",
     "Limit",
-    null
+    "Full"
    ]
   },
   {
@@ -1080,7 +1092,7 @@
    "practices": [
     "--",
     "--",
-    null
+    "--"
    ]
   },
   {
@@ -1196,11 +1208,11 @@
    "team": "BAL",
    "position": "TE",
    "status": "",
-   "chance": 0.96147,
+   "chance": 1,
    "practices": [
     "Full",
     "Full",
-    null
+    "Full"
    ]
   },
   {
@@ -1219,8 +1231,8 @@
    "name": "Andrei Iosivas",
    "team": "CIN",
    "position": "WR",
-   "status": "",
-   "chance": 0.02544,
+   "status": "O",
+   "chance": 0,
    "practices": [
     "--",
     "Full",
@@ -1303,12 +1315,12 @@
    "name": "Adam Randall",
    "team": "BAL",
    "position": "RB",
-   "status": "",
-   "chance": 0.72518,
+   "status": "Q",
+   "chance": 0.58357,
    "practices": [
     "Full",
     "Full",
-    null
+    "Full"
    ]
   },
   {
@@ -1327,12 +1339,12 @@
    "name": "Brenen Thompson",
    "team": "LAC",
    "position": "WR",
-   "status": "Q",
-   "chance": 0.01723,
+   "status": "D",
+   "chance": 0,
    "practices": [
     "DNP",
     "DNP",
-    null
+    "DNP"
    ]
   },
   {
@@ -1351,7 +1363,7 @@
    "name": "Michael Burton",
    "team": "CLE",
    "position": "RB",
-   "status": "O",
+   "status": "IR",
    "chance": 0,
    "practices": [
     "DNP",
@@ -1387,7 +1399,7 @@
    "name": "Mo Alie-Cox",
    "team": "IND",
    "position": "TE",
-   "status": "O",
+   "status": "IR",
    "chance": 0,
    "practices": [
     "DNP",
@@ -1572,7 +1584,7 @@
    "practices": [
     "--",
     "--",
-    null
+    "--"
    ]
   },
   {
@@ -1735,7 +1747,7 @@
    "name": "Josh Whyle",
    "team": "GB",
    "position": "TE",
-   "status": "O",
+   "status": "IR",
    "chance": 0,
    "practices": [
     "DNP",
@@ -1840,6 +1852,18 @@
    ]
   },
   {
+   "name": "Behren Morton",
+   "team": "NE",
+   "position": "QB",
+   "status": "O",
+   "chance": null,
+   "practices": [
+    null,
+    null,
+    null
+   ]
+  },
+  {
    "name": "Jaxson Dart",
    "team": "NYG",
    "position": "QB",
@@ -1916,7 +1940,7 @@
    "team": "IND",
    "position": "TE",
    "status": "Q",
-   "chance": 0.27051,
+   "chance": 0,
    "practices": [
     "--",
     "--",
@@ -2240,11 +2264,11 @@
    "team": "BAL",
    "position": "RB",
    "status": "",
-   "chance": 0.94082,
+   "chance": 1,
    "practices": [
     "Full",
     "Full",
-    null
+    "Full"
    ]
   },
   {
