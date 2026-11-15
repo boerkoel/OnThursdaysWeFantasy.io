@@ -268,9 +268,13 @@ export function injuryShareFn(livePlays, week, league, now = Date.now()) {
     const prev = latest.get(Number(i.playerId));
     if (!prev || Date.parse(i.wallclock || 0) > Date.parse(prev.wallclock || 0)) latest.set(Number(i.playerId), i);
   }
+  // ESPN's fantasy status turns OUT mid-game once a player's ruled out (Jim, 2026-11-15: the app showed Maye out before
+  // any play note did); callers apply this only while his game is in progress. A play after the injury still wins.
   return player => {
     const i = latest.get(Number(player?.id));
-    if (!i || i.status === "returned" || i.returnedAt) return 1;
+    if (i && (i.status === "returned" || i.returnedAt)) return 1;
+    if (["OUT", "INJURY_RESERVE"].includes(player?.injuryStatus) || ["O", "IR"].includes(player?.injury)) return 0;
+    if (!i) return 1;
     const keep = INJURY_KEEP[i.status] ?? 1;
     const mins = (now - Date.parse(i.wallclock || "")) / 60000;
     return keep * (mins > 0 ? Math.exp(-mins / INJURY_FADE_MIN) : 1);
