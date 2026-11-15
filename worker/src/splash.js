@@ -274,7 +274,8 @@ export async function survivorFeed(env, { cron = false } = {}) {
     return feed;
   } catch (error) {
     // Waiting on the cron's renewal: the last feed is at most a couple of minutes old.
-    if (cached && String(error?.message) === DEFERRED) return cached;
+    if (cached && String(error?.message) === DEFERRED)
+      return Date.now() - Date.parse(cached.contest?.updatedAt) > 10 * 60 * 1000 ? { ...cached, stale: true } : cached;
     // Splash or the session failing: keep serving the last good feed, marked with when it first failed.
     // Only the login itself ending counts (Splash refusing the session), not an outage; a dead refresh
     // token comes back as a 400 INVALID_REFRESH_TOKEN, which missed this check on Nov 8.
