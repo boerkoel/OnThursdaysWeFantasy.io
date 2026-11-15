@@ -396,12 +396,14 @@ export default function PrimetimeWatch({ scores, nflGames, guillotine, logos, we
   ].filter(Boolean);
   // The collapsed line (Jim, 2026-11-12): one high-level sentence, the details behind Show.
   const top = stake.teams[0];
-  const headline = top ? `Most riding on tonight: ${top.team}, ${pct(top.share)} ${live ? "of its points still to come" : "of its projected points"}`
+  // "tonight" only at night (Jim, 2026-11-15: the Munich morning game said "tonight")
+  const when2 = /NF$|Primetime/.test(st.label) ? "tonight" : st.label === "Morning" ? "this morning" : "today";
+  const headline = top ? `Most riding on ${when2}: ${top.team}, ${pct(top.share)} ${live ? "of its points still to come" : "of its projected points"}`
     : text.script.length ? "How tonight's game can swing the league" : "Survivor pool riders tonight";
   const share = () => ({
     kicker: `Week ${week} · ${st.label} What to Watch`,
     title: `${st.label}: ${st.games}`,
-    lines: [...(stakeLines.length ? [{ text: "🎯 On the line tonight", size: 28, color: "accent", weight: 800, gap: 26 },
+    lines: [...(stakeLines.length ? [{ text: `🎯 On the line ${when2}`, size: 28, color: "accent", weight: 800, gap: 26 },
       ...stakeLines.map(d => ({ text: d, size: 22, gap: 4 }))] : []), ...SECTIONS.flatMap(([key, title]) => text[key].length ? [
       { text: title, size: 28, color: "accent", weight: 800, gap: 26 },
       ...text[key].flatMap(item => [{ text: item.head, size: 24, color: "ink", weight: 800, gap: 10 }, ...itemLines(item).map(d => ({ text: d, size: 21, gap: 2 }))])
@@ -419,7 +421,7 @@ export default function PrimetimeWatch({ scores, nflGames, guillotine, logos, we
       </div>
       {open ? <div className="primetime-grid">
         {stake.matchups.length || stake.teams.length ? <div className="primetime-card">
-          <h3>🎯 On the line tonight</h3>
+          <h3>🎯 On the line {when2}</h3>
           {stake.matchups.map((m, i) => <div className="primetime-item" key={i} title={`In play: ${m.play}`}>
             <b>{m.head}: {pct(m.share)}</b>
             <p>{stakeOf} · {m.play}</p>
