@@ -1,4 +1,4 @@
-import { normalCdf, normalQuantile, restOf } from "../../scripts/lib/simulation.js";
+import { injuryShareFn, normalCdf, normalQuantile, restOf } from "../../scripts/lib/simulation.js";
 
 // Two futures (Jim, 2026-11-02): when a starter goes down in a game in progress and hasn't come back, a race
 // splits into the odds if he returns (today's, which still count his projection) and the odds if he doesn't (his
@@ -8,13 +8,15 @@ const MIN_GAP = 3;        // odds points between the two futures worth showing
 
 const last = n => String(n || "").replace(/^[A-Z]\.\s*/, "");
 
-// A main-league team's starters hurt in a game being played now and not back yet, with their remaining points.
+// A main-league team's starters hurt in a game being played now and not back yet, with the remaining points the
+// odds still count for them (the server already cut the rest: simulation.js injuryShareFn). Ruled out: no fork.
 export function hurtStarters(team, livePlays, games) {
+  const share = injuryShareFn(livePlays, livePlays?.week, "main");
   const injuries = (livePlays?.injuries || []).filter(i => i.league === "main" && Number(i.teamId) === Number(team.teamId) && !i.returnedAt);
   return injuries.flatMap(i => {
     const p = (team.lineup?.starters || []).find(x => Number(x.id) === Number(i.playerId));
     const game = p && games.find(g => g.state === "in" && (g.teamIds || []).map(Number).includes(Number(p.proTeamId)));
-    const rest = p ? restOf({ projection: p.projection, actual: p.actual, game }) : 0;
+    const rest = p ? restOf({ projection: p.projection, actual: p.actual, game }) * share(p) : 0;
     return game && rest >= MIN_REST ? [{ name: last(p.name), rest }] : [];
   });
 }

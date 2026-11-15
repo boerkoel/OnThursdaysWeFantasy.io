@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { bestLineup, hurtOutlook, lineupRates, normalCdf, playerOutlook } from "./simulation.js";
+import { bestLineup, hurtOutlook, injuredOutlook, lineupRates, normalCdf, playerOutlook } from "./simulation.js";
 
 // Lineup decisions still to come, shared by the main league's weekly
 // simulation (update-live-scoreboard.js) and the guillotine league's
@@ -128,7 +128,7 @@ export function trackLineups(previous, week, entriesByTeam) {
 // can tally each current starter's simulated points.
 const FRESH_MS = 6 * 24 * 3600 * 1000;   // a pickup counts as new for 6 days
 // scale: the projection bias correction (projection-bias.js), applied to the blended projection.
-export function buildLineupModel({ entries, nflWeek, gameFor, weeklyStat, chanceToPlay, set, now = Date.now(), altProjection = () => null, usageOf = () => null, scale = 1 }) {
+export function buildLineupModel({ entries, nflWeek, gameFor, weeklyStat, chanceToPlay, set, now = Date.now(), altProjection = () => null, usageOf = () => null, scale = 1, injuryShare = () => 1 }) {
   let nextKickoff = Infinity;
   const fixed = [], fixedIdx = [], slots = [], pool = [], current = [], remaining = [], poolRemIdx = [];
   for (const entry of entries || []) {
@@ -140,7 +140,9 @@ export function buildLineupModel({ entries, nflWeek, gameFor, weeklyStat, chance
     // ESPN's projection averaged with the second opinion; their gap adds spread.
     const espn = weeklyStat(player, 1), alt = altProjection(player);
     const projection = scale * (Number.isFinite(espn) && alt != null ? (espn + alt) / 2 : Number.isFinite(espn) ? espn : alt ?? NaN);
-    const base = playerOutlook({ actual, projection, positionId: player.defaultPositionId, game, proTeamId: player.proTeamId, usage: usageOf(player) });
+    // hurt in this game and not back yet: part of his remaining points (simulation.js injuryShareFn)
+    const base = injuredOutlook(playerOutlook({ actual, projection, positionId: player.defaultPositionId, game, proTeamId: player.proTeamId, usage: usageOf(player) }),
+      game?.state === "in" ? injuryShare(player) : 1);
     const gap = Number.isFinite(espn) && alt != null ? Math.abs(espn - alt) : 0;
     const left = Number.isFinite(projection) && projection > 0 ? Math.min(1, base.rest / projection) : 0;
     const outlook = gap ? { ...base, sd: Math.hypot(base.sd, 0.5 * gap * left) } : base;

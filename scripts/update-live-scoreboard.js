@@ -3,7 +3,7 @@ import { BENCH_SLOT, IR_SLOT, settledLineupRegret } from "./lib/lineup.js";
 import { altProjectionFn, buildLineupModel, calibrateAlt, chanceToPlayFn, fixAbbr, trackLineups } from "./lib/lineup-model.js";
 import { projectionScale } from "./lib/projection-bias.js";
 import { liveMarket } from "./lib/live-markets.js";
-import { SIMULATIONS, bigPlayCeiling, gameScriptInputs, keepInPlay, weeklyUsage, medianOf, normalCdf, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
+import { SIMULATIONS, bigPlayCeiling, gameScriptInputs, injuredOutlook, injuryShareFn, keepInPlay, weeklyUsage, medianOf, normalCdf, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
 
 const season = process.env.ESPN_SEASON || "2026";
 const leagueId = process.env.ESPN_LEAGUE_ID || "998599827";
@@ -225,6 +225,9 @@ function rosterEntriesForTeam(teamId) {
 // none left can no longer change its score. If the NFL schedule couldn't be
 // fetched, assume everyone is still playing.
 const remainingPlayersByTeam = new Map();
+// In-game injuries from the previous run's live-plays.json (this script runs before fetch-live-plays.js).
+const injuryShare = injuryShareFn(await readFile("data/current/live-plays.json", "utf8").then(JSON.parse).catch(() => null), currentWeek, "main");
+const hurtNow = player => nflGamesByTeam.get(Number(player.proTeamId))?.state === "in" ? injuryShare(player) : 1;
 // Projections scaled by how the league's finals have compared with them lately (projection-bias.js); ESPN's own
 // projection, shown and graded as "espn", stays as published.
 const archive = await readFile("data/current/week-archive.json", "utf8").then(JSON.parse).catch(() => ({ weeks: {} }));
@@ -251,7 +254,9 @@ for (const teamId of teams.keys()) {
       const nflGame = nflGamesByTeam.get(Number(player.proTeamId));
       // Teams missing from the week's schedule are on bye.
       if (!nflWeek || (nflGame && !nflGame.completed)) {
-        remainingPlayers.push(playerOutlook({ actual, projection: fullProjection * projectionBias.scale, positionId: player.defaultPositionId, game: nflGame, proTeamId: player.proTeamId, usage: usageOf(player) }));
+        const share = hurtNow(player);
+        if (share < 1) console.log(`In-game injury: ${player.fullName} keeps ${Math.round(share * 100)}% of his remaining points`);
+        remainingPlayers.push(injuredOutlook(playerOutlook({ actual, projection: fullProjection * projectionBias.scale, positionId: player.defaultPositionId, game: nflGame, proTeamId: player.proTeamId, usage: usageOf(player) }), share));
       }
     }
     if (!Number.isFinite(fullProjection)) continue;
@@ -295,7 +300,7 @@ console.log("Second-opinion scales by position:", JSON.stringify(altProjection.s
 const lineupModels = new Map(), lineupSummaries = new Map();
 for (const teamId of teams.keys()) {
   const { model, summary } = buildLineupModel({ entries: rosterEntriesForTeam(teamId), nflWeek: Boolean(nflWeek), usageOf,
-    gameFor: id => nflGamesByTeam.get(id) || null, weeklyStat, chanceToPlay, altProjection, set: lineupBaseline.changed[teamId], scale: projectionBias.scale });
+    gameFor: id => nflGamesByTeam.get(id) || null, weeklyStat, chanceToPlay, altProjection, set: lineupBaseline.changed[teamId], scale: projectionBias.scale, injuryShare });
   if (model) lineupModels.set(teamId, model);
   if (summary) lineupSummaries.set(teamId, summary);
 }

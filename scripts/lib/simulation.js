@@ -254,6 +254,34 @@ export function playerOutlook({ actual, projection, positionId, game = null, pro
   };
 }
 
+// In-game injuries (Jim, 2026-11-15: Maye went down in Munich and his projection didn't budge): a starter hurt in
+// a game in progress keeps only part of his remaining points, by ESPN's latest note on him (live-plays.json
+// injuries): ruled out 0, doubtful to return 15%, questionable 50%, just "injured" 60%, fading the longer he
+// stays off the field (an NFL quarter takes about 45 minutes). Back in a later play (returnedAt): all of it.
+export const INJURY_KEEP = { out: 0, doubtful: 0.15, questionable: 0.5, injured: 0.6 };
+const INJURY_FADE_MIN = 45;
+// player => share of his remaining points to keep, for one league ("main" or "guillotine").
+export function injuryShareFn(livePlays, week, league, now = Date.now()) {
+  const latest = new Map();
+  for (const i of Number(livePlays?.week) === Number(week) ? livePlays.injuries || [] : []) {
+    if (i.league !== league) continue;
+    const prev = latest.get(Number(i.playerId));
+    if (!prev || Date.parse(i.wallclock || 0) > Date.parse(prev.wallclock || 0)) latest.set(Number(i.playerId), i);
+  }
+  return player => {
+    const i = latest.get(Number(player?.id));
+    if (!i || i.status === "returned" || i.returnedAt) return 1;
+    const keep = INJURY_KEEP[i.status] ?? 1;
+    const mins = (now - Date.parse(i.wallclock || "")) / 60000;
+    return keep * (mins > 0 ? Math.exp(-mins / INJURY_FADE_MIN) : 1);
+  };
+}
+// A playerOutlook with only `share` of its remaining points (the spread stays: he may still come back).
+export function injuredOutlook(o, share) {
+  if (!(share < 1)) return o;
+  return { ...o, rest: o.rest * share, sd: share > 0 ? o.sd : 0, exitRisk: 0, ...(o.td ? { td: { ...o.td, chance: o.td.chance * share } } : {}) };
+}
+
 // Deterministic for the same inputs, so odds don't jitter between refreshes
 // when nothing has changed.
 export function seededRng(seedValues) {

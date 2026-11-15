@@ -584,7 +584,10 @@ try {
       }
 
       // Injury updates for any starter in either league.
-      for (const segment of text.split(/\*\*/).map(x => x.trim()).filter(x => /injur|returned to the game/i.test(x))) {
+      // ESPN names the hurt player as TEAM-Name ("NE-D.Maye was injured during the play."), so only the clause from
+      // that tag on counts: the passer of a sack where a defender got hurt isn't tagged (Jim, 2026-11-15).
+      const clauses = text.split(/\*\*/).flatMap(x => x.match(/\b[A-Z]{2,3}-[A-Z].*?(?=\s+[A-Z]{2,3}-[A-Z]|$)/g) || []);
+      for (const segment of clauses.map(x => x.trim()).filter(x => /injur|returned to the game|has returned|ruled out|will not return|won't return|out for the (?:game|day)/i.test(x))) {
         const status = injuryStatus(segment);
         if (!status) continue;
         const named = [...playerMap.values(), ...guillotinePlayers.values()].filter(p => eventTeamIds.has(p.proTeamId) && playerNameMatches(segment, p));
@@ -623,7 +626,9 @@ try {
     if (Number(previous.week) === Number(currentWeek)) {
       previousPlays = previous.plays || [];
       previousGuillotine = previous.guillotinePlays || [];
-      previousInjuries = previous.injuries || [];
+      // games re-read this run get their injuries from this run's (fixed) parse
+      const reread = new Set(relevantGames.map(e => String(e.id)));
+      previousInjuries = (previous.injuries || []).filter(i => !reread.has(String(i.eventId)));
       previousSwings = previous.gameSwings || {};
     }
   } catch {}

@@ -1,6 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { altProjectionFn, buildLineupModel, calibrateAlt, chanceToPlayFn, fixAbbr, trackLineups } from "./lib/lineup-model.js";
-import { SIMULATIONS, STILL_IN_PLAY, bigPlayCeiling, gameScriptInputs, keepInPlay, weeklyUsage, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
+import { SIMULATIONS, STILL_IN_PLAY, bigPlayCeiling, gameScriptInputs, injuryShareFn, keepInPlay, weeklyUsage, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
 
 // Death Watch for the companion guillotine league (public on ESPN, so no
 // cookies are needed): each week the lowest-scoring surviving team is
@@ -65,6 +65,8 @@ const rosterByTeam = new Map((rosters.teams || []).map(t => [Number(t.id), t.ros
 // team it fell short of, and its date of death (that week's last NFL game).
 // Death dates are fetched once and then reused from the previous file.
 const previous = await readFile("data/current/guillotine.json", "utf8").then(JSON.parse).catch(() => null);
+// In-game injuries from the previous live run (simulation.js injuryShareFn).
+const injuryShare = injuryShareFn(await readFile("data/current/live-plays.json", "utf8").then(JSON.parse).catch(() => null), week, "guillotine");
 const previousChopped = new Map((previous?.chopped || []).map(c => [Number(c.teamId), c]));
 async function lastGameDate(chopWeek) {
   const nfl = await fetchJson(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?week=${chopWeek}&seasontype=2&season=${season}`).catch(() => null);
@@ -174,7 +176,7 @@ const alive = [...scoreByTeam.values()]
     // Starters still to play (bye weeks and finished games have nothing left to
     // add), and the lineup model the simulation uses.
     const built = buildLineupModel({ entries: rosterByTeam.get(teamId) || [], nflWeek: Boolean(nflWeek), usageOf: p => weeklyUsage(p, week),
-      gameFor: id => nflGameByProTeam.get(id) || null, weeklyStat, chanceToPlay, altProjection, set: lineupBaseline.changed[teamId] });
+      gameFor: id => nflGameByProTeam.get(id) || null, weeklyStat, chanceToPlay, altProjection, set: lineupBaseline.changed[teamId], injuryShare });
     for (const r of built.remaining) remaining.push({ name: r.player.fullName, game: r.game?.name || "", actual: round(r.actual), ...r.outlook });
     const score = round(Number(t.totalPointsLive ?? t.totalPoints ?? 0));
     return {
