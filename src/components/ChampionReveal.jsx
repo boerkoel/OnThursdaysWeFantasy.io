@@ -1,85 +1,134 @@
 import React from "react";
 
 // The guillotine's last team standing, unmasked (Jim, 2026-11-15: "a cartoon of Uriel as an executioner who
-// reveals himself by lifting the hood, like The Traitors"): a hooded executioner with an axe; on a loop the hood
-// lifts to show the champion's grin, then drops again. A plain drawing (dark swept-back hair, beard, big smile),
-// not traced from photos: the site is public. champion: the surviving team; manager: the name to reveal.
+// reveals himself by lifting the hood, like The Traitors", then "higher fidelity, more like him, comic book
+// style"): a hooded executioner with an axe over a halftone burst; on a loop the hood lifts to show the champion's
+// grin and a SURPRISE! burst, then drops again. Drawn from scratch in comic style (ink outlines, cel shading), not
+// traced from photos: the site is public. champion: the surviving team; manager: the name to reveal.
+const INK = "#0b0b0b";
 export default function ChampionReveal({ champion, manager = "Uriel", season }) {
   if (!champion) return null;
   return (
     <div className="reveal" role="img" aria-label={`A hooded executioner lifts the hood: it was ${manager} all along. ${champion.team} is the last team standing.`}>
       <svg viewBox="0 0 360 400" className="reveal-art" aria-hidden="true">
         <defs>
-          <radialGradient id="rv-spot" cx="50%" cy="30%" r="70%">
-            <stop offset="0" stopColor="#3b3226" />
-            <stop offset="1" stopColor="#0f0e0c" />
+          <radialGradient id="rv-burst" cx="50%" cy="38%" r="70%">
+            <stop offset="0" stopColor="#ffd25a" />
+            <stop offset=".45" stopColor="#f08a24" />
+            <stop offset="1" stopColor="#7d1d12" />
           </radialGradient>
+          <pattern id="rv-dots" width="9" height="9" patternUnits="userSpaceOnUse">
+            <circle cx="4.5" cy="4.5" r="1.9" fill="#7d1d12" opacity=".35" />
+          </pattern>
+          <pattern id="rv-dotsDark" width="6" height="6" patternUnits="userSpaceOnUse">
+            <circle cx="3" cy="3" r="1.2" fill="#000" opacity=".28" />
+          </pattern>
           <linearGradient id="rv-blade" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#f2f2ee" />
-            <stop offset="1" stopColor="#8d9097" />
-          </linearGradient>
-          <linearGradient id="rv-cloak" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#2a2622" />
-            <stop offset="1" stopColor="#100f0d" />
+            <stop offset="0" stopColor="#ffffff" />
+            <stop offset=".5" stopColor="#c9ced6" />
+            <stop offset="1" stopColor="#6f7580" />
           </linearGradient>
         </defs>
-        <rect width="360" height="400" fill="url(#rv-spot)" />
-        <ellipse cx="180" cy="384" rx="150" ry="14" fill="#000" opacity=".5" />
+
+        {/* comic background: burst, rays, halftone */}
+        <rect width="360" height="400" fill="url(#rv-burst)" />
+        <g fill="#ffe8a3" opacity=".35">
+          <path d="M 180 150 L 0 40 L 0 90 Z" /><path d="M 180 150 L 60 0 L 110 0 Z" /><path d="M 180 150 L 200 0 L 250 0 Z" />
+          <path d="M 180 150 L 340 0 L 360 30 Z" /><path d="M 180 150 L 360 140 L 360 190 Z" /><path d="M 180 150 L 0 200 L 0 250 Z" />
+        </g>
+        <rect width="360" height="400" fill="url(#rv-dots)" />
+        <ellipse cx="180" cy="388" rx="150" ry="12" fill="#000" opacity=".45" />
 
         {/* axe over the shoulder */}
-        <g className="reveal-axe">
-          <rect x="246" y="96" width="10" height="250" rx="4" fill="#6b4527" transform="rotate(14 251 220)" />
-          <path d="M 262 78 C 312 70 330 108 318 146 C 300 128 282 122 262 124 Z" fill="url(#rv-blade)" stroke="#5c5f66" strokeWidth="2" transform="rotate(14 251 220)" />
+        <g transform="rotate(14 251 220)" strokeLinejoin="round">
+          <rect x="246" y="96" width="11" height="252" rx="4" fill="#7a4a24" stroke={INK} strokeWidth="3.5" />
+          <path d="M 249 110 L 249 330" stroke="#a8693a" strokeWidth="2.5" />
+          <path d="M 260 78 C 314 68 334 110 320 150 C 302 130 282 124 260 126 Z" fill="url(#rv-blade)" stroke={INK} strokeWidth="4" />
+          <path d="M 276 88 C 300 86 314 102 316 122" stroke="#fff" strokeWidth="3" fill="none" strokeLinecap="round" />
+          <path d="M 306 96 L 309 104 L 317 107 L 309 110 L 306 118 L 303 110 L 295 107 L 303 104 Z" fill="#fff" />
         </g>
 
-        {/* cloak and shoulders */}
-        <path d="M 70 400 C 74 300 104 236 180 222 C 256 236 286 300 290 400 Z" fill="url(#rv-cloak)" />
-        <path d="M 180 230 L 180 400" stroke="#3a342d" strokeWidth="2" />
+        {/* cloak, with comic rim light */}
+        <path d="M 66 400 C 70 298 102 234 180 220 C 258 234 290 298 294 400 Z" fill="#141416" stroke={INK} strokeWidth="4" />
+        <path d="M 88 392 C 92 314 116 262 162 240" stroke="#3d5a80" strokeWidth="4" fill="none" strokeLinecap="round" opacity=".9" />
+        <path d="M 272 392 C 268 330 252 286 226 258" stroke="#3d5a80" strokeWidth="3" fill="none" strokeLinecap="round" opacity=".7" />
+        <path d="M 180 228 L 180 400" stroke="#2a2a30" strokeWidth="3" />
         {/* hand on the axe */}
-        <circle cx="262" cy="262" r="15" fill="#b9825a" />
+        <path d="M 250 252 C 262 244 280 250 278 266 C 276 280 256 282 248 272 Z" fill="#c08a5f" stroke={INK} strokeWidth="3.5" />
+        <path d="M 256 262 L 272 260 M 256 270 L 270 270" stroke="#7e5232" strokeWidth="2" />
 
-        {/* the face under the hood */}
-        {/* Uriel's look (Jim, 2026-11-15: "make it clear it looks like him"): warm brown skin, a tall swept-up
-            pompadour with short sides, thick dark brows, smiling eyes, a big toothy grin, a short full beard with a
-            gray patch at the chin, and his orange striped headband. */}
-        <g className="reveal-face">
-          <rect x="162" y="198" width="36" height="30" fill="#b07a52" />
-          <path d="M 128 150 C 128 108 150 92 180 92 C 210 92 232 108 232 150 C 232 196 208 222 180 224 C 152 222 128 196 128 150 Z" fill="#c08a5f" />
-          <ellipse cx="128" cy="160" rx="8" ry="13" fill="#b07a52" />
-          <ellipse cx="232" cy="160" rx="8" ry="13" fill="#b07a52" />
-          {/* short full beard joined to the mustache, gray at the chin */}
-          <path d="M 130 162 C 132 202 154 228 180 230 C 206 228 228 202 230 162 C 224 182 214 192 204 196 C 196 186 164 186 156 196 C 146 192 136 182 130 162 Z" fill="#231913" />
-          <path d="M 168 216 C 172 226 188 226 192 216 C 186 220 174 220 168 216 Z" fill="#8f8a84" />
-          <path d="M 152 186 C 162 176 198 176 208 186 C 198 182 162 182 152 186 Z" fill="#231913" />
-          {/* big toothy grin */}
-          <path d="M 152 190 C 160 210 200 210 208 190 C 196 196 164 196 152 190 Z" fill="#fff" stroke="#3a2418" strokeWidth="2" strokeLinejoin="round" />
-          <path d="M 160 194 L 200 194" stroke="#d9d4cc" strokeWidth="1.5" />
-          {/* smiling eyes, smile lines */}
-          <path d="M 152 150 C 156 143 168 143 172 150" stroke="#2a1a12" strokeWidth="4" fill="none" strokeLinecap="round" />
-          <path d="M 188 150 C 192 143 204 143 208 150" stroke="#2a1a12" strokeWidth="4" fill="none" strokeLinecap="round" />
-          <ellipse cx="162" cy="151" rx="5" ry="3.5" fill="#2a1a12" />
-          <ellipse cx="198" cy="151" rx="5" ry="3.5" fill="#2a1a12" />
-          <path d="M 146 166 C 144 176 146 184 150 190 M 214 166 C 216 176 214 184 210 190" stroke="#9a6a48" strokeWidth="2" fill="none" opacity=".8" />
-          {/* thick dark brows */}
-          <path d="M 148 136 C 156 128 168 128 175 133" stroke="#1a120d" strokeWidth="7" fill="none" strokeLinecap="round" />
-          <path d="M 185 133 C 192 128 204 128 212 136" stroke="#1a120d" strokeWidth="7" fill="none" strokeLinecap="round" />
-          <path d="M 180 152 C 176 166 175 172 183 174" stroke="#94643f" strokeWidth="3" fill="none" strokeLinecap="round" />
-          {/* orange striped headband */}
-          <path d="M 129 118 C 150 108 210 108 231 118 L 232 132 C 210 122 150 122 128 132 Z" fill="#e0772a" />
-          <path d="M 150 113 L 158 125 M 160 112 L 168 124 M 170 111 L 178 123" stroke="#3f6474" strokeWidth="5" />
-          <path d="M 180 111 L 188 123 M 190 112 L 198 124" stroke="#e9e6df" strokeWidth="4" />
-          {/* tall pompadour, short darker sides */}
-          <path d="M 130 118 C 128 104 132 96 140 92 L 140 112 C 136 112 132 114 130 118 Z" fill="#2d241e" />
-          <path d="M 230 118 C 232 104 228 96 220 92 L 220 112 C 224 112 228 114 230 118 Z" fill="#2d241e" />
-          <path d="M 138 112 C 132 82 150 54 186 52 C 220 52 236 74 222 112 C 214 100 200 94 184 96 C 166 92 148 98 138 112 Z" fill="#17110d" />
-          <path d="M 156 70 C 176 56 206 58 220 76 M 150 86 C 170 70 200 72 214 86" stroke="#3a2c22" strokeWidth="3" fill="none" />
+        {/* the face under the hood: Uriel's look in comic ink */}
+        <g className="reveal-face" strokeLinejoin="round" strokeLinecap="round">
+          {/* neck */}
+          <path d="M 160 196 L 200 196 L 202 232 L 158 232 Z" fill="#a8734c" stroke={INK} strokeWidth="3.5" />
+          {/* ears */}
+          <path d="M 132 146 C 118 142 116 170 132 178" fill="#c08a5f" stroke={INK} strokeWidth="3.5" />
+          <path d="M 228 146 C 242 142 244 170 228 178" fill="#b07a52" stroke={INK} strokeWidth="3.5" />
+          <path d="M 128 154 C 124 160 126 166 130 168 M 232 154 C 236 160 234 166 230 168" stroke="#7e5232" strokeWidth="2" fill="none" />
+          {/* head, squarer jaw */}
+          <path d="M 130 136 C 130 104 152 90 180 90 C 208 90 230 104 230 136 L 230 172 C 228 200 210 222 180 226 C 150 222 132 200 130 172 Z" fill="#c48d62" stroke={INK} strokeWidth="4" />
+          {/* cel shadow on the right side */}
+          <path d="M 206 96 C 222 104 230 118 230 136 L 230 172 C 228 196 214 214 196 222 C 210 196 214 160 206 96 Z" fill="#a46f48" />
+          <path d="M 206 96 C 222 104 230 118 230 136 L 230 172 C 228 196 214 214 196 222 C 210 196 214 160 206 96 Z" fill="url(#rv-dotsDark)" />
+          {/* full short beard into the mustache, hatched, gray at the chin */}
+          <path d="M 132 160 C 134 200 154 226 180 228 C 206 226 226 200 228 160 C 224 180 214 190 204 194 C 196 184 164 184 156 194 C 146 190 136 180 132 160 Z" fill="#1d1510" stroke={INK} strokeWidth="3" />
+          <path d="M 140 186 L 146 194 M 148 198 L 154 206 M 206 198 L 212 190 M 214 204 L 220 196 M 160 212 L 164 218 M 196 212 L 200 218" stroke="#4a3a2e" strokeWidth="2" />
+          <path d="M 166 214 C 170 226 190 226 194 214 C 186 220 174 220 166 214 Z" fill="#9d9892" stroke={INK} strokeWidth="2" />
+          <path d="M 172 218 L 174 223 M 180 219 L 180 224 M 188 218 L 186 223" stroke="#e8e5e0" strokeWidth="1.5" />
+          <path d="M 150 184 C 160 172 200 172 210 184 C 200 180 192 178 180 182 C 168 178 160 180 150 184 Z" fill="#1d1510" stroke={INK} strokeWidth="2.5" />
+          {/* big open grin */}
+          <path d="M 150 188 C 158 214 202 214 210 188 C 196 194 164 194 150 188 Z" fill="#5a1d14" stroke={INK} strokeWidth="3" />
+          <path d="M 152 190 C 164 195 196 195 208 190 L 206 197 C 194 201 166 201 154 197 Z" fill="#fff" stroke={INK} strokeWidth="1.5" />
+          <path d="M 164 194 L 164 199 M 172 195 L 172 200 M 180 195 L 180 201 M 188 195 L 188 200 M 196 194 L 196 199" stroke="#9aa0a8" strokeWidth="1.3" />
+          <path d="M 166 206 C 174 210 186 210 194 206" stroke="#c0574a" strokeWidth="3" fill="none" />
+          {/* smile lines and cheeks */}
+          <path d="M 144 164 C 140 174 142 184 148 190 M 216 164 C 220 174 218 184 212 190" stroke="#7e5232" strokeWidth="2.5" fill="none" />
+          <ellipse cx="150" cy="164" rx="9" ry="5" fill="#d99a70" opacity=".7" />
+          {/* nose */}
+          <path d="M 180 148 C 176 160 172 168 174 172 C 178 176 186 176 190 172" stroke={INK} strokeWidth="3" fill="none" />
+          <path d="M 175 170 C 177 173 179 173 180 171 M 186 171 C 187 173 189 173 190 170" stroke={INK} strokeWidth="2" fill="none" />
+          <path d="M 178 152 C 176 160 175 164 176 166" stroke="#e3b08a" strokeWidth="2.5" fill="none" />
+          {/* smiling eyes with crow's feet */}
+          <path d="M 150 148 C 155 140 169 140 173 148 C 168 152 156 152 150 148 Z" fill="#fff" stroke={INK} strokeWidth="2.5" />
+          <path d="M 187 148 C 192 140 206 140 210 148 C 205 152 193 152 187 148 Z" fill="#fff" stroke={INK} strokeWidth="2.5" />
+          <circle cx="162" cy="147" r="4.5" fill="#2a170d" /><circle cx="198" cy="147" r="4.5" fill="#2a170d" />
+          <circle cx="163.5" cy="145.5" r="1.5" fill="#fff" /><circle cx="199.5" cy="145.5" r="1.5" fill="#fff" />
+          <path d="M 150 152 C 156 157 168 157 174 152 M 186 152 C 192 157 204 157 210 152" stroke="#7e5232" strokeWidth="2" fill="none" />
+          <path d="M 144 146 L 138 144 M 144 150 L 138 152 M 216 146 L 222 144 M 216 150 L 222 152" stroke="#7e5232" strokeWidth="2" />
+          {/* thick dark brows, raised */}
+          <path d="M 146 134 C 154 124 168 124 176 130 L 174 136 C 166 131 156 131 148 139 Z" fill="#140e0a" stroke={INK} strokeWidth="2" />
+          <path d="M 184 130 C 192 124 206 124 214 134 L 212 139 C 204 131 194 131 186 136 Z" fill="#140e0a" stroke={INK} strokeWidth="2" />
+          {/* orange headband with teal, gray and white diagonal stripes */}
+          <path d="M 129 112 C 150 102 210 102 231 112 L 232 128 C 210 118 150 118 128 128 Z" fill="#ec7d22" stroke={INK} strokeWidth="3.5" />
+          <path d="M 148 108 L 156 121 M 158 106 L 166 119" stroke="#2e5d6e" strokeWidth="6" />
+          <path d="M 168 105 L 176 118" stroke="#7d8a8f" strokeWidth="6" />
+          <path d="M 178 105 L 186 118" stroke="#f1eee8" strokeWidth="6" />
+          <path d="M 188 105 L 196 118" stroke="#f6b04a" strokeWidth="6" />
+          <path d="M 214 113 C 216 109 220 109 220 114" stroke="#fff" strokeWidth="1.8" fill="none" />
+          {/* tall swept-up pompadour, faded sides */}
+          <path d="M 130 112 C 128 98 132 90 140 86 L 142 108 C 136 108 132 110 130 112 Z" fill="#33281f" stroke={INK} strokeWidth="2.5" />
+          <path d="M 230 112 C 232 98 228 90 220 86 L 218 108 C 224 108 228 110 230 112 Z" fill="#2b2119" stroke={INK} strokeWidth="2.5" />
+          <path d="M 133 100 L 137 98 M 133 106 L 138 104 M 227 100 L 223 98 M 227 106 L 222 104" stroke="#5a4a3c" strokeWidth="1.5" />
+          <path d="M 140 108 C 130 76 148 46 186 42 C 224 42 240 68 220 108 C 212 96 198 90 182 92 C 164 88 148 94 140 108 Z" fill="#17110d" stroke={INK} strokeWidth="4" />
+          <path d="M 152 74 C 170 52 208 52 222 70" stroke="#5b4636" strokeWidth="4" fill="none" />
+          <path d="M 146 92 C 164 70 200 70 214 86" stroke="#3e3027" strokeWidth="3.5" fill="none" />
+          <path d="M 160 58 C 178 48 200 50 212 58" stroke="#7a604c" strokeWidth="2.5" fill="none" />
         </g>
 
-        {/* the hood: drawn over the face, lifts back on the loop */}
-        <g className="reveal-hood">
-          <path d="M 102 232 C 88 140 110 44 180 34 C 250 44 272 140 258 232 C 240 214 220 206 180 206 C 140 206 120 214 102 232 Z" fill="#191714" />
+        {/* the hood: over the face, lifts back on the loop */}
+        <g className="reveal-hood" strokeLinejoin="round">
+          <path d="M 102 232 C 88 140 110 44 180 34 C 250 44 272 140 258 232 C 240 214 220 206 180 206 C 140 206 120 214 102 232 Z" fill="#17171a" stroke={INK} strokeWidth="4" />
           <path d="M 128 216 C 122 140 142 84 180 78 C 218 84 238 140 232 216 C 216 204 200 200 180 200 C 160 200 144 204 128 216 Z" fill="#050505" />
-          <path d="M 180 34 C 204 38 232 56 246 90" stroke="#2f2b26" strokeWidth="4" fill="none" />
+          <path d="M 122 214 C 110 150 126 70 176 44" stroke="#3d5a80" strokeWidth="4" fill="none" strokeLinecap="round" />
+          <path d="M 180 34 C 204 38 232 56 246 90" stroke="#2f2f36" strokeWidth="4" fill="none" />
+          <circle cx="164" cy="150" r="3" fill="#e6c85c" opacity=".9" />
+          <circle cx="196" cy="150" r="3" fill="#e6c85c" opacity=".9" />
+        </g>
+
+        {/* SURPRISE! burst, with the reveal */}
+        <g className="reveal-pow">
+          <path d="M 44 70 L 62 52 L 70 70 L 92 56 L 92 78 L 114 80 L 98 94 L 112 110 L 88 108 L 84 128 L 68 112 L 52 126 L 52 104 L 30 102 L 44 90 L 28 76 Z" fill="#fff4a8" stroke={INK} strokeWidth="3.5" strokeLinejoin="round" />
+          <text x="71" y="96" textAnchor="middle" fontFamily="Bangers, Impact, sans-serif" fontSize="17" fill="#c8241a" stroke={INK} strokeWidth=".8" transform="rotate(-10 71 92)">SURPRISE!</text>
         </g>
       </svg>
       <div className="reveal-copy">

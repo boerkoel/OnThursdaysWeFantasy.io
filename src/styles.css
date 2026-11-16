@@ -1303,3 +1303,6 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 @keyframes rv-name{0%,30%{opacity:0}40%,82%{opacity:1}92%,100%{opacity:0}}
 @media (prefers-reduced-motion:reduce){.reveal-hood{animation:none;transform:translateY(-24px) scale(1.08,.28)}.reveal-copy strong span{animation:none}}
 @media (max-width:600px){.reveal{flex-direction:column;align-items:stretch}.reveal-art{max-width:none;flex-basis:auto}.reveal-copy strong{font-size:26px}}
+.reveal-pow{animation:rv-name 6s ease-in-out infinite}.reveal-copy strong{font-family:'Bangers',Impact,sans-serif;font-weight:400;letter-spacing:.03em;font-size:38px}
+@media (prefers-reduced-motion:reduce){.reveal-pow{animation:none}}
+@media (max-width:600px){.reveal-copy strong{font-size:32px}}
