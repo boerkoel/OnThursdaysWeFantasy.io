@@ -1306,3 +1306,10 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .reveal-pow{animation:rv-name 6s ease-in-out infinite}.reveal-copy strong{font-family:'Bangers',Impact,sans-serif;font-weight:400;letter-spacing:.03em;font-size:38px}
 @media (prefers-reduced-motion:reduce){.reveal-pow{animation:none}}
 @media (max-width:600px){.reveal-copy strong{font-size:32px}}
+/* Reveal timing with the trophy (Jim, 2026-11-15): hood lifts, then the trophy goes up, 8 s loop. */
+.reveal-hood{animation:rv-hood2 8s ease-in-out infinite}.reveal-copy strong span,.reveal-pow{animation:rv-name2 8s ease-in-out infinite}
+.reveal-trophy{transform-box:view-box;animation:rv-trophy 8s ease-in-out infinite}
+@keyframes rv-hood2{0%,16%{transform:none}28%,86%{transform:translateY(-24px) scale(1.08,.28)}96%,100%{transform:none}}
+@keyframes rv-name2{0%,24%{opacity:0}32%,86%{opacity:1}96%,100%{opacity:0}}
+@keyframes rv-trophy{0%,34%{opacity:0;transform:translateY(170px)}48%,86%{opacity:1;transform:none}96%,100%{opacity:0;transform:translateY(170px)}}
+@media (prefers-reduced-motion:reduce){.reveal-trophy{animation:none;opacity:1;transform:none}.reveal-hood{animation:none}}

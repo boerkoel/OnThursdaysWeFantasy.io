@@ -2,8 +2,8 @@ import React from "react";
 
 // The guillotine's last team standing, unmasked (Jim, 2026-11-15: "a cartoon of Uriel as an executioner who
 // reveals himself by lifting the hood, like The Traitors", then "higher fidelity, more like him, comic book
-// style"): a hooded executioner with an axe over a halftone burst; on a loop the hood lifts to show the champion's
-// grin and a SURPRISE! burst, then drops again. Drawn from scratch in comic style (ink outlines, cel shading), not
+// style"): a hooded executioner with a reaper's scythe over a halftone burst; on a loop the hood lifts to show the
+// champion's grin and a SURPRISE! burst, he raises a trophy, then it all resets. Drawn from scratch in comic style (ink outlines, cel shading), not
 // traced from photos: the site is public. champion: the surviving team; manager: the name to reveal.
 const INK = "#0b0b0b";
 export default function ChampionReveal({ champion, manager = "Uriel", season }) {
@@ -39,13 +39,14 @@ export default function ChampionReveal({ champion, manager = "Uriel", season }) 
         <rect width="360" height="400" fill="url(#rv-dots)" />
         <ellipse cx="180" cy="388" rx="150" ry="12" fill="#000" opacity=".45" />
 
-        {/* axe over the shoulder */}
-        <g transform="rotate(14 251 220)" strokeLinejoin="round">
-          <rect x="246" y="96" width="11" height="252" rx="4" fill="#7a4a24" stroke={INK} strokeWidth="3.5" />
-          <path d="M 249 110 L 249 330" stroke="#a8693a" strokeWidth="2.5" />
-          <path d="M 260 78 C 314 68 334 110 320 150 C 302 130 282 124 260 126 Z" fill="url(#rv-blade)" stroke={INK} strokeWidth="4" />
-          <path d="M 276 88 C 300 86 314 102 316 122" stroke="#fff" strokeWidth="3" fill="none" strokeLinecap="round" />
-          <path d="M 306 96 L 309 104 L 317 107 L 309 110 L 306 118 L 303 110 L 295 107 L 303 104 Z" fill="#fff" />
+        {/* a reaper's scythe (Jim, 2026-11-15: "hold a staff like the grim reaper") */}
+        <g strokeLinejoin="round" strokeLinecap="round">
+          <path d="M 246 400 L 292 40" stroke={INK} strokeWidth="13" />
+          <path d="M 246 400 L 292 40" stroke="#6b4527" strokeWidth="8" />
+          <path d="M 252 380 L 290 70" stroke="#9a6a3e" strokeWidth="2.5" />
+          <path d="M 292 44 C 250 18 196 24 160 62 C 204 42 250 46 288 64 Z" fill="url(#rv-blade)" stroke={INK} strokeWidth="4" />
+          <path d="M 270 40 C 240 32 210 36 186 50" stroke="#fff" strokeWidth="2.5" fill="none" />
+          <path d="M 196 40 L 199 47 L 206 50 L 199 53 L 196 60 L 193 53 L 186 50 L 193 47 Z" fill="#fff" />
         </g>
 
         {/* cloak, with comic rim light */}
@@ -54,8 +55,21 @@ export default function ChampionReveal({ champion, manager = "Uriel", season }) 
         <path d="M 272 392 C 268 330 252 286 226 258" stroke="#3d5a80" strokeWidth="3" fill="none" strokeLinecap="round" opacity=".7" />
         <path d="M 180 228 L 180 400" stroke="#2a2a30" strokeWidth="3" />
         {/* hand on the axe */}
-        <path d="M 250 252 C 262 244 280 250 278 266 C 276 280 256 282 248 272 Z" fill="#c08a5f" stroke={INK} strokeWidth="3.5" />
-        <path d="M 256 262 L 272 260 M 256 270 L 270 270" stroke="#7e5232" strokeWidth="2" />
+        <path d="M 252 238 C 264 230 282 236 280 252 C 278 266 258 268 250 258 Z" fill="#c08a5f" stroke={INK} strokeWidth="3.5" />
+        <path d="M 258 248 L 274 246 M 258 256 L 272 256" stroke="#7e5232" strokeWidth="2" />
+
+        {/* after the reveal he raises a trophy (Jim, 2026-11-15) */}
+        <g className="reveal-trophy" strokeLinejoin="round" strokeLinecap="round">
+          <path d="M 108 262 C 94 222 84 172 84 134 L 112 130 C 114 170 122 214 136 248 Z" fill="#141416" stroke={INK} strokeWidth="4" />
+          <path d="M 92 240 C 86 206 82 170 86 140" stroke="#3d5a80" strokeWidth="3" fill="none" />
+          <path d="M 74 54 L 126 54 C 126 80 114 96 100 98 C 86 96 74 80 74 54 Z" fill="#e8b93a" stroke={INK} strokeWidth="3.5" />
+          <path d="M 74 60 C 60 60 60 80 76 82 M 126 60 C 140 60 140 80 124 82" stroke={INK} strokeWidth="3.5" fill="none" />
+          <path d="M 82 60 C 82 76 88 88 96 92" stroke="#fff4cf" strokeWidth="3" fill="none" />
+          <path d="M 96 98 L 104 98 L 106 112 L 94 112 Z" fill="#c8961f" stroke={INK} strokeWidth="3" />
+          <rect x="86" y="110" width="28" height="8" rx="2" fill="#7a4a24" stroke={INK} strokeWidth="3" />
+          <path d="M 84 118 C 86 132 112 132 114 118 C 110 128 90 128 84 118 Z" fill="#c08a5f" stroke={INK} strokeWidth="3" />
+          <path d="M 100 26 L 104 38 L 116 42 L 104 46 L 100 58 L 96 46 L 84 42 L 96 38 Z" fill="#fffbe8" stroke={INK} strokeWidth="1.5" />
+        </g>
 
         {/* the face under the hood: Uriel's look in comic ink */}
         <g className="reveal-face" strokeLinejoin="round" strokeLinecap="round">
