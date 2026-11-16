@@ -1298,8 +1298,8 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .reveal-copy strong{font-size:30px;line-height:1.15;color:#f7f7f2}
 .reveal-copy strong span{color:#e6c85c;animation:rv-name 6s ease-in-out infinite}
 .reveal-copy p{margin:0;font-size:15px;color:#c7c9c1}
-.reveal-hood{transform-box:view-box;transform-origin:180px 62px;animation:rv-hood 6s ease-in-out infinite}
-@keyframes rv-hood{0%,22%{transform:none}38%,80%{transform:translateY(-44px) scale(1.06,.48)}92%,100%{transform:none}}
+.reveal-hood{transform-box:view-box;transform-origin:180px 34px;animation:rv-hood 6s ease-in-out infinite}
+@keyframes rv-hood{0%,22%{transform:none}38%,80%{transform:translateY(-24px) scale(1.08,.28)}92%,100%{transform:none}}
 @keyframes rv-name{0%,30%{opacity:0}40%,82%{opacity:1}92%,100%{opacity:0}}
-@media (prefers-reduced-motion:reduce){.reveal-hood{animation:none;transform:translateY(-44px) scale(1.06,.48)}.reveal-copy strong span{animation:none}}
+@media (prefers-reduced-motion:reduce){.reveal-hood{animation:none;transform:translateY(-24px) scale(1.08,.28)}.reveal-copy strong span{animation:none}}
 @media (max-width:600px){.reveal{flex-direction:column;align-items:stretch}.reveal-art{max-width:none;flex-basis:auto}.reveal-copy strong{font-size:26px}}
