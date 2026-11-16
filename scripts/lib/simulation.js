@@ -467,7 +467,12 @@ export function scoreRange(team) {
 
 // Odds for an outcome that is still possible either way: start with one
 // simulated success and one failure so it never reads exactly 0% or 100%.
-export const possibleOdds = count => round(((count + 1) / (SIMULATIONS + 2)) * 100);
+// Then model humility (Jim, 2026-11-15: "Laplace smoothing across the board, so we're not artificially
+// confident"): the simulations are only as good as the model, so these odds shrink toward even to stay within
+// ODDS_FLOOR..100-ODDS_FLOOR, about Laplace smoothing over 200 trials instead of 10,000. Only results the
+// scripts know are settled (a final, a gap nobody left can close) read 0 or 100.
+export const ODDS_FLOOR = 0.5;
+export const possibleOdds = count => round(ODDS_FLOOR + (100 - 2 * ODDS_FLOOR) * (count + 1) / (SIMULATIONS + 2));
 
 // Standard normal CDF and its inverse, for odds from a normal approximation.
 export function normalCdf(z) {

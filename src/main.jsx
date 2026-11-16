@@ -60,7 +60,7 @@ const STANDINGS_COLUMNS = [
 
 // Prize money (Playoffs bracket and raffle).
 const PAYOUTS = { first: 375, second: 225, third: 100, raffle: 100 };
-const LOCKED_PCT = 99.5;   // a result this sure counts as decided
+const LOCKED_PCT = 99.9;   // a result this sure counts as decided (open odds stop at 99.5: simulation.js ODDS_FLOOR)
 
 function StandingsTable({ seasonOdds, logos, liveScores = [], week }) {
   const [sortKey, setSortKey] = useState("seed");
@@ -76,7 +76,7 @@ function StandingsTable({ seasonOdds, logos, liveScores = [], week }) {
   const seedById = new Map([...(playoffs.seeds || []), ...(playoffs.nonPlayoffTeams || [])].map(s => [s.teamId, s.seed]));
   let rows = (standingsData.standings || []).map(t => {
     const s = scoreById.get(Number(t.id));
-    // A result counts as decided once it's statistically locked (≥99.5% or ≤0.5%, Jim 2026-10-25). Live adds the
+    // A result counts as decided once it's settled (open odds stop at 99.49 since the smoothing, Jim 2026-11-15). Live adds the
     // odds of whatever is still open; As it stands counts decided results only.
     const games = s && s.winProbability != null && s.aboveMedianProbability != null ? [Number(s.winProbability), Number(s.aboveMedianProbability)] : null;
     const locked = p => p >= LOCKED_PCT ? 1 : p <= 100 - LOCKED_PCT ? 0 : null;
@@ -132,8 +132,8 @@ function StandingsTable({ seasonOdds, logos, liveScores = [], week }) {
           {[["live", "Live"], ["stands", "As it stands"], ["before", "Before this week"]].map(([k, label]) =>
             <button type="button" key={k} className={liveMode === k ? "active" : ""} onClick={() => setLiveMode(k)}>{label}</button>)}
         </span> : null}</h3>
-      {isLive && !stands ? <Explain lead={<><b>Live:</b> Week {week} counted as it goes. Records add this week's expected wins (+0.7), and every odds column moves with them (▲▼ since the week began). ▲▼ by a seed = seed change.</>}>W-L adds each team's expected wins this week (head-to-head and beating the median, out of 2): a result counts in full once it's locked (99.5%+ either way), the rest at its odds. PF adds points so far, and seeds are re-ranked by that record (points break ties).</Explain> : null}
-      {isLive && stands ? <Explain lead={<><b>As it stands:</b> only locked results count. ▲▼ = seed change this week.</>}>W-L adds only this week's results that are locked (99.5%+ either way, head-to-head or the median); open games don't count yet. PF adds points so far, and seeds are re-ranked by that record (points break ties).</Explain> : null}
+      {isLive && !stands ? <Explain lead={<><b>Live:</b> Week {week} counted as it goes. Records add this week's expected wins (+0.7), and every odds column moves with them (▲▼ since the week began). ▲▼ by a seed = seed change.</>}>W-L adds each team's expected wins this week (head-to-head and beating the median, out of 2): a result counts in full once it's decided, the rest at its odds. PF adds points so far, and seeds are re-ranked by that record (points break ties).</Explain> : null}
+      {isLive && stands ? <Explain lead={<><b>As it stands:</b> only locked results count. ▲▼ = seed change this week.</>}>W-L adds only this week's results that are decided (head-to-head or the median); open games don't count yet. PF adds points so far, and seeds are re-ranked by that record (points break ties).</Explain> : null}
       <Explain lead={<>Top {playoffs.playoffTeamCount || 6} make the playoffs. Odds from {Number(seasonOdds?.simulations || 0).toLocaleString()} season simulations; click a column to sort.</>}>Seeds go by record (head-to-head + median wins), with total points breaking ties; the top {playoffs.playoffTeamCount || 6} make the playoffs and the top 2 get byes. Odds come from {Number(seasonOdds?.simulations || 0).toLocaleString()} simulations of the rest of the season, including both postseason brackets, using each team's scoring so far and, for the week in progress, live projections (Live), the points so far as if the week ended now (As it stands), or nothing from this week (Before this week). Title and Ultimate Loser odds each add up to 100%.</Explain>
       <div className="survival-table odds-table">
         <div className="odds-row survival-header">
@@ -223,7 +223,7 @@ function App() {
   // then its 5 most recent from the last 5 hours (4+ point swings, or plays that moved the odds 3%+), then the
   // week's next-biggest swings, up to 10 in all, newest first after the top 3. The win-odds swings are also
   // the 🏈 markers on the odds chart.
-  // Once a matchup is decided (final, or 99.5%+), its two moments, from the week's win-odds history (Jim,
+  // Once a matchup is decided (final, or settled), its two moments, from the week's win-odds history (Jim,
   // 2026-11-02): ✊ CLINCHED, when the winner became a heavy favorite (90%+) for good, the play that put it out of
   // reach ("Never in doubt" if they were from kickoff); and ↗ AHEAD FOR GOOD, when they went over 50% for good,
   // when that's a different play. The list runs newest first, the game's story in order, with those and the ⚡
@@ -265,7 +265,7 @@ function App() {
       .filter(p => Number(p.matchupId) === Number(matchupId) && p.wallclock);
     const bySwing = plays.filter(p => swingOf(p) >= 0.5).sort((a, b) => swingOf(b) - swingOf(a));
     const sides = scores.filter(x => Number(x.matchupId) === Number(matchupId));
-    const winner = sides.find(x => Number(x.winProbability) >= 99.5 || (x.status === "FINAL" && sides.every(y => Number(x.score) >= Number(y.score))));
+    const winner = sides.find(x => Number(x.winProbability) >= LOCKED_PCT || (x.status === "FINAL" && sides.every(y => Number(x.score) >= Number(y.score))));
     const decider = winner ? momentOf(winner, plays, 90) : null;
     const ahead = winner ? momentOf(winner, plays, 50) : null;
     // One badge set per play: the go-ahead folds into the clinch when it's the same play (or both are notes).
@@ -514,7 +514,7 @@ function App() {
     if (!pair) return null;
     const [a, b] = pair;
     const plays = highlightsFor(matchupId).slice(0, 3);
-    const open = [a, b].every(t => Number(t.winProbability) > 0.5 && Number(t.winProbability) < 99.5);
+    const open = [a, b].every(t => Number(t.winProbability) > 100 - LOCKED_PCT && Number(t.winProbability) < LOCKED_PCT);
     return <div className="primetime-expand">
       {open ? <Needle a={a} b={b} fork={winFork(a, b)} peeks={winPeeks(a, b)} games={scoreboard.nflGames || []} history={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} /> : null}
       {open ? (scoreboard.nflGames || []).map(g => ({ g, r: driveRooting({ game: g, a, b }) })).filter(x => x.r).slice(0, 2).map(({ g, r }) =>
@@ -662,7 +662,7 @@ function App() {
       if (chopped) lines.push({ key: "g", icon: "🪓", go: "death-watch", text: <><b>{chopped.team}</b> · chopped Week {chopped.week}</> });
       else if (k >= 0) {
         const t = alive[k], odds = Number(t.chopProbability) || 0;
-        lines.push({ key: "g", icon: "🪓", go: "death-watch", text: <><b>{t.team}</b> · {k + 1} of {alive.length} this week · {odds >= 99.5 ? "doomed" : odds < 0.5 ? "safe" : `${Math.round(odds)}% chop odds`}</> });
+        lines.push({ key: "g", icon: "🪓", go: "death-watch", text: <><b>{t.team}</b> · {k + 1} of {alive.length} this week · {odds >= LOCKED_PCT ? "doomed" : odds <= 100 - LOCKED_PCT ? "safe" : `${Math.round(odds)}% chop odds`}</> });
       }
     }
     if (link.splash?.length && survivorFeed) {

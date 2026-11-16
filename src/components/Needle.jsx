@@ -437,7 +437,9 @@ export function Needle({ a, b, history = [], odds = null, label = null, games = 
 // by odds as of the last full update (from), not the 15-second drive moves, so they don't hop around; your
 // team comes first. items: [{ team, p, from }]; words: { likely: [left, right], locked: [left, right] };
 // chipOdds "right" shows every chip's odds of the right side (the ticket's long shots), else each side's own.
-export const LOCKED = 99;
+// Settled means settled (Jim, 2026-11-15): open odds stop at 99.5 (simulation.js ODDS_FLOOR), so only a result
+// the scripts call decided reaches this.
+export const LOCKED = 99.9;
 // With max (the TV view, Jim 2026-11-02): only that many needles, the contenders with the most at stake
 // (pick "stake": closest to 50%) or the best odds (pick "odds"), the rest in an "also in it" chip row. The set is
 // sticky: a challenger takes a spot only once 5+ points better than the weakest shown, and onSwap hears of it

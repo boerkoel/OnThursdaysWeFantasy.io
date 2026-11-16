@@ -11,7 +11,9 @@ const ESPN_SCOREBOARD = "https://site.api.espn.com/apis/site/v2/sports/football/
 const POLL_MS = 10000;   // every play shows in Watch mode's drive panel (Jim, 2026-11-12; was 15 s)
 const POSITION_IDS = { QB: 1, RB: 2, WR: 3, TE: 4, K: 5, "D/ST": 16 };
 const z = p => normalQuantile(Math.min(0.9999, Math.max(0.0001, p / 100)));
-const odds = (p, shift) => p <= 0 || p >= 100 || !shift ? p : Math.round(1000 * normalCdf(z(p) + shift)) / 10;
+// A drive moves open odds but keeps them inside the run's smoothing (simulation.js ODDS_FLOOR: open odds top out
+// at 99.49), so a 99.5 check still means decided.
+const odds = (p, shift) => p <= 0 || p >= 100 || !shift ? p : Math.min(99.4, Math.max(0.6, Math.round(1000 * normalCdf(z(p) + shift)) / 10));
 
 // ESPN's live games: id -> { state, period, clock, teams: [{ id, score, home }], drive }.
 export function useEspnGames(active) {
