@@ -1290,3 +1290,16 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
    TvView), keeping 14px clear of the home indicator (Jim, 2026-11-12). */
 @media (max-width:760px),(orientation:portrait) and (max-width:1024px){.tv-ticker{bottom:calc(-1 * var(--tv-below, 0px))!important;padding-bottom:min(14px,var(--tv-below, 0px))!important}}
 .tv-field-strip b{font-size:1em;line-height:1}
+/* Death Watch's champion reveal (Jim, 2026-11-15): the hood lifts on a loop, The Traitors style. */
+.reveal{display:flex;flex-wrap:wrap;align-items:center;gap:20px;margin:12px 0 18px;padding:16px;border:1px solid #3a342d;border-radius:14px;background:#151412}
+.reveal-art{flex:0 1 300px;width:100%;max-width:300px;height:auto;border-radius:10px}
+.reveal-copy{flex:1 1 220px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.reveal-copy small{font-size:11px;font-weight:800;letter-spacing:.12em;color:#b8c69b}
+.reveal-copy strong{font-size:30px;line-height:1.15;color:#f7f7f2}
+.reveal-copy strong span{color:#e6c85c;animation:rv-name 6s ease-in-out infinite}
+.reveal-copy p{margin:0;font-size:15px;color:#c7c9c1}
+.reveal-hood{transform-box:view-box;transform-origin:180px 62px;animation:rv-hood 6s ease-in-out infinite}
+@keyframes rv-hood{0%,22%{transform:none}38%,80%{transform:translateY(-44px) scale(1.06,.48)}92%,100%{transform:none}}
+@keyframes rv-name{0%,30%{opacity:0}40%,82%{opacity:1}92%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.reveal-hood{animation:none;transform:translateY(-44px) scale(1.06,.48)}.reveal-copy strong span{animation:none}}
+@media (max-width:600px){.reveal{flex-direction:column;align-items:stretch}.reveal-art{max-width:none;flex-basis:auto}.reveal-copy strong{font-size:26px}}

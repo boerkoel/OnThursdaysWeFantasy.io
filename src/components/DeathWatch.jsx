@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import ChampionReveal from "./ChampionReveal.jsx";
 import { formatDay, money, pct } from "../lib/data.js";
 import { ShareButton, TeamLogo } from "./LiveBits.jsx";
 import { LiveToggle, TeamLineup, useLiveOnly } from "./MatchupLineup.jsx";
@@ -233,6 +234,11 @@ export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
   const chartTeams = peakTeams(history, guillotine.teams.map(t => ({ ...t, value: t.chopProbability })));
   const chartIds = new Set(chartTeams.map(t => t.teamId));
   const plays = Number(livePlays?.week) === Number(guillotine.week) ? (livePlays.guillotinePlays || []).filter(p => chartIds.has(Number(p.teamId))) : [];
+  // The final chop settled (one team left, or the last two with the chop decided): the champion's reveal leads the
+  // tab in place of the podium (Jim, 2026-11-15). ?reveal previews it once two teams are left.
+  const settled = guillotine.teams.length === 1 || guillotine.teams.some(t => t.chopProbability >= 99.9);
+  const preview = typeof window !== "undefined" && /[?&]reveal\b/.test(window.location.search);
+  const champion = guillotine.teams.length <= 2 && (settled || preview) ? [...guillotine.teams].sort((a, b) => a.chopProbability - b.chopProbability)[0] : null;
   return (
     <section id="death-watch" className="section">
       <div className="section-heading">
@@ -240,7 +246,7 @@ export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
         <span className="record-count">{guillotine.teams.length} TEAMS ALIVE</span>
       </div>
       <p className="raffle-intro">Our guillotine side league: the lowest score each week gets chopped. Chop odds come from {Number(guillotine.simulations || 0).toLocaleString()} simulations of the rest of the week.</p>
-      <Podium variant="tomb" ariaLabel="Most likely to be chopped" items={atRisk.map(t => ({
+      {champion ? <ChampionReveal champion={champion} manager={/^(.+?)'s /.exec(champion.team)?.[1] || champion.team} season={guillotine.season} /> : <Podium variant="tomb" ariaLabel="Most likely to be chopped" items={atRisk.map(t => ({
         key: t.teamId,
         logo: <DwLogo team={t} size="md" />,
         name: t.team,
@@ -248,7 +254,7 @@ export function DeathWatch({ guillotine, nflGames = [], livePlays = null }) {
         label: t.chopProbability >= 100 ? "Doomed" : null,
         sub: `${money(t.score)} pts${t.playersLeft ? ` · proj ${money(t.projected)}` : " · final"}`,
         icon: "🪦"
-      }))} />
+      }))} />}
       {/* Every team left in the guillotine (Jim, 2026-11-02): needles for 10–90% chop odds, chips for the likely
           safe and likely chopped, ✅/🪓 for the settled. */}
       <NeedleRace minShown={2} label="🪓 THE CHOPPING BLOCK · EACH TEAM'S ODDS" items={guillotine.teams.map(t => ({ team: { ...t, lineup: { starters: t.lineup || [] } }, p: Number(t.chopProbability), from: t.liveChopFrom, peeks: chopPeeks(t, guillotine.teams, nflGames) }))}
