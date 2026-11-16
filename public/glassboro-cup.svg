@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="300 300 280 700" role="img" aria-label="The Glassboro Cup">
-<!-- The Glassboro Cup (Jim, 2026-11-15): Joe vs. Billy's trophy. A tall gold cup, two gold spheres at the base,
+<!-- The Glassboro Cup (Jim, 2026-11-15): Joe vs. Billy's trophy. A tall gold cup, two round ring handles low on the bowl,
      just the tip of a football poking out, and a sparkle on the tip. -->
 <style>
 .glow{transform-origin:440px 380px;animation:glow 2.4s ease-in-out infinite}
@@ -19,11 +19,13 @@
 <path d="M 300 912 L 580 912 L 588 998 L 292 998 Z" fill="url(#w)"/>
 <path d="M 330 852 L 550 852 L 556 908 L 324 908 Z" fill="url(#w)"/>
 <ellipse cx="440" cy="846" rx="62" ry="10" fill="url(#g)"/>
-<path d="M 400 846 C 418 832 426 808 428 790 L 452 790 C 454 808 462 832 480 846 Z" fill="url(#g)"/>
-<circle cx="398" cy="790" r="44" fill="url(#b)" stroke="#5a3d0a" stroke-width="3"/>
-<circle cx="482" cy="790" r="44" fill="url(#b)" stroke="#5a3d0a" stroke-width="3"/>
-<ellipse cx="384" cy="772" rx="13" ry="8" fill="#fffbe8" opacity=".85" transform="rotate(-30 384 772)"/>
-<ellipse cx="468" cy="772" rx="13" ry="8" fill="#fffbe8" opacity=".85" transform="rotate(-30 468 772)"/>
+<path d="M 392 846 C 420 836 428 812 430 772 L 450 772 C 452 812 460 836 488 846 Z" fill="url(#g)"/>
+<ellipse cx="440" cy="800" rx="24" ry="7" fill="url(#g)" stroke="#5a3d0a" stroke-width="2"/>
+<g fill="none">
+<circle cx="354" cy="740" r="42" stroke="#5a3d0a" stroke-width="22"/><circle cx="526" cy="740" r="42" stroke="#5a3d0a" stroke-width="22"/>
+<circle cx="354" cy="740" r="42" stroke="url(#g)" stroke-width="14"/><circle cx="526" cy="740" r="42" stroke="url(#g)" stroke-width="14"/>
+<path d="M 324 722 A 34 34 0 0 1 350 703 M 496 722 A 34 34 0 0 1 522 703" stroke="#fff4cf" stroke-width="4" stroke-linecap="round" opacity=".75"/>
+</g>
 <path d="M 348 470 L 532 470 C 536 600 520 700 480 764 C 466 772 414 772 400 764 C 360 700 344 600 348 470 Z" fill="url(#g)"/>
 <path d="M 372 500 C 370 590 378 670 402 736" fill="none" stroke="#fff4cf" stroke-width="7" stroke-linecap="round" opacity=".65"/>
 <ellipse cx="440" cy="470" rx="92" ry="12" fill="#4a3308"/>
