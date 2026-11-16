@@ -194,3 +194,29 @@ And now both of them rest here. Farewell.
 It’s not personal, Mel. It’s strictly business.
 
 Cause of death: Died with $995 in the mattress. Complications from the Goffather.
+
+## Joe's Scary Team
+
+Final Destination
+
+Chop after chop, and then there were two. In a horror movie, that means somebody still has to die. Joe's Scary Team finished with 207.29 points, 14.72 behind Uriel's Upbeat Team, and the guillotine fell one last time.
+
+Joe is a new dad, so this season was found footage: Paranormal Activity, waiver edition. While the league slept, Joe was up for the night feed, bottle in one hand, free-agent list in the other. Nine of his 15 pickups came on Wednesday mornings, right after waivers cleared; on October 14 he made three between 3:55 and 3:58 a.m. Burp, add, drop, repeat. Rock-a-bye roster.
+
+The backfield was a slasher flick: Christian McCaffrey (47.8) and Jahmyr Gibbs (46.2) carved up 94 points. But every horror movie has a twist, and Joe's was the classic: the call was coming from inside the house. Brock Purdy scored 40.66 on the bench while Josh Allen (27.34) started. Purdy good; pretty bad. Amon-Ra St. Brown (24.8) sat too, so the sun god spent Sunday in the shade while Kyren Williams (4.7) took the flex. Swap those two alone and Joe survives by 5.38.
+
+The murder weapon? Of course it was a Joe. Joe Burrow did the digging: 44.66 points for Uriel. Joe even handed him the shovel, claiming Ja'Marr Chase (33.1) this week. Chase was a double agent: every catch for Joe was a completion for Uriel.
+
+But look back at the crime scenes. All season, a narrow escape was a death sentence: five times, the team that barely survived was chopped the very next week. And one name never turned up at a single scene. For seven weeks, Uriel was never the last team standing over a body. He smiled, he set his lineup, he waited in the dark. Then, with three left, he stepped out of the shadows and finished just above the victim twice in a row: Mel in Week 9, Joe in Week 10. A Niners fan who won it all with zero 49ers. The hood comes off. It was Uriel all along.
+
+There once was a new dad named Joe  
+Who worked the wire while the moon was still low.  
+He out-hustled the league,  
+But in his fatigue  
+Benched Purdy, and Uriel stole the show.
+
+Congratulations to Uriel's Upbeat Team, the last team standing. Upbeat, he called it. Sleep with one eye open, everyone. Joe already does.
+
+Rest in pieces, Joe's Scary Team.
+
+Cause of death: 65.46 points left on the bench in a 14.72-point loss. Sleep deprivation. Killed by a Joe.
