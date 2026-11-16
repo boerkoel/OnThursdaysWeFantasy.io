@@ -98,13 +98,6 @@ export default function ChampionReveal({ champion, manager = "Uriel", season }) 
           {/* thick dark brows, raised */}
           <path d="M 146 134 C 154 124 168 124 176 130 L 174 136 C 166 131 156 131 148 139 Z" fill="#140e0a" stroke={INK} strokeWidth="2" />
           <path d="M 184 130 C 192 124 206 124 214 134 L 212 139 C 204 131 194 131 186 136 Z" fill="#140e0a" stroke={INK} strokeWidth="2" />
-          {/* orange headband with teal, gray and white diagonal stripes */}
-          <path d="M 129 112 C 150 102 210 102 231 112 L 232 128 C 210 118 150 118 128 128 Z" fill="#ec7d22" stroke={INK} strokeWidth="3.5" />
-          <path d="M 148 108 L 156 121 M 158 106 L 166 119" stroke="#2e5d6e" strokeWidth="6" />
-          <path d="M 168 105 L 176 118" stroke="#7d8a8f" strokeWidth="6" />
-          <path d="M 178 105 L 186 118" stroke="#f1eee8" strokeWidth="6" />
-          <path d="M 188 105 L 196 118" stroke="#f6b04a" strokeWidth="6" />
-          <path d="M 214 113 C 216 109 220 109 220 114" stroke="#fff" strokeWidth="1.8" fill="none" />
           {/* tall swept-up pompadour, faded sides */}
           <path d="M 130 112 C 128 98 132 90 140 86 L 142 108 C 136 108 132 110 130 112 Z" fill="#33281f" stroke={INK} strokeWidth="2.5" />
           <path d="M 230 112 C 232 98 228 90 220 86 L 218 108 C 224 108 228 110 230 112 Z" fill="#2b2119" stroke={INK} strokeWidth="2.5" />
