@@ -1313,3 +1313,11 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 @keyframes rv-name2{0%,24%{opacity:0}32%,86%{opacity:1}96%,100%{opacity:0}}
 @keyframes rv-trophy{0%,34%{opacity:0;transform:translateY(170px)}48%,86%{opacity:1;transform:none}96%,100%{opacity:0;transform:translateY(170px)}}
 @media (prefers-reduced-motion:reduce){.reveal-trophy{animation:none;opacity:1;transform:none}.reveal-hood{animation:none}}
+/* The Glassboro Cup (Jim, 2026-11-15): a strip on Joe v. Billy's matchup, a banner in its sheet, a mini cup by the holder. */
+.cup-strip{display:flex;align-items:center;gap:8px;margin:-2px 0 8px;padding:6px 10px;border:1px solid #6b5420;border-radius:10px;background:#1d1a10;font-size:12px;color:#e9dfc0}
+.cup-strip img{width:22px;height:40px;object-fit:contain;flex:none}.cup-strip b{color:#e6c85c}
+.cup-banner{display:flex;align-items:center;gap:14px;margin:10px 0;padding:10px 14px;border:1px solid #6b5420;border-radius:12px;background:#1d1a10}
+.cup-banner img{width:56px;height:120px;object-fit:contain;flex:none}
+.cup-banner small{display:block;font-size:11px;font-weight:800;letter-spacing:.12em;color:#b8c69b}
+.cup-banner strong{display:block;font-size:20px;color:#e6c85c}.cup-banner p{margin:4px 0 0;font-size:13px;color:#dfe5d5}
+.cup-mini{width:12px;height:22px;object-fit:contain;vertical-align:-5px;margin-left:5px}

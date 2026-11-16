@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="300 300 280 700" role="img" aria-label="The Glassboro Cup">
+<!-- The Glassboro Cup (Jim, 2026-11-15): Joe vs. Billy's trophy. A tall gold cup, two gold spheres at the base,
+     just the tip of a football poking out, and a sparkle on the tip. -->
+<style>
+.glow{transform-origin:440px 380px;animation:glow 2.4s ease-in-out infinite}
+@keyframes glow{0%,100%{opacity:.3;transform:scale(.6)}50%{opacity:1;transform:scale(1.2)}}
+.tw{transform-origin:440px 368px;animation:tw 1.8s ease-in-out infinite}
+@keyframes tw{0%,100%{opacity:.2;transform:scale(.4) rotate(0)}50%{opacity:1;transform:scale(1) rotate(45deg)}}
+@media (prefers-reduced-motion:reduce){.glow,.tw{animation:none}}
+</style>
+<defs>
+<linearGradient id="g" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7a5410"/><stop offset=".2" stop-color="#c8961f"/><stop offset=".4" stop-color="#f7dc8a"/><stop offset=".58" stop-color="#d9a72b"/><stop offset=".85" stop-color="#9c6f17"/><stop offset="1" stop-color="#6b4a0e"/></linearGradient>
+<radialGradient id="b" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#fff2c0"/><stop offset=".35" stop-color="#e8b93a"/><stop offset="1" stop-color="#7a5410"/></radialGradient>
+<radialGradient id="l" cx="36%" cy="30%" r="80%"><stop offset="0" stop-color="#b8693a"/><stop offset=".55" stop-color="#7c3c18"/><stop offset="1" stop-color="#4a210e"/></radialGradient>
+<linearGradient id="w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b4527"/><stop offset="1" stop-color="#3a2414"/></linearGradient>
+<radialGradient id="t" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fffbe8" stop-opacity=".95"/><stop offset=".45" stop-color="#ffe9a8" stop-opacity=".45"/><stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/></radialGradient>
+<clipPath id="c"><rect x="0" y="0" width="880" height="478"/></clipPath>
+</defs>
+<path d="M 300 912 L 580 912 L 588 998 L 292 998 Z" fill="url(#w)"/>
+<path d="M 330 852 L 550 852 L 556 908 L 324 908 Z" fill="url(#w)"/>
+<ellipse cx="440" cy="846" rx="62" ry="10" fill="url(#g)"/>
+<path d="M 400 846 C 418 832 426 808 428 790 L 452 790 C 454 808 462 832 480 846 Z" fill="url(#g)"/>
+<circle cx="398" cy="790" r="44" fill="url(#b)" stroke="#5a3d0a" stroke-width="3"/>
+<circle cx="482" cy="790" r="44" fill="url(#b)" stroke="#5a3d0a" stroke-width="3"/>
+<ellipse cx="384" cy="772" rx="13" ry="8" fill="#fffbe8" opacity=".85" transform="rotate(-30 384 772)"/>
+<ellipse cx="468" cy="772" rx="13" ry="8" fill="#fffbe8" opacity=".85" transform="rotate(-30 468 772)"/>
+<path d="M 348 470 L 532 470 C 536 600 520 700 480 764 C 466 772 414 772 400 764 C 360 700 344 600 348 470 Z" fill="url(#g)"/>
+<path d="M 372 500 C 370 590 378 670 402 736" fill="none" stroke="#fff4cf" stroke-width="7" stroke-linecap="round" opacity=".65"/>
+<ellipse cx="440" cy="470" rx="92" ry="12" fill="#4a3308"/>
+<g clip-path="url(#c)"><g transform="translate(0 100)">
+<path d="M 440 280 C 553 312 553 528 440 560 C 327 528 327 312 440 280 Z" fill="url(#l)" stroke="#3b1a09" stroke-width="2"/>
+<path d="M 384 318 C 410 310 470 310 496 318" fill="none" stroke="#f4efe6" stroke-width="7" opacity=".9"/>
+<rect x="436" y="352" width="8" height="96" rx="3" fill="#f4efe6"/>
+<rect x="422" y="360" width="36" height="6" rx="3" fill="#f4efe6"/>
+</g></g>
+<path d="M 348 470 A 92 12 0 0 0 532 470 L 532 478 A 92 12 0 0 1 348 478 Z" fill="url(#g)"/>
+<circle class="glow" cx="440" cy="380" r="46" fill="url(#t)"/>
+<path class="tw" d="M 440 340 L 447 361 L 468 368 L 447 375 L 440 396 L 433 375 L 412 368 L 433 361 Z" fill="#fffbe8"/>
+</svg>
