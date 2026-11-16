@@ -2091,34 +2091,6 @@
           "partners": [],
           "targets": [
             {
-              "playerId": 4685720,
-              "player": "Bryce Young",
-              "position": "QB",
-              "startRate": 25,
-              "rosteredWeeks": 8,
-              "startedWeeks": 2,
-              "boost": 19.48,
-              "teamId": 12,
-              "team": "Beautiful Dark Twisted Fantasy",
-              "h2hWinsAdded": 0,
-              "medianWinsAdded": 1,
-              "winsAdded": 1,
-              "mutualTrade": null,
-              "otherNeeds": [
-                {
-                  "position": "WR",
-                  "percent": -20.32
-                },
-                {
-                  "position": "TE",
-                  "percent": -16.04
-                }
-              ],
-              "needsMatch": [
-                "WR"
-              ]
-            },
-            {
               "playerId": 3128429,
               "player": "Courtland Sutton",
               "position": "WR",
@@ -2186,6 +2158,37 @@
               "needsMatch": [
                 "WR"
               ]
+            },
+            {
+              "playerId": 4373626,
+              "player": "Tyler Allgeier",
+              "position": "RB",
+              "startRate": 22.22,
+              "rosteredWeeks": 9,
+              "startedWeeks": 2,
+              "boost": 34.9,
+              "teamId": 10,
+              "team": "Gibb it to Me Baby",
+              "h2hWinsAdded": 0,
+              "medianWinsAdded": 0,
+              "winsAdded": 0,
+              "mutualTrade": {
+                "playerId": 4431611,
+                "player": "Caleb Williams",
+                "position": "QB",
+                "startRate": 44.44,
+                "boost": 4.24,
+                "h2hWinsAdded": 0,
+                "medianWinsAdded": 0,
+                "winsAdded": 0
+              },
+              "otherNeeds": [
+                {
+                  "position": "K",
+                  "percent": -16.87
+                }
+              ],
+              "needsMatch": []
             }
           ]
         },
@@ -3140,43 +3143,45 @@
             "perspective": "B"
           },
           {
-            "kind": "1-for-2",
-            "otherTeamId": 12,
-            "otherTeam": "Beautiful Dark Twisted Fantasy",
-            "givePlayerId": "4241389",
-            "givePlayer": "CeeDee Lamb",
-            "givePosition": "WR",
-            "giveRosRank": "8",
+            "kind": "2-for-2",
+            "otherTeamId": 8,
+            "otherTeam": "Mr. Action Jackson",
+            "givePlayerId": "4688813+3121023",
+            "givePlayer": "Josh Downs + Dallas Goedert",
+            "givePosition": "WR/TE",
+            "giveRosRank": "72 + #117",
             "givePlayers": [
-              "CeeDee Lamb"
+              "Josh Downs",
+              "Dallas Goedert"
             ],
             "givePlayerIds": [
-              4241389
+              4688813,
+              3121023
             ],
             "getPlayerIds": [
-              3117251,
-              4685720
+              4890973,
+              4426385
             ],
-            "getPlayerId": "3117251+4685720",
-            "getPlayer": "Christian McCaffrey + Bryce Young",
-            "getPosition": "RB/QB",
-            "getRosRank": "9 + #97",
+            "getPlayerId": "4890973+4426385",
+            "getPlayer": "Ashton Jeanty + Zach Charbonnet",
+            "getPosition": "RB/RB",
+            "getRosRank": "62 + #116",
             "getPlayers": [
-              "Christian McCaffrey",
-              "Bryce Young"
+              "Ashton Jeanty",
+              "Zach Charbonnet"
             ],
-            "yourBoost": 21.52,
-            "yourH2hWinsAdded": 0,
+            "yourBoost": 15.92,
+            "yourH2hWinsAdded": 1,
             "yourMedianWinsAdded": 1,
-            "yourWinsAdded": 1,
-            "theirBoost": 2.96,
-            "theirH2hWinsAdded": 0,
-            "theirMedianWinsAdded": 1,
+            "yourWinsAdded": 2,
+            "theirBoost": 0.1,
+            "theirH2hWinsAdded": 1,
+            "theirMedianWinsAdded": 0,
             "theirWinsAdded": 1,
-            "weeksEvaluated": 8,
-            "fromWeek": 2,
+            "weeksEvaluated": 4,
+            "fromWeek": 6,
             "basis": {
-              "window": "season",
+              "window": "last 4 weeks",
               "lineup": "optimal"
             },
             "perspective": "A"
@@ -5497,43 +5502,6 @@
           "partners": [],
           "targets": [
             {
-              "playerId": 4685720,
-              "player": "Bryce Young",
-              "position": "QB",
-              "startRate": 25,
-              "rosteredWeeks": 8,
-              "startedWeeks": 2,
-              "boost": 10.28,
-              "teamId": 12,
-              "team": "Beautiful Dark Twisted Fantasy",
-              "h2hWinsAdded": 0,
-              "medianWinsAdded": 0,
-              "winsAdded": 0,
-              "mutualTrade": {
-                "playerId": 4576297,
-                "player": "AJ Barner",
-                "position": "TE",
-                "startRate": 50,
-                "boost": 8.1,
-                "h2hWinsAdded": 0,
-                "medianWinsAdded": 0,
-                "winsAdded": 0
-              },
-              "otherNeeds": [
-                {
-                  "position": "WR",
-                  "percent": -20.32
-                },
-                {
-                  "position": "TE",
-                  "percent": -16.04
-                }
-              ],
-              "needsMatch": [
-                "TE"
-              ]
-            },
-            {
               "playerId": 14880,
               "player": "Kirk Cousins",
               "position": "QB",
@@ -5597,6 +5565,45 @@
                 {
                   "position": "K",
                   "percent": -16.87
+                }
+              ],
+              "needsMatch": []
+            },
+            {
+              "playerId": 4241985,
+              "player": "J.K. Dobbins",
+              "position": "RB",
+              "startRate": 11.11,
+              "rosteredWeeks": 9,
+              "startedWeeks": 1,
+              "boost": 20.8,
+              "teamId": 5,
+              "team": "49er Faith-Fool",
+              "h2hWinsAdded": 0,
+              "medianWinsAdded": 0,
+              "winsAdded": 0,
+              "mutualTrade": {
+                "playerId": 4576297,
+                "player": "AJ Barner",
+                "position": "TE",
+                "startRate": 50,
+                "boost": 9.8,
+                "h2hWinsAdded": 0,
+                "medianWinsAdded": 0,
+                "winsAdded": 0
+              },
+              "otherNeeds": [
+                {
+                  "position": "DST",
+                  "percent": -26.57
+                },
+                {
+                  "position": "WR",
+                  "percent": -18.32
+                },
+                {
+                  "position": "K",
+                  "percent": -15.65
                 }
               ],
               "needsMatch": []
@@ -8832,15 +8839,15 @@
               ]
             },
             {
-              "playerId": 4685720,
-              "player": "Bryce Young",
+              "playerId": 4426338,
+              "player": "Bo Nix",
               "position": "QB",
-              "startRate": 25,
-              "rosteredWeeks": 8,
+              "startRate": 22.22,
+              "rosteredWeeks": 9,
               "startedWeeks": 2,
-              "boost": 20,
-              "teamId": 12,
-              "team": "Beautiful Dark Twisted Fantasy",
+              "boost": 12.32,
+              "teamId": 1,
+              "team": "Ramosverse",
               "h2hWinsAdded": 0,
               "medianWinsAdded": 0,
               "winsAdded": 0,
@@ -8849,33 +8856,29 @@
                 "player": "Makai Lemon",
                 "position": "WR",
                 "startRate": 0,
-                "boost": 25.7,
+                "boost": 27.5,
                 "h2hWinsAdded": 0,
-                "medianWinsAdded": 0,
-                "winsAdded": 0
+                "medianWinsAdded": 1,
+                "winsAdded": 1
               },
               "otherNeeds": [
                 {
-                  "position": "WR",
-                  "percent": -20.32
-                },
-                {
-                  "position": "TE",
-                  "percent": -16.04
+                  "position": "RB",
+                  "percent": -34.85
                 }
               ],
               "needsMatch": [
-                "TE"
+                "RB"
               ]
             },
             {
-              "playerId": 4426338,
-              "player": "Bo Nix",
-              "position": "QB",
-              "startRate": 22.22,
-              "rosteredWeeks": 9,
+              "playerId": 4429023,
+              "player": "MarShawn Lloyd",
+              "position": "RB",
+              "startRate": 40,
+              "rosteredWeeks": 5,
               "startedWeeks": 2,
-              "boost": 12.32,
+              "boost": 11.9,
               "teamId": 1,
               "team": "Ramosverse",
               "h2hWinsAdded": 0,
@@ -9552,11 +9555,11 @@
               "medianWinsAdded": 0,
               "winsAdded": 0,
               "mutualTrade": {
-                "playerId": 4685720,
-                "player": "Bryce Young",
-                "position": "QB",
-                "startRate": 25,
-                "boost": 37.16,
+                "playerId": 3128429,
+                "player": "Courtland Sutton",
+                "position": "WR",
+                "startRate": 44.44,
+                "boost": 13.7,
                 "h2hWinsAdded": 0,
                 "medianWinsAdded": 0,
                 "winsAdded": 0
@@ -9679,44 +9682,46 @@
             "perspective": "B"
           },
           {
-            "kind": "2-for-1",
-            "otherTeamId": 4,
-            "otherTeam": "Kirbo Crushers",
-            "givePlayerId": "3117251+4685720",
-            "givePlayer": "Christian McCaffrey + Bryce Young",
-            "givePosition": "RB/QB",
-            "giveRosRank": "9 + #97",
+            "kind": "2-for-2",
+            "otherTeamId": 10,
+            "otherTeam": "Gibb it to Me Baby",
+            "givePlayerId": "4567750+4429205",
+            "givePlayer": "Emeka Egbuka + Jordan Addison",
+            "givePosition": "WR/WR",
+            "giveRosRank": "59 + #89",
             "givePlayers": [
-              "Christian McCaffrey",
-              "Bryce Young"
+              "Emeka Egbuka",
+              "Jordan Addison"
             ],
             "givePlayerIds": [
-              3117251,
-              4685720
+              4567750,
+              4429205
             ],
             "getPlayerIds": [
-              4241389
+              4685702,
+              4569173
             ],
-            "getPlayerId": "4241389",
-            "getPlayer": "CeeDee Lamb",
-            "getPosition": "WR",
-            "getRosRank": "8",
+            "getPlayerId": "4685702+4569173",
+            "getPlayer": "Quinshon Judkins + Rhamondre Stevenson",
+            "getPosition": "RB/RB",
+            "getRosRank": "69 + #73",
             "getPlayers": [
-              "CeeDee Lamb"
+              "Quinshon Judkins",
+              "Rhamondre Stevenson"
             ],
-            "yourBoost": 2.96,
+            "yourBoost": 22.1,
             "yourH2hWinsAdded": 0,
-            "yourMedianWinsAdded": 1,
-            "yourWinsAdded": 1,
-            "theirBoost": 21.52,
-            "theirH2hWinsAdded": 0,
+            "yourMedianWinsAdded": 0,
+            "yourWinsAdded": 0,
+            "theirBoost": 23.9,
+            "theirH2hWinsAdded": 1,
             "theirMedianWinsAdded": 1,
-            "theirWinsAdded": 1,
-            "weeksEvaluated": 8,
-            "fromWeek": 2,
+            "theirWinsAdded": 2,
+            "weeksEvaluated": 4,
+            "fromWeek": 6,
             "basis": {
-              "window": "season",
-              "lineup": "optimal"
+              "window": "last 4 weeks",
+              "lineup": "projected"
             },
             "perspective": "B"
           }
