@@ -144,7 +144,7 @@ function StandingsTable({ seasonOdds, logos, liveScores = [], week }) {
         </div>
         {sorted.map(r => <div className={r.seed <= (playoffs.playoffTeamCount || 6) ? "odds-row in-playoffs" : "odds-row"} key={r.teamId}>
           <span>{r.seed === 99 ? "—" : r.seed}{r.seed <= 2 ? <em className="bye-badge">BYE</em> : null}{r.oldSeed && r.oldSeed !== 99 && r.oldSeed !== r.seed ? <small className={r.oldSeed > r.seed ? "seed-up" : "seed-down"}>{r.oldSeed > r.seed ? "▲" : "▼"}{Math.abs(r.oldSeed - r.seed)}</small> : null}</span>
-          <strong><TeamLogo src={logos[r.teamId]} /><span className="odds-team"><span>{r.team}{Number(r.teamId) === cupHolder() ? <img className="cup-mini" src={cupImage} alt="Holds the Glassboro Cup" title="Holds the Glassboro Cup" /> : null}</span>{r.weekWins != null ? <small className="live-record">{wl(r.wins)}–{wl(r.losses)} (+{wl(r.weekWins)})</small> : null}</span></strong>
+          <strong><TeamLogo src={logos[r.teamId]} /><span className="odds-team"><span>{r.team}{Number(r.teamId) === cupHolder() ? <img className="cup-mini" src={cupImage} alt="Holds the Glassboro Just the Tip Trophy" title="Holds the Glassboro &quot;Just the Tip&quot; Trophy" /> : null}</span>{r.weekWins != null ? <small className="live-record">{wl(r.wins)}–{wl(r.losses)} (+{wl(r.weekWins)})</small> : null}</span></strong>
           {STANDINGS_COLUMNS.slice(2).map(c => c.highlight
             ? <b key={c.key}>{pct(c.value(r))}{weekMove(r, c)}</b>
             : <span key={c.key}>{c.odds ? pct(c.value(r)) : c.show(r)}{FIELDS[c.key] ? weekMove(r, c) : null}</span>)}
@@ -553,7 +553,7 @@ function App() {
       {side(a, b)}{side(b, a)}
       <span className="mr-open" aria-hidden="true">›</span>
     </button>{isCupGame(a.teamId, b.teamId) ? <div className="cup-strip"><img src={cupImage} alt="" />
-      <span><b>The Glassboro Cup</b> is on the line · {(Number(a.score) >= Number(b.score) ? a : b).team} {status === "FINAL" ? "takes it" : "leads"}</span></div> : null}{renderStakes(matchupId)}</React.Fragment>;
+      <span><b>The Glassboro &ldquo;Just the Tip&rdquo; Trophy</b> is on the line · {(Number(a.score) >= Number(b.score) ? a : b).team} {status === "FINAL" ? "takes it" : "leads"}</span></div> : null}{renderStakes(matchupId)}</React.Fragment>;
   };
   const renderMatchupDetail = matchupId => {
     const pair = pairOf(matchupId);
@@ -571,9 +571,9 @@ function App() {
       {[a, b].some(t => t.projection?.dist && t.projection.dist.p90 > t.projection.dist.p10) ? <RaceChart oddsLabel="to win" total
         rows={[a, b].map(t => ({ key: t.teamId, name: t.team, score: t.score, dist: t.projection?.dist, odds: t.winProbability, espn: Number(t.projection?.espn) }))} /> : null}
       {renderStakes(matchupId)}
-      {/* Joe v. Billy's own trophy (Jim, 2026-11-15): the Glassboro Cup, just the tip, to each meeting's winner. */}
-      {isCupGame(a.teamId, b.teamId) ? <div className="cup-banner"><img src={cupImage} alt="The Glassboro Cup" />
-        <div><small>THE GLASSBORO CUP</small><strong>Winner takes the tip.</strong>
+      {/* Joe v. Billy's own trophy (Jim, 2026-11-15): the Glassboro "Just the Tip" Trophy, to each meeting's winner. */}
+      {isCupGame(a.teamId, b.teamId) ? <div className="cup-banner"><img src={cupImage} alt="The Glassboro Just the Tip Trophy" />
+        <div><small>THE GLASSBORO &ldquo;JUST THE TIP&rdquo; TROPHY</small><strong>Winner takes the tip.</strong>
           <p>{cupHolder() ? `Held by ${[a, b].find(t => Number(t.teamId) === cupHolder())?.team || "the last winner"} · ` : "First time on the line · "}{(Number(a.score) >= Number(b.score) ? a : b).team} {status === "FINAL" ? "takes it" : "leads right now"}.</p></div></div> : null}
       <div className="sheet-tabs" role="tablist">
         <button type="button" role="tab" aria-selected={view === "odds"} className={view === "odds" ? "active" : ""} onClick={() => setDetailView("odds")}>Odds & plays</button>
