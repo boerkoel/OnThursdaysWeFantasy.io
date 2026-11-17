@@ -5,6 +5,9 @@ import { useWakeLock } from "../lib/wakeLock.js";
 import { LOCKED, MiniNeedle, NeedleRace, useSyncFocus, useSyncedPeek } from "./Needle.jsx";
 import { chopPeeks } from "../lib/tdPeeks.js";
 import { driveRooting } from "../lib/rooting.js";
+import { feedTeam, lastStanding, survivorModel } from "../../scripts/lib/survivor-model.js";
+import nflSeasonOdds from "../../data/current/nfl-season-odds.json";
+import managerLinks from "../data/manager-links.json";
 
 // The league on a TV (Jim, 2026-11-02, for watch parties): everything live on one landscape screen, read from
 // across the room, nothing to tap. Six matchup needles, the median, ticket and chop races, who's on the field,
@@ -141,6 +144,60 @@ function DriveLine({ game }) {
   </p>;
 }
 
+// The survivor pool's last entries, live (Jim, 2026-11-17: "a fun, compact way" in the side panel's open space
+// once the guillotine is over). One line per manager: a heart that beats faster as their pick's game turns on them
+// (💀 lost, ✅ won), the pick with a life bar at its live win chance, and their expected share of the pot from the
+// survivor model's simulation, which moves with every play. Hidden picks show as 🔒 at the model's best guess.
+// The gold number is each one's chance to be the last one standing (Jim: everyone greedily takes their safest
+// unused team each week, simulated to the end of the season; lastStanding), with the pot's worth in the tooltip.
+const SURVIVOR_MAX = 6;
+// First names for the handles (Jim, 2026-11-17: "Jim, Jacob, and Ben if that's cleaner"); others show the handle.
+const SURVIVOR_NAMES = { jimreaper: "Jim", mksr: "Jacob", bjm000: "Ben" };
+const handleTeam = new Map(Object.entries(managerLinks).flatMap(([id, l]) => (l?.splash || []).map(h => [h.toLowerCase(), Number(id)])));
+export function SurvivorLive({ feed, games, week, logos }) {
+  if (!feed?.entries?.length) return null;
+  const m = survivorModel(feed, games, week);
+  if (!m.thisWeek || !m.sim) return null;   // looking ahead (Tue-Wed), every pick is a 🔒 best guess
+  const n = m.n;
+  const inPlay = feed.entries.filter(e => e.alive || e.eliminatedWeek === n);
+  if (!inPlay.length || inPlay.length > SURVIVOR_MAX) return null;
+  const gameOf = team => games.find(g => (g.teams || []).some(t => feedTeam(t.abbrev) === team));
+  const last = lastStanding(feed, games, week, nflSeasonOdds);
+  const rows = [...new Set(inPlay.map(e => e.user))].map(user => {
+    const mine = inPlay.filter(e => e.user === user), e = mine[0], pick = e.picks?.[n];
+    const g = pick ? gameOf(pick.team) : null;
+    let p, state;
+    if (!pick) {
+      const opts = m.hiddenOptions(e);
+      p = opts.length ? opts.reduce((a, o) => a + o.w * o.p, 0) : null;
+      state = "hidden";
+    } else if (m.settledPick(pick)) {
+      p = pick.result === "won" ? 1 : 0;
+      state = pick.result;
+    } else {
+      p = m.chanceOf(pick.team);
+      state = g?.state === "in" ? "live" : "pre";
+    }
+    const win = last?.win[user] ?? null;
+    return { user, name: SURVIVOR_NAMES[user.toLowerCase()] || user, n: mine.length, team: pick?.team, p, state, win,
+      value: win == null ? m.sim.value[user] || 0 : win * m.pot, teamId: handleTeam.get(user.toLowerCase()) };
+  }).sort((a, b) => b.value - a.value);
+  const heart = r => r.state === "lost" ? "💀" : r.state === "won" ? "✅" : r.state === "hidden" ? "🔒" : "❤️";
+  const beat = r => r.state === "live" || r.state === "pre" ? `${(0.35 + 1.25 * Math.max(0, Math.min(1, r.p ?? 0.5))).toFixed(2)}s` : null;
+  return <div className="tv-surv">
+    <small className="mini-needles-label">🛡️ SURVIVOR · {inPlay.filter(e => e.picks?.[n]?.result !== "lost" || !m.settledPick(e.picks[n])).length} LEFT · ${Math.round(m.pot)} POT</small>
+    {rows.map(r => <p key={r.user} className={"tv-surv-row " + r.state} title={`${r.name}${r.team ? ` on ${r.team}` : ""}: ${r.win == null ? "" : `${Math.round(100 * r.win)}% to be the last one standing, `}worth $${Math.round(r.value)} of the pot`}>
+      <span className="tv-surv-heart" style={beat(r) ? { animationDuration: beat(r) } : null}>{heart(r)}</span>
+      {logos[r.teamId] ? <img src={logos[r.teamId]} alt="" /> : null}
+      <b className="tv-surv-name">{r.name}{r.n > 1 ? ` ×${r.n}` : ""}</b>
+      <span className="tv-surv-pick">{r.team || "?"}</span>
+      <span className="tv-surv-bar"><i style={{ width: `${Math.round(100 * (r.p ?? 0))}%`, background: r.p == null ? "#8b8e86" : r.p >= 0.7 ? "#72b96a" : r.p >= 0.4 ? "#e6c85c" : "#d96b67" }} /></span>
+      <em>{r.p == null ? "—" : `${Math.round(100 * r.p)}%`}</em>
+      <strong>{r.win == null ? `$${Math.round(r.value)}` : `🏆${Math.round(100 * r.win)}%`}</strong>
+    </p>)}
+  </div>;
+}
+
 // Pulse a matchup when its favorite changes (crossing 50%) between updates.
 function useFlashes(pairs) {
   const favorites = useRef(new Map());
@@ -192,7 +249,7 @@ function useIdleCursor() {
 // On a phone (Jim, 2026-11-02: one always-on snapshot, the detail is in Primetime view): shorter tiles (the
 // odds alone under the dial, players left beside the scores), races as compact rows, chip columns on one line
 // each, results on one line, a smaller ticker that covers nothing, and no "on the field" list.
-export default function TvView({ forks = { win: () => null, median: () => null, ticket: () => null }, peeks = { win: () => [], median: () => [], ticket: () => [] }, scoreboard, guillotine, livePlays, marquee, logos = {}, onClose }) {
+export default function TvView({ forks = { win: () => null, median: () => null, ticket: () => null }, peeks = { win: () => [], median: () => [], ticket: () => [] }, scoreboard, guillotine, livePlays, marquee, survivorFeed, logos = {}, onClose }) {
   useWakeLock(true);
   useScreenBelow();
   // The page underneath stays put (Jim, 2026-11-08: Watch mode wouldn't scroll back down on a phone, the
@@ -362,6 +419,7 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
             stakes={guillotine.teams.map(t => ({ lineup: { starters: t.lineup || [] } }))} games={games} /> : null}
           {/* Once the ticket is locked, the chopping block takes its place and it's one line below (Jim, 2026-11-09). */}
           {ticketWinner ? <p className="tv-results-line">🎟️ Ticket: {ticketWinner.team}</p> : null}
+          <SurvivorLive feed={survivorFeed} games={games} week={week} logos={logos} />
           {field.length ? <div className="tv-field"><small className="mini-needles-label">ON THE FIELD NOW</small>
             {field.map(f => <p key={f.id}><b>{f.head}</b>{f.on.length ? " — " + f.on.join(", ") : " — no league starters"}</p>)}</div> : null}
         </aside>

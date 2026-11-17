@@ -808,7 +808,7 @@ function App() {
     );
   };
 
-  if (tv) return <TvView forks={{ win: winFork, median: medianFork, ticket: ticketFork }} peeks={watchPeeks} scoreboard={scoreboard} guillotine={guillotine} livePlays={livePlayFeed} marquee={live.marquee} logos={teamLogos} onClose={closeTv} />;
+  if (tv) return <TvView forks={{ win: winFork, median: medianFork, ticket: ticketFork }} peeks={watchPeeks} scoreboard={scoreboard} guillotine={guillotine} livePlays={livePlayFeed} marquee={live.marquee} survivorFeed={survivorFeed} logos={teamLogos} onClose={closeTv} />;
   return (
     <main className="site">
       {refresher.view}

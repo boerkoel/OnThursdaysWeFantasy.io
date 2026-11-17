@@ -142,3 +142,73 @@ export function survivorModel(feed, nflGames, nflWeek) {
   })();
   return { n, splashWeek, lookAhead, thisWeek, fee, pot, total, chanceOf, settledPick, hiddenOptions, predictedPick, expectedLeft, sim, stands };
 }
+
+// Last one standing (Jim, 2026-11-17: "each team greedily picks the safest choice available to them each week, and
+// simulate the odds of each being the last team standing"). This week plays out as in survivorModel's sim (live
+// odds, hidden picks drawn from hiddenOptions); every later week, each surviving entry takes its unused team with
+// the best odds that week (season = data/current/nfl-season-odds.json: sportsbook lines where posted, ESPN FPI
+// beyond), and each game is drawn once, so entries on the same team live or die together. If every remaining entry
+// loses the same week, they're all revived (the pool's rule); whoever is left alone wins, and entries still alive
+// after Week 18 split. Returns { win: { user: chance of the pot }, sims, through }.
+export function lastStanding(feed, nflGames, nflWeek, season, sims = 5000) {
+  const m = survivorModel(feed, nflGames, nflWeek);
+  const n = m.n;
+  const entries = (feed?.entries || []).filter(e => e.alive || (!m.lookAhead && e.eliminatedWeek === n));
+  if (!m.thisWeek || !entries.length) return null;
+  const used0 = entries.map(e => Object.entries(e.picks || {}).filter(([w]) => Number(w) < n).map(([, p]) => p.team));
+  const thisGames = new Map((nflGames || []).flatMap(g => (g.teams || []).map(t => [feedTeam(t.abbrev), { id: `n:${g.id}`, p: t.winChance == null ? 0.5 : Number(t.winChance) }])));
+  // Later weeks: team -> { game id, chance to win }.
+  const later = [];
+  for (const [w, games] of Object.entries(season?.weeks || {})) {
+    if (Number(w) <= n) continue;
+    later.push([Number(w), new Map((games || []).flatMap(([h, a, p], i) => [[feedTeam(h), { id: `${w}:${i}`, p }], [feedTeam(a), { id: `${w}:${i}`, p: 1 - p }]]))]);
+  }
+  later.sort((x, y) => x[0] - y[0]);
+  const plan = entries.map(e => { const p = e.picks?.[n]; return !p ? { opts: m.hiddenOptions(e) } : m.settledPick(p) ? { fixed: p.result === "won", team: p.team } : { team: p.team }; });
+  let seed = 11; const rand = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
+  const win = new Array(entries.length).fill(0);
+  for (let s = 0; s < sims; s++) {
+    const drawn = new Map();
+    const wins = (game, chance) => {
+      if (!game) return true;   // no game found: a bye can't be picked, so count it as safe
+      if (!drawn.has(game.id)) drawn.set(game.id, rand());
+      // Both sides of a game share one draw: the side with chance p wins when the draw is under p, its opponent
+      // (chance 1 - p) when it's at or over p.
+      return game.side === 0 ? drawn.get(game.id) < chance : drawn.get(game.id) >= 1 - chance;
+    };
+    const look = (map, team) => { const g = map.get(team); if (!g) return null; const first = [...map.entries()].find(([, x]) => x.id === g.id)[0]; return { id: g.id, side: first === team ? 0 : 1, p: g.p }; };
+    const used = used0.map(u => new Set(u));
+    let alive = entries.map((_, i) => i);
+    // This week.
+    let next = alive.filter(i => {
+      const x = plan[i];
+      if (x.fixed != null) { used[i].add(x.team); return x.fixed; }
+      let team = x.team;
+      if (!team) {
+        if (!x.opts.length) return true;
+        let r = rand(); team = x.opts[x.opts.length - 1].team;
+        for (const o of x.opts) if ((r -= o.w) < 0) { team = o.team; break; }
+      }
+      used[i].add(team);
+      const g = look(thisGames, team);
+      return g ? wins(g, g.p) : true;
+    });
+    if (next.length) alive = next;
+    for (const [, games] of later) {
+      if (alive.length <= 1) break;
+      next = alive.filter(i => {
+        let best = null;
+        for (const [team, g] of games) if (!used[i].has(team) && (!best || g.p > best.p)) best = { team, ...g };
+        if (!best) return false;   // out of teams
+        used[i].add(best.team);
+        const g = look(games, best.team);
+        return wins(g, g.p);
+      });
+      if (next.length) alive = next;
+    }
+    for (const i of alive) win[i] += 1 / alive.length;
+  }
+  const out = {};
+  entries.forEach((e, i) => { out[e.user] = (out[e.user] || 0) + win[i] / sims; });
+  return { win: out, sims, through: later.length ? later[later.length - 1][0] : n };
+}

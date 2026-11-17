@@ -1329,3 +1329,14 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .reveal-mini .reveal-hood{animation:rv-hood2 8s ease-in-out infinite}.reveal-mini .reveal-trophy{animation:rv-trophy 8s ease-in-out infinite}.reveal-mini .reveal-pow{animation:rv-name2 8s ease-in-out infinite}
 /* Survivor ledger: each live entry's predicted pick (Jim, 2026-11-17). */
 .sv-ledger-pred{display:block;font-size:10px;font-weight:700;color:#b8c69b;letter-spacing:.02em;margin-top:2px}
+/* Watch mode's survivor panel (Jim, 2026-11-17): one line per manager, a beating heart, a life bar, the pot share. */
+.tv-surv{margin-top:.5vw;min-width:0;max-width:100%}.tv-surv-row{display:flex;align-items:center;gap:.5em;margin:.25em 0;font-size:.8em;color:#c7c9c1;white-space:nowrap}
+.tv-surv-row img{width:1.4em;height:1.4em;border-radius:50%;object-fit:cover;flex:none}
+.tv-surv-heart{display:inline-block;width:1.3em;text-align:center;flex:none}.tv-surv-row.live .tv-surv-heart,.tv-surv-row.pre .tv-surv-heart{animation:survbeat 1s ease-in-out infinite}
+@keyframes survbeat{0%,40%,100%{transform:scale(1)}15%{transform:scale(1.3)}28%{transform:scale(1.1)}}
+.tv-surv-name{color:#f0f3ed;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 0 3.6em}.tv-surv-pick{font-weight:800;color:#f0f3ed;flex:none;width:2.6em}
+.tv-surv-bar{flex:1 1 0;min-width:2em;height:.55em;border-radius:1em;background:#2b2e29;overflow:hidden}.tv-surv-bar i{display:block;height:100%;border-radius:1em;transition:width .8s ease}
+.tv-surv-row em{font-style:normal;font-weight:700;width:2.6em;text-align:right;flex:none}.tv-surv-row strong{color:#e6c85c;width:3.8em;text-align:right;flex:none}
+.tv-surv-row.lost{opacity:.5}.tv-surv-row.lost .tv-surv-name{text-decoration:line-through}.tv-surv-row.hidden em,.tv-surv-row.hidden .tv-surv-pick{color:#8b8e86}
+@media (prefers-reduced-motion:reduce){.tv-surv-heart{animation:none!important}}
+@media (max-width:760px),(orientation:portrait) and (max-width:1024px){.tv-surv{margin-top:10px}.tv-surv-row{font-size:12px}}
