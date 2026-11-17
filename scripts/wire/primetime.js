@@ -1,5 +1,21 @@
 import { round } from "../lib/simulation.js";
-import { currentScores, fit, isNearMedian, listNames, liveTeams, money, name, pct, playersWithGames, possessive, pts } from "./context.js";
+import { currentScores, fit, isNearMedian, listNames, liveTeams, money, name, pct, playersWithGames, possessive, pts, seasonOddsData } from "./context.js";
+
+// When one player's points decide a matchup whose two teams sit on either side of the median line, the same points
+// flip the median too: two wins one way or the other (Jim, 2026-11-16: one Andrews catch gave Stacey both wins over
+// Ruffing). Returns each team's playoff odds with 0 and 2 wins this week (season-odds.js byWins), as scores stand
+// otherwise, or null.
+const medianOf = values => { const v = [...values].sort((x, y) => x - y), n = v.length; return n % 2 ? v[(n - 1) / 2] : (v[n / 2 - 1] + v[n / 2]) / 2; };
+function twoWinSwing(leader, trailer, deficit) {
+  const others = currentScores.filter(s => s.teamId !== leader.teamId && s.teamId !== trailer.teamId).map(s => Number(s.score));
+  if (others.length + 2 < 4) return null;
+  const L = Number(leader.score), T = Number(trailer.score), hitT = T + deficit + 0.01;
+  const short = medianOf([...others, L, T]), hit = medianOf([...others, L, hitT]);
+  if (!(L > short && T <= short && hitT > hit && L <= hit)) return null;
+  const odds = (id, wins) => Number(seasonOddsData?.byWins?.[String(id)]?.[wins]?.playoffOdds);
+  const swing = { trailer0: odds(trailer.teamId, 0), trailer2: odds(trailer.teamId, 2), leader0: odds(leader.teamId, 0), leader2: odds(leader.teamId, 2) };
+  return Object.values(swing).every(Number.isFinite) ? swing : null;
+}
 
 // League Wire: down-to-the-wire storylines.
 // Down-to-the-wire storylines once a matchup comes down to a few players
@@ -67,6 +83,15 @@ export function addPrimetimeStories(add, matchupStates) {
         "👀 All eyes on " + withGame(p) + ": if " + p.lastName + " tops " + pts(target) + ", " + trailer.team + " (" + odds + ") beats " + leader.team + ".",
         "👀 All eyes on " + p.lastName + ": " + pts(target) + " and " + trailer.team + " (" + odds + ") beats " + leader.team + "."
       ), score:urgency + 3});
+      const swing = twoWinSwing(leader, trailer, deficit);
+      // Only when it moves the playoff race a lot: 20+ points of playoff odds between the two.
+      if (swing && (swing.trailer2 - swing.trailer0) + (swing.leader2 - swing.leader0) >= 20) {
+        const r = n => Math.round(n) + "%";
+        storylines.push({type:"TWO-WIN SWING", text:fit(
+          "🎯 TWO-WIN SWING: if " + p.lastName + " tops " + pts(target) + ", " + trailer.team + " wins twice (" + leader.team + " and the median) and " + leader.team + " loses twice. Playoff odds: " + trailer.team + " " + r(swing.trailer0) + " → " + r(swing.trailer2) + ", " + leader.team + " " + r(swing.leader2) + " → " + r(swing.leader0) + ".",
+          "🎯 TWO-WIN SWING: " + p.lastName + " tops " + pts(target) + " and " + trailer.team + " wins twice, " + leader.team + " loses twice. Playoff odds " + r(swing.trailer0) + " → " + r(swing.trailer2) + " and " + r(swing.leader2) + " → " + r(swing.leader0) + "."
+        ), score:urgency + 5});
+      }
     } else if (!leaderLeft.length) {
       storylines.push({type:"COMEBACK WATCH", text:fit(
         "⏳ " + trailer.team + " (" + odds + ") needs " + pts(deficit) + " more from " + withGames(trailerLeft) + " to catch " + leader.team + ". ESPN projects " + pts(projectedRest(trailerLeft)) + ".",
