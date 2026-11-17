@@ -55,14 +55,19 @@ export function addEarlyMomentumStories(add, matchupStates) {
   const medianOf = v => { const x = [...v].sort((a, b) => a - b), n = x.length; return n % 2 ? x[(n - 1) / 2] : (x[n / 2 - 1] + x[n / 2]) / 2; };
   const scoreOf = new Map(currentScores.map(s => [Number(s.teamId), Number(s.score)]));
   const byWins = (id, wins) => Number(seasonOddsData?.byWins?.[String(id)]?.[wins]?.playoffOdds);
-  const flips = (Number(livePlayFeed?.week) === currentWeek ? livePlayFeed.plays || [] : [])
+  const feed = Number(livePlayFeed?.week) === currentWeek ? livePlayFeed.plays || [] : [];
+  // A team's score just after a play: its score now less what its later plays added.
+  const laterPoints = (teamId, at) => feed.filter(q => Number(q.fantasyTeamId) === Number(teamId) && Date.parse(q.wallclock) > at).reduce((sum, q) => sum + Number(q.points || 0), 0);
+  const flips = feed
     .filter(p => Number(p.points) > 0 && p.wallclock && clockNow() - Date.parse(p.wallclock) <= BIG_PLAY_WINDOW_MS)
     .map(p => {
       const t = currentScores.find(s => Number(s.teamId) === Number(p.fantasyTeamId));
       const o = t && currentScores.find(s => Number(s.teamId) === Number(t.opponentId));
       if (!t || !o || scoreOf.size < 4) return null;
-      const now = Number(t.score), before = now - Number(p.points), opp = Number(o.score);
-      const medNow = medianOf([...scoreOf.values()]), medBefore = medianOf([...scoreOf.entries()].map(([id, v]) => id === Number(t.teamId) ? before : v));
+      const at = Date.parse(p.wallclock);
+      const now = Number(t.score) - laterPoints(t.teamId, at), before = now - Number(p.points), opp = Number(o.score) - laterPoints(o.teamId, at);
+      const then = new Map([...scoreOf.entries()].map(([id, v]) => [id, id === Number(t.teamId) ? now : id === Number(o.teamId) ? opp : v - laterPoints(id, at)]));
+      const medNow = medianOf([...then.values()]), medBefore = medianOf([...then.entries()].map(([id, v]) => id === Number(t.teamId) ? before : v));
       const flipped = before <= opp && now > opp && before <= medBefore && opp > medBefore && now > medNow && opp <= medNow;
       const odds = { t0: byWins(t.teamId, 0), t2: byWins(t.teamId, 2), o0: byWins(o.teamId, 0), o2: byWins(o.teamId, 2) };
       if (!flipped || !Object.values(odds).every(Number.isFinite)) return null;
