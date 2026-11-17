@@ -1,4 +1,5 @@
-import { DATA, clockNow, currentWeek, fit, listNames, liveScoreboard, liveTeams, money, name, pct, pts, readJson } from "./context.js";
+import { DATA, clockNow, currentScores, currentWeek, fit, listNames, liveScoreboard, liveTeams, money, name, pct, pts, readJson, seasonOddsData } from "./context.js";
+import { shortPlay } from "../../src/lib/playText.js";
 
 // League Wire: early edges and the biggest play.
 // ---- Early momentum ---------------------------------------------------------
@@ -45,5 +46,35 @@ export function addEarlyMomentumStories(add, matchupStates) {
       "💥 Biggest play: " + bigPlay.player + " (" + sign + pts(bigPlay.points) + " for " + team + ") swung the odds " + pct(bigPlay.momentum.shift) + " toward " + bigPlay.momentum.toward + ", now " + pct(bigPlay.momentum.winProbability) + ".",
       "💥 Biggest play: " + bigPlay.player + " (" + sign + pts(bigPlay.points) + ") swung the odds " + pct(bigPlay.momentum.shift) + " toward " + bigPlay.momentum.toward + "."
     ),84 + bigPlay.momentum.shift / 5);
+  }
+
+  // A play that flipped two wins each way (Jim, 2026-11-16: "the catch by Andrews just crashed Ruffing's playoff
+  // odds by X while skyrocketing Stacey's by Y"): it put its team ahead of its opponent and, with the two straddling
+  // the median line, above the median while the opponent fell below. Playoff odds with 2 wins vs 0 this week
+  // (season-odds.js byWins), as scores stand; shown when the two move 20+ points combined.
+  const medianOf = v => { const x = [...v].sort((a, b) => a - b), n = x.length; return n % 2 ? x[(n - 1) / 2] : (x[n / 2 - 1] + x[n / 2]) / 2; };
+  const scoreOf = new Map(currentScores.map(s => [Number(s.teamId), Number(s.score)]));
+  const byWins = (id, wins) => Number(seasonOddsData?.byWins?.[String(id)]?.[wins]?.playoffOdds);
+  const flips = (Number(livePlayFeed?.week) === currentWeek ? livePlayFeed.plays || [] : [])
+    .filter(p => Number(p.points) > 0 && p.wallclock && clockNow() - Date.parse(p.wallclock) <= BIG_PLAY_WINDOW_MS)
+    .map(p => {
+      const t = currentScores.find(s => Number(s.teamId) === Number(p.fantasyTeamId));
+      const o = t && currentScores.find(s => Number(s.teamId) === Number(t.opponentId));
+      if (!t || !o || scoreOf.size < 4) return null;
+      const now = Number(t.score), before = now - Number(p.points), opp = Number(o.score);
+      const medNow = medianOf([...scoreOf.values()]), medBefore = medianOf([...scoreOf.entries()].map(([id, v]) => id === Number(t.teamId) ? before : v));
+      const flipped = before <= opp && now > opp && before <= medBefore && opp > medBefore && now > medNow && opp <= medNow;
+      const odds = { t0: byWins(t.teamId, 0), t2: byWins(t.teamId, 2), o0: byWins(o.teamId, 0), o2: byWins(o.teamId, 2) };
+      if (!flipped || !Object.values(odds).every(Number.isFinite)) return null;
+      return { p, t, o, ...odds, swing: (odds.t2 - odds.t0) + (odds.o2 - odds.o0) };
+    }).filter(x => x && x.swing >= 20).sort((a, b) => b.swing - a.swing);
+  const f = flips[0];
+  if (f) {
+    const r = n => Math.round(n) + "%";
+    const play = shortPlay(f.p) || "big play";
+    add("TWO-WIN PLAY", fit(
+      "🚀 TWO-WIN PLAY: " + f.p.player + "'s " + play + " (+" + pts(f.p.points) + ") beat " + f.o.team + " and the median at once. It skyrocketed " + f.t.team + "'s playoff odds from " + r(f.t0) + " to " + r(f.t2) + " and crashed " + f.o.team + "'s from " + r(f.o2) + " to " + r(f.o0) + ".",
+      "🚀 TWO-WIN PLAY: " + f.p.player + " (+" + pts(f.p.points) + ") skyrocketed " + f.t.team + "'s playoff odds " + r(f.t0) + " → " + r(f.t2) + " and crashed " + f.o.team + "'s " + r(f.o2) + " → " + r(f.o0) + "."
+    ), 92 + f.swing / 20);
   }
 }
