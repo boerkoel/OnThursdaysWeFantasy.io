@@ -8,25 +8,31 @@ export const feedTeam = a => FEED_ABBR[a] || a;
 // src/data/survivor-manual.json { week, picks: { handle: team } } layered over the worker's feed. A stale feed is
 // moved to that week; each handle's live entry gets its pick once the pick's game has kicked off (same privacy
 // rule as the worker), graded from the NFL final, and an entry whose team lost is eliminated. Picks the feed
-// already has win.
+// already has win. A pick can also carry its final result ({ team, result: "won" | "lost" }, Jim 2026-11-17): once the
+// NFL has moved on to next week, last week's games aren't in nflGames to grade from.
 export function withManualPicks(feed, manual, nflGames) {
   const week = Number(manual?.week);
   if (!feed || !week || !manual.picks || Number(feed.contest?.currentWeek) > week) return feed;
   const gameOf = team => (nflGames || []).find(g => (g.teams || []).some(x => feedTeam(x.abbrev) === team));
   const entries = (feed.entries || []).map(e => {
-    const team = manual.picks[e.user] || manual.picks[e.user?.toLowerCase?.()] || Object.entries(manual.picks).find(([u]) => u.toLowerCase() === String(e.user).toLowerCase())?.[1];
+    const given = manual.picks[e.user] || manual.picks[e.user?.toLowerCase?.()] || Object.entries(manual.picks).find(([u]) => u.toLowerCase() === String(e.user).toLowerCase())?.[1];
+    const team = typeof given === "object" ? given?.team : given;
     if (!team || !e.alive || e.picks?.[week]) return e;
-    const g = gameOf(team);
-    if (!g || g.state === "pre") return e;
-    const side = (g.teams || []).find(x => feedTeam(x.abbrev) === team);
-    const result = g.completed ? (side?.winner || (side?.winChance ?? 0) >= 0.5 ? "won" : "lost") : "pending";
+    let result = typeof given === "object" && (given.result === "won" || given.result === "lost") ? given.result : null;
+    if (!result) {
+      const g = gameOf(team);
+      if (!g || g.state === "pre") return e;
+      const side = (g.teams || []).find(x => feedTeam(x.abbrev) === team);
+      result = g.completed ? (side?.winner || (side?.winChance ?? 0) >= 0.5 ? "won" : "lost") : "pending";
+    }
     return { ...e, picks: { ...e.picks, [week]: { team, result, manual: true } },
       ...(result === "lost" ? { alive: false, eliminatedWeek: week } : {}) };
   });
   const live = entries.filter(e => e.alive || e.eliminatedWeek === week);
   const counts = new Map();
   for (const e of live) { const p = e.picks?.[week]; if (p) counts.set(p.team, { team: p.team, count: (counts.get(p.team)?.count || 0) + 1, result: p.result }); }
-  const weekRow = { week, locked: counts.size > 0, final: false, hidden: live.filter(e => !e.picks?.[week]).length, picks: [...counts.values()] };
+  const allGraded = live.length > 0 && live.every(e => e.picks?.[week] && e.picks[week].result !== "pending");
+  const weekRow = { week, locked: counts.size > 0, final: allGraded, hidden: live.filter(e => !e.picks?.[week]).length, picks: [...counts.values()] };
   const weeks = [...(feed.weeks || []).filter(w => Number(w.week) !== week).map(w => w.week < week ? { ...w, final: true } : w), weekRow].sort((a, b) => a.week - b.week);
   const alive = entries.filter(e => e.alive).length;
   return { ...feed, entries, weeks, manual: true,
@@ -43,8 +49,16 @@ export function survivorModel(feed, nflGames, nflWeek) {
   // Live: each entry's chance to survive this week from its pick's win chance
   // (ESPN's in-game win probability, the moneyline before kickoff). Picks not
   // revealed yet are modeled (hiddenOptions) and flagged.
-  const n = Number(c.currentWeek);
+  // Look ahead (Jim, 2026-11-17): once the NFL has moved on to next week but Splash hasn't (Tuesday on), model the
+  // coming week instead: each live entry's pick is its best available team (unused, highest win chance).
+  const splashWeek = Number(c.currentWeek);
+  const lookAhead = nflWeek != null && Number(nflWeek) === splashWeek + 1;
+  const n = lookAhead ? splashWeek + 1 : splashWeek;
   const thisWeek = nflWeek == null || Number(nflWeek) === n;
+  // Entries still in it this week (looking ahead, only the live ones: last week's losses are done).
+  const inThisWeek = e => e.alive || (!lookAhead && e.eliminatedWeek === n);
+  // Before any game of the week kicks off, or looking ahead, a hidden pick is the entry's best available team.
+  const pregame = !(nflGames || []).some(g => g.state && g.state !== "pre");
   const chanceOf = team => {
     if (!thisWeek) return null;
     for (const g of nflGames || []) {
@@ -63,13 +77,19 @@ export function survivorModel(feed, nflGames, nflWeek) {
     const used = new Set(Object.values(e.picks || {}).map(p => p.team));
     const opts = (nflGames || []).filter(g => g.state === "pre").flatMap(g => (g.teams || []).map(t => ({ team: feedTeam(t.abbrev), p: t.winChance == null ? null : Number(t.winChance) })))
       .filter(o => o.p != null && !used.has(o.team));
+    if (lookAhead || pregame) {
+      const best = opts.sort((a, b) => b.p - a.p)[0];
+      return best ? [{ ...best, w: 1 }] : [];
+    }
     const total = opts.reduce((a, o) => a + o.p ** 8, 0);
     return total ? opts.map(o => ({ ...o, w: o.p ** 8 / total })) : [];
   };
+  // The best available pick an entry is modeled with, when its pick is hidden and the model uses one.
+  const predictedPick = e => (lookAhead || pregame) && !e.picks?.[n] ? hiddenOptions(e)[0] || null : null;
   const hiddenChance = e => { const o = hiddenOptions(e); return o.length ? o.reduce((a, x) => a + x.w * x.p, 0) : null; };
   const expectedLeft = m => {
     let exp = 0, hidden = 0;
-    for (const e of m.entries.filter(e => e.alive || e.eliminatedWeek === n)) {
+    for (const e of m.entries.filter(inThisWeek)) {
       const p = e.picks?.[n];
       if (!p) { hidden++; exp += hiddenChance(e) ?? 1; continue; }
       exp += settledPick(p) ? (p.result === "won" ? 1 : 0) : chanceOf(p.team) ?? 1;
@@ -80,7 +100,7 @@ export function survivorModel(feed, nflGames, nflWeek) {
   // team live or die together; hidden picks are drawn from hiddenOptions. Gives the topline's likely range and the
   // ledger's Live value (each manager's average share of the pot, everyone revived if every entry loses).
   const sim = (() => {
-    const inPlay = (feed?.entries || []).filter(e => e.alive || e.eliminatedWeek === n);
+    const inPlay = (feed?.entries || []).filter(inThisWeek);
     if (!thisWeek || !inPlay.length) return null;
     const lost = inPlay.filter(e => settledPick(e.picks?.[n]) && e.picks[n].result === "lost").length;
     const graded = inPlay.filter(e => settledPick(e.picks?.[n])).length;
@@ -111,7 +131,7 @@ export function survivorModel(feed, nflGames, nflWeek) {
   // under 0.5% to win is out); anything still open counts as surviving. Each standing entry gets an equal share.
   const LOCKED = 0.005;
   const stands = (() => {
-    const inPlay = (feed?.entries || []).filter(e => e.alive || e.eliminatedWeek === n);
+    const inPlay = (feed?.entries || []).filter(inThisWeek);
     if (!inPlay.length) return {};
     const out = e => { const p = e.picks?.[n]; if (!p || !thisWeek) return !e.alive; if (settledPick(p)) return p.result === "lost"; const ch = chanceOf(p.team); return ch != null && ch < LOCKED; };
     let standing = inPlay.filter(e => !out(e));
@@ -120,5 +140,5 @@ export function survivorModel(feed, nflGames, nflWeek) {
     for (const e of standing) value[e.user] = (value[e.user] || 0) + pot / standing.length;
     return value;
   })();
-  return { n, thisWeek, fee, pot, total, chanceOf, settledPick, hiddenOptions, expectedLeft, sim, stands };
+  return { n, splashWeek, lookAhead, thisWeek, fee, pot, total, chanceOf, settledPick, hiddenOptions, predictedPick, expectedLeft, sim, stands };
 }

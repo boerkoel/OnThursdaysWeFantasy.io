@@ -200,7 +200,7 @@ export default function SurvivorTab({ nflGames = [], nflWeek = null }) {
   const fee = Number(c.entryFee) || ENTRY_FEE;
   const pot = Number(c.prizePool) || fee * total;
   const perAlive = c.alive ? pot / c.alive : 0;
-  const { n, thisWeek, settledPick, hiddenOptions, expectedLeft, sim: weekSim, stands } = survivorModel(feed, nflGames, nflWeek);
+  const { n, lookAhead, thisWeek, settledPick, hiddenOptions, predictedPick, expectedLeft, sim: weekSim, stands } = survivorModel(feed, nflGames, nflWeek);
   const showLive = ledgerLive && weekSim && !weekSim.final;
   const ledger = managers.map(m => {
     const invested = m.entries.length * fee, ev = showLive ? weekSim.value[m.user] || 0 : weekSim ? stands[m.user] || 0 : m.alive * perAlive;
@@ -312,7 +312,8 @@ export default function SurvivorTab({ nflGames = [], nflWeek = null }) {
     <section id="survivor-picks" className="section">
       <div className="section-heading"><div><span className="section-kicker">WHO PICKED WHOM</span><h2>Pick distribution</h2></div></div>
       <div className="sv-weeks" role="tablist">
-        {weeks.map(w => <button type="button" role="tab" key={w.week} disabled={!w.locked} aria-selected={week?.week === w.week}
+        {/* Newest week first (Jim, 2026-11-17). */}
+        {[...weeks].reverse().map(w => <button type="button" role="tab" key={w.week} disabled={!w.locked} aria-selected={week?.week === w.week}
           className={week?.week === w.week ? "active" : ""} onClick={() => setSelectedWeek(w.week)}>
           Week {w.week}{w.locked ? "" : <small>🔒 hidden</small>}
         </button>)}
@@ -332,7 +333,7 @@ export default function SurvivorTab({ nflGames = [], nflWeek = null }) {
     <section id="survivor-managers" className="section">
       <div className="section-heading"><div><span className="section-kicker">THE PORTFOLIOS</span><h2>Managers
         {weekSim && !weekSim.final ? <span className="standings-live-toggle">
-          <button type="button" className={ledgerLive ? "active" : ""} onClick={() => setLedgerLive(true)}>Live</button>
+          <button type="button" className={ledgerLive ? "active" : ""} onClick={() => setLedgerLive(true)}>{lookAhead ? `Week ${n} look-ahead` : "Live"}</button>
           <button type="button" className={ledgerLive ? "" : "active"} onClick={() => setLedgerLive(false)}>As it stands</button>
         </span> : null}</h2></div>
         <span className="record-count">{dollars(pot)} POT · {dollars(perAlive)} / LIVE ENTRY</span></div>
@@ -344,7 +345,11 @@ export default function SurvivorTab({ nflGames = [], nflWeek = null }) {
             : `Expected value = (manager's entries still standing ÷ all entries still standing) × the ${dollars(pot)} pot`}>Exp. value ⓘ</span>
           <span title="Expected ROI = (expected value − buy-ins) ÷ buy-ins">Exp. ROI ⓘ</span></div>
         {ledger.map(m => <div className={"sv-ledger-row" + (m.alive ? "" : " out")} key={m.user}>
-          <b className="sv-ledger-name">{m.user}</b>
+          <b className="sv-ledger-name">{m.user}{(() => {
+            // Each live entry's predicted pick when the model picks for it (looking ahead, or before kickoff).
+            const preds = m.entries.filter(e => e.alive).map(predictedPick).filter(Boolean);
+            return preds.length ? <small className="sv-ledger-pred" title="Each live entry's best available team: unused, highest win chance">{preds.map(x => `${x.team} ${Math.round(x.p * 100)}%`).join(" · ")}</small> : null;
+          })()}</b>
           <span className="sv-ledger-alive"><b>{m.alive}</b>/{m.entries.length}
             <i className="sv-dots">{m.entries.map(e => <i key={e.id} className={e.alive ? "alive" : "out"} />)}</i></span>
           <span title={m.left.hidden ? `${m.left.hidden} pick${m.left.hidden > 1 ? "s" : ""} not revealed yet, modeled` : undefined}>{m.alive || m.left.exp ? m.left.exp.toFixed(1) : "—"}{m.left.hidden ? "*" : ""}</span>
@@ -353,7 +358,8 @@ export default function SurvivorTab({ nflGames = [], nflWeek = null }) {
           <b className={"sv-ledger-roi " + (m.roi > 0.5 ? "up" : m.roi < -0.5 ? "down" : "")}>{m.roi > 0 ? "+" : m.roi < 0 ? "−" : ""}{Math.abs(m.roi).toFixed(0)}%</b>
         </div>)}
       </div>
-      {showLive ? <Explain lead={<><b>Live:</b> expected value moves with every game in action.</>}>Expected value averages each manager's share of the pot over 2,000 simulations of this week's games (live win chances; hidden picks modeled). Switch to As it stands for the current count.</Explain> : weekSim && !weekSim.final ? <p className="median-note"><b>As it stands:</b> a pick counts as lost once its game is final or it's under 0.5% to win in a live game; everything still open counts as surviving.</p> : null}
+      {showLive && lookAhead ? <Explain lead={<><b>Week {n} look-ahead:</b> each live entry on its best available team.</>}>Picks for Week {n} aren't in yet, so each live entry is modeled on its best available team: one it hasn't used, with the highest win chance this week (the betting line). Expected value averages each manager's share of the pot over 2,000 simulations of those games; entries on the same team live or die together. Switch to As it stands for an even share by entries left.</Explain>
+        : showLive ? <Explain lead={<><b>Live:</b> expected value moves with every game in action.</>}>Expected value averages each manager's share of the pot over 2,000 simulations of this week's games (live win chances; hidden picks modeled). Switch to As it stands for the current count.</Explain> : weekSim && !weekSim.final ? <p className="median-note"><b>As it stands:</b> a pick counts as lost once its game is final or it's under 0.5% to win in a live game; everything still open counts as surviving.</p> : null}
       <Explain lead="Expected value = each manager's share of the pot by entries left.">Expected value = (manager's entries remaining ÷ all {c.alive} entries remaining) × the {dollars(pot)} pot ({dollars(fee)} × {total} entries). Expected ROI = (expected value − buy-ins) ÷ buy-ins. Every live entry counts equally; picks won counts graded picks across all entries. Wk {n} = expected entries left after this week, live from each pick's chance to win; * = includes picks not revealed yet, modeled as favorites among each entry's unused teams in games that haven't kicked off.</Explain>
     </section>
 

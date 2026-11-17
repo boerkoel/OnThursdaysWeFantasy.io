@@ -1,9 +1,18 @@
 {
-  "_note": "Survivor picks Jim relays while the Splash feed is stale (scripts/lib/survivor-model.js withManualPicks). Splash handle -> team. A pick shows only once its game kicks off.",
+  "_note": "Survivor picks Jim relays while the Splash feed is stale (scripts/lib/survivor-model.js withManualPicks). Splash handle -> team, or { team, result } once final (needed after the NFL moves on to next week). A pick shows only once its game kicks off.",
   "week": 10,
   "picks": {
-    "MKSR": "KC",
-    "jimreaper": "LAR",
-    "BJM000": "LAR"
+    "MKSR": {
+      "team": "KC",
+      "result": "won"
+    },
+    "jimreaper": {
+      "team": "LAR",
+      "result": "won"
+    },
+    "BJM000": {
+      "team": "LAR",
+      "result": "won"
+    }
   }
 }
