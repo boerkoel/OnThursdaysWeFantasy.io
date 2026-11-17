@@ -70,6 +70,9 @@ jobs:
       - name: Update playoff odds
         continue-on-error: true
         run: node scripts/season-odds.js
+      - name: Update the rest of the NFL season's win odds (survivor last-one-standing)
+        continue-on-error: true
+        run: node scripts/nfl-season-odds.js
       - name: Update guillotine Death Watch
         continue-on-error: true
         run: node scripts/update-guillotine.js
