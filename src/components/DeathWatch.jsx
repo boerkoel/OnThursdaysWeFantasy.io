@@ -180,7 +180,8 @@ function Obituaries({ guillotine }) {
   const step = delta => setIndex((active + delta + chopped.length) % chopped.length);
   const swipe = useSwipe(() => step(-1), () => step(1));
   return (
-    <details className="collapsible" id="rip">
+    // Arriving by the RIP link (#rip, the League tab's gravestone) opens it (Jim, 2026-11-17).
+    <details className="collapsible" id="rip" open={typeof window !== "undefined" && window.location.hash === "#rip" ? true : undefined}>
       <summary>Rest in peace <span>{past.length} chopped{doomed.length ? ` · ${doomed.length} doomed` : ""}</span></summary>
       <div className="obit-carousel">
         <div className="obit-stack" {...(chopped.length > 1 ? swipe : {})}>

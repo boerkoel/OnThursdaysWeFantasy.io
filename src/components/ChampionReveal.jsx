@@ -6,10 +6,10 @@ import React from "react";
 // champion's grin and a SURPRISE! burst, he raises a trophy, then it all resets. Drawn from scratch in comic style (ink outlines, cel shading), not
 // traced from photos: the site is public. champion: the surviving team; manager: the name to reveal.
 const INK = "#0b0b0b";
-export default function ChampionReveal({ champion, manager = "Uriel", season }) {
+// mini: just the looping art, for a link card (the League tab's guillotine card; Jim, 2026-11-17).
+export default function ChampionReveal({ champion, manager = "Uriel", season, mini = false }) {
   if (!champion) return null;
-  return (
-    <div className="reveal" role="img" aria-label={`A hooded executioner lifts the hood: it was ${manager} all along. ${champion.team} is the last team standing.`}>
+  const art = (
       <svg viewBox="0 0 360 400" className="reveal-art" aria-hidden="true">
         <defs>
           <radialGradient id="rv-burst" cx="50%" cy="38%" r="70%">
@@ -138,6 +138,11 @@ export default function ChampionReveal({ champion, manager = "Uriel", season }) 
           <text x="71" y="96" textAnchor="middle" fontFamily="Bangers, Impact, sans-serif" fontSize="17" fill="#c8241a" stroke={INK} strokeWidth=".8" transform="rotate(-10 71 92)">SURPRISE!</text>
         </g>
       </svg>
+  );
+  if (mini) return <span className="reveal-mini" role="img" aria-label={`${manager} unmasked as the executioner`}>{art}</span>;
+  return (
+    <div className="reveal" role="img" aria-label={`A hooded executioner lifts the hood: it was ${manager} all along. ${champion.team} is the last team standing.`}>
+      {art}
       <div className="reveal-copy">
         <small>THE LAST EXECUTIONER{season ? ` · ${season}` : ""}</small>
         <strong>It was <span>{manager}</span> all along.</strong>

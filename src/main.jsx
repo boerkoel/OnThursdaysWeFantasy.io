@@ -28,6 +28,7 @@ import RecordBook from "./components/RecordBook.jsx";
 import Notifications, { useFollowedTeams } from "./components/Notifications.jsx";
 import { seriesLine } from "./lib/recordBook.js";
 import { cupHolder, cupImage, isCupGame } from "./lib/glassboroCup.js";
+import GuillotineArchive from "./components/GuillotineArchive.jsx";
 import { useMyTeam, useTabs } from "./lib/tabs.js";
 import managerLinks from "./data/manager-links.json";
 import { BackToTop, SectionNav, TabBar } from "./components/Navigation.jsx";
@@ -1020,6 +1021,7 @@ function App() {
       </> : null}
 
       {tab === "league" ? <>
+      <GuillotineArchive guillotine={guillotine} />
       <ReportCards cards={reportCards} logos={teamLogos} />
       <section id="history" className="section">
         <div className="section-heading">
