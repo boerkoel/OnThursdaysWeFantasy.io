@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "currentWeek": 10,
+  "currentWeek": 11,
   "weeks": [
     {
       "week": 1,
@@ -1327,6 +1327,163 @@
         "winnerScore": 212.36,
         "loserScore": 117.58,
         "margin": 94.78
+      }
+    },
+    {
+      "week": 10,
+      "recap": [
+        {
+          "type": "HIGH SCORE",
+          "text": "🔥 Gibb it to Me Baby dropped 200.36 points — the week's highest score."
+        },
+        {
+          "type": "CLOSEST MATCHUP",
+          "text": "⚔️ Beautiful Dark Twisted Fantasy edged The Mahomies by just 4.94 points."
+        },
+        {
+          "type": "INSTANT REGRET",
+          "text": "🤦 Ramosverse would have finished above the median by starting Deebo Samuel Sr. (25.90) over DeMario Douglas (1.40)."
+        },
+        {
+          "type": "BIGGEST REGRET",
+          "text": "🪑 Brock You Like a Hurricane left 27.78 points on the bench with Trevor Lawrence."
+        },
+        {
+          "type": "TOUGH LUCK",
+          "text": "😬 The Mahomies scored 134.52 and still took the L."
+        },
+        {
+          "type": "BLOWOUT",
+          "text": "💥 Gibb it to Me Baby beat Mr. Action Jackson 200.36-108.56 (91.80 points)."
+        }
+      ],
+      "regrets": [
+        {
+          "teamId": 9,
+          "team": "The Mahomies",
+          "matchupId": 55,
+          "benchPlayer": "Ryan Flournoy",
+          "benchPoints": 19.1,
+          "starter": "Omar Cooper Jr.",
+          "starterPoints": 0,
+          "gain": 19.1,
+          "flips": [
+            "win"
+          ]
+        },
+        {
+          "teamId": 1,
+          "team": "Ramosverse",
+          "matchupId": 58,
+          "benchPlayer": "Deebo Samuel Sr.",
+          "benchPoints": 25.9,
+          "starter": "DeMario Douglas",
+          "starterPoints": 1.4,
+          "gain": 24.5,
+          "flips": [
+            "median"
+          ]
+        },
+        {
+          "teamId": 3,
+          "team": "Kyle Tucker",
+          "matchupId": 60,
+          "benchPlayer": "Kaelon Black",
+          "benchPoints": 14.6,
+          "starter": "Denzel Boston",
+          "starterPoints": 2.6,
+          "gain": 12,
+          "flips": [
+            "median"
+          ]
+        }
+      ],
+      "matchups": [
+        {
+          "id": 55,
+          "week": 10,
+          "homeTeamId": 12,
+          "awayTeamId": 9,
+          "homeScore": 139.46,
+          "awayScore": 134.52,
+          "margin": 4.939999999999998,
+          "winner": "HOME",
+          "completed": true
+        },
+        {
+          "id": 56,
+          "week": 10,
+          "homeTeamId": 2,
+          "awayTeamId": 5,
+          "homeScore": 103.08,
+          "awayScore": 147.32,
+          "margin": 44.239999999999995,
+          "winner": "AWAY",
+          "completed": true
+        },
+        {
+          "id": 57,
+          "week": 10,
+          "homeTeamId": 8,
+          "awayTeamId": 10,
+          "homeScore": 108.56,
+          "awayScore": 200.36,
+          "margin": 91.80000000000001,
+          "winner": "AWAY",
+          "completed": true
+        },
+        {
+          "id": 58,
+          "week": 10,
+          "homeTeamId": 11,
+          "awayTeamId": 1,
+          "homeScore": 147.82,
+          "awayScore": 111.94,
+          "margin": 35.879999999999995,
+          "winner": "HOME",
+          "completed": true
+        },
+        {
+          "id": 59,
+          "week": 10,
+          "homeTeamId": 6,
+          "awayTeamId": 7,
+          "homeScore": 138.84,
+          "awayScore": 126,
+          "margin": 12.840000000000003,
+          "winner": "HOME",
+          "completed": true
+        },
+        {
+          "id": 60,
+          "week": 10,
+          "homeTeamId": 3,
+          "awayTeamId": 4,
+          "homeScore": 131.96,
+          "awayScore": 90.52,
+          "margin": 41.44000000000001,
+          "winner": "HOME",
+          "completed": true
+        }
+      ],
+      "highestScore": {
+        "week": 10,
+        "teamId": 10,
+        "team": "Gibb it to Me Baby",
+        "opponentId": 8,
+        "opponent": "Mr. Action Jackson",
+        "score": 200.36,
+        "result": "W"
+      },
+      "largestBlowout": {
+        "week": 10,
+        "winnerTeamId": 10,
+        "winner": "Gibb it to Me Baby",
+        "loserTeamId": 8,
+        "loser": "Mr. Action Jackson",
+        "winnerScore": 200.36,
+        "loserScore": 108.56,
+        "margin": 91.8
       }
     }
   ]
