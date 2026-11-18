@@ -29,7 +29,7 @@ export function addPrimetimeStories(add, matchupStates) {
 
   // Odds below this are long shots: they get one "there's a chance" story
   // instead of a headline. Outcomes no simulation produced aren't mentioned
-  // (the odds floor is 0.01% because every open outcome starts with one win).
+  // (open odds bottom out at 0.51% since the smoothing, simulation.js ODDS_FLOOR).
   const LONG_SHOT_ODDS = 10;
   const NO_SIMULATED_WINS = 0.51;   // possibleOdds(0) since the smoothing (simulation.js ODDS_FLOOR)
   const storylines = [];
