@@ -87,6 +87,10 @@ export function addPlayoffSwingStory(add) {
 //   this week: the #1 seed, a playoff spot, or last place;
 // - a team that has all but locked one up already.
 export const LOCK = 99.5;
+// Season odds are smoothed to stay within 0.5–99.49% while anything's open (simulation.js ODDS_FLOOR), so "all but
+// locked" there is 99.4%+. And a clinch story needs the game to matter (Jim, 2026-11-18: "100% with a win, 100% with
+// a loss" isn't a story): the win has to be worth 5+ points of those odds.
+const SETTLED = 99.4, MATTERS = 5;
 export function addClinchStory(add) {
   if (Number(seasonOddsData?.week) !== currentWeek) return;
   const teams = new Map((seasonOddsData.teams || []).map(t => [t.teamId, t]));
@@ -105,7 +109,7 @@ export function addClinchStory(add) {
         ["last", t.lastSeedOdds, g.last[lose][side], g.last[win][side], 84, "be all but locked into last place"]
       ];
       for (const [what, now, ifGood, ifBad, score, phrase] of checks) {
-        if (now == null || ifGood == null || now >= LOCK) continue;
+        if (now == null || ifGood == null || now >= SETTLED || !(ifGood - (ifBad ?? ifGood) >= MATTERS)) continue;
         if (what === "last") {   // ifGood here = with a loss
           if (ifGood >= LOCK) out.push({ score, text: `🔒 CLINCH WATCH: ${name(id)} could ${phrase} with a loss to ${opp} (${pct(ifGood)} with a loss, ${pct(ifBad)} with a win).` });
         } else if (ifGood >= LOCK) {
@@ -115,8 +119,8 @@ export function addClinchStory(add) {
     }
   }
   for (const t of teams.values()) {
-    if (t.topSeedOdds >= LOCK) out.push({ score: 70, text: `🔒 CLINCH WATCH: ${name(t.teamId)} has all but locked up the #1 seed (${pct(t.topSeedOdds)}).` });
-    if (t.lastSeedOdds >= LOCK) out.push({ score: 68, text: `🪦 CLINCH WATCH: ${name(t.teamId)} is all but locked into last place (${pct(t.lastSeedOdds)}).` });
+    if (t.topSeedOdds >= SETTLED) out.push({ score: 70, text: `🔒 CLINCH WATCH: ${name(t.teamId)} has all but locked up the #1 seed (${pct(t.topSeedOdds)}).` });
+    if (t.lastSeedOdds >= SETTLED) out.push({ score: 68, text: `🪦 CLINCH WATCH: ${name(t.teamId)} is all but locked into last place (${pct(t.lastSeedOdds)}).` });
   }
   out.sort((a, b) => b.score - a.score).slice(0, 2).forEach(x => add("CLINCH WATCH", x.text, x.score));
 }
@@ -125,7 +129,7 @@ export function addClinchStory(add) {
 // The top 2 seeds get byes. Odds come from a simulation, so nothing is certain: "out" = under 0.5%.
 // - a team that falls out of the bye race this week (had ≥0.5% at the start of the week);
 // - a team still in it whose game this week decides it: a loss all but ends it.
-export const BYE_OUT = 0.5;
+export const BYE_OUT = 0.6;   // smoothed odds bottom out at 0.51% while anything is open (simulation.js ODDS_FLOOR)
 export function addByeWatchStory(add) {
   if (Number(seasonOddsData?.week) !== currentWeek) return;
   const start = seasonOddsData.weekStart || {};

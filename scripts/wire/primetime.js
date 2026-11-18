@@ -31,7 +31,7 @@ export function addPrimetimeStories(add, matchupStates) {
   // instead of a headline. Outcomes no simulation produced aren't mentioned
   // (the odds floor is 0.01% because every open outcome starts with one win).
   const LONG_SHOT_ODDS = 10;
-  const NO_SIMULATED_WINS = 0.01;
+  const NO_SIMULATED_WINS = 0.51;   // possibleOdds(0) since the smoothing (simulation.js ODDS_FLOOR)
   const storylines = [];
   const longShots = [];
   for (const x of matchupStates) {
