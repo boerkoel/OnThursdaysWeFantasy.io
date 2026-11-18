@@ -5764,7 +5764,16 @@
               "h2hWinsAdded": 0,
               "medianWinsAdded": 0,
               "winsAdded": 0,
-              "mutualTrade": null,
+              "mutualTrade": {
+                "playerId": 4036378,
+                "player": "Jordan Love",
+                "position": "QB",
+                "startRate": 70,
+                "boost": 0.38,
+                "h2hWinsAdded": 0,
+                "medianWinsAdded": 0,
+                "winsAdded": 0
+              },
               "otherNeeds": [
                 {
                   "position": "K",
@@ -5821,7 +5830,24 @@
             "perspective": "A"
           }
         ],
-        "longTermRegrets": [],
+        "longTermRegrets": [
+          {
+            "playerId": 4036378,
+            "player": "Jordan Love",
+            "position": "QB",
+            "startedWeeks": 7,
+            "rosteredWeeks": 10,
+            "weeks": [
+              1,
+              2,
+              4
+            ],
+            "points": 20.88,
+            "h2hWins": 1,
+            "medianWins": 1,
+            "winsAdded": 2
+          }
+        ],
         "recentLineups": [
           {
             "week": 9,
@@ -7392,7 +7418,16 @@
               "h2hWinsAdded": 0,
               "medianWinsAdded": 0,
               "winsAdded": 0,
-              "mutualTrade": null,
+              "mutualTrade": {
+                "playerId": 4360569,
+                "player": "Jordan Mason",
+                "position": "RB",
+                "startRate": 40,
+                "boost": 3.6,
+                "h2hWinsAdded": 0,
+                "medianWinsAdded": 1,
+                "winsAdded": 1
+              },
               "otherNeeds": [],
               "needsMatch": []
             },
@@ -7501,6 +7536,20 @@
               1
             ],
             "points": 12.3,
+            "h2hWins": 1,
+            "medianWins": 0,
+            "winsAdded": 1
+          },
+          {
+            "playerId": 4360569,
+            "player": "Jordan Mason",
+            "position": "RB",
+            "startedWeeks": 4,
+            "rosteredWeeks": 10,
+            "weeks": [
+              1
+            ],
+            "points": 3.9,
             "h2hWins": 1,
             "medianWins": 0,
             "winsAdded": 1
