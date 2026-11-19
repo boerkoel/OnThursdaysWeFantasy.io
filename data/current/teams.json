@@ -1047,8 +1047,8 @@
           "points": null,
           "draftPick": 180,
           "round": 15,
-          "rosRank": 344,
-          "valueGap": -164
+          "rosRank": 345,
+          "valueGap": -165
         },
         "boomMachine": {
           "playerId": 4685472,
@@ -2123,6 +2123,39 @@
           "partners": [],
           "targets": [
             {
+              "playerId": 15818,
+              "player": "Keenan Allen",
+              "position": "WR",
+              "startRate": 22.22,
+              "rosteredWeeks": 9,
+              "startedWeeks": 2,
+              "boost": 34.4,
+              "teamId": 7,
+              "team": "Ruffing the Passer",
+              "h2hWinsAdded": 0,
+              "medianWinsAdded": 0,
+              "winsAdded": 0,
+              "mutualTrade": {
+                "playerId": 4696044,
+                "player": "Kaelon Black",
+                "position": "RB",
+                "startRate": 40,
+                "boost": 5.7,
+                "h2hWinsAdded": 0,
+                "medianWinsAdded": 1,
+                "winsAdded": 1
+              },
+              "otherNeeds": [
+                {
+                  "position": "WR",
+                  "percent": -15.15
+                }
+              ],
+              "needsMatch": [
+                "WR"
+              ]
+            },
+            {
               "playerId": 4870653,
               "player": "KC Concepcion",
               "position": "WR",
@@ -2190,43 +2223,6 @@
                 {
                   "position": "WR",
                   "percent": -19.68
-                }
-              ],
-              "needsMatch": [
-                "WR"
-              ]
-            },
-            {
-              "playerId": 4429059,
-              "player": "Woody Marks",
-              "position": "RB",
-              "startRate": 40,
-              "rosteredWeeks": 10,
-              "startedWeeks": 4,
-              "boost": 13.2,
-              "teamId": 12,
-              "team": "Beautiful Dark Twisted Fantasy",
-              "h2hWinsAdded": 0,
-              "medianWinsAdded": 0,
-              "winsAdded": 0,
-              "mutualTrade": {
-                "playerId": 4832800,
-                "player": "Denzel Boston",
-                "position": "WR",
-                "startRate": 30,
-                "boost": 52.8,
-                "h2hWinsAdded": 1,
-                "medianWinsAdded": 1,
-                "winsAdded": 2
-              },
-              "otherNeeds": [
-                {
-                  "position": "WR",
-                  "percent": -25.17
-                },
-                {
-                  "position": "TE",
-                  "percent": -15.86
                 }
               ],
               "needsMatch": [
@@ -3110,14 +3106,14 @@
               "medianWinsAdded": 0,
               "winsAdded": 1,
               "mutualTrade": {
-                "playerId": -16012,
-                "player": "Chiefs D/ST",
-                "position": "DST",
-                "startRate": 25,
-                "boost": 8,
+                "playerId": 5083076,
+                "player": "Harold Fannin Jr.",
+                "position": "TE",
+                "startRate": 80,
+                "boost": 21.6,
                 "h2hWinsAdded": 0,
-                "medianWinsAdded": 1,
-                "winsAdded": 1
+                "medianWinsAdded": 0,
+                "winsAdded": 0
               },
               "otherNeeds": [],
               "needsMatch": []
@@ -3136,11 +3132,11 @@
               "medianWinsAdded": 1,
               "winsAdded": 2,
               "mutualTrade": {
-                "playerId": -16012,
-                "player": "Chiefs D/ST",
-                "position": "DST",
-                "startRate": 25,
-                "boost": 11,
+                "playerId": 5083076,
+                "player": "Harold Fannin Jr.",
+                "position": "TE",
+                "startRate": 80,
+                "boost": 17.7,
                 "h2hWinsAdded": 0,
                 "medianWinsAdded": 0,
                 "winsAdded": 0
@@ -3274,6 +3270,21 @@
             "h2hWins": 1,
             "medianWins": 1,
             "winsAdded": 2
+          },
+          {
+            "playerId": 5083076,
+            "player": "Harold Fannin Jr.",
+            "position": "TE",
+            "startedWeeks": 8,
+            "rosteredWeeks": 10,
+            "weeks": [
+              2,
+              8
+            ],
+            "points": 26.2,
+            "h2hWins": 0,
+            "medianWins": 1,
+            "winsAdded": 1
           }
         ],
         "recentLineups": [
@@ -4559,8 +4570,8 @@
           "points": null,
           "draftPick": 148,
           "round": 13,
-          "rosRank": 358,
-          "valueGap": -210
+          "rosRank": 360,
+          "valueGap": -212
         },
         "boomMachine": {
           "playerId": 4426354,
@@ -5506,8 +5517,8 @@
           "points": null,
           "draftPick": 91,
           "round": 8,
-          "rosRank": 160,
-          "valueGap": -69
+          "rosRank": 161,
+          "valueGap": -70
         },
         "boomMachine": {
           "playerId": 4036378,
@@ -5683,7 +5694,16 @@
               "h2hWinsAdded": 0,
               "medianWinsAdded": 0,
               "winsAdded": 0,
-              "mutualTrade": null,
+              "mutualTrade": {
+                "playerId": 15818,
+                "player": "Keenan Allen",
+                "position": "WR",
+                "startRate": 22.22,
+                "boost": 24.9,
+                "h2hWinsAdded": 0,
+                "medianWinsAdded": 0,
+                "winsAdded": 0
+              },
               "otherNeeds": [
                 {
                   "position": "WR",
@@ -5711,7 +5731,16 @@
               "h2hWinsAdded": 0,
               "medianWinsAdded": 1,
               "winsAdded": 1,
-              "mutualTrade": null,
+              "mutualTrade": {
+                "playerId": 15818,
+                "player": "Keenan Allen",
+                "position": "WR",
+                "startRate": 22.22,
+                "boost": 19.82,
+                "h2hWinsAdded": 0,
+                "medianWinsAdded": 0,
+                "winsAdded": 0
+              },
               "otherNeeds": [
                 {
                   "position": "TE",
@@ -5736,14 +5765,14 @@
               "medianWinsAdded": 0,
               "winsAdded": 0,
               "mutualTrade": {
-                "playerId": 4036378,
-                "player": "Jordan Love",
-                "position": "QB",
-                "startRate": 70,
-                "boost": 0.38,
-                "h2hWinsAdded": 0,
+                "playerId": 15818,
+                "player": "Keenan Allen",
+                "position": "WR",
+                "startRate": 22.22,
+                "boost": 30.2,
+                "h2hWinsAdded": 1,
                 "medianWinsAdded": 0,
-                "winsAdded": 0
+                "winsAdded": 1
               },
               "otherNeeds": [
                 {
@@ -5817,6 +5846,23 @@
             "h2hWins": 1,
             "medianWins": 1,
             "winsAdded": 2
+          },
+          {
+            "playerId": 15818,
+            "player": "Keenan Allen",
+            "position": "WR",
+            "startedWeeks": 2,
+            "rosteredWeeks": 9,
+            "weeks": [
+              3,
+              5,
+              6,
+              9
+            ],
+            "points": 35.7,
+            "h2hWins": 0,
+            "medianWins": 1,
+            "winsAdded": 1
           }
         ],
         "recentLineups": [
@@ -6318,8 +6364,8 @@
           "points": null,
           "draftPick": 33,
           "round": 3,
-          "rosRank": 309,
-          "valueGap": -276
+          "rosRank": 310,
+          "valueGap": -277
         },
         "boomMachine": {
           "playerId": 4426515,
@@ -6584,36 +6630,32 @@
               ]
             },
             {
-              "playerId": 4429059,
-              "player": "Woody Marks",
-              "position": "RB",
-              "startRate": 40,
-              "rosteredWeeks": 10,
-              "startedWeeks": 4,
-              "boost": 13.5,
-              "teamId": 12,
-              "team": "Beautiful Dark Twisted Fantasy",
-              "h2hWinsAdded": 0,
+              "playerId": 15818,
+              "player": "Keenan Allen",
+              "position": "WR",
+              "startRate": 22.22,
+              "rosteredWeeks": 9,
+              "startedWeeks": 2,
+              "boost": 15.1,
+              "teamId": 7,
+              "team": "Ruffing the Passer",
+              "h2hWinsAdded": 1,
               "medianWinsAdded": 0,
-              "winsAdded": 0,
+              "winsAdded": 1,
               "mutualTrade": {
                 "playerId": 3929645,
                 "player": "Juwan Johnson",
                 "position": "TE",
                 "startRate": 30,
-                "boost": 37.9,
+                "boost": 19.5,
                 "h2hWinsAdded": 0,
-                "medianWinsAdded": 1,
-                "winsAdded": 1
+                "medianWinsAdded": 0,
+                "winsAdded": 0
               },
               "otherNeeds": [
                 {
                   "position": "WR",
-                  "percent": -25.17
-                },
-                {
-                  "position": "TE",
-                  "percent": -15.86
+                  "percent": -15.15
                 }
               ],
               "needsMatch": [
@@ -9198,43 +9240,6 @@
               ]
             },
             {
-              "playerId": 4608686,
-              "player": "Kyle Monangai",
-              "position": "RB",
-              "startRate": 20,
-              "rosteredWeeks": 10,
-              "startedWeeks": 2,
-              "boost": 19.3,
-              "teamId": 8,
-              "team": "Mr. Action Jackson",
-              "h2hWinsAdded": 0,
-              "medianWinsAdded": 0,
-              "winsAdded": 0,
-              "mutualTrade": {
-                "playerId": 4870795,
-                "player": "Makai Lemon",
-                "position": "WR",
-                "startRate": 0,
-                "boost": 20.4,
-                "h2hWinsAdded": 0,
-                "medianWinsAdded": 0,
-                "winsAdded": 0
-              },
-              "otherNeeds": [
-                {
-                  "position": "QB",
-                  "percent": -25.69
-                },
-                {
-                  "position": "DST",
-                  "percent": -24.41
-                }
-              ],
-              "needsMatch": [
-                "DST"
-              ]
-            },
-            {
               "playerId": 4688813,
               "player": "Josh Downs",
               "position": "WR",
@@ -9269,6 +9274,39 @@
               ],
               "needsMatch": [
                 "DST"
+              ]
+            },
+            {
+              "playerId": 4426338,
+              "player": "Bo Nix",
+              "position": "QB",
+              "startRate": 20,
+              "rosteredWeeks": 10,
+              "startedWeeks": 2,
+              "boost": 12.32,
+              "teamId": 1,
+              "team": "Ramosverse",
+              "h2hWinsAdded": 0,
+              "medianWinsAdded": 0,
+              "winsAdded": 0,
+              "mutualTrade": {
+                "playerId": 4429096,
+                "player": "Blake Corum",
+                "position": "RB",
+                "startRate": 30,
+                "boost": 28.7,
+                "h2hWinsAdded": 0,
+                "medianWinsAdded": 1,
+                "winsAdded": 1
+              },
+              "otherNeeds": [
+                {
+                  "position": "RB",
+                  "percent": -31.63
+                }
+              ],
+              "needsMatch": [
+                "RB"
               ]
             }
           ]
@@ -9857,35 +9895,6 @@
           ],
           "targets": [
             {
-              "playerId": 4608686,
-              "player": "Kyle Monangai",
-              "position": "RB",
-              "startRate": 20,
-              "rosteredWeeks": 10,
-              "startedWeeks": 2,
-              "boost": 25.7,
-              "teamId": 8,
-              "team": "Mr. Action Jackson",
-              "h2hWinsAdded": 0,
-              "medianWinsAdded": 0,
-              "winsAdded": 0,
-              "mutualTrade": null,
-              "otherNeeds": [
-                {
-                  "position": "QB",
-                  "percent": -25.69
-                },
-                {
-                  "position": "DST",
-                  "percent": -24.41
-                }
-              ],
-              "needsMatch": [
-                "QB",
-                "DST"
-              ]
-            },
-            {
               "playerId": 4686658,
               "player": "Mike Washington Jr.",
               "position": "RB",
@@ -9936,6 +9945,30 @@
                 {
                   "position": "WR",
                   "percent": -19.68
+                }
+              ],
+              "needsMatch": [
+                "DST"
+              ]
+            },
+            {
+              "playerId": 4360569,
+              "player": "Jordan Mason",
+              "position": "RB",
+              "startRate": 40,
+              "rosteredWeeks": 10,
+              "startedWeeks": 4,
+              "boost": 7.2,
+              "teamId": 9,
+              "team": "The Mahomies",
+              "h2hWinsAdded": 0,
+              "medianWinsAdded": 0,
+              "winsAdded": 0,
+              "mutualTrade": null,
+              "otherNeeds": [
+                {
+                  "position": "DST",
+                  "percent": -35.43
                 }
               ],
               "needsMatch": [
