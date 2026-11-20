@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-// The site's seven tabs (short: the phone tab bar's label, where space is tight). The address hash picks the tab (#standings, #league,
+// The site's tabs (short: the phone tab bar's label, where space is tight). The address hash picks the tab (#standings, #league,
 // ...), so links, the Back button and the home-screen app all work. Older
 // section links (#playoffs, #rip, ...) open the tab that holds that section
 // and scroll to it.
@@ -8,7 +8,8 @@ export const TABS = [
   { id: "live", label: "Live", icon: "🏈" },
   { id: "games", label: "Games", icon: "🏟️" },
   { id: "standings", label: "Standings", icon: "🏆" },
-  { id: "death-watch", label: "Death Watch", short: "Chop", icon: "🪓" },
+  // Archived (Jim, 2026-11-19): off the tab bar, but #death-watch, #rip and dw-<id> links still open it (League card).
+  { id: "death-watch", label: "Death Watch", short: "Chop", icon: "🪓", archived: true },
   { id: "league", label: "League", icon: "📚" },
   { id: "teams", label: "Teams", icon: "👥" },
   { id: "survivor", label: "Survivor", icon: "🛡️" }

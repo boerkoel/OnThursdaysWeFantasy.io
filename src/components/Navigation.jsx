@@ -28,7 +28,7 @@ import { TAB_SECTIONS, TABS } from "../lib/tabs.js";
 export function TabBar({ tab, onSelect }) {
   return (
     <nav className="tab-bar" aria-label="Sections">
-      {TABS.map(t => (
+      {TABS.filter(t => !t.archived).map(t => (
         <button key={t.id} type="button" className={tab === t.id ? "active" : ""} aria-current={tab === t.id ? "page" : undefined} onClick={() => onSelect(t.id)}>
           <span aria-hidden="true">{t.icon}</span>
           <small>{t.short ? <><span className="tab-long">{t.label}</span><span className="tab-short">{t.short}</span></> : t.label}</small>
