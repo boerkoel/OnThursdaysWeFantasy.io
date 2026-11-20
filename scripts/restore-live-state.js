@@ -44,7 +44,9 @@ for (const { file, timestamp } of LIVE_FILES) {
     const published = time(timestamp(service || {})) > time(timestamp(pages || {})) ? service : pages;
     if (!published) throw new Error("no published copy");
 
-    if (time(timestamp(published)) > time(timestamp(local))) {
+    // A finished guillotine season (Jim, 2026-11-19): an emptied published copy never replaces the committed final one.
+    const emptied = file === "guillotine.json" && !(published.teams || []).length && (local.teams || []).length;
+    if (!emptied && time(timestamp(published)) > time(timestamp(local))) {
       await writeFile(path, JSON.stringify(published, null, 2) + "\n");
       console.log(`${file}: using published copy (${timestamp(published)}).`);
     } else {
