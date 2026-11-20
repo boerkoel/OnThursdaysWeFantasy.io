@@ -67,6 +67,12 @@ const rosterByTeam = new Map((rosters.teams || []).map(t => [Number(t.id), t.ros
 const previous = await readFile("data/current/guillotine.json", "utf8").then(JSON.parse).catch(() => null);
 // In-game injuries from the previous live run (simulation.js injuryShareFn).
 const injuryShare = injuryShareFn(await readFile("data/current/live-plays.json", "utf8").then(JSON.parse).catch(() => null), week, "guillotine");
+// Season over (Jim, 2026-11-19): after the last chop ESPN has no next week, and writing it emptied the file (Nov 17),
+// blanking Death Watch and the League tab's archive card. Keep the finished season as it was.
+if (!(weekEntry?.teams || []).length && (previous?.teams || []).length) {
+  console.log(`Guillotine week ${week}: no games, so the season is over; keeping week ${previous.week}.`);
+  process.exit(0);
+}
 const previousChopped = new Map((previous?.chopped || []).map(c => [Number(c.teamId), c]));
 async function lastGameDate(chopWeek) {
   const nfl = await fetchJson(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?week=${chopWeek}&seasontype=2&season=${season}`).catch(() => null);
