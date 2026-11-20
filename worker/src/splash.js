@@ -78,7 +78,7 @@ async function renew(env, session) {
     // anything token-like is redacted.
     const snippet = text.slice(0, 160).replace(/[A-Za-z0-9_\-.]{24,}/g, "[…]");
     // The refresh token's shape (never its value) helps spot a bad copy.
-    const shape = `refresh token: ${session.refreshToken.length} chars, ${session.refreshToken.split(".").length - 1} dots, seeded ${Boolean(session.seeded)}`;
+    const shape = `refresh token: ${session.refreshToken.length} chars, parts ${session.refreshToken.split(".").map(p => p.length).join("/")}, seeded ${Boolean(session.seeded)}, renewed before ${Boolean(session.renewedAt)}`;
     throw new Error(`Splash session renewal failed (${response.status}; ${response.headers.get("content-type") || "no type"}; server ${response.headers.get("server") || "?"}; ${snippet}; ${shape})`);
   }
   const next = { accessToken: data.accessToken, refreshToken: data.refreshToken || session.refreshToken, seed: session.seed, seededAt: session.seededAt, renewedAt: new Date().toISOString() };
@@ -91,7 +91,11 @@ const DEFERRED = "Splash renewal left to the cron";
 async function freshSession(env, canRenew) {
   let session = await loadSession(env);
   if (!session) throw new Error("No Splash session: set the SPLASH_ACCESS_TOKEN and SPLASH_REFRESH_TOKEN secrets.");
-  if (expiresAt(session.accessToken) - Date.now() < RENEW_BEFORE_MS) {
+  // Claim a new seed at once (Jim, 2026-11-19): Splash's web app renews its own session near the access token's
+  // expiry and rotates the refresh token, so waiting ~an hour let the browser's renewal kill our copy (Nov 8, Nov 15).
+  // Renewing first makes ours the live one; the browser's copy is the one that dies.
+  if (canRenew && !session.renewedAt) session = await renew(env, session);
+  else if (expiresAt(session.accessToken) - Date.now() < RENEW_BEFORE_MS) {
     if (!canRenew) throw new Error(DEFERRED);
     session = await renew(env, session);
   }
@@ -310,7 +314,7 @@ export async function splashLogin(env) {
 // if renewing fails. `sent` lists what this login already got.
 export function loginReminder(login, sent, now = Date.now()) {
   if (!login) return null;
-  const fix = "Log in to Splash, copy accessToken and refreshToken, gh secret set both, then run deploy-worker.yml.";
+  const fix = "Log in to Splash in a private window, copy accessToken and refreshToken, close the window (don't log out), gh secret set both, then run deploy-worker.yml.";
   if (login.failedAt && !sent.includes("failed"))
     return { key: "failed", title: "🔑 Splash login ended", body: `The Survivor tab is frozen. ${fix}` };
   const days = Math.ceil((Date.parse(login.expiresAt) - now) / DAY_MS);
