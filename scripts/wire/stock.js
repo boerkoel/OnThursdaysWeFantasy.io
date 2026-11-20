@@ -66,18 +66,31 @@ export function addPlayoffSwingStory(add) {
   const games = (seasonOddsData.matchupLeverage || []).filter(g => g.ifHomeWins?.home != null && g.ifAwayWins?.home != null && open(g.home))
     .map(g => ({ ...g, swing: Math.abs(g.ifHomeWins.home - g.ifAwayWins.home) + Math.abs(g.ifHomeWins.away - g.ifAwayWins.away) }))
     .sort((a, b) => b.swing - a.swing);
-  const g = games[0];
+  // The two biggest games (Jim, 2026-11-18). A side with nothing riding on it (under 2 points either way) is left
+  // out, so no "100% with a win, 100% with a loss"; a bye that swings 10+ points is added.
+  for (const [i, g] of games.slice(0, 2).entries()) {
   if (!g || g.swing < SWING_MIN) return;
-  const side = (id, win, lose) => `${name(id)} ${pct(win)} with a win, ${pct(lose)} with a loss`;
+  const byeOf = (id, win, lose) => {
+    const key = g.home === id ? "home" : "away", b = g.bye;
+    if (!b) return "";
+    const bw = win === g.ifHomeWins[key] ? b.ifHomeWins[key] : b.ifAwayWins[key], bl = win === g.ifHomeWins[key] ? b.ifAwayWins[key] : b.ifHomeWins[key];
+    return Math.abs(bw - bl) >= 10 ? ` (bye ${pct(bw)} / ${pct(bl)})` : "";
+  };
+  const stakes = (id, win, lose) => Math.abs(win - lose) >= 2;
+  const side = (id, win, lose) => `${name(id)} ${pct(win)} with a win, ${pct(lose)} with a loss${byeOf(id, win, lose)}`;
+  const sides = [[g.home, g.ifHomeWins.home, g.ifAwayWins.home], [g.away, g.ifAwayWins.away, g.ifHomeWins.away]].filter(x => stakes(...x));
   const lead = pickLine("swing" + g.home + g.away, [
     `${name(g.home)} vs ${name(g.away)} is the game of the week for the playoff race.`,
     `No matchup moves the playoff picture more than ${name(g.home)} vs ${name(g.away)}.`,
     `The playoff race runs through ${name(g.home)} vs ${name(g.away)} this week.`
   ]);
   add("PLAYOFF SWING", fit(
-    "🎯 PLAYOFF SWING: " + lead + " Playoff odds: " + side(g.home, g.ifHomeWins.home, g.ifAwayWins.home) + "; " + side(g.away, g.ifAwayWins.away, g.ifHomeWins.away) + ".",
-    "🎯 PLAYOFF SWING: " + name(g.home) + " vs " + name(g.away) + ". Playoff odds with a win / loss: " + name(g.home) + " " + pct(g.ifHomeWins.home) + " / " + pct(g.ifAwayWins.home) + ", " + name(g.away) + " " + pct(g.ifAwayWins.away) + " / " + pct(g.ifHomeWins.away) + "."
-  ), 86 + Math.min(g.swing - SWING_MIN, 30) / 10);   // Jim: always in the top 8
+    "🎯 PLAYOFF SWING: " + lead + " Playoff odds: " + sides.map(x => side(...x)).join("; ") + ".",
+    "🎯 PLAYOFF SWING: " + name(g.home) + " vs " + name(g.away) + ". Playoff odds with a win / loss: " + sides.map(([id, w, l]) => name(id) + " " + pct(w) + " / " + pct(l)).join(", ") + ".",
+    // Long team names (163 chars on Nov 15): drop "with a" and the spaces around the slash.
+    "🎯 PLAYOFF SWING: " + name(g.home) + " vs " + name(g.away) + ", playoff odds win/loss: " + sides.map(([id, w, l]) => name(id) + " " + pct(w) + "/" + pct(l)).join(", ") + "."
+  ), 86 + Math.min(g.swing - SWING_MIN, 30) / 10 - i * 2);   // Jim: always in the top 8
+  }
 }
 
 // ---- Clinch watch (Jim, 2026-10-25) -------------------------------------------
@@ -91,14 +104,50 @@ export const LOCK = 99.5;
 // locked" there is 99.4%+. And a clinch story needs the game to matter (Jim, 2026-11-18: "100% with a win, 100% with
 // a loss" isn't a story): the win has to be worth 5+ points of those odds.
 const SETTLED = 99.4, MATTERS = 5;
+// Exact clinches (Jim, 2026-11-18: "the actual lock is worth a story"): from the standings and the weeks left (2
+// wins a week: head-to-head and the median), a team has clinched a spot when fewer teams than the spot allows can
+// still reach its win total. Worst case: every other team wins out (head-to-head games between them, and its own
+// win over them, ignored), and a tie counts against it (points for would break it), so "clinched" is always true.
+// Returns [{ id, what, k }]: k = 0 clinched, else wins this week that would clinch it (1 or 2).
+export function clinchMath() {
+  const rows = standingsData?.standings || [], left = (seasonOddsData?.remainingWeeks || []).length;
+  if (!rows.length || !left || Number(seasonOddsData?.week) !== currentWeek) return [];
+  const wins = new Map(rows.map(t => [t.id, Number(t.wins) || 0]));
+  const spots = [["#1 seed", 1], ["bye", 2], ["playoff spot", Number(seasonOddsData.playoffTeamCount) || 6]];
+  const out = [];
+  for (const t of rows) {
+    const threats = k => rows.filter(o => o.id !== t.id && wins.get(o.id) + 2 * left >= wins.get(t.id) + k).length;
+    for (const [what, n] of spots) {
+      const k = [0, 1, 2].find(k => threats(k) < n);
+      if (k != null) { out.push({ id: t.id, what, k }); break; }   // the best spot it has or can get this week
+    }
+  }
+  return out;
+}
+
 export function addClinchStory(add) {
   if (Number(seasonOddsData?.week) !== currentWeek) return;
+  const opponent = id => { const s = currentScores.find(x => x.teamId === Number(id)); return s?.opponent || null; };
+  const label = what => what === "#1 seed" ? "the #1 seed and a bye" : what === "bye" ? "a first-round bye" : "a playoff spot";
+  const mathStories = [];
+  for (const c of clinchMath()) {
+    if (c.k === 0) mathStories.push({ score: c.what === "playoff spot" ? 85 : 87, text: `✅ CLINCHED: ${name(c.id)} has locked up ${label(c.what)}.` });
+    else {
+      const opp = opponent(c.id);
+      const how = c.k === 2 ? `by winning both this week (${opp ? `the matchup with ${opp}` : "the matchup"} and the median)` : `with one more win this week (${opp ? `over ${opp}` : "the matchup"} or the median)`;
+      mathStories.push({ score: 88, text: `🔒 CLINCH WATCH: ${name(c.id)} clinches ${label(c.what)} ${how}.` });
+    }
+  }
+  // An exact clinch beats the simulation's "can lock up": the two best go out, the sim's only for others.
+  const mathIds = new Set(clinchMath().map(c => c.id));
+  mathStories.sort((a, b) => b.score - a.score).slice(0, 2).forEach(x => add("CLINCH WATCH", x.text, x.score));
   const teams = new Map((seasonOddsData.teams || []).map(t => [t.teamId, t]));
   const open = id => { const s = currentScores.find(x => x.teamId === Number(id)); const p = Number(s?.winProbability); return !s || (p > 1 && p < 99); };
   const out = [];
   for (const g of seasonOddsData.matchupLeverage || []) {
     if (!g.top || !open(g.home)) continue;
     for (const [id, side, other] of [[g.home, "home", "away"], [g.away, "away", "home"]]) {
+      if (mathIds.has(id)) continue;
       const t = teams.get(id);
       if (!t) continue;
       const win = side === "home" ? "ifHomeWins" : "ifAwayWins", lose = side === "home" ? "ifAwayWins" : "ifHomeWins";
