@@ -148,8 +148,8 @@ function DriveLine({ game }) {
 // once the guillotine is over). One line per manager: a heart that beats faster as their pick's game turns on them
 // (💀 lost, ✅ won), the pick with a life bar at its live win chance, and their expected share of the pot from the
 // survivor model's simulation, which moves with every play. Hidden picks show as 🔒 at the model's best guess.
-// The gold number is each one's chance to be the last one standing (Jim: everyone greedily takes their safest
-// unused team each week, simulated to the end of the season; lastStanding), with the pot's worth in the tooltip.
+// The gold number is each one's chance to be the last one standing (Jim: everyone takes a safe unused team each
+// week, favoring the safest, simulated to the end of the season; lastStanding), with the pot's worth in the tooltip.
 const SURVIVOR_MAX = 6;
 // First names for the handles (Jim, 2026-11-17: "Jim, Jacob, and Ben if that's cleaner"); others show the handle.
 const SURVIVOR_NAMES = { jimreaper: "Jim", mksr: "Jacob", bjm000: "Ben" };

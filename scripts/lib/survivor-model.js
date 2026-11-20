@@ -145,7 +145,7 @@ export function survivorModel(feed, nflGames, nflWeek) {
 
 // Last one standing (Jim, 2026-11-17: "each team greedily picks the safest choice available to them each week, and
 // simulate the odds of each being the last team standing"). This week plays out as in survivorModel's sim (live
-// odds, hidden picks drawn from hiddenOptions); every later week, each surviving entry takes its unused team with
+// odds); hidden picks this week and every pick after it are an unused team drawn by choose() below, favoring
 // the best odds that week (season = data/current/nfl-season-odds.json: sportsbook lines where posted, ESPN FPI
 // beyond), and each game is drawn once, so entries on the same team live or die together. If every remaining entry
 // loses the same week, they're all revived (the pool's rule); whoever is left alone wins, and entries still alive
@@ -164,8 +164,20 @@ export function lastStanding(feed, nflGames, nflWeek, season, sims = 5000) {
     later.push([Number(w), new Map((games || []).flatMap(([h, a, p], i) => [[feedTeam(h), { id: `${w}:${i}`, p }], [feedTeam(a), { id: `${w}:${i}`, p: 1 - p }]]))]);
   }
   later.sort((x, y) => x[0] - y[0]);
-  const plan = entries.map(e => { const p = e.picks?.[n]; return !p ? { opts: m.hiddenOptions(e) } : m.settledPick(p) ? { fixed: p.result === "won", team: p.team } : { team: p.team }; });
+  // Not strictly the safest team (Jim, 2026-11-19: Jim and Ben, whose used teams differ by one, made the same pick
+  // every week, so they could never outlast each other and Jacob got 44%): each entry draws among its unused teams
+  // weighted by win chance^8, the survivor tab's model for hidden picks during a live week.
+  const pre = new Set((nflGames || []).filter(g => g.state === "pre").flatMap(g => (g.teams || []).map(t => feedTeam(t.abbrev))));
+  const plan = entries.map(e => { const p = e.picks?.[n]; return !p ? { hidden: true } : m.settledPick(p) ? { fixed: p.result === "won", team: p.team } : { team: p.team }; });
   let seed = 11; const rand = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
+  const choose = (games, used, ok = () => true) => {
+    const opts = [...games.entries()].filter(([team]) => !used.has(team) && ok(team));
+    const total = opts.reduce((a, [, g]) => a + g.p ** 8, 0);
+    if (!total) return null;
+    let r = rand() * total;
+    for (const [team, g] of opts) if ((r -= g.p ** 8) < 0) return team;
+    return opts[opts.length - 1][0];
+  };
   const win = new Array(entries.length).fill(0);
   for (let s = 0; s < sims; s++) {
     const drawn = new Map();
@@ -185,9 +197,8 @@ export function lastStanding(feed, nflGames, nflWeek, season, sims = 5000) {
       if (x.fixed != null) { used[i].add(x.team); return x.fixed; }
       let team = x.team;
       if (!team) {
-        if (!x.opts.length) return true;
-        let r = rand(); team = x.opts[x.opts.length - 1].team;
-        for (const o of x.opts) if ((r -= o.w) < 0) { team = o.team; break; }
+        team = choose(thisGames, used[i], t => pre.has(t));
+        if (!team) return true;
       }
       used[i].add(team);
       const g = look(thisGames, team);
@@ -197,11 +208,10 @@ export function lastStanding(feed, nflGames, nflWeek, season, sims = 5000) {
     for (const [, games] of later) {
       if (alive.length <= 1) break;
       next = alive.filter(i => {
-        let best = null;
-        for (const [team, g] of games) if (!used[i].has(team) && (!best || g.p > best.p)) best = { team, ...g };
-        if (!best) return false;   // out of teams
-        used[i].add(best.team);
-        const g = look(games, best.team);
+        const team = choose(games, used[i]);
+        if (!team) return false;   // out of teams
+        used[i].add(team);
+        const g = look(games, team);
         return wins(g, g.p);
       });
       if (next.length) alive = next;
