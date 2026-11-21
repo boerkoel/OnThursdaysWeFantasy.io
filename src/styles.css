@@ -1341,3 +1341,4 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 @media (prefers-reduced-motion:reduce){.tv-surv-heart{animation:none!important}}
 @media (max-width:760px),(orientation:portrait) and (max-width:1024px){.tv-surv{margin-top:10px}.tv-surv-row{font-size:12px}}
 .dash-toggle{display:flex;gap:6px;margin:0 0 12px}.dash-toggle button{flex:1;border:1px solid #30332d;background:#ffffff08;color:#dfe5d5;border-radius:999px;padding:8px 10px;font:inherit;font-size:13px;font-weight:800;cursor:pointer}.dash-toggle button.active{background:#4a533e;border-color:#6b7758}.dash-open{width:100%;border:1px solid #4a533e;background:#4a533e33;color:#dfe5d5;border-radius:12px;padding:14px;font:inherit;font-size:15px;font-weight:800;cursor:pointer}
+.dash-toggle .dash-full{flex:0 0 auto;width:44px;padding:8px 0;font-size:16px}.dash-toggle .dash-full:disabled{opacity:.4;cursor:default}

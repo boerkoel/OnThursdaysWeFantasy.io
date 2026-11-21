@@ -780,7 +780,7 @@ function App() {
     </div>
   );
 
-  const renderMyTeam = () => {
+  const renderMyTeam = ({ gamedayButton = true } = {}) => {
     const picker = <select value={myTeamId || ""} onChange={e => setMyTeamId(Number(e.target.value) || null)} aria-label="Your team">
       <option value="">{myScore ? "Change team…" : "Pick your team…"}</option>
       {(teamsData.teams || []).map(t => <option key={t.id} value={t.id}>{t.name.trim()}</option>)}
@@ -793,7 +793,7 @@ function App() {
     return (
       <section className="my-team" id="my-team">
         <div className="my-team-head"><span className="section-kicker">📌 YOUR MATCHUP</span>
-          <button type="button" className="gameday-open" onClick={openGameday} title="Everything your team is in, on one screen that stays on">⛶ Game day</button>{picker}</div>
+          {gamedayButton ? <button type="button" className="gameday-open" onClick={openGameday} title="Everything your team is in, on one screen that stays on">⛶ Game day</button> : null}{picker}</div>
         <div className="my-chips">
           {(() => {   // record and place (H2H + median wins), same order as Standings
             const rows = (teamsData.teams || []).map(t => t.standings).filter(Boolean)
@@ -836,10 +836,11 @@ function App() {
       {tab === "dashboard" ? <section className="section dashboard">
         <div className="dash-toggle" role="tablist">
           {[["manager", "📌 Manager"], ["league", "📺 League"]].map(([v, label]) =>
-            <button key={v} type="button" role="tab" aria-selected={dashMode === v} className={dashMode === v ? "active" : ""} onClick={() => { setDashView(v); if (v === "league") setTv(true); }}>{label}</button>)}
+            <button key={v} type="button" role="tab" aria-selected={dashMode === v} className={dashMode === v ? "active" : ""} onClick={() => setDashView(v)}>{label}</button>)}
+          <button type="button" className="dash-full" onClick={() => dashMode === "league" ? setTv(true) : openGameday()} disabled={dashMode === "manager" && !myScore} title="Full screen">⛶</button>
         </div>
-        {dashMode === "manager" ? <>{renderMyTeam()}{renderGameday()}</>
-          : <button type="button" className="dash-open" onClick={() => setTv(true)}>📺 Open Watch mode</button>}
+        {dashMode === "manager" ? <>{renderMyTeam({ gamedayButton: false })}{renderGameday()}</>
+          : <p className="median-note">The whole league on one screen: tap ⛶ for Watch mode.</p>}
       </section> : null}
 
       {tab === "live" ? <>
@@ -851,8 +852,6 @@ function App() {
         <div className="hero-stat"><strong>{scoreboard.projectedMedian != null ? money(scoreboard.projectedMedian) : "—"}</strong><span>Projected median</span></div>
       </section>
       <LeagueWire stories={live.marquee.stories || []} status={status} week={live.marquee.week ?? scoreboard.week} onOpen={openWireStory} />
-      {renderMyTeam()}
-      {renderGameday()}
       <PrimetimeWatch scores={scores} nflGames={scoreboard.nflGames || []} guillotine={Number(guillotine.week) === Number(scoreboard.week) ? guillotine : null} logos={teamLogos} week={scoreboard.week} />
       <section id="scores" className="section">
         <div className="section-heading"><div><span className="section-kicker">RIGHT NOW</span><h2>Week {scoreboard.week} Scores</h2></div>
@@ -862,7 +861,8 @@ function App() {
             <button type="button" className={status === "LIVE" ? "live-pill is-live" : "live-pill"} onClick={refresher.run} title="Refresh now">● {status} ↻</button>
           </span></div>
         <div className="matchup-list">
-          {orderedMatchups.filter(id => id !== myMatchupId).map(id => primetimeView ? <React.Fragment key={id}>{renderMatchupRow(id)}{renderPrimetime(id)}</React.Fragment> : renderMatchupRow(id))}
+          {/* Your matchup first (Jim, 2026-11-21: the pinned card moved to the Dashboard). */}
+          {(myMatchupId != null ? [myMatchupId, ...orderedMatchups.filter(id => id !== myMatchupId)] : orderedMatchups).map(id => primetimeView ? <React.Fragment key={id}>{renderMatchupRow(id)}{renderPrimetime(id)}</React.Fragment> : renderMatchupRow(id))}
         </div>
       </section>
       <RafflePodium ticketFork={ticketFork} ticketPeeks={ticketPeeks} scores={scores} logos={teamLogos} week={scoreboard.week} final={Boolean(currentWeekComplete)}

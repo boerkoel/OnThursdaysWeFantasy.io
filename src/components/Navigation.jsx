@@ -61,16 +61,17 @@ export function SectionNav({ tab }) {
     // Only offer sections that are on the page (e.g. RIP once someone's chopped).
     // Tabs that load their data after opening (Survivor) add sections later, so
     // look again whenever the page changes.
-    let sections = [];
+    // null at first, so a tab without sections (Dashboard) clears the last tab's strip (Jim, 2026-11-21).
+    let sections = null;
     const find = () => {
       const next = (TAB_SECTIONS[tab] || []).filter(([id]) => document.getElementById(id));
-      if (next.map(([id]) => id).join() !== sections.map(([id]) => id).join()) { sections = next; setPresent(next); }
+      if (!sections || next.map(([id]) => id).join() !== sections.map(([id]) => id).join()) { sections = next; setPresent(next); }
     };
     find();
     const observer = new MutationObserver(find);
     observer.observe(document.body, { childList: true, subtree: true });
     const onScroll = () => {
-      if (!sections.length) return;
+      if (!sections?.length) return;
       let current = sections[0][0];
       for (const [id] of sections) {
         const el = document.getElementById(id);
