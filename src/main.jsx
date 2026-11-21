@@ -39,7 +39,7 @@ import { useDriveAdjusted } from "./lib/liveDrives.js";
 import { useWakeLock } from "./lib/wakeLock.js";
 import { forkFor } from "./lib/injuryForks.js";
 import { drivePeeks, medianEchoes, tdPeeks } from "./lib/tdPeeks.js";
-import TvView from "./components/TvView.jsx";
+import TvView, { SurvivorLive } from "./components/TvView.jsx";
 import { oddsMove, shortPlay } from "./lib/playText.js";
 
 // Standings and rest-of-season odds in one sortable table: current seed and
@@ -794,6 +794,8 @@ function App() {
       <section className="my-team" id="my-team">
         <div className="my-team-head"><span className="section-kicker">📌 YOUR MATCHUP</span>
           {gamedayButton ? <button type="button" className="gameday-open" onClick={openGameday} title="Everything your team is in, on one screen that stays on">⛶ Game day</button> : null}{picker}</div>
+        {/* Stats folded away so the needles and live feed lead (Jim, 2026-11-21). */}
+        <details className="my-stats"><summary>📊 Record, odds and winnings</summary>
         <div className="my-chips">
           {(() => {   // record and place (H2H + median wins), same order as Standings
             const rows = (teamsData.teams || []).map(t => t.standings).filter(Boolean)
@@ -809,7 +811,14 @@ function App() {
         </div>
         {renderExpectedWinnings(myScore.teamId, odds)}
         {renderOtherContests(myScore.teamId)}
+        </details>
         {renderMyNeedles(myScore, { skipWin: primetimeView })}
+        {/* The survivor panel from Watch mode, for managers still in the pool (Jim, 2026-11-21). */}
+        {(() => {
+          const handles = new Set((managerLinks[String(myScore.teamId)]?.splash || []).map(h => h.toLowerCase()));
+          const alive = (survivorFeed?.entries || []).some(e => e.alive && handles.has(String(e.user).toLowerCase()));
+          return alive ? <div className="tv my-surv"><SurvivorLive feed={survivorFeed} games={scoreboard.nflGames || []} week={Number(scoreboard.week)} logos={teamLogos} /></div> : null;
+        })()}
         <a className="my-games-link" href="#games">🏟️ See all my players, game by game →</a>
         <div className="matchup-list">{renderMatchupRow(myMatchupId, true)}{primetimeView ? renderPrimetime(myMatchupId) : null}</div>
       </section>
