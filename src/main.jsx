@@ -838,7 +838,7 @@ function App() {
           {[["manager", "📌 Manager"], ["league", "📺 League"]].map(([v, label]) =>
             <button key={v} type="button" role="tab" aria-selected={dashMode === v} className={dashMode === v ? "active" : ""} onClick={() => { setDashView(v); if (v === "league") setTv(true); }}>{label}</button>)}
         </div>
-        {dashMode === "manager" ? renderMyTeam()
+        {dashMode === "manager" ? <>{renderMyTeam()}{renderGameday()}</>
           : <button type="button" className="dash-open" onClick={() => setTv(true)}>📺 Open Watch mode</button>}
       </section> : null}
 
