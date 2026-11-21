@@ -419,7 +419,7 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
             stakes={guillotine.teams.map(t => ({ lineup: { starters: t.lineup || [] } }))} games={games} /> : null}
           {/* Once the ticket is locked, the chopping block takes its place and it's one line below (Jim, 2026-11-09). */}
           {ticketWinner ? <p className="tv-results-line">🎟️ Ticket: {ticketWinner.team}</p> : null}
-          <SurvivorLive feed={survivorFeed} games={games} week={week} logos={logos} />
+          {/* Survivor left Watch mode for room (Jim, 2026-11-21): managers with entries see them in their game-day view. */}
           {field.length ? <div className="tv-field"><small className="mini-needles-label">ON THE FIELD NOW</small>
             {field.map(f => <p key={f.id}><b>{f.head}</b>{f.on.length ? " — " + f.on.join(", ") : " — no league starters"}</p>)}</div> : null}
         </aside>
