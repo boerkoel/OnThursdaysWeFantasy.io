@@ -812,15 +812,16 @@ function App() {
         {renderExpectedWinnings(myScore.teamId, odds)}
         {renderOtherContests(myScore.teamId)}
         </details>
+        {/* Order (Jim, 2026-11-21): scoreboard, then the needles right below it, survivor last. */}
+        <div className="matchup-list">{renderMatchupRow(myMatchupId, true)}{primetimeView ? renderPrimetime(myMatchupId) : null}</div>
         {renderMyNeedles(myScore, { skipWin: primetimeView })}
-        {/* The survivor panel from Watch mode, for managers still in the pool (Jim, 2026-11-21). */}
+        <a className="my-games-link" href="#games">🏟️ See all my players, game by game →</a>
+        {/* The survivor panel from Watch mode, last, for managers still in the pool (Jim, 2026-11-21). */}
         {(() => {
           const handles = new Set((managerLinks[String(myScore.teamId)]?.splash || []).map(h => h.toLowerCase()));
           const alive = (survivorFeed?.entries || []).some(e => e.alive && handles.has(String(e.user).toLowerCase()));
           return alive ? <div className="tv my-surv"><SurvivorLive feed={survivorFeed} games={scoreboard.nflGames || []} week={Number(scoreboard.week)} logos={teamLogos} /></div> : null;
         })()}
-        <a className="my-games-link" href="#games">🏟️ See all my players, game by game →</a>
-        <div className="matchup-list">{renderMatchupRow(myMatchupId, true)}{primetimeView ? renderPrimetime(myMatchupId) : null}</div>
       </section>
     );
   };
