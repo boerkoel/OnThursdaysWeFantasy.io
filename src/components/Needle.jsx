@@ -471,7 +471,7 @@ function useStickySet(items, max, score, onSwap) {
 // Under the needles, two columns (Jim, 2026-11-02): the good outcomes on the left (✅ and likely), the bad on the
 // right (❌ and likely the other way); good: which side is the good one ("right": above, the ticket; "left": safe).
 export function NeedleRace({ label, items, sides, colors, band = null, words, chipOdds = "side", history = [], games = [], stakes = null, mine = null,
-  max = null, pick = "odds", onSwap = null, good = "right", implied = null, compact = false, minShown = 0, fixed = false }) {
+  max = null, pick = "odds", onSwap = null, good = "right", implied = null, compact = false, minShown = 0, fixed = false, even = false }) {
   // compact (Watch mode on a phone): each chip column runs on one line, ending in … ; a tap shows them in full.
   const [chipsOpen, setChipsOpen] = useState(false);
   const base = i => Number.isFinite(Number(i.from)) ? Number(i.from) : Number(i.p);
@@ -482,9 +482,11 @@ export function NeedleRace({ label, items, sides, colors, band = null, words, ch
   // minShown (the ticket's and chop's top two, Jim 2026-11-02): those keep their needles even outside 10-90%, pinned
   // near the end, rather than dropping into the chips; but not a 0% needle (3%+ only, Jim 2026-11-08).
   const filler = minShown ? live.filter(i => !shown.includes(i) && i.p >= 3).sort((x, y) => y.p - x.p).slice(0, Math.max(0, minShown - shown.length)) : [];
-  const needles = [...shown, ...filler].sort((x, y) => isMine(y) - isMine(x) || base(y) - base(x));
+  // even (Jim, 2026-11-21): an odd count gets the next-closest race (nearest 50%) so the needles pair up.
+  const extra = even && (shown.length + filler.length) % 2 ? live.filter(i => !shown.includes(i) && !filler.includes(i)).sort((x, y) => Math.abs(x.p - 50) - Math.abs(y.p - 50)).slice(0, 1) : [];
+  const needles = [...shown, ...filler, ...extra].sort((x, y) => isMine(y) - isMine(x) || base(y) - base(x));
   const alsoIn = contenders.filter(i => !shown.includes(i)).sort((x, y) => y.p - x.p);
-  const chips = live.filter(i => !filler.includes(i));
+  const chips = live.filter(i => !filler.includes(i) && !extra.includes(i));
   const likelyR = chips.filter(i => i.p > 90 && i.p < LOCKED).sort((x, y) => y.p - x.p);
   const likelyL = chips.filter(i => i.p > 100 - LOCKED && i.p < 10).sort((x, y) => x.p - y.p);
   const lockedR = chips.filter(i => i.p >= LOCKED), lockedL = chips.filter(i => i.p <= 100 - LOCKED);
