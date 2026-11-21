@@ -511,7 +511,8 @@ function App() {
   const { win: winPeeks, median: medianPeeks, ticket: ticketPeeks } = buildPeeks(drivePlays, lone);
   const watchPeeks = buildPeeks([...allDrivePlays, ...lastPlay], true, (scoreboard.nflGames || []).some(g => g.state === "in"));
   const ticketFork = t => forkFor({ p: Number(t.topScoreProbability), right: [t], sd: Math.hypot(sdOfTeam(t), typicalSd), livePlays: injuryFeed, games: scoreboard.nflGames || [] });
-  const renderPrimetime = matchupId => {
+  // between: shown right under the needle (the Manager view's median and ticket needles, Jim 2026-11-21).
+  const renderPrimetime = (matchupId, { between = null } = {}) => {
     const pair = pairOf(matchupId);
     if (!pair) return null;
     const [a, b] = pair;
@@ -519,6 +520,7 @@ function App() {
     const open = [a, b].every(t => Number(t.winProbability) > 100 - LOCKED_PCT && Number(t.winProbability) < LOCKED_PCT);
     return <div className="primetime-expand">
       {open ? <Needle a={a} b={b} fork={winFork(a, b)} peeks={winPeeks(a, b)} games={scoreboard.nflGames || []} history={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} /> : null}
+      {between}
       {open ? (scoreboard.nflGames || []).map(g => ({ g, r: driveRooting({ game: g, a, b }) })).filter(x => x.r).slice(0, 2).map(({ g, r }) =>
         <div className="rooting" key={g.id}>
           <small>🏈 {r.offense} BALL{r.toGo != null ? ` · ${r.toGo} YDS TO GO` : ""} · ROOT FOR</small>
@@ -625,7 +627,8 @@ function App() {
   const RED = "#d98a86", GREEN = "#8fd087";
   // The median's needles in the scoreboard's colors: red below, yellow near the line (30–70%), green above.
   const MEDIAN_COLORS = ["#d96b67", "#e6c85c", "#72b96a"];
-  const renderMyNeedles = (s, { skipWin = false } = {}) => {
+  // quiet: no what-ifs or play bounces of their own (the card's play feed carries them), no label.
+  const renderMyNeedles = (s, { skipWin = false, quiet = false } = {}) => {
     const games = scoreboard.nflGames || [];
     const opp = scores.find(x => Number(x.teamId) === Number(s.opponentId));
     // Settled races keep their needles (Jim, 2026-11-02: we like the needles), pinned at the end with the result
@@ -652,6 +655,7 @@ function App() {
     if (g) needles.push(<MiniNeedle key="chop" team={{ ...g, lineup: { starters: g.lineup || [] } }} p={Number(g.chopProbability)} from={g.liveChopFrom}
       sides={["safe", "chopped"]} colors={[GREEN, RED]} caption={result(g.chopProbability, `🪓 ${g.team} chopped`, `✅ ${g.team} safe`, `🪓 ${g.team}`)} history={thisWeek(guillotine.chopHistory)} games={games} />);
     if (!needles.length) return null;
+    if (quiet) return <div className="mini-needles">{needles.map(n => React.cloneElement(n, { fork: null, peeks: [] }))}</div>;
     return <><small className="mini-needles-label">YOUR NEEDLES</small><div className="mini-needles">{needles}</div></>;
   };
 
@@ -812,9 +816,12 @@ function App() {
         {renderExpectedWinnings(myScore.teamId, odds)}
         {renderOtherContests(myScore.teamId)}
         </details>
-        {/* Order (Jim, 2026-11-21): scoreboard, then the needles right below it, survivor last. */}
-        <div className="matchup-list">{renderMatchupRow(myMatchupId, true)}{primetimeView ? renderPrimetime(myMatchupId) : null}</div>
-        {renderMyNeedles(myScore, { skipWin: primetimeView })}
+        {/* Order (Jim, 2026-11-21): scoreboard and needles in one card, survivor last. */}
+        {/* One card (Jim, 2026-11-21): the matchup needle, median | ticket under it, then the key plays and what-ifs. */}
+        <div className="my-needle-card">
+          <div className="matchup-list">{renderMatchupRow(myMatchupId, true)}</div>
+          {renderPrimetime(myMatchupId, { between: renderMyNeedles(myScore, { skipWin: true, quiet: true }) })}
+        </div>
         <a className="my-games-link" href="#games">🏟️ See all my players, game by game →</a>
         {/* The survivor panel from Watch mode, last, for managers still in the pool (Jim, 2026-11-21). */}
         {(() => {
