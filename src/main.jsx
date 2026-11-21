@@ -740,6 +740,14 @@ function App() {
     try { window.history.replaceState(null, "", window.location.pathname + window.location.search); } catch {}
     try { if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {}); } catch {}
   };
+  // Dashboard view (Jim, 2026-11-21): Manager unless no team is pinned; remembered per phone. League opens Watch
+  // mode, and straight away on opening the app when that's the saved choice.
+  const [dashView, setDashViewState] = useState(() => { try { return localStorage.getItem("dashView"); } catch { return null; } });
+  const dashMode = dashView || (myTeamId ? "manager" : "league");
+  const setDashView = v => { setDashViewState(v); try { localStorage.setItem("dashView", v); } catch {} };
+  useEffect(() => {
+    if (tab === "dashboard" && !window.location.hash && dashMode === "league") setTv(true);
+  }, []);
   const [gameday, setGameday] = useState(() => { try { return window.location.hash === "#gameday"; } catch { return false; } });
   const awake = useWakeLock(gameday && Boolean(myScore));
   const openGameday = () => {
@@ -824,6 +832,15 @@ function App() {
       <SectionNav tab={tab} />
       <InstallHint />
       <div className="data-timestamp">LAST REFRESHED <strong>{scoreboard.lastUpdated ? new Date(scoreboard.lastUpdated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "—"}</strong> <UpdatedAgo iso={scoreboard.lastUpdated} /></div>
+
+      {tab === "dashboard" ? <section className="section dashboard">
+        <div className="dash-toggle" role="tablist">
+          {[["manager", "📌 Manager"], ["league", "📺 League"]].map(([v, label]) =>
+            <button key={v} type="button" role="tab" aria-selected={dashMode === v} className={dashMode === v ? "active" : ""} onClick={() => { setDashView(v); if (v === "league") setTv(true); }}>{label}</button>)}
+        </div>
+        {dashMode === "manager" ? renderMyTeam()
+          : <button type="button" className="dash-open" onClick={() => setTv(true)}>📺 Open Watch mode</button>}
+      </section> : null}
 
       {tab === "live" ? <>
       <section className="hero-strip">

@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 // section links (#playoffs, #rip, ...) open the tab that holds that section
 // and scroll to it.
 export const TABS = [
+  // Dashboard (Jim, 2026-11-21): the default page; Manager = the pinned card, League = Watch mode full screen.
+  { id: "dashboard", label: "Dashboard", short: "Dash", icon: "📺" },
   { id: "live", label: "Live", icon: "🏈" },
   { id: "games", label: "Games", icon: "🏟️" },
   { id: "standings", label: "Standings", icon: "🏆" },
@@ -16,6 +18,7 @@ export const TABS = [
 ];
 // Sections within each tab, for the phone section strip (ids on the page).
 export const TAB_SECTIONS = {
+  dashboard: [],
   games: [],
   live: [["my-team", "My team"], ["primetime", "Tonight"], ["scores", "Scores"], ["ticket-race", "Ticket race"], ["scoreboard", "Median"], ["accuracy", "Accuracy"]],
   standings: [["standings-odds", "Standings"], ["playoffs", "Playoffs"], ["ultimate-loser", "Ultimate Loser"], ["raffle", "Raffle"]],
@@ -37,7 +40,7 @@ const isTab = id => TABS.some(t => t.id === id);
 const CARD_TAB = [["dw-", "death-watch"], ["team-", "teams"]];
 const tabFor = hash => {
   const id = hash.replace(/^#/, "");
-  return isTab(id) ? id : SECTION_TAB[id] || CARD_TAB.find(([prefix]) => id.startsWith(prefix))?.[1] || "live";
+  return isTab(id) ? id : SECTION_TAB[id] || CARD_TAB.find(([prefix]) => id.startsWith(prefix))?.[1] || "dashboard";
 };
 
 export function useTabs() {
