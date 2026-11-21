@@ -249,12 +249,14 @@ function useIdleCursor() {
 // On a phone (Jim, 2026-11-02: one always-on snapshot, the detail is in Primetime view): shorter tiles (the
 // odds alone under the dial, players left beside the scores), races as compact rows, chip columns on one line
 // each, results on one line, a smaller ticker that covers nothing, and no "on the field" list.
-export default function TvView({ forks = { win: () => null, median: () => null, ticket: () => null }, peeks = { win: () => [], median: () => [], ticket: () => [] }, scoreboard, guillotine, livePlays, marquee, survivorFeed, logos = {}, onClose }) {
-  useWakeLock(true);
+export default function TvView({ forks = { win: () => null, median: () => null, ticket: () => null }, peeks = { win: () => [], median: () => [], ticket: () => [] }, scoreboard, guillotine, livePlays, marquee, survivorFeed, logos = {}, onClose, inline = false }) {
+  // inline (Jim, 2026-11-21): the Dashboard's League view, a block in the page: no scroll lock, wake lock or controls.
+  useWakeLock(!inline);
   useScreenBelow();
   // The page underneath stays put (Jim, 2026-11-08: Watch mode wouldn't scroll back down on a phone, the
   // swipe went to the page under it).
   useEffect(() => {
+    if (inline) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = prev; };
@@ -362,7 +364,7 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
     return p ? `${p.player} ${shortPlay(p)}` : null;
   })();
   return (
-    <div className={"tv" + (idle ? " idle" : "")}>
+    <div className={"tv" + (inline ? " tv-inline" : idle ? " idle" : "")}>
       <header className="tv-head">
         <div>{narrow ? null : <span className="section-kicker">ON THURSDAYS WE WATCH FOOTBALL · WEEK {week}</span>}
           {/* On a phone, two or more live games scroll by on one line instead of wrapping (Jim, 2026-11-08). */}
@@ -370,11 +372,11 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
             ? <h1 className="tv-head-scroll"><span className="needle-live">● LIVE</span><span className="tv-head-window"><span className="tv-head-track" style={{ animationDuration: `${Math.max(12, liveGames.map(gameText).join("").length / 4)}s` }}>
                 {[0, 1].map(k => <span key={k}>{liveGames.map(gameText).join("   ·   ")}</span>)}</span></span></h1>
             : <h1>{liveGames.length ? <><span className="needle-live">● LIVE</span> {liveGames.map(gameText).join("   ·   ")}</> : narrow ? `Week ${week} game day` : "Game day"}</h1>}</div>
-        <div className="tv-actions">
+        {inline ? null : <div className="tv-actions">
           {!fullscreen && document.documentElement.requestFullscreen ? <button type="button" onClick={() => document.documentElement.requestFullscreen().catch(() => {})}>⛶ Full screen</button> : null}
           <button type="button" onClick={sound.toggle} aria-pressed={sound.on} title={sound.on ? "Sound on: a chime for each clinch" : "Turn on a chime for each clinch"}>{sound.on ? "🔊" : "🔇"} Sound</button>
           <button type="button" onClick={onClose} aria-label="Leave watch mode">✕</button>
-        </div>
+        </div>}
       </header>
       <div className="tv-body">
         <section className="tv-left">

@@ -849,7 +849,7 @@ function App() {
           <button type="button" className="dash-full" onClick={() => dashMode === "league" ? setTv(true) : openGameday()} disabled={dashMode === "manager" && !myScore} title="Full screen">⛶</button>
         </div>
         {dashMode === "manager" ? <>{renderMyTeam({ gamedayButton: false })}{renderGameday()}</>
-          : <p className="median-note">The whole league on one screen: tap ⛶ for Watch mode.</p>}
+          : <TvView forks={{ win: winFork, median: medianFork, ticket: ticketFork }} peeks={watchPeeks} scoreboard={scoreboard} guillotine={guillotine} livePlays={livePlayFeed} marquee={live.marquee} survivorFeed={survivorFeed} logos={teamLogos} inline />}
       </section> : null}
 
       {tab === "live" ? <>
