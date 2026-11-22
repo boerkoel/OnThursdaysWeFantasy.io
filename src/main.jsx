@@ -421,6 +421,7 @@ function App() {
   // lineups (the choice sticks) and swipes through every matchup.
   const followedTeams = useFollowedTeams();
   const [openMatchup, setOpenMatchup] = useState(null);
+  const [statSheet, setStatSheet] = useState(null);   // "median" | "ticket": the Dashboard needles' pop-ups
   const [detailView, setDetailView] = useState("odds");
   const pairOf = matchupId => { const pair = scores.filter(s => s.matchupId === matchupId); return pair.length === 2 ? pair : null; };
   const isFollowed = matchupId => Boolean(pairOf(matchupId)?.some(t => followedTeams.includes(Number(t.teamId))));
@@ -833,58 +834,13 @@ function App() {
     );
   };
 
-  if (tv) return <TvView forks={{ win: winFork, median: medianFork, ticket: ticketFork }} peeks={watchPeeks} scoreboard={scoreboard} guillotine={guillotine} livePlays={livePlayFeed} marquee={live.marquee} survivorFeed={survivorFeed} logos={teamLogos} onClose={closeTv} />;
-  return (
-    <main className="site">
-      {refresher.view}
-      <header className="topbar">
-        <div>
-          <p className="eyebrow">ON THURSDAYS WE WATCH FOOTBALL</p>
-          <h1>On Thursdays We Fantasy</h1>
-          <p className="subtitle">The Officially Unofficial League Record Book</p>
-        </div>
-        <button type="button" className="header-bell" onClick={() => setNotifyOpen(true)} aria-label="Notification settings" title="Notifications">🔔</button>
-      </header>
-      <TabBar tab={tab} onSelect={goToTab} />
-      <SectionNav tab={tab} />
-      <InstallHint />
-      <div className="data-timestamp">LAST REFRESHED <strong>{scoreboard.lastUpdated ? new Date(scoreboard.lastUpdated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "—"}</strong> <UpdatedAgo iso={scoreboard.lastUpdated} /></div>
-
-      {tab === "dashboard" ? <section className="section dashboard">
-        <div className="dash-toggle" role="tablist">
-          {[["manager", "📌 Manager"], ["league", "📺 League"]].map(([v, label]) =>
-            <button key={v} type="button" role="tab" aria-selected={dashMode === v} className={dashMode === v ? "active" : ""} onClick={() => setDashView(v)}>{label}</button>)}
-          <button type="button" className="dash-full" onClick={() => dashMode === "league" ? setTv(true) : openGameday()} disabled={dashMode === "manager" && !myScore} title="Full screen">⛶</button>
-        </div>
-        {dashMode === "manager" ? <>{renderMyTeam({ gamedayButton: false })}{renderGameday()}</>
-          : <TvView forks={{ win: winFork, median: medianFork, ticket: ticketFork }} peeks={watchPeeks} scoreboard={scoreboard} guillotine={guillotine} livePlays={livePlayFeed} marquee={live.marquee} survivorFeed={survivorFeed} logos={teamLogos} inline onOpenMatchup={setOpenMatchup} />}
-      </section> : null}
-
-      {tab === "live" ? <>
-      <section className="hero-strip">
-        <div className="hero-main"><span className="section-kicker">2026 SEASON</span><h2>Week {scoreboard.week}</h2><p>{status === "NOT STARTED" ? "The week is set. Scores will appear here once the games begin."
-          : status === "LIVE" ? "The league is live. Here’s how everyone is doing."
-          : status === "FINAL" ? "Every game is final. Here’s how the week shook out."
-          : "Between games. Here’s where everyone stands."}</p></div>
-        <div className="hero-stat"><strong>{scoreboard.projectedMedian != null ? money(scoreboard.projectedMedian) : "—"}</strong><span>Projected median</span></div>
-      </section>
-      <LeagueWire stories={live.marquee.stories || []} status={status} week={live.marquee.week ?? scoreboard.week} onOpen={openWireStory} />
-      <PrimetimeWatch scores={scores} nflGames={scoreboard.nflGames || []} guillotine={Number(guillotine.week) === Number(scoreboard.week) ? guillotine : null} logos={teamLogos} week={scoreboard.week} />
-      <section id="scores" className="section">
-        <div className="section-heading"><div><span className="section-kicker">RIGHT NOW</span><h2>Week {scoreboard.week} Scores</h2></div>
-          <span className="scores-actions">
-            <button type="button" className={primetimeView ? "primetime-toggle on" : "primetime-toggle"} aria-pressed={primetimeView} onClick={() => setPrimetimeView(!primetimeView)} title="Expand each matchup to the players live right now and its key plays">📺 Primetime view</button>
-            <a className="primetime-toggle tv-link" href="#watch" title="The whole league on one screen: put it up on a TV or laptop at a watch party">👀 Watch mode</a>
-            <button type="button" className={status === "LIVE" ? "live-pill is-live" : "live-pill"} onClick={refresher.run} title="Refresh now">● {status} ↻</button>
-          </span></div>
-        <div className="matchup-list">
-          {/* Your matchup first (Jim, 2026-11-21: the pinned card moved to the Dashboard). */}
-          {(myMatchupId != null ? [myMatchupId, ...orderedMatchups.filter(id => id !== myMatchupId)] : orderedMatchups).map(id => primetimeView ? <React.Fragment key={id}>{renderMatchupRow(id)}{renderPrimetime(id)}</React.Fragment> : renderMatchupRow(id))}
-        </div>
-      </section>
+  // The Ticket race and Median scoreboard: on Live, and as pop-ups from the Dashboard's needles (Jim, 2026-11-22).
+  const renderRaffle = () => (
       <RafflePodium ticketFork={ticketFork} ticketPeeks={ticketPeeks} scores={scores} logos={teamLogos} week={scoreboard.week} final={Boolean(currentWeekComplete)}
         history={Number(scoreboard.raffleHistory?.week) === Number(scoreboard.week) ? scoreboard.raffleHistory.points : []}
         plays={Number(livePlayFeed.week) === Number(scoreboard.week) ? livePlayFeed.plays || [] : []} nflGames={scoreboard.nflGames || []} />
+  );
+  const renderMedian = () => (
       <section id="scoreboard" className="section">
         <div className="section-heading"><div><span className="section-kicker">MEDIAN SCORING</span><h2>Week {scoreboard.week} Scoreboard</h2></div>
           {displayScores.length ? <ShareButton section="scoreboard" iconOnly label="Share the scoreboard" filename={`week-${scoreboard.week}-scoreboard`} build={shareScoreboard} /> : null}</div>
@@ -922,6 +878,58 @@ function App() {
         })()}
         <Explain lead={<>Projections blend ESPN, Sleeper and FantasyPros. Yellow = teams near the median.</>}>Projections are ours: ESPN, Sleeper (RotoWire) and FantasyPros averaged, with injuries and likely lineup moves simulated (the bar on wide screens: band = middle half of outcomes, line = 80%, ◆ = ESPN). The projected median is the median of those projections. Odds of finishing above the median come from simulating the rest of the week, where the league median moves with every team’s result. Highlighted in yellow: the teams projected just above and just below the median, plus any team with a {NEAR_MEDIAN_MIN}–{NEAR_MEDIAN_MAX}% chance.</Explain>
       </section>
+  );
+  if (tv) return <TvView forks={{ win: winFork, median: medianFork, ticket: ticketFork }} peeks={watchPeeks} scoreboard={scoreboard} guillotine={guillotine} livePlays={livePlayFeed} marquee={live.marquee} survivorFeed={survivorFeed} logos={teamLogos} onClose={closeTv} />;
+  return (
+    <main className="site">
+      {refresher.view}
+      <header className="topbar">
+        <div>
+          <p className="eyebrow">ON THURSDAYS WE WATCH FOOTBALL</p>
+          <h1>On Thursdays We Fantasy</h1>
+          <p className="subtitle">The Officially Unofficial League Record Book</p>
+        </div>
+        <button type="button" className="header-bell" onClick={() => setNotifyOpen(true)} aria-label="Notification settings" title="Notifications">🔔</button>
+      </header>
+      <TabBar tab={tab} onSelect={goToTab} />
+      <SectionNav tab={tab} />
+      <InstallHint />
+      <div className="data-timestamp">LAST REFRESHED <strong>{scoreboard.lastUpdated ? new Date(scoreboard.lastUpdated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "—"}</strong> <UpdatedAgo iso={scoreboard.lastUpdated} /></div>
+
+      {tab === "dashboard" ? <section className="section dashboard">
+        <div className="dash-toggle" role="tablist">
+          {[["manager", "📌 Manager"], ["league", "📺 League"]].map(([v, label]) =>
+            <button key={v} type="button" role="tab" aria-selected={dashMode === v} className={dashMode === v ? "active" : ""} onClick={() => setDashView(v)}>{label}</button>)}
+          <button type="button" className="dash-full" onClick={() => dashMode === "league" ? setTv(true) : openGameday()} disabled={dashMode === "manager" && !myScore} title="Full screen">⛶</button>
+        </div>
+        {dashMode === "manager" ? <>{renderMyTeam({ gamedayButton: false })}{renderGameday()}</>
+          : <TvView forks={{ win: winFork, median: medianFork, ticket: ticketFork }} peeks={watchPeeks} scoreboard={scoreboard} guillotine={guillotine} livePlays={livePlayFeed} marquee={live.marquee} survivorFeed={survivorFeed} logos={teamLogos} inline onOpenMatchup={setOpenMatchup} onOpenStat={setStatSheet} />}
+      </section> : null}
+
+      {tab === "live" ? <>
+      <section className="hero-strip">
+        <div className="hero-main"><span className="section-kicker">2026 SEASON</span><h2>Week {scoreboard.week}</h2><p>{status === "NOT STARTED" ? "The week is set. Scores will appear here once the games begin."
+          : status === "LIVE" ? "The league is live. Here’s how everyone is doing."
+          : status === "FINAL" ? "Every game is final. Here’s how the week shook out."
+          : "Between games. Here’s where everyone stands."}</p></div>
+        <div className="hero-stat"><strong>{scoreboard.projectedMedian != null ? money(scoreboard.projectedMedian) : "—"}</strong><span>Projected median</span></div>
+      </section>
+      <LeagueWire stories={live.marquee.stories || []} status={status} week={live.marquee.week ?? scoreboard.week} onOpen={openWireStory} />
+      <PrimetimeWatch scores={scores} nflGames={scoreboard.nflGames || []} guillotine={Number(guillotine.week) === Number(scoreboard.week) ? guillotine : null} logos={teamLogos} week={scoreboard.week} />
+      <section id="scores" className="section">
+        <div className="section-heading"><div><span className="section-kicker">RIGHT NOW</span><h2>Week {scoreboard.week} Scores</h2></div>
+          <span className="scores-actions">
+            <button type="button" className={primetimeView ? "primetime-toggle on" : "primetime-toggle"} aria-pressed={primetimeView} onClick={() => setPrimetimeView(!primetimeView)} title="Expand each matchup to the players live right now and its key plays">📺 Primetime view</button>
+            <a className="primetime-toggle tv-link" href="#watch" title="The whole league on one screen: put it up on a TV or laptop at a watch party">👀 Watch mode</a>
+            <button type="button" className={status === "LIVE" ? "live-pill is-live" : "live-pill"} onClick={refresher.run} title="Refresh now">● {status} ↻</button>
+          </span></div>
+        <div className="matchup-list">
+          {/* Your matchup first (Jim, 2026-11-21: the pinned card moved to the Dashboard). */}
+          {(myMatchupId != null ? [myMatchupId, ...orderedMatchups.filter(id => id !== myMatchupId)] : orderedMatchups).map(id => primetimeView ? <React.Fragment key={id}>{renderMatchupRow(id)}{renderPrimetime(id)}</React.Fragment> : renderMatchupRow(id))}
+        </div>
+      </section>
+      {renderRaffle()}
+      {renderMedian()}
       <AccuracyScorecard scorecard={scoreboard.scorecard} />
       </> : null}
 
@@ -1162,6 +1170,7 @@ function App() {
       {newVersion ? <button type="button" className="new-version-bar" onClick={reloadKeepingScroll}>✨ New version of the site — tap to refresh</button> : null}
       {sheetIndex >= 0 ? <Sheet title={`Week ${scoreboard.week} matchup`} position={`${sheetIndex + 1} of ${orderedMatchups.length}`}
         onClose={() => setOpenMatchup(null)} onPrev={() => stepMatchup(-1)} onNext={() => stepMatchup(1)}>{renderMatchupDetail(openMatchup)}</Sheet> : null}
+      {statSheet ? <Sheet title={statSheet === "median" ? "Median scoreboard" : "Ticket race"} onClose={() => setStatSheet(null)}>{statSheet === "median" ? renderMedian() : renderRaffle()}</Sheet> : null}
       {notifyOpen ? <Sheet title="Notifications" onClose={() => setNotifyOpen(false)}><Notifications teams={teamsData.teams || []} asPanel /></Sheet> : null}
       <BackToTop />
     </main>
