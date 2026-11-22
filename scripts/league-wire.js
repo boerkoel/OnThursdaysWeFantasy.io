@@ -17,6 +17,7 @@ import { addWhiplashStory } from "./wire/whiplash.js";
 import { addGutsyCallStory } from "./wire/gutsy.js";
 import { addReportCardStory, addReportCardWatchStory } from "./wire/report-cards.js";
 import { addTradeTauntStory } from "./wire/trade-taunt.js";
+import { addGlassboroStory } from "./wire/glassboro.js";
 import { addPrimetimeStories } from "./wire/primetime.js";
 import { addRaffleStories } from "./wire/raffle.js";
 import { interleave, weekHeadlines, weekInReview } from "./wire/review.js";
@@ -151,6 +152,7 @@ async function buildMarqueeStories() {
   addLineupMistakeStories(add, matchupStates, regrets);
   try { addReportCardStory(add); addReportCardWatchStory(add, regrets); } catch (error) { console.warn("League Wire: report cards failed: " + error.message); }
   try { addTradeTauntStory(add); } catch (error) { console.warn("League Wire: trade taunt failed: " + error.message); }
+  try { addGlassboroStory(add); } catch (error) { console.warn("League Wire: Glassboro Cup failed: " + error.message); }
   addDeathWatchStory(add);
   try { addWaiverStories(add); } catch (error) { console.warn("League Wire: waiver stories failed: " + error.message); }
   try { addFaabStories(add); } catch (error) { console.warn("League Wire: FAAB stories failed: " + error.message); }
