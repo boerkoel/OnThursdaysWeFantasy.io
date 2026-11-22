@@ -326,6 +326,10 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
     .map(p => `${teamName.get(Number(p.fantasyTeamId)) || ""}: ${p.player} ${shortPlay(p)}${p.momentum?.shift >= 1 ? ` · ${p.momentum.toward} ${oddsMove(p.momentum.winProbability, p.momentum.shift)}` : ""}`);
   const stories = (Number(marquee?.week) === week ? marquee.stories || [] : []).slice(0, 4).map(s => s.text);
   const ticker = [...keyPlays, ...stories];
+  // Latest plays (Jim, 2026-11-22), inline only: the last 5 scoring plays across every game, newest first; the
+  // newest carries its game's score line, so the list follows whichever game just moved.
+  const latest = inline ? plays.filter(p => p.wallclock && Number(p.points)).sort((x, y) => Date.parse(y.wallclock) - Date.parse(x.wallclock)).slice(0, 5) : [];
+  const latestGame = latest[0] ? games.find(g => String(g.id) === String(latest[0].eventId)) : null;
 
   // On the field now: each live game's offense and the other side's D/ST, with whose they are.
   const field = liveGames.map(g => {
@@ -424,6 +428,9 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
             stakes={guillotine.teams.map(t => ({ lineup: { starters: t.lineup || [] } }))} games={games} /> : null}
           {/* Once the ticket is locked, the chopping block takes its place and it's one line below (Jim, 2026-11-09). */}
           {ticketWinner ? <p className="tv-results-line">🎟️ Ticket: {ticketWinner.team}</p> : null}
+          {latest.length ? <div className="tv-latest"><small className="mini-needles-label">⚡ LATEST PLAYS{latestGame ? ` · ${gameText(latestGame)}` : ""}</small>
+            {latest.map((p, i) => <p key={p.id || p.wallclock + p.player} className={i ? "" : "newest"}><b>{Number(p.points) > 0 ? "+" : ""}{Number(p.points).toFixed(2)}</b> {p.player} {shortPlay(p)} <em>{teamName.get(Number(p.fantasyTeamId)) || ""}</em>{p.momentum?.shift >= 1 ? <span> · {p.momentum.toward} {oddsMove(p.momentum.winProbability, p.momentum.shift)}</span> : null}</p>)}
+          </div> : null}
           {/* Survivor left Watch mode for room (Jim, 2026-11-21): managers with entries see them in their game-day view. */}
           {field.length ? <div className="tv-field"><small className="mini-needles-label">ON THE FIELD NOW</small>
             {field.map(f => <p key={f.id}><b>{f.head}</b>{f.on.length ? " — " + f.on.join(", ") : " — no league starters"}</p>)}</div> : null}
