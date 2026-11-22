@@ -577,7 +577,7 @@ function App() {
       {/* Joe v. Billy's own trophy (Jim, 2026-11-15): the Glassboro "Just the Tip" Trophy, to each meeting's winner. */}
       {isCupGame(a.teamId, b.teamId) ? <div className="cup-banner"><img src={cupImage} alt="The Glassboro Just the Tip Trophy" />
         <div><small>THE GLASSBORO &ldquo;JUST THE TIP&rdquo; TROPHY</small><strong>Winner takes the tip.</strong>
-          <p>{cupHolder() ? `Held by ${[a, b].find(t => Number(t.teamId) === cupHolder())?.team || "the last winner"} · ` : "First time on the line · "}{(Number(a.score) >= Number(b.score) ? a : b).team} {status === "FINAL" ? "takes it" : "leads right now"}.</p></div></div> : null}
+          <p>{cupHolder() ? `Held by ${scores.find(t => Number(t.teamId) === cupHolder())?.team || "the last winner"} · ` : "First time on the line · "}{(Number(a.score) >= Number(b.score) ? a : b).team} {status === "FINAL" ? "takes it" : "leads right now"}.</p></div></div> : null}
       <div className="sheet-tabs" role="tablist">
         <button type="button" role="tab" aria-selected={view === "odds"} className={view === "odds" ? "active" : ""} onClick={() => setDetailView("odds")}>Odds & plays</button>
         {hasLineups ? <button type="button" role="tab" aria-selected={view === "lineup"} className={view === "lineup" ? "active" : ""} onClick={() => setDetailView("lineup")}>Lineups</button> : null}
