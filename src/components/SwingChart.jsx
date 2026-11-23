@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import PlayMarkers, { playTime } from "./PlayMarkers.jsx";
 import { pct } from "../lib/data.js";
 import { oddsMove } from "../lib/playText.js";
@@ -14,6 +14,11 @@ const WIDTH = 300;
 const HEIGHT = 84;
 const MIN_REACH = 10;
 const PAD = 5;
+// Game windows (Jim, 2026-11-22: the week crunched into the end of a Thu-Mon span): quiet stretches over GAP shrink
+// to BREAK with a dashed break, about WINDOW of game time fills the screen and the chart scrolls sideways, and each
+// window and kickoff slot (Thu, Sun 10a / 1p / 4p, SNF, MNF) gets a line and a label.
+const GAP = 45 * 60 * 1000, BREAK = 15 * 60 * 1000, WINDOW = 3 * 60 * 60 * 1000;
+const slotLabel = t => new Date(t).toLocaleString(undefined, { weekday: "short", hour: "numeric" }).replace(/:00| ?([AP])M/g, (m, ap) => ap ? ap.toLowerCase() : "");
 
 // The recap's tipping point for a finished matchup: the play that put the
 // winner ahead in the odds for good (the last time their line crossed 50%),
@@ -34,16 +39,38 @@ export function tippingPoint(points, winnerId, winnerName, plays = []) {
   return play ? `${describe(play)} put ${winnerName} ahead in the odds for good, a ${pct(play.momentum.shift)} swing.` : null;
 }
 
-export default function SwingChart({ points, teamId, teamName, opponentName, plays = [], crossings = false }) {
+export default function SwingChart({ points, teamId, teamName, opponentName, plays = [], crossings = false, kickoffs = [] }) {
   const [hover, setHover] = useState(null);
+  const scroller = useRef(null);
+  useEffect(() => { if (scroller.current) scroller.current.scrollLeft = scroller.current.scrollWidth; }, [points?.length]);
   const series = (points || [])
     .map(pt => ({ t: Date.parse(pt.t), p: Number(pt.p?.[teamId]) }))
     .filter(pt => Number.isFinite(pt.t) && Number.isFinite(pt.p));
   if (series.length < 2) return null;
 
   const t0 = series[0].t;
-  const span = Math.max(1, series[series.length - 1].t - t0);
-  const x = pt => PAD + ((pt.t - t0) / span) * (WIDTH - 2 * PAD);
+  // Windows of play: a new one wherever the odds sat still longer than GAP.
+  const segs = [];
+  series.forEach((pt, i) => { if (!i || pt.t - series[i - 1].t > GAP) segs.push({ start: pt.t, end: pt.t }); else segs[segs.length - 1].end = pt.t; });
+  // Game time up to t, with each break counted as BREAK.
+  const act = t => {
+    let a = 0;
+    for (const [k, sg] of segs.entries()) {
+      if (t < sg.start) return a;
+      if (t <= sg.end) return a + t - sg.start;
+      a += sg.end - sg.start + (k < segs.length - 1 ? BREAK : 0);
+    }
+    return a;
+  };
+  const span = Math.max(1, act(series[series.length - 1].t));
+  const W = Math.round(WIDTH * Math.max(1, span / WINDOW));
+  const x = pt => PAD + (act(pt.t) / span) * (W - 2 * PAD);
+  const breaks = segs.slice(0, -1).map(sg => PAD + (act(sg.end) + BREAK / 2) / span * (W - 2 * PAD));
+  const marks = [];
+  for (const t of [...segs.filter(sg => sg.end - sg.start > 10 * 60 * 1000).map(sg => sg.start), ...kickoffs.filter(Number.isFinite)].sort((a, b) => a - b)) {
+    if (t < t0 || t > series[series.length - 1].t || marks.some(m => Math.abs(m - t) < 20 * 60 * 1000)) continue;
+    if (segs.some(sg => t >= sg.start && t <= sg.end)) marks.push(t);
+  }
   const reach = Math.min(50, Math.max(MIN_REACH, Math.ceil(Math.max(...series.map(pt => Math.abs(pt.p - 50))) * 1.1 / 5) * 5));
   const y = pt => PAD + (1 - (pt.p - 50 + reach) / (2 * reach)) * (HEIGHT - 2 * PAD);
   const path = series.map((pt, i) => `${i ? "L" : "M"}${x(pt).toFixed(1)},${y(pt).toFixed(1)}`).join(" ");
@@ -55,8 +82,8 @@ export default function SwingChart({ points, teamId, teamName, opponentName, pla
   const onMove = event => {
     const box = event.currentTarget.getBoundingClientRect();
     const clientX = event.touches ? event.touches[0].clientX : event.clientX;
-    const target = t0 + ((clientX - box.left) / box.width * WIDTH - PAD) / (WIDTH - 2 * PAD) * span;
-    setHover(series.reduce((a, b) => (Math.abs(b.t - target) < Math.abs(a.t - target) ? b : a)));
+    const target = (clientX - box.left) / box.width * W;
+    setHover(series.reduce((a, b) => (Math.abs(x(b) - target) < Math.abs(x(a) - target) ? b : a)));
   };
   const when = new Date(shown.t).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });
 
@@ -66,31 +93,34 @@ export default function SwingChart({ points, teamId, teamName, opponentName, pla
         <span>WIN ODDS · {teamName}</span>
         <span><b>{Math.round(shown.p)}%</b> {hover ? when : "now"} · range {Math.round(low.p)}–{Math.round(high.p)}%</span>
       </div>
-      <div className="swing-plot">
-        <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} preserveAspectRatio="none" role="img"
+      <div className="swing-scroll" ref={scroller}><div className="swing-plot" style={{ width: `${(W / WIDTH) * 100}%` }}>
+        <svg viewBox={`0 0 ${W} ${HEIGHT}`} preserveAspectRatio="none" role="img"
           aria-label={`${teamName}'s win odds against ${opponentName} moved between ${Math.round(low.p)}% and ${Math.round(high.p)}% and are ${Math.round(last.p)}% now`}
           onMouseMove={onMove} onMouseLeave={() => setHover(null)} onTouchStart={onMove} onTouchMove={onMove} onTouchEnd={() => setHover(null)}>
-          <line className="swing-midline" x1={PAD} x2={WIDTH - PAD} y1={HEIGHT / 2} y2={HEIGHT / 2} vectorEffect="non-scaling-stroke" />
+          {breaks.map((bx, i) => <line key={"br" + i} className="swing-break" x1={bx} x2={bx} y1={0} y2={HEIGHT} vectorEffect="non-scaling-stroke" />)}
+          {marks.map(t => <line key={"k" + t} className="swing-kick" x1={x({ t })} x2={x({ t })} y1={0} y2={HEIGHT} vectorEffect="non-scaling-stroke" />)}
+          <line className="swing-midline" x1={PAD} x2={W - PAD} y1={HEIGHT / 2} y2={HEIGHT / 2} vectorEffect="non-scaling-stroke" />
           <path className="swing-line" d={path} vectorEffect="non-scaling-stroke" />
           {hover ? <line className="swing-crosshair" x1={x(hover)} x2={x(hover)} y1={PAD} y2={HEIGHT - PAD} vectorEffect="non-scaling-stroke" /> : null}
         </svg>
+        {marks.map(t => <span key={"kl" + t} className="swing-kick-label" style={{ left: `${(x({ t }) / W) * 100}%` }}>{slotLabel(t)}</span>)}
         {/* Marker outside the stretched SVG so it stays round. */}
         {reach < 50 ? <><span className="swing-axis top">{50 + reach}%</span><span className="swing-axis bottom">{50 - reach}%</span></> : null}
-        <span className="swing-dot" style={{ left: `${(x(shown) / WIDTH) * 100}%`, top: `${(y(shown) / HEIGHT) * 100}%` }} />
+        <span className="swing-dot" style={{ left: `${(x(shown) / W) * 100}%`, top: `${(y(shown) / HEIGHT) * 100}%` }} />
         {crossings ? series.slice(1).map((pt, i) => {
           // 💥 wherever the line crosses 50%: the other team took over.
           const prev = series[i];
           if (!((prev.p < 50 && pt.p > 50) || (prev.p > 50 && pt.p < 50))) return null;
           const t = prev.t + (50 - prev.p) / (pt.p - prev.p) * (pt.t - prev.t);
           const who = pt.p > 50 ? teamName : opponentName;
-          return <span key={"bang-" + i} className="swing-bang" style={{ left: `${(x({ t }) / WIDTH) * 100}%`, top: "50%" }}
+          return <span key={"bang-" + i} className="swing-bang" style={{ left: `${(x({ t }) / W) * 100}%`, top: "50%" }}
             title={`${who} took over (${new Date(t).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" })})`}>💥</span>;
         }) : null}
         {/* Only plays that moved the odds: an archived play without momentum crashed the page (Jim, 2026-11-10). */}
-        <PlayMarkers plays={plays.filter(p => p.momentum)} t0={t0} end={last.t} width={WIDTH} height={HEIGHT}
+        <PlayMarkers plays={plays.filter(p => p.momentum)} t0={t0} end={last.t} width={W} height={HEIGHT}
           x={t => x({ t })} y={p => y({ p })} valueAt={(play, t) => (series.find(pt => pt.t >= t) || last).p}
           swingText={play => `${play.momentum.toward} ${oddsMove(play.momentum.winProbability, play.momentum.shift)}`} />
-      </div>
+      </div></div>
     </div>
   );
 }

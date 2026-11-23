@@ -599,7 +599,7 @@ function App() {
       </div>
       {view === "lineup" ? <><LiveToggle liveOnly={liveOnly} onChange={setLiveOnly} /><MatchupLineup a={a} b={b} nflGames={scoreboard.nflGames || []} liveOnly={liveOnly} /></> : <div className="sheet-details">
         {seriesLine(a.teamId, b.teamId) ? <p className="rivalry-line">⚔️ {seriesLine(a.teamId, b.teamId)}</p> : null}
-        <SwingChart points={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} teamId={a.teamId} teamName={a.team} opponentName={b.team}
+        <SwingChart kickoffs={(scoreboard.nflGames || []).map(g => Date.parse(g.kickoff))} points={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} teamId={a.teamId} teamName={a.team} opponentName={b.team}
           plays={keyPlays.filter(p => p.momentum?.shift >= BIG_SWING)} crossings />
         {keyPlays.length ? (
           <div className="key-plays" aria-label="Key plays">
