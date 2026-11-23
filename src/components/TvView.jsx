@@ -298,7 +298,9 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
     const below = ps.findLastIndex(x => Number(x.p[w.teamId]) < LOCKED);
     return clinchedAt.current.get(a.matchupId) || (below >= 0 && ps[below + 1] ? Date.parse(ps[below + 1].t) : 0);
   };
-  const doneTiles = [...done].sort((x, y) => decidedAt(y) - decidedAt(x)).slice(0, Math.max(0, capacity - open.length));
+  // Inline, tiles always pair up (Jim, 2026-11-23): every open matchup, plus the latest decided one when that count
+  // is odd; it stays until another matchup is decided to pair with it.
+  const doneTiles = [...done].sort((x, y) => decidedAt(y) - decidedAt(x)).slice(0, inline ? open.length % 2 : Math.max(0, capacity - open.length));
   const strip = done.filter(p => !doneTiles.includes(p));
   const tiles = [...open, ...doneTiles];
   const cols = tiles.length <= 1 ? 1 : tiles.length <= 4 ? 2 : 3;

@@ -745,14 +745,9 @@ function App() {
     try { window.history.replaceState(null, "", window.location.pathname + window.location.search); } catch {}
     try { if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {}); } catch {}
   };
-  // Dashboard view (Jim, 2026-11-21): Manager unless no team is pinned; remembered per phone. League opens Watch
-  // mode, and straight away on opening the app when that's the saved choice.
-  const [dashView, setDashViewState] = useState(() => { try { return localStorage.getItem("dashView"); } catch { return null; } });
-  const dashMode = dashView || (myTeamId ? "manager" : "league");
-  const setDashView = v => { setDashViewState(v); try { localStorage.setItem("dashView", v); } catch {} };
-  useEffect(() => {
-    if (tab === "dashboard" && !window.location.hash && dashMode === "league") setTv(true);
-  }, []);
+  // Dashboard view: opens on League, inline (Jim, 2026-11-23: "the opening page is the league dashboard, not the full
+  // screen version"); Manager is a tap away for the visit.
+  const [dashMode, setDashView] = useState("league");
   const [gameday, setGameday] = useState(() => { try { return window.location.hash === "#gameday"; } catch { return false; } });
   const awake = useWakeLock(gameday && Boolean(myScore));
   const openGameday = () => {
