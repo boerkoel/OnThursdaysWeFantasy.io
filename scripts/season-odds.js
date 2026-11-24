@@ -355,7 +355,7 @@ function pathOdds(w, sims, seed, next = null) {
   for (let sim = 0; sim < sims; sim++) {
     const table = new Map([...start].map(([id, row]) => [id, { ...row }]));
     if (next) {
-      for (const id of teamIds) { const row = table.get(id); row.pointsFor += avg(id); if (r() * 100 < next.above(id)) row.wins++; }
+      for (const id of teamIds) { const row = table.get(id); row.pointsFor += next.points ? next.points(id, avg(id)) : avg(id); if (r() * 100 < next.above(id)) row.wins++; }
       for (const g of nextGames) table.get(r() * 100 < next.homeWin(g) ? g.home : g.away).wins++;
     }
     for (const week of left) {
@@ -379,7 +379,7 @@ const seasonPath = prevPath && prevPath.through === lastDone && String(prevPath.
 // saved when the week rolled over, or, for a week without one, rebuilt from the week archive: at each saved moment,
 // the season simulated with that week's head-to-head odds (winHistory) and median odds (the Thursday forecast, then
 // each swing play's), from the start of the week (the season path's frame) to its final.
-const REBUILD_POINTS = 200, REBUILD_SIMULATIONS = 2000, REBUILD_VERSION = 6;
+const REBUILD_POINTS = 200, REBUILD_SIMULATIONS = 2000, REBUILD_VERSION = 7;
 async function rebuildWeek(w) {
   const archive = await readJson("data/current/week-archive.json").catch(() => null);
   const saved = archive?.weeks?.[String(w)];
@@ -419,12 +419,15 @@ async function rebuildWeek(w) {
   const final = saved.finals || {};
   const miss = (key, flag) => new Map(teamIds.map(id => [id, final[String(id)] ? (final[String(id)][flag] ? 99.5 : 0.5) - end[key].get(id) : 0]));
   const winMiss = miss("win", "won"), aboveMiss = miss("above", "above");
+  const actual = new Map(games.filter(g => g.week === w && g.completed).flatMap(g => [[g.home, g.homeScore], [g.away, g.awayScore]]));
   const points = [[null, ...seasonPath.frames[w - 1].odds]];
   for (const sn of snaps) {
     const f = t1 > t0 ? (Date.parse(sn.t) - t0) / (t1 - t0) : 1;
     const fix = (map, missBy) => id => Math.min(99.5, Math.max(0.5, map.get(id) + missBy.get(id) * f));
     const homeWin = fix(sn.win, winMiss), aboveOf = fix(sn.above, aboveMiss);
-    points.push([sn.t, ...pathOdds(w - 1, REBUILD_SIMULATIONS, ["rush-week", w, sn.t], { homeWin: g => homeWin(g.home), above: aboveOf }).odds]);
+    // Points for (the tiebreaker) moves from the team's average toward what it really scored.
+    const points_ = (id, avg) => avg + f * ((actual.get(id) ?? avg) - avg);
+    points.push([sn.t, ...pathOdds(w - 1, REBUILD_SIMULATIONS, ["rush-week", w, sn.t], { homeWin: g => homeWin(g.home), above: aboveOf, points: points_ }).odds]);
   }
   points.push([events[events.length - 1]?.t || history[history.length - 1].t, ...seasonPath.frames[w].odds]);
   return { week: w, rebuilt: REBUILD_VERSION, ids: teamIds, points };
