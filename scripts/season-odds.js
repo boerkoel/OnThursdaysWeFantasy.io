@@ -317,8 +317,12 @@ const nowOdds = teamIds.map(id => pathRound(oddsById.get(id)));
 const prevTrail = previousOdds && Number(previousOdds.week) === currentWeek && String(previousOdds.weekTrail?.ids) === String(teamIds) ? previousOdds.weekTrail : null;
 const trailPoints = prevTrail ? [...prevTrail.points]
   : [[null, ...teamIds.map(id => pathRound(weekStart[String(id)]?.playoffOdds ?? oddsById.get(id)))]];
+// From the week's first kickoff on (Jim, 2026-11-24: the replay should start Thursday); before that only projections drift.
+const firstKickoff = Math.min(...(scoreboard?.nflGames || []).map(g => Date.parse(g.kickoff)).filter(Number.isFinite));
+const kickedOff = (scoreboard?.nflGames || []).some(g => g.state && g.state !== "pre");
+for (let i = trailPoints.length - 1; i > 0; i--) if (!(Date.parse(trailPoints[i][0]) >= firstKickoff)) trailPoints.splice(i, 1);
 const lastPoint = trailPoints[trailPoints.length - 1];
-if (nowOdds.some((p, i) => Math.abs(p - lastPoint[i + 1]) >= 0.5)) trailPoints.push([scoreboard?.lastUpdated || new Date().toISOString(), ...nowOdds]);
+if (kickedOff && nowOdds.some((p, i) => Math.abs(p - lastPoint[i + 1]) >= 0.5)) trailPoints.push([scoreboard?.lastUpdated || new Date().toISOString(), ...nowOdds]);
 while (trailPoints.length > TRAIL_MAX) trailPoints.splice(1, trailPoints.length - 2, ...trailPoints.slice(1, -1).filter((_, i) => i % 2));
 const weekTrail = { ids: teamIds, points: trailPoints };
 
@@ -383,8 +387,11 @@ async function rebuildWeek(w) {
   const idByName = new Map([...teamName].map(([id, name]) => [name, id]));
   const above = new Map(teamIds.map(id => [id, Number(saved.forecasts?.thu?.teams?.[String(id)]?.above ?? 50)]));
   const plays = (saved.plays || []).filter(p => p.median?.team && p.wallclock).sort((a, b) => Date.parse(a.wallclock) - Date.parse(b.wallclock));
-  const step = Math.max(1, history.length / REBUILD_POINTS);
-  const picked = [...new Set(Array.from({ length: Math.min(history.length, REBUILD_POINTS) }, (_, i) => Math.floor(i * step)))].map(i => history[i]);
+  // From the first kickoff (the Thursday forecast is saved when the first game starts).
+  const kickoff = Date.parse(saved.forecasts?.thu?.at || "") || 0;
+  const live = history.filter(h => Date.parse(h.t) >= kickoff);
+  const step = Math.max(1, live.length / REBUILD_POINTS);
+  const picked = [...new Set(Array.from({ length: Math.min(live.length, REBUILD_POINTS) }, (_, i) => Math.floor(i * step)))].map(i => live[i]);
   const points = [[null, ...seasonPath.frames[w - 1].odds]];
   let k = 0;
   for (const h of picked) {
@@ -396,11 +403,11 @@ async function rebuildWeek(w) {
     points.push([h.t, ...pathOdds(w - 1, REBUILD_SIMULATIONS, ["rush-week", w, h.t], { homeWin: g => p(g.home), above: id => above.get(id) }).odds]);
   }
   points.push([history[history.length - 1].t, ...seasonPath.frames[w].odds]);
-  return { week: w, rebuilt: true, ids: teamIds, points };
+  return { week: w, rebuilt: 2, ids: teamIds, points };
 }
 const finished = previousOdds && Number(previousOdds.week) === currentWeek - 1 && previousOdds.weekTrail?.points?.length > 2 ? previousOdds.weekTrail : null;
 const lastWeekTrail = finished ? { week: currentWeek - 1, ids: finished.ids, points: finished.points }
-  : Number(previousOdds?.lastWeekTrail?.week) === currentWeek - 1 ? previousOdds.lastWeekTrail
+  : Number(previousOdds?.lastWeekTrail?.week) === currentWeek - 1 && previousOdds.lastWeekTrail.rebuilt !== true ? previousOdds.lastWeekTrail
   : currentWeek > 1 && completedWeeks.includes(currentWeek - 1) ? await rebuildWeek(currentWeek - 1) : null;
 
 await writeFile("data/current/season-odds.json", JSON.stringify({
