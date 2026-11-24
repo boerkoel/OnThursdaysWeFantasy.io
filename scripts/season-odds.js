@@ -326,7 +326,9 @@ const weekTrail = { ids: teamIds, points: trailPoints };
 // up to then, with the same model. Rebuilt only when another week finishes.
 const PATH_SIMULATIONS = 4000;
 const lastDone = completedWeeks.length ? Math.max(...completedWeeks) : 0;
-function pathFrame(w) {
+// Playoff odds knowing only weeks 1..w. With `next` ({ homeWin(game), above(id) }, in %), week w + 1 is in progress at
+// those odds instead of simulated from scratch: how a past week's replay is rebuilt from its archived win and median odds.
+function pathOdds(w, sims, seed, next = null) {
   const done = games.filter(g => g.completed && g.week <= w);
   const scores = new Map(teamIds.map(id => [id, []]));
   for (const g of done) { scores.get(g.home)?.push(g.homeScore); scores.get(g.away)?.push(g.awayScore); }
@@ -340,24 +342,66 @@ function pathFrame(w) {
     const weekGames = games.filter(g => g.week === week);
     addWeek(start, weekGames, new Map(weekGames.flatMap(g => [[g.home, g.homeScore], [g.away, g.awayScore]])));
   }
-  const left = weeks.filter(x => x > w);
-  const r = seededRng(["rush", w, lastDone]);
+  const nextGames = next ? games.filter(g => g.week === w + 1) : [];
+  const left = weeks.filter(x => x > (next ? w + 1 : w));
+  const r = seededRng(seed);
   const z = () => Math.sqrt(-2 * Math.log(Math.max(r(), 1e-12))) * Math.cos(2 * Math.PI * r());
   const made = new Map(teamIds.map(id => [id, 0]));
-  for (let sim = 0; sim < PATH_SIMULATIONS; sim++) {
+  for (let sim = 0; sim < sims; sim++) {
     const table = new Map([...start].map(([id, row]) => [id, { ...row }]));
+    if (next) {
+      for (const id of teamIds) { const row = table.get(id); row.pointsFor += avg(id); if (r() * 100 < next.above(id)) row.wins++; }
+      for (const g of nextGames) table.get(r() * 100 < next.homeWin(g) ? g.home : g.away).wins++;
+    }
     for (const week of left) {
       addWeek(table, games.filter(g => g.week === week),
         new Map(teamIds.map(id => [id, mean + (avg(id) - mean) * retention(id) ** (week - w - 1) + sd * z()])));
     }
     [...table.entries()].sort(bySeed).slice(0, playoffTeamCount).forEach(([id]) => made.set(id, made.get(id) + 1));
   }
-  const pct = c => left.length ? pathRound(ODDS_FLOOR + (100 - 2 * ODDS_FLOOR) * (c + 1) / (PATH_SIMULATIONS + 2)) : pathRound(c / PATH_SIMULATIONS * 100);
-  return { week: w, odds: teamIds.map(id => pct(made.get(id))), math: mathOf(new Map([...start].map(([id, row]) => [id, row.wins])), left.length) };
+  const pct = c => left.length || next ? pathRound(ODDS_FLOOR + (100 - 2 * ODDS_FLOOR) * (c + 1) / (sims + 2)) : pathRound(c / sims * 100);
+  return { odds: teamIds.map(id => pct(made.get(id))), wins: new Map([...start].map(([id, row]) => [id, row.wins])), left: left.length };
+}
+function pathFrame(w) {
+  const { odds, wins } = pathOdds(w, PATH_SIMULATIONS, ["rush", w, lastDone]);
+  return { week: w, odds, math: mathOf(wins, weeks.filter(x => x > w).length) };
 }
 const prevPath = previousOdds?.seasonPath;
 const seasonPath = prevPath && prevPath.through === lastDone && String(prevPath.ids) === String(teamIds) ? prevPath
   : { through: lastDone, ids: teamIds, frames: Array.from({ length: lastDone + 1 }, (_, w) => pathFrame(w)) };
+
+// Last week's trail (Jim, 2026-11-24: "replay last week" until this week's first game starts): the live trail
+// saved when the week rolled over, or, for a week without one, rebuilt from the week archive: at each saved moment,
+// the season simulated with that week's head-to-head odds (winHistory) and median odds (the Thursday forecast, then
+// each swing play's), from the start of the week (the season path's frame) to its final.
+const REBUILD_POINTS = 120, REBUILD_SIMULATIONS = 2000;
+async function rebuildWeek(w) {
+  const archive = await readJson("data/current/week-archive.json").catch(() => null);
+  const saved = archive?.weeks?.[String(w)];
+  const history = saved?.winHistory || [];
+  if (!history.length || !seasonPath.frames[w - 1] || !seasonPath.frames[w]) return null;
+  const idByName = new Map([...teamName].map(([id, name]) => [name, id]));
+  const above = new Map(teamIds.map(id => [id, Number(saved.forecasts?.thu?.teams?.[String(id)]?.above ?? 50)]));
+  const plays = (saved.plays || []).filter(p => p.median?.team && p.wallclock).sort((a, b) => Date.parse(a.wallclock) - Date.parse(b.wallclock));
+  const step = Math.max(1, history.length / REBUILD_POINTS);
+  const picked = [...new Set(Array.from({ length: Math.min(history.length, REBUILD_POINTS) }, (_, i) => Math.floor(i * step)))].map(i => history[i]);
+  const points = [[null, ...seasonPath.frames[w - 1].odds]];
+  let k = 0;
+  for (const h of picked) {
+    for (; k < plays.length && Date.parse(plays[k].wallclock) <= Date.parse(h.t); k++) {
+      const id = idByName.get(plays[k].median.team);
+      if (id) above.set(id, Number(plays[k].median.aboveMedianProbability));
+    }
+    const p = id => Number(h.p?.[String(id)] ?? 50);
+    points.push([h.t, ...pathOdds(w - 1, REBUILD_SIMULATIONS, ["rush-week", w, h.t], { homeWin: g => p(g.home), above: id => above.get(id) }).odds]);
+  }
+  points.push([history[history.length - 1].t, ...seasonPath.frames[w].odds]);
+  return { week: w, rebuilt: true, ids: teamIds, points };
+}
+const finished = previousOdds && Number(previousOdds.week) === currentWeek - 1 && previousOdds.weekTrail?.points?.length > 2 ? previousOdds.weekTrail : null;
+const lastWeekTrail = finished ? { week: currentWeek - 1, ids: finished.ids, points: finished.points }
+  : Number(previousOdds?.lastWeekTrail?.week) === currentWeek - 1 ? previousOdds.lastWeekTrail
+  : currentWeek > 1 && completedWeeks.includes(currentWeek - 1) ? await rebuildWeek(currentWeek - 1) : null;
 
 await writeFile("data/current/season-odds.json", JSON.stringify({
   week: currentWeek,
@@ -372,6 +416,7 @@ await writeFile("data/current/season-odds.json", JSON.stringify({
   // The 100-Yard Rush: math clinches, this week's trail, and the season's path (each with odds in `ids` order).
   math,
   weekTrail,
+  lastWeekTrail,
   seasonPath,
   // Odds by wins this week: [0, 1, 2] wins → {playoffOdds, byeOdds, chance}; null where the sims rarely land (<1%).
   byWins: thisWeekGames.length ? Object.fromEntries([...byWins].map(([id, list]) => [String(id), list.map(b => b.n >= SIMULATIONS / 100
