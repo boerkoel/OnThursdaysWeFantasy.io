@@ -40,6 +40,7 @@ import { useWakeLock } from "./lib/wakeLock.js";
 import { forkFor } from "./lib/injuryForks.js";
 import { drivePeeks, medianEchoes, tdPeeks } from "./lib/tdPeeks.js";
 import TvView, { SurvivorLive } from "./components/TvView.jsx";
+import RushField from "./components/RushField.jsx";
 import { oddsMove, shortPlay } from "./lib/playText.js";
 
 // Standings and rest-of-season odds in one sortable table: current seed and
@@ -899,6 +900,10 @@ function App() {
         </div>
         {dashMode === "manager" ? <>{renderMyTeam({ gamedayButton: false })}{renderGameday()}</>
           : <TvView forks={{ win: winFork, median: medianFork, ticket: ticketFork }} peeks={watchPeeks} scoreboard={scoreboard} guillotine={guillotine} livePlays={livePlayFeed} marquee={live.marquee} survivorFeed={survivorFeed} logos={teamLogos} inline onOpenMatchup={setOpenMatchup} onOpenStat={setStatSheet} />}
+        {dashMode === "league" ? <div className="rush-dash" id="rush">
+          <div className="section-heading"><div><span className="section-kicker">RACE TO THE PLAYOFFS</span><h2>The 100-Yard Rush</h2></div></div>
+          <RushField seasonOdds={live.seasonOdds} logos={teamLogos} />
+        </div> : null}
       </section> : null}
 
       {tab === "live" ? <>
@@ -931,6 +936,8 @@ function App() {
       {tab === "standings" ? <>
       <section id="standings-odds" className="section">
         <div className="section-heading"><div><span className="section-kicker">WEEK {scoreboard.week} · {seasonOddsWeeksLeft} WEEKS LEFT</span><h2>Standings</h2></div></div>
+        <h3 className="survival-heading">The 100-Yard Rush</h3>
+        <RushField seasonOdds={live.seasonOdds} logos={teamLogos} />
         <StandingsTable seasonOdds={live.seasonOdds} logos={teamLogos} liveScores={scores} week={scoreboard.week} />
       </section>
       <section id="playoffs" className="section">

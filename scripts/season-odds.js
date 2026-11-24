@@ -1,5 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
-import { SIMULATIONS, possibleOdds, round, seededRng } from "./lib/simulation.js";
+import { ODDS_FLOOR, SIMULATIONS, possibleOdds, round, seededRng } from "./lib/simulation.js";
+import { mathStatus } from "./lib/clinch.js";
 
 // Rest-of-season odds: simulates the remaining regular-season weeks to
 // estimate each team's chance of making the playoffs, earning a bye, landing
@@ -299,6 +300,65 @@ if (previousOdds && Number(previousOdds.week) === currentWeek) {
   weekStart = snapshotOf(teams);
 }
 
+// The 100-Yard Rush (Jim, 2026-11-24: "track their surges or setbacks", with replays of the week and the season).
+// Clinched / eliminated, mathematically, from the results locked so far: the field's touchdown and safety.
+const mathOf = (wins, weeksLeft) => {
+  const status = mathStatus({ teams: teamIds.map(id => ({ teamId: id, wins: wins.get(id), open: 0 })), gamesLeft: 2 * weeksLeft, spots: playoffTeamCount });
+  return Object.fromEntries([...status].filter(([, s]) => s.clinched || s.eliminated).map(([id, s]) => [String(id), s.clinched ? "clinched" : "eliminated"]));
+};
+const math = mathOf(new Map([...base].map(([id, row]) => [id, row.wins])), remainingWeeks.length);
+
+// Week trail: each team's playoff odds every time someone's moved half a point or more this week (from the restored
+// copy, so it carries across live runs), [time, odds in `ids` order]. Thinned past TRAIL_MAX, keeping the ends.
+const TRAIL_MAX = 300;
+const pathRound = n => Math.round(Number(n) * 10) / 10;
+const oddsById = new Map(teams.map(t => [t.teamId, t.playoffOdds]));
+const nowOdds = teamIds.map(id => pathRound(oddsById.get(id)));
+const prevTrail = previousOdds && Number(previousOdds.week) === currentWeek && String(previousOdds.weekTrail?.ids) === String(teamIds) ? previousOdds.weekTrail : null;
+const trailPoints = prevTrail ? [...prevTrail.points]
+  : [[null, ...teamIds.map(id => pathRound(weekStart[String(id)]?.playoffOdds ?? oddsById.get(id)))]];
+const lastPoint = trailPoints[trailPoints.length - 1];
+if (nowOdds.some((p, i) => Math.abs(p - lastPoint[i + 1]) >= 0.5)) trailPoints.push([scoreboard?.lastUpdated || new Date().toISOString(), ...nowOdds]);
+while (trailPoints.length > TRAIL_MAX) trailPoints.splice(1, trailPoints.length - 2, ...trailPoints.slice(1, -1).filter((_, i) => i % 2));
+const weekTrail = { ids: teamIds, points: trailPoints };
+
+// Season path: playoff odds after each finished week (0 = before Week 1), each simulated knowing only the results
+// up to then, with the same model. Rebuilt only when another week finishes.
+const PATH_SIMULATIONS = 4000;
+const lastDone = completedWeeks.length ? Math.max(...completedWeeks) : 0;
+function pathFrame(w) {
+  const done = games.filter(g => g.completed && g.week <= w);
+  const scores = new Map(teamIds.map(id => [id, []]));
+  for (const g of done) { scores.get(g.home)?.push(g.homeScore); scores.get(g.away)?.push(g.awayScore); }
+  const all = [...scores.values()].flat();
+  const mean = all.length ? all.reduce((a, b) => a + b, 0) / all.length : 110;
+  const avg = id => (scores.get(id).reduce((a, b) => a + b, 0) + REGRESSION_WEEKS * mean) / (scores.get(id).length + REGRESSION_WEEKS);
+  const res = [...scores.values()].flatMap(list => { const m = list.reduce((a, b) => a + b, 0) / (list.length || 1); return list.map(s => s - m); });
+  const sd = (res.length > teamIds.length ? Math.max(15, Math.sqrt(res.reduce((a, r) => a + r * r, 0) / (res.length - teamIds.length))) : 25) * BYES_AND_INJURIES_SD;
+  const start = new Map(teamIds.map(id => [id, { pointsFor: 0, wins: 0, tickets: 0 }]));
+  for (const week of weeks.filter(x => x <= w)) {
+    const weekGames = games.filter(g => g.week === week);
+    addWeek(start, weekGames, new Map(weekGames.flatMap(g => [[g.home, g.homeScore], [g.away, g.awayScore]])));
+  }
+  const left = weeks.filter(x => x > w);
+  const r = seededRng(["rush", w, lastDone]);
+  const z = () => Math.sqrt(-2 * Math.log(Math.max(r(), 1e-12))) * Math.cos(2 * Math.PI * r());
+  const made = new Map(teamIds.map(id => [id, 0]));
+  for (let sim = 0; sim < PATH_SIMULATIONS; sim++) {
+    const table = new Map([...start].map(([id, row]) => [id, { ...row }]));
+    for (const week of left) {
+      addWeek(table, games.filter(g => g.week === week),
+        new Map(teamIds.map(id => [id, mean + (avg(id) - mean) * retention(id) ** (week - w - 1) + sd * z()])));
+    }
+    [...table.entries()].sort(bySeed).slice(0, playoffTeamCount).forEach(([id]) => made.set(id, made.get(id) + 1));
+  }
+  const pct = c => left.length ? pathRound(ODDS_FLOOR + (100 - 2 * ODDS_FLOOR) * (c + 1) / (PATH_SIMULATIONS + 2)) : pathRound(c / PATH_SIMULATIONS * 100);
+  return { week: w, odds: teamIds.map(id => pct(made.get(id))), math: mathOf(new Map([...start].map(([id, row]) => [id, row.wins])), left.length) };
+}
+const prevPath = previousOdds?.seasonPath;
+const seasonPath = prevPath && prevPath.through === lastDone && String(prevPath.ids) === String(teamIds) ? prevPath
+  : { through: lastDone, ids: teamIds, frames: Array.from({ length: lastDone + 1 }, (_, w) => pathFrame(w)) };
+
 await writeFile("data/current/season-odds.json", JSON.stringify({
   week: currentWeek,
   lastUpdated: new Date().toISOString(),
@@ -309,6 +369,10 @@ await writeFile("data/current/season-odds.json", JSON.stringify({
   teams,
   weekStart,
   lastWeek,
+  // The 100-Yard Rush: math clinches, this week's trail, and the season's path (each with odds in `ids` order).
+  math,
+  weekTrail,
+  seasonPath,
   // Odds by wins this week: [0, 1, 2] wins → {playoffOdds, byeOdds, chance}; null where the sims rarely land (<1%).
   byWins: thisWeekGames.length ? Object.fromEntries([...byWins].map(([id, list]) => [String(id), list.map(b => b.n >= SIMULATIONS / 100
     ? { chance: round(b.n / SIMULATIONS * 100), playoffOdds: round(b.playoffs / b.n * 100), byeOdds: round(b.bye / b.n * 100) } : null)])) : null,
