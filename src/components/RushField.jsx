@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Explain, TeamLogo } from "./LiveBits.jsx";
 import { pct } from "../lib/data.js";
+import { mathStatus } from "../../scripts/lib/clinch.js";
 
 // The 100-Yard Rush (Jim, 2026-11-24): playoff odds as a football field, riffing on the race that set the draft
 // order. 100 yards = in. Each team runs in its own lane; the hollow marker is where its week started, and the bar
@@ -12,9 +13,48 @@ const xOf = (p, status) => status === "clinched" ? 100 - EZ / 2 : status === "el
 const WEEK_REPLAY_MS = 10000, SEASON_STEP_MS = 900;
 const timeLabel = iso => new Date(iso).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });
 
+// The dice (Jim, 2026-11-24: "advance one week at a time ... that way there's a build"): each press rolls one more
+// remaining week from season-odds.js's model (dice), then re-simulates the rest from there. One possible future.
+const DICE_SIMULATIONS = 2000, DICE_MS = 900;
+const z = () => Math.sqrt(-2 * Math.log(Math.max(Math.random(), 1e-12))) * Math.cos(2 * Math.PI * Math.random());
+const rollScores = (m, i) => m.ids.map((id, j) => {
+  const live = i === 0 ? m.live?.[j] : null;
+  return live ? Math.max(live[2] - 10, live[0] + live[1] * z()) : m.mean[i][j] + m.sd[i] * z();
+});
+function addRolled(table, m, i, scores) {   // head-to-head + median wins, as in season-odds.js
+  const sorted = [...scores].sort((a, b) => a - b), mid = sorted.length / 2;
+  const median = sorted.length % 2 ? sorted[Math.floor(mid)] : (sorted[mid - 1] + sorted[mid]) / 2;
+  const at = new Map(m.ids.map((id, j) => [id, j]));
+  scores.forEach((sc, j) => { table[j][1] += sc; if (sc > median) table[j][0]++; });
+  for (const [h, a] of m.games[i]) { const sh = scores[at.get(h)], sa = scores[at.get(a)]; if (sh > sa) table[at.get(h)][0]++; else if (sa > sh) table[at.get(a)][0]++; }
+}
+const ranked = (m, table) => m.ids.map((id, j) => [id, ...table[j]]).sort((a, b) => b[1] - a[1] || b[2] - a[2]).map(r => r[0]);
+function diceFrame(m, rolled) {
+  const table = m.base.map(r => [...r]);
+  rolled.forEach((scores, i) => addRolled(table, m, i, scores));
+  const left = m.weeks.length - rolled.length;
+  const wins = Object.fromEntries(m.ids.map((id, j) => [id, table[j][0]]));
+  const games = 2 * (m.played + rolled.length);
+  if (!left) {
+    const inSet = new Set(ranked(m, table).slice(0, m.spots));
+    return { odds: Object.fromEntries(m.ids.map(id => [id, inSet.has(id) ? 100 : 0])), wins, games,
+      math: Object.fromEntries(m.ids.map(id => [String(id), inSet.has(id) ? "clinched" : "eliminated"])) };
+  }
+  const made = new Map(m.ids.map(id => [id, 0]));
+  for (let sim = 0; sim < DICE_SIMULATIONS; sim++) {
+    const t = table.map(r => [...r]);
+    for (let i = rolled.length; i < m.weeks.length; i++) addRolled(t, m, i, rollScores(m, i));
+    ranked(m, t).slice(0, m.spots).forEach(id => made.set(id, made.get(id) + 1));
+  }
+  const status = mathStatus({ teams: m.ids.map(id => ({ teamId: id, wins: wins[id], open: 0 })), gamesLeft: 2 * left, spots: m.spots });
+  return { odds: Object.fromEntries(m.ids.map(id => [id, 0.5 + 99 * (made.get(id) + 1) / (DICE_SIMULATIONS + 2)])), wins, games,
+    math: Object.fromEntries([...status].filter(([, x]) => x.clinched || x.eliminated).map(([id, x]) => [String(id), x.clinched ? "clinched" : "eliminated"])) };
+}
+
 export default function RushField({ seasonOdds, logos, weekStarted }) {
   const [replay, setReplay] = useState(null);     // { kind, frames, step, ms }
   const [open, setOpen] = useState(null);         // tapped lane
+  const [dice, setDice] = useState(null);         // { rolled: [scores by week], frames }
   const teams = seasonOdds?.teams || [];
   const week = Number(seasonOdds?.week);
   const math = seasonOdds?.math || {};
@@ -36,9 +76,22 @@ export default function RushField({ seasonOdds, logos, weekStarted }) {
     { label: `Now · Week ${week}`, odds: live, math }
   ] : null;
 
+  const model = seasonOdds?.dice;
+  const canRoll = model?.weeks?.length > 0 && model.mean?.length === model.weeks.length;
+  const roll = () => {
+    setReplay(null);
+    if (dice && dice.rolled.length >= model.weeks.length) return setDice(null);   // start over
+    const base = dice || { rolled: [], frames: [{ label: "Today", odds: live, math }] };
+    const rolled = [...base.rolled, rollScores(model, base.rolled.length)];
+    const f = diceFrame(model, rolled);
+    const last = rolled.length === model.weeks.length;
+    setDice({ rolled, frames: [...base.frames, { ...f, label: last ? "Final: one possible future" : `Week ${model.weeks[rolled.length - 1]} rolled` }] });
+  };
+  const nextLabel = !dice ? `🎲 Roll Week ${model?.weeks?.[0]}` : dice.rolled.length >= (model?.weeks?.length || 0) ? "🎲 Start over" : `🎲 Roll Week ${model.weeks[dice.rolled.length]}`;
   const play = kind => {
     const frames = kind === "week" ? weekFrames : seasonFrames;
     setOpen(null);
+    setDice(null);
     setReplay({ kind, frames, step: 0, ms: kind === "week" ? Math.min(700, Math.max(80, WEEK_REPLAY_MS / frames.length)) : SEASON_STEP_MS });
   };
   useEffect(() => {
@@ -49,11 +102,11 @@ export default function RushField({ seasonOdds, logos, weekStarted }) {
   }, [replay]);
 
   if (!teams.length) return null;
-  const frame = replay ? replay.frames[replay.step] : { odds: live, math };
-  const from = replay ? replay.frames[0] : { odds: Object.fromEntries(teams.map(t => [t.teamId, start(t.teamId)])), math };
+  const frame = dice ? dice.frames[dice.frames.length - 1] : replay ? replay.frames[replay.step] : { odds: live, math };
+  const from = dice ? dice.frames[0] : replay ? replay.frames[0] : { odds: Object.fromEntries(teams.map(t => [t.teamId, start(t.teamId)])), math };
   // The range each team has covered (Jim, 2026-11-24): this week so far, or the replay up to the frame on screen.
   const nowTrail = seasonOdds?.weekTrail;
-  const covered = replay ? replay.frames.slice(0, replay.step + 1)
+  const covered = dice ? dice.frames : replay ? replay.frames.slice(0, replay.step + 1)
     : [...(nowTrail?.points || []).map(([, ...odds]) => ({ odds: toMap(nowTrail.ids, odds), math })), { odds: live, math }];
   const range = id => {
     const xs = covered.map(f => f.odds[id]).filter(Number.isFinite);
@@ -67,20 +120,31 @@ export default function RushField({ seasonOdds, logos, weekStarted }) {
   const surge = moves.reduce((best, m) => !best || m[1] > best[1] ? m : best, null);
   const setback = moves.reduce((worst, m) => !worst || m[1] < worst[1] ? m : worst, null);
   const span = replay ? (replay.kind === "week" ? (lastWeek ? "last week" : "this week") : "this season") : "this week";
+  // The dice's final: the biggest long shot in and the biggest favorite out.
+  const done = dice && dice.rolled.length >= model.weeks.length;
+  const longShot = done ? lanes.filter(t => frame.odds[t.teamId] === 100 && from.odds[t.teamId] < 50).sort((a, b) => from.odds[a.teamId] - from.odds[b.teamId])[0] : null;
+  const upset = done ? lanes.filter(t => frame.odds[t.teamId] === 0 && from.odds[t.teamId] > 50).sort((a, b) => from.odds[b.teamId] - from.odds[a.teamId])[0] : null;
 
   return (
-    <div className={"rush" + (replay ? " replaying" : "")} style={{ "--rush-ms": `${replay ? replay.ms : 1200}ms` }}>
+    <div className={"rush" + (replay || dice ? " replaying" : "")} style={{ "--rush-ms": `${replay ? replay.ms : dice ? DICE_MS : 1200}ms` }}>
       <div className="rush-head">
         <div className="rush-buttons">
           {replay ? <button type="button" className="active" onClick={() => setReplay(null)}>■ Stop</button> : <>
             <button type="button" disabled={!weekFrames} onClick={() => play("week")}>▶ Replay {lastWeek ? "last week" : "the week"}</button>
             <button type="button" disabled={!seasonFrames} onClick={() => play("season")}>▶ Replay the season</button>
+            <span className="rush-dice">
+              <button type="button" className={dice ? "active" : ""} disabled={!canRoll} onClick={roll}>{nextLabel}</button>
+              {dice && !done ? <button type="button" onClick={() => setDice(null)}>Today</button> : null}
+            </span>
           </>}
         </div>
-        <span className="rush-caption">{replay ? <strong>{frame.label}</strong> : null}
+        <span className="rush-caption">{replay || dice ? <strong>{frame.label}</strong> : null}
+          {done && longShot ? <span className="up">Long shot in: {longShot.team} ({pct(from.odds[longShot.teamId])})</span> : null}
+          {done && upset ? <span className="down">Out: {upset.team} ({pct(from.odds[upset.teamId])})</span> : null}
+          {done ? null : <>
           {surge && surge[1] > 0 ? <span className="up">▲ {surge[0].team} +{surge[1]} yds</span> : null}
           {setback && setback[1] < 0 ? <span className="down">▼ {setback[0].team} {setback[1]} yds</span> : null}
-          {!surge && !replay ? <span>No moves yet {span}</span> : null}</span>
+          {!surge && !replay && !dice ? <span>No moves yet {span}</span> : null}</>}</span>
       </div>
       <div className="rush-board">
         <div className="rush-row rush-numbers" aria-hidden="true">
@@ -98,7 +162,7 @@ export default function RushField({ seasonOdds, logos, weekStarted }) {
           return <div key={id} className={"rush-lane" + (open === id ? " open" : "")}>
             <button type="button" className="rush-row" onClick={() => setOpen(open === id ? null : id)}>
               <span className="rush-name"><b>{t.team}</b>
-                <small>{status === "clinched" ? "CLINCHED" : status === "eliminated" ? "OUT" : pct(now)}
+                <small>{dice && frame.wins ? `${frame.wins[id]}-${frame.games - frame.wins[id]} · ` : ""}{status === "clinched" ? (dice ? "IN" : "CLINCHED") : status === "eliminated" ? "OUT" : pct(now)}
                   {d ? <em className={d > 0 ? "up" : "down"}>{d > 0 ? ` ▲${d}` : ` ▼${-d}`}</em> : null}</small></span>
               <span className="rush-track">
                 <i className="rush-range" style={{ left: `${rg.x0}%`, width: `${rg.x1 - rg.x0}%` }} />
@@ -109,13 +173,13 @@ export default function RushField({ seasonOdds, logos, weekStarted }) {
                 </span>
               </span>
             </button>
-            {open === id ? <p className="rush-detail">{pct(now)} {replay ? "here" : "now"}, {pct(was)} at the start of the {replay?.kind === "season" ? "season" : "week"}.
+            {open === id ? <p className="rush-detail">{pct(now)} {replay || dice ? "here" : "now"}, {pct(was)} {dice ? "today" : `at the start of the ${replay?.kind === "season" ? "season" : "week"}`}.
               {rg.hi - rg.lo >= 1 ? ` Range ${replay?.kind === "season" ? "this season" : replay && lastWeek ? "last week" : "this week"}: ${pct(rg.lo)}–${pct(rg.hi)}.` : ""}
               {byWins ? " This week: " + byWins.map((x, k) => x ? `${["lose both", "split", "win both"][k]} ${pct(x.playoffOdds)}` : null).filter(Boolean).join(", ") + "." : ""}</p> : null}
           </div>;
         })}
       </div>
-      <Explain lead="Playoff odds as yards: 100 = in. Hollow marker: where the week started; faint band: the range since.">Each lane is a team's chance of making the playoffs, from {Number(seasonOdds?.simulations || 0).toLocaleString()} season simulations, updated during games. A touchdown means clinched for sure; a safety means eliminated. Replay the week to watch every swing since it began (before kickoff, last week's), or the season to see where each team stood after every week (the same model, knowing only the results up to then). Tap a lane for what this week's results would do.</Explain>
+      <Explain lead="Playoff odds as yards: 100 = in. Hollow marker: where the week started; faint band: the range since.">Each lane is a team's chance of making the playoffs, from {Number(seasonOdds?.simulations || 0).toLocaleString()} season simulations, updated during games. A touchdown means clinched for sure; a safety means eliminated. Replay the week to watch every swing since it began (before kickoff, last week's), or the season to see where each team stood after every week (the same model, knowing only the results up to then). 🎲 rolls one random week per press, then shows the odds from there: one possible future, not a forecast; roll again for another. Tap a lane for what this week's results would do.</Explain>
     </div>
   );
 }
