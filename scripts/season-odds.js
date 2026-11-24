@@ -380,9 +380,11 @@ const seasonPath = prevPath && prevPath.through === lastDone && String(prevPath.
 // the season simulated with that week's head-to-head odds (winHistory) and median odds (the Thursday forecast, then
 // each swing play's), from the start of the week (the season path's frame) to its final.
 const REBUILD_POINTS = 200, REBUILD_SIMULATIONS = 2000, REBUILD_VERSION = 7;
-async function rebuildWeek(w) {
-  const archive = await readJson("data/current/week-archive.json").catch(() => null);
-  const saved = archive?.weeks?.[String(w)];
+const weekArchive = await readJson("data/current/week-archive.json").catch(() => null);
+// A finished week's live stream from the week archive: the state (each team's head-to-head and median odds) after
+// every event, and the playoff odds at any of those states. null for a week the archive doesn't cover.
+function weekStream(w) {
+  const saved = weekArchive?.weeks?.[String(w)];
   const history = saved?.winHistory || [];
   if (!history.length || !seasonPath.frames[w - 1] || !seasonPath.frames[w]) return null;
   const idByName = new Map([...teamName].map(([id, name]) => [name, id]));
@@ -397,10 +399,7 @@ async function rebuildWeek(w) {
     ...(saved.plays || []).filter(p => p.wallclock).map(p => ({ t: p.wallclock, play: p })),
     ...history.map(h => ({ t: h.t, p: h.p }))
   ].filter(e => Date.parse(e.t) >= kickoff).sort((a, b) => Date.parse(a.t) - Date.parse(b.t));
-  const step = Math.max(1, events.length / REBUILD_POINTS);
-  const picked = new Set(Array.from({ length: Math.min(events.length, REBUILD_POINTS) }, (_, i) => Math.floor(i * step)).concat(events.length - 1));
-  const snaps = [];
-  events.forEach((e, i) => {
+  const snaps = events.map(e => {
     if (e.p) for (const id of teamIds) if (e.p[String(id)] != null) win.set(id, Number(e.p[String(id)]));
     // Plays move the odds by their shifts (the plays' own after-odds can be stale: they're walked back from the odds
     // when they were fetched); the saved moments re-anchor the head-to-head odds.
@@ -410,32 +409,74 @@ async function rebuildWeek(w) {
       if (opponent.has(m.towardTeamId)) win.set(opponent.get(m.towardTeamId), 100 - win.get(m.towardTeamId));
     }
     if (md?.team && md.shift && idByName.has(md.team)) above.set(idByName.get(md.team), clamp(above.get(idByName.get(md.team)) + Number(md.shift)));
-    if (picked.has(i)) snaps.push({ t: e.t, win: new Map(win), above: new Map(above) });
+    return { t: e.t, win: new Map(win), above: new Map(above) };
   });
+  if (!snaps.length) return null;
   // The shifts drift (the median odds have no saved moments to re-anchor them), so each team's miss at the end, against
   // how its week actually went, is spread back over the week: the stream lands on the real results.
-  if (!snaps.length) return null;
-  const end = snaps[snaps.length - 1], t0 = Date.parse(snaps[0]?.t), t1 = Date.parse(end?.t);
+  const end = snaps[snaps.length - 1], t0 = Date.parse(snaps[0].t), t1 = Date.parse(end.t);
   const final = saved.finals || {};
   const miss = (key, flag) => new Map(teamIds.map(id => [id, final[String(id)] ? (final[String(id)][flag] ? 99.5 : 0.5) - end[key].get(id) : 0]));
   const winMiss = miss("win", "won"), aboveMiss = miss("above", "above");
   const actual = new Map(games.filter(g => g.week === w && g.completed).flatMap(g => [[g.home, g.homeScore], [g.away, g.awayScore]]));
-  const points = [[null, ...seasonPath.frames[w - 1].odds]];
-  for (const sn of snaps) {
+  const oddsAt = sn => {
     const f = t1 > t0 ? (Date.parse(sn.t) - t0) / (t1 - t0) : 1;
     const fix = (map, missBy) => id => Math.min(99.5, Math.max(0.5, map.get(id) + missBy.get(id) * f));
     const homeWin = fix(sn.win, winMiss), aboveOf = fix(sn.above, aboveMiss);
     // Points for (the tiebreaker) moves from the team's average toward what it really scored.
-    const points_ = (id, avg) => avg + f * ((actual.get(id) ?? avg) - avg);
-    points.push([sn.t, ...pathOdds(w - 1, REBUILD_SIMULATIONS, ["rush-week", w, sn.t], { homeWin: g => homeWin(g.home), above: aboveOf, points: points_ }).odds]);
-  }
-  points.push([events[events.length - 1]?.t || history[history.length - 1].t, ...seasonPath.frames[w].odds]);
+    const pointsFor = (id, avg) => avg + f * ((actual.get(id) ?? avg) - avg);
+    return pathOdds(w - 1, REBUILD_SIMULATIONS, ["rush-week", w, sn.t], { homeWin: g => homeWin(g.home), above: aboveOf, points: pointsFor }).odds;
+  };
+  return { snaps, oddsAt, end: end.t };
+}
+function rebuildWeek(w) {
+  const stream = weekStream(w);
+  if (!stream) return null;
+  const { snaps, oddsAt } = stream;
+  const step = Math.max(1, snaps.length / REBUILD_POINTS);
+  const picked = [...new Set(Array.from({ length: Math.min(snaps.length, REBUILD_POINTS) }, (_, i) => Math.floor(i * step)).concat(snaps.length - 1))];
+  const points = [[null, ...seasonPath.frames[w - 1].odds], ...picked.map(i => [snaps[i].t, ...oddsAt(snaps[i])])];
+  points.push([stream.end, ...seasonPath.frames[w].odds]);
   return { week: w, rebuilt: REBUILD_VERSION, ids: teamIds, points };
+}
+
+// Checkpoints within each archived week, for the season replay (Jim, 2026-11-24: "odds at start, after TNF, after
+// Sunday morning slate, after Sunday afternoon slate, after SNF and after MNF"): the stream's state at fixed Eastern
+// times (Sunday 9 AM, 4:20 PM, 8 PM, Monday 8 AM); the start and the final are the season path's own frames.
+const SLOTS_VERSION = 1;
+const SLOTS = [["TNF", 0, 9, 0], ["Sunday early games", 0, 16, 20], ["Sunday late games", 0, 20, 0], ["SNF", 1, 8, 0]];
+const etParts = t => Object.fromEntries(new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", weekday: "short", hour12: false })
+  .formatToParts(new Date(t)).map(p => [p.type, p.value]));
+const etTime = (y, m, d, hh, mm) => [4, 5].map(off => Date.UTC(y, m - 1, d, hh + off, mm)).find(t => Number(etParts(t).hour) % 24 === hh) ?? Date.UTC(y, m - 1, d, hh + 5, mm);
+function weekSlots(w) {
+  const stream = weekStream(w);
+  if (!stream) return null;
+  // The Sunday on or after the first kickoff, in Eastern time.
+  const first = Date.parse(stream.snaps[0].t);
+  let day = first;
+  for (let i = 0; i < 7 && etParts(day).weekday !== "Sun"; i++) day += 86400000;
+  const sun = etParts(day);
+  const out = [];
+  let last = -1;
+  for (const [label, plus, hh, mm] of SLOTS) {
+    const at = etTime(Number(sun.year), Number(sun.month), Number(sun.day) + plus, hh, mm);
+    if (at >= Date.parse(stream.end)) break;
+    let i = last;
+    while (i + 1 < stream.snaps.length && Date.parse(stream.snaps[i + 1].t) <= at) i++;
+    if (i === last || i < 0) continue;   // nothing happened in this slot
+    last = i;
+    out.push({ slot: label, t: new Date(at).toISOString(), odds: stream.oddsAt(stream.snaps[i]) });
+  }
+  return out;
+}
+if (seasonPath.slotsVersion !== SLOTS_VERSION) {
+  seasonPath.slots = Object.fromEntries(seasonPath.frames.filter(f => f.week > 0).map(f => [String(f.week), weekSlots(f.week)]).filter(([, x]) => x?.length));
+  seasonPath.slotsVersion = SLOTS_VERSION;
 }
 const finished = previousOdds && Number(previousOdds.week) === currentWeek - 1 && previousOdds.weekTrail?.points?.length > 2 ? previousOdds.weekTrail : null;
 const lastWeekTrail = finished ? { week: currentWeek - 1, ids: finished.ids, points: finished.points }
   : Number(previousOdds?.lastWeekTrail?.week) === currentWeek - 1 && [undefined, REBUILD_VERSION].includes(previousOdds.lastWeekTrail.rebuilt) ? previousOdds.lastWeekTrail
-  : currentWeek > 1 && completedWeeks.includes(currentWeek - 1) ? await rebuildWeek(currentWeek - 1) : null;
+  : currentWeek > 1 && completedWeeks.includes(currentWeek - 1) ? rebuildWeek(currentWeek - 1) : null;
 
 await writeFile("data/current/season-odds.json", JSON.stringify({
   week: currentWeek,
