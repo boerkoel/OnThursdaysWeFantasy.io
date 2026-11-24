@@ -10,7 +10,7 @@ import { mathStatus } from "../../scripts/lib/clinch.js";
 // week's first game kicks off, the week button replays last week instead (Jim, 2026-11-24).
 const EZ = 9;                                     // each end zone's share of the lane, in %
 const xOf = (p, status) => status === "clinched" ? 100 - EZ / 2 : status === "eliminated" ? EZ / 2 : EZ + (100 - 2 * EZ) * Math.min(100, Math.max(0, p)) / 100;
-const WEEK_REPLAY_MS = 10000, SEASON_STEP_MS = 900;
+const WEEK_REPLAY_MS = 10000, SEASON_STEP_MS = 600;
 const timeLabel = iso => new Date(iso).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });
 
 // The dice (Jim, 2026-11-24: "advance one week at a time ... that way there's a build"): each press rolls one more
@@ -71,7 +71,11 @@ export default function RushField({ seasonOdds, logos, weekStarted }) {
     lastWeek ? { label: `Week ${trailWeek} final`, odds: toMap(trail.ids, trail.points[trail.points.length - 1].slice(1)), math: trailMath } : { label: "Now", odds: live, math }
   ] : null;
   const seasonFrames = path?.frames?.length ? [
-    ...path.frames.map(f => ({ label: f.week ? `After Week ${f.week}` : "Kickoff", odds: toMap(path.ids, f.odds), math: f.math || {} })),
+    // Each archived week's checkpoints (after TNF, the Sunday slates, SNF) come before its final (Jim, 2026-11-24).
+    ...path.frames.flatMap((f, i) => [
+      ...(f.week ? path.slots?.[String(f.week)] || [] : []).map(x => ({ label: `Week ${f.week} · after ${x.slot}`, odds: toMap(path.ids, x.odds), math: path.frames[i - 1]?.math || {} })),
+      { label: f.week ? `After Week ${f.week}` : "Kickoff", odds: toMap(path.ids, f.odds), math: f.math || {} }
+    ]),
     { label: `Now · Week ${week}`, odds: live, math }
   ] : null;
 
