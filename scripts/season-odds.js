@@ -418,6 +418,16 @@ await writeFile("data/current/season-odds.json", JSON.stringify({
   weekTrail,
   lastWeekTrail,
   seasonPath,
+  // The model in small, for the field's dice (Jim, 2026-11-24): each press rolls one more remaining week in the browser.
+  // Per team (in `ids` order): wins and points so far; each week's expected score; this week's live [mean, sd, floor].
+  dice: {
+    ids: teamIds, spots: playoffTeamCount, played: completedWeeks.length, weeks: remainingWeeks,
+    games: remainingWeeks.map(w => games.filter(g => g.week === w).map(g => [g.home, g.away])),
+    base: teamIds.map(id => [base.get(id).wins, round(base.get(id).pointsFor)]),
+    mean: remainingWeeks.map(w => teamIds.map(id => round(weekMean(id, w)))),
+    sd: remainingWeeks.map(w => round(weekSd(w))),
+    live: liveWeek ? teamIds.map(id => { const l = liveWeek.get(id); return l ? [round(l.mean), round(l.sd), round(l.floor)] : null; }) : null
+  },
   // Odds by wins this week: [0, 1, 2] wins → {playoffOdds, byeOdds, chance}; null where the sims rarely land (<1%).
   byWins: thisWeekGames.length ? Object.fromEntries([...byWins].map(([id, list]) => [String(id), list.map(b => b.n >= SIMULATIONS / 100
     ? { chance: round(b.n / SIMULATIONS * 100), playoffOdds: round(b.playoffs / b.n * 100), byeOdds: round(b.bye / b.n * 100) } : null)])) : null,
