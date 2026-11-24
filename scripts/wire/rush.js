@@ -42,5 +42,5 @@ export function addRushStory(add) {
     `🏈 100-YARD RUSH: ${team} ${verb} ${when}${detour}, ${odds} playoff odds. ${flair}`,
     `🏈 100-YARD RUSH: ${team} ${verb} ${when}${detour}, ${odds} playoff odds.`,
     `🏈 100-YARD RUSH: ${team} ${verb} ${when}, ${odds}.`
-  ), (live ? 62 : 56) + Math.min(yards, 30) / 3);
+  ), (live ? 62 : 74) + Math.min(yards, 30) / 3);   // between weeks it's the race's recap: one of the eight that always show
 }
