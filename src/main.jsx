@@ -438,6 +438,7 @@ function App() {
     if (/DEATH WATCH|FAAB|SHOPPING SPREE|TUG-OF-WAR|GREAT ESCAPE|THIN ICE/.test(type) || (gTeam && !named(scores.map(x => ({ name: x.team }))))) return go(gTeam ? `dw-${gTeam.id}` : "death-watch");
     if (/TRADE|SWAP|LONG-TERM REGRET/.test(type)) return go("trades");
     if (/RAFFLE/.test(type)) return go("raffle");
+    if (/YARD RUSH/.test(type)) return go("rush");
     if (/TITLE ODDS|TOILET BOWL|PLAYOFF SWING|CLINCH|ELIMINAT|MAGIC NUMBER|BYE WATCH|TWO WINS|STOCK|STANDINGS/.test(type)) return go("standings-odds");
     if (/REPORT CARD/.test(type)) return go("report-cards");
     if (/LINE MOVE|MUST-WATCH/.test(type)) return go("games");
@@ -749,6 +750,12 @@ function App() {
   // Dashboard view: opens on League, inline (Jim, 2026-11-23: "the opening page is the league dashboard, not the full
   // screen version"); Manager is a tap away for the visit.
   const [dashMode, setDashView] = useState("league");
+  // #rush (the 100-Yard Rush's link, Jim 2026-11-24) is on the League view.
+  useEffect(() => {
+    const toRush = () => { if (window.location.hash === "#rush") setDashView("league"); };
+    window.addEventListener("hashchange", toRush);
+    return () => window.removeEventListener("hashchange", toRush);
+  }, []);
   const [gameday, setGameday] = useState(() => { try { return window.location.hash === "#gameday"; } catch { return false; } });
   const awake = useWakeLock(gameday && Boolean(myScore));
   const openGameday = () => {

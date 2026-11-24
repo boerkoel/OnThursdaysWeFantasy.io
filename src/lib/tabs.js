@@ -28,7 +28,7 @@ export const TAB_SECTIONS = {
   survivor: [["survivor", "Pool"], ["survivor-games", "Games"], ["survivor-picks", "Picks"], ["survivor-managers", "Managers"], ["survivor-teams", "Teams left"], ["survivor-standings", "Entries"]]
 };
 export const SECTION_TAB = {
-  scores: "live", accuracy: "live", primetime: "live", "ticket-race": "live", scoreboard: "live", "my-team": "dashboard",
+  scores: "live", accuracy: "live", primetime: "live", "ticket-race": "live", scoreboard: "live", "my-team": "dashboard", rush: "dashboard",
   "standings-odds": "standings", playoffs: "standings", "ultimate-loser": "standings", raffle: "standings",
   rip: "death-watch", survival: "death-watch",
   "report-cards": "league", history: "league", awards: "league", "record-book": "league", rivalries: "league",
