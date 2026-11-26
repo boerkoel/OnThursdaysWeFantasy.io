@@ -1426,3 +1426,12 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 @keyframes rushpop{0%{opacity:0;transform:translate(-50%,20px) scale(.96)}6%{opacity:1;transform:translate(-50%,0)}90%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,10px)}}
 @media (max-width:760px),(orientation:portrait) and (max-width:1024px){.tv-rushpop{position:fixed;width:94vw;bottom:calc(170px + var(--tv-below,0px));font-size:15px;padding:12px 12px 14px}.rush.rush-shift .rush-lane,.rush.rush-shift .rush-track{height:34px}}
 @media (prefers-reduced-motion:reduce){.tv-rushpop{animation:none}}
+/* While you were away (Jim, 2026-11-26): a card over the page; a tap closes it. */
+.catchup{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 12px);z-index:96;width:min(94vw,640px);transform:translateX(-50%);padding:12px 14px;border:2px solid #e6c85c;border-radius:14px;background:#10110ff5;box-shadow:0 8px 40px #000a,0 0 30px #e6c85c44;font-size:14px;color:#dfe5d5;cursor:pointer;animation:catchup-in .35s ease-out}
+.catchup-head{display:flex;align-items:baseline;gap:8px;margin:0 0 8px}.catchup-head b{font-size:16px;color:#f1dc8a}.catchup-head small{color:#9fa29a}.catchup-head span{margin-left:auto;color:#9fa29a}
+.catchup-mine{margin:0 0 8px;line-height:1.4}.catchup em{font-style:normal;font-weight:800}.catchup em.up{color:#8fd087}.catchup em.down{color:#e88b86}
+.catchup ul{margin:0 0 8px;padding:0;list-style:none}.catchup li{margin:3px 0;line-height:1.35}.catchup-plays b{color:#e6c85c;margin-right:4px}.catchup-plays i{font-style:normal;color:#9fb08a}
+.catchup .mini-needles-label{display:block;margin:4px 0 4px}.catchup .rush-shift{font-size:14px}
+@keyframes catchup-in{from{opacity:0;transform:translate(-50%,-10px)}}
+.tv .catchup{font-size:max(14px,.95em)}
+.rush-lane{position:relative}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Explain, TeamLogo } from "./LiveBits.jsx";
 import { pct } from "../lib/data.js";
 import { mathStatus } from "../../scripts/lib/clinch.js";
@@ -123,6 +123,25 @@ export default function RushField({ seasonOdds, logos, weekStarted, compact = fa
     return () => clearTimeout(timer);
   }, [replay?.run, replay?.step, replayDone]);
 
+  // Lanes slide when a team passes another (Jim, 2026-11-26), rather than snapping to their new rows.
+  // In a replay the slide keeps pace with its steps.
+  const boardRef = useRef(null), laneTops = useRef(new Map());
+  const slideMs = replay ? Math.max(150, Math.min(800, replay.ms)) : dice ? DICE_MS : 800;
+  useLayoutEffect(() => {
+    const els = [...(boardRef.current?.querySelectorAll(":scope > .rush-lane[data-id]") || [])];
+    const tops = new Map(els.map(el => [el.dataset.id, el.offsetTop]));
+    const still = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (!still) for (const el of els) {
+      const before = laneTops.current.get(el.dataset.id), now = tops.get(el.dataset.id);
+      if (before == null || before === now) continue;
+      el.style.transition = "none";
+      el.style.transform = `translateY(${before - now}px)`;
+      el.getBoundingClientRect();
+      el.style.transition = `transform ${slideMs}ms ease-in-out`;
+      el.style.transform = "";
+    }
+    laneTops.current = tops;
+  });
   if (!teams.length) return null;
   // Between weeks (Jim, 2026-11-24), the field measures from the start of last week; otherwise from the start of this one.
   const startOdds = lastWeek ? toMap(prior.ids, prior.points[0].slice(1))
@@ -137,7 +156,6 @@ export default function RushField({ seasonOdds, logos, weekStarted, compact = fa
     const ps = covered.filter(f => Number.isFinite(f.odds[id])).map(f => xOf(f.odds[id], f.math[String(id)]));
     return { lo: Math.min(...xs), hi: Math.max(...xs), x0: Math.min(...ps), x1: Math.max(...ps) };
   };
-  // Lanes stay in today's order (best odds on top), so a replay shows each team finding its spot.
   const swingOf = id => {
     const xs = (seasonOdds?.byWins?.[String(id)] || []).filter(Boolean).map(x => Number(x.playoffOdds)).filter(Number.isFinite);
     return xs.length > 1 ? [Math.min(...xs), Math.max(...xs)] : null;
@@ -147,7 +165,10 @@ export default function RushField({ seasonOdds, logos, weekStarted, compact = fa
     const sw = swingOf(t.teamId);
     return sw ? sw[1] - sw[0] >= SWING_YDS : live[t.teamId] >= 10 && live[t.teamId] <= 90;
   };
-  const sorted = [...teams].sort((a, b) => live[b.teamId] - live[a.teamId]);
+  // Lanes rank by the odds on screen (Jim, 2026-11-26: "the replays ... could play up the swap of the ranks"), so in a
+  // replay or a roll teams slide past each other as they pass, and live they re-rank as the odds move.
+  const rankOdds = replay || dice ? frame.odds : live;
+  const sorted = [...teams].sort((a, b) => rankOdds[b.teamId] - rankOdds[a.teamId] || live[b.teamId] - live[a.teamId]);
   const lanes = compact ? sorted.filter(inPlay) : sorted;
   const aside = compact ? sorted.filter(t => !inPlay(t)) : [];
   const move = id => Math.round(frame.odds[id] - from.odds[id]);
@@ -186,7 +207,7 @@ export default function RushField({ seasonOdds, logos, weekStarted, compact = fa
           {!surge && !replay && !dice ? <span>No moves yet {span}</span> : null}</>}
           {aside.length ? <span>Also: {aside.map(t => `${t.team} ${math[String(t.teamId)] === "clinched" ? "IN" : math[String(t.teamId)] === "eliminated" ? "OUT" : pct(live[t.teamId])}`).join(" · ")}</span> : null}</span>
       </div>
-      <div className="rush-board">
+      <div className="rush-board" ref={boardRef}>
         <div className="rush-row rush-numbers" aria-hidden="true">
           <span className="rush-name" />
           <div className="rush-track">
@@ -200,7 +221,7 @@ export default function RushField({ seasonOdds, logos, weekStarted, compact = fa
           const a = xOf(was, from.math[String(id)]), b = xOf(now, status), d = move(id), rg = range(id);
           const byWins = !replay ? seasonOdds?.byWins?.[String(id)] : null;
           const burst = !replay && !dice ? bursts[id] : null;
-          return <div key={id} className={"rush-lane" + (open === id ? " open" : "")}>
+          return <div key={id} data-id={id} className={"rush-lane" + (open === id ? " open" : "")}>
             <button type="button" className="rush-row" onClick={compact ? undefined : () => setOpen(open === id ? null : id)}>
               <span className="rush-name"><b>{t.team}</b>
                 <small>{dice && frame.wins ? `${frame.wins[id]}-${frame.games - frame.wins[id]} · ` : ""}{status === "clinched" ? (dice ? "IN" : "CLINCHED") : status === "eliminated" ? "OUT" : pct(now)}

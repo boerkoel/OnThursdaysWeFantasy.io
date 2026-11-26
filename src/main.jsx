@@ -41,6 +41,7 @@ import { forkFor } from "./lib/injuryForks.js";
 import { drivePeeks, medianEchoes, tdPeeks } from "./lib/tdPeeks.js";
 import TvView, { SurvivorLive } from "./components/TvView.jsx";
 import RushField from "./components/RushField.jsx";
+import { CatchUpCard, useCatchUp } from "./components/CatchUp.jsx";
 import { oddsMove, shortPlay } from "./lib/playText.js";
 import { pingTab, titleTap } from "./lib/usage.js";
 
@@ -222,6 +223,8 @@ function App() {
   const [myTeamId, setMyTeamId] = useMyTeam();
   const matchupIds = [...new Set(scores.map(s => s.matchupId))];
   const myScore = scores.find(s => Number(s.teamId) === Number(myTeamId)) || null;
+  // While you were away (CatchUp.jsx; Jim, 2026-11-26): on the Dashboard, the Live tab and Watch mode.
+  const catchup = useCatchUp({ week: scoreboard.week, scores, seasonOdds: live.seasonOdds });
   const myMatchupId = myScore?.matchupId ?? null;
   const seasonOddsWeeksLeft = live.seasonOdds?.remainingWeeks?.length ?? 0;
   // A matchup's key plays: the 3 that moved the odds most (win or median odds; Jim, 2026-11-02) always lead,
@@ -884,7 +887,9 @@ function App() {
         <Explain lead={<>Projections blend ESPN, Sleeper and FantasyPros. Yellow = teams near the median.</>}>Projections are ours: ESPN, Sleeper (RotoWire) and FantasyPros averaged, with injuries and likely lineup moves simulated (the bar on wide screens: band = middle half of outcomes, line = 80%, ◆ = ESPN). The projected median is the median of those projections. Odds of finishing above the median come from simulating the rest of the week, where the league median moves with every team’s result. Highlighted in yellow: the teams projected just above and just below the median, plus any team with a {NEAR_MEDIAN_MIN}–{NEAR_MEDIAN_MAX}% chance.</Explain>
       </section>
   );
-  if (tv) return <TvView forks={{ win: winFork, median: medianFork, ticket: ticketFork }} peeks={watchPeeks} scoreboard={scoreboard} guillotine={guillotine} livePlays={livePlayFeed} marquee={live.marquee} survivorFeed={survivorFeed} seasonOdds={live.seasonOdds} logos={teamLogos} onClose={closeTv} />;
+  const catchCard = catchup.from ? <CatchUpCard from={catchup.from} scores={scores} plays={Number(livePlayFeed?.week) === Number(scoreboard.week) ? livePlayFeed.plays || [] : []}
+    seasonOdds={live.seasonOdds} logos={teamLogos} myTeamId={myTeamId} onClose={catchup.dismiss} /> : null;
+  if (tv) return <TvView forks={{ win: winFork, median: medianFork, ticket: ticketFork }} peeks={watchPeeks} scoreboard={scoreboard} guillotine={guillotine} livePlays={livePlayFeed} marquee={live.marquee} survivorFeed={survivorFeed} seasonOdds={live.seasonOdds} logos={teamLogos} onClose={closeTv} catchup={catchup} overlay={catchCard} />;
   return (
     <main className="site">
       {refresher.view}
@@ -901,6 +906,7 @@ function App() {
       <InstallHint />
       <div className="data-timestamp">LAST REFRESHED <strong>{scoreboard.lastUpdated ? new Date(scoreboard.lastUpdated).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "—"}</strong> <UpdatedAgo iso={scoreboard.lastUpdated} /></div>
 
+      {tab === "dashboard" || tab === "live" ? catchCard : null}
       {tab === "dashboard" ? <section className="section dashboard">
         <div className="dash-toggle" role="tablist">
           {[["manager", "📌 Manager"], ["league", "📺 League"]].map(([v, label]) =>
@@ -909,7 +915,7 @@ function App() {
           <button type="button" className="dash-full" onClick={() => dashMode === "league" ? setTv(true) : openGameday()} disabled={dashMode === "manager" && !myScore} title="Full screen">⛶</button>
         </div>
         {dashMode === "manager" ? <>{renderMyTeam({ gamedayButton: false })}{renderGameday()}</>
-          : <TvView forks={{ win: winFork, median: medianFork, ticket: ticketFork }} peeks={watchPeeks} scoreboard={scoreboard} guillotine={guillotine} livePlays={livePlayFeed} marquee={live.marquee} survivorFeed={survivorFeed} logos={teamLogos} inline onOpenMatchup={setOpenMatchup} onOpenStat={setStatSheet} />}
+          : <TvView forks={{ win: winFork, median: medianFork, ticket: ticketFork }} peeks={watchPeeks} scoreboard={scoreboard} guillotine={guillotine} livePlays={livePlayFeed} marquee={live.marquee} survivorFeed={survivorFeed} logos={teamLogos} inline onOpenMatchup={setOpenMatchup} onOpenStat={setStatSheet} catchup={catchup} />}
         {dashMode === "league" ? <div className="rush-dash" id="rush">
           <div className="section-heading"><div><span className="section-kicker">RACE TO THE PLAYOFFS</span><h2>The 100-Yard Rush <ShareLink section="rush" /></h2></div></div>
           <RushField seasonOdds={live.seasonOdds} logos={teamLogos} weekStarted={(scoreboard.nflGames || []).some(g => g.state !== "pre")} />

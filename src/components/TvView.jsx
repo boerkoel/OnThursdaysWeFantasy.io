@@ -278,7 +278,7 @@ function useIdleCursor() {
 // On a phone (Jim, 2026-11-02: one always-on snapshot, the detail is in Primetime view): shorter tiles (the
 // odds alone under the dial, players left beside the scores), races as compact rows, chip columns on one line
 // each, results on one line, a smaller ticker that covers nothing, and no "on the field" list.
-export default function TvView({ forks = { win: () => null, median: () => null, ticket: () => null }, peeks = { win: () => [], median: () => [], ticket: () => [] }, scoreboard, guillotine, livePlays, marquee, survivorFeed, seasonOdds = null, logos = {}, onClose, inline = false, onOpenMatchup = null, onOpenStat = null }) {
+export default function TvView({ forks = { win: () => null, median: () => null, ticket: () => null }, peeks = { win: () => [], median: () => [], ticket: () => [] }, scoreboard, guillotine, livePlays, marquee, survivorFeed, seasonOdds = null, logos = {}, onClose, catchup = null, overlay = null, inline = false, onOpenMatchup = null, onOpenStat = null }) {
   // inline (Jim, 2026-11-21): the Dashboard's League view, a block in the page: no scroll lock, wake lock or controls.
   useWakeLock(!inline);
   useScreenBelow(!inline);
@@ -291,6 +291,8 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
     return () => { document.body.style.overflow = prev; };
   }, []);
   const idle = useIdleCursor();
+  // Back after a while (CatchUp.jsx): the needles start where you left them, then swing to now.
+  const was = (kind, t, now) => catchup ? catchup.oddsOf(kind, t.teamId, now) : now;
   const narrow = useNarrow();
   const [resultsOpen, setResultsOpen] = useState(false);
   const [fullscreen, setFullscreen] = useState(() => Boolean(document.fullscreenElement));
@@ -504,7 +506,7 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
                   <span>{logos[t.teamId] ? <img src={logos[t.teamId]} alt="" /> : null}{t.team}</span>
                   {narrow ? <small className="tv-left-count">{toPlay(t)} left</small> : null}<b>{money(t.score)}</b></p>)}
               </div>
-              <MiniNeedle team={b} stakes={[a, b]} fork={settled ? null : forks.win(a, b)} peeks={settled ? [] : livePeeks(peeks.win(a, b), a, b)} p={Number(b.winProbability)} from={b.liveWinFrom} sides={[a.team, b.team]} colors={[A_COLOR, B_COLOR]} short={narrow || settled}
+              <MiniNeedle team={b} stakes={[a, b]} fork={settled ? null : forks.win(a, b)} peeks={settled ? [] : livePeeks(peeks.win(a, b), a, b)} p={was("win", b, Number(b.winProbability))} from={b.liveWinFrom} sides={[a.team, b.team]} colors={[A_COLOR, B_COLOR]} short={narrow || settled}
                 caption={settled ? `✊ ${winner.team}` : narrow ? false : `${toPlay(a)} left · ${toPlay(b)} left`}
                 history={scoreboard.winHistory?.week === scoreboard.week ? scoreboard.winHistory.points : []} games={games} />
               {!settled && !narrow ? (() => {   // what each side roots for on a drive in progress (Jim, 2026-11-02), wide screens
@@ -528,11 +530,11 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
         <aside className="tv-side">
           {/* Inline, the median and ticket needles open them as pop-ups (Jim, 2026-11-22). */}
           <div onClick={inline && onOpenStat ? () => onOpenStat("median") : undefined} style={inline ? { cursor: "pointer" } : undefined}>
-          <NeedleRace label="MEDIAN LINE" compact max={inline ? null : narrow ? 2 : 4} even={inline} pick="stake" onSwap={swapped("📏")} items={scores.map(s => ({ team: s, p: Number(s.aboveMedianProbability), from: s.liveAboveFrom, fork: forks.median(s), peeks: livePeeks(peeks.median(s), s) }))}
+          <NeedleRace label="MEDIAN LINE" compact max={inline ? null : narrow ? 2 : 4} even={inline} pick="stake" onSwap={swapped("📏")} items={scores.map(s => ({ team: s, p: was("med", s, Number(s.aboveMedianProbability)), from: s.liveAboveFrom, fork: forks.median(s), peeks: livePeeks(peeks.median(s), s) }))}
             sides={["below", "above"]} colors={MEDIAN_COLORS} band={[30, 70]} words={{ likely: ["likely below", "likely above"], locked: ["❌ below", "✅ above"] }}
             stakes={scores} history={scoreboard.medianHistory?.week === scoreboard.week ? scoreboard.medianHistory.points : []} games={games} />
           </div>
-          {ticketWinner ? null : <div onClick={inline && onOpenStat ? () => onOpenStat("ticket") : undefined} style={inline ? { cursor: "pointer" } : undefined}><NeedleRace minShown={inline ? ticketShown : 2} even={inline} label="🎟️ TICKET RACE" compact max={inline ? ticketShown : 2} onSwap={swapped("🎟️")} items={scores.map(s => ({ team: s, p: Number(s.topScoreProbability), from: s.liveTopFrom, fork: forks.ticket(s), peeks: livePeeks(peeks.ticket(s), s) }))}
+          {ticketWinner ? null : <div onClick={inline && onOpenStat ? () => onOpenStat("ticket") : undefined} style={inline ? { cursor: "pointer" } : undefined}><NeedleRace minShown={inline ? ticketShown : 2} even={inline} label="🎟️ TICKET RACE" compact max={inline ? ticketShown : 2} onSwap={swapped("🎟️")} items={scores.map(s => ({ team: s, p: was("ticket", s, Number(s.topScoreProbability)), from: s.liveTopFrom, fork: forks.ticket(s), peeks: livePeeks(peeks.ticket(s), s) }))}
             sides={["no ticket", "ticket"]} colors={["#8b8e86", "#e6c85c"]} words={{ likely: ["long shots", "near lock"], locked: ["❌ out", "🎟️ locked"] }} implied="left"
             fixed chipOdds="right" stakes={scores} history={scoreboard.raffleHistory?.week === scoreboard.week ? scoreboard.raffleHistory.points : []} games={games} /></div>}
           {gWeek && guillotine.teams?.length ? <NeedleRace minShown={2} label="🪓 CHOPPING BLOCK" compact max={2} onSwap={swapped("🪓")} items={guillotine.teams.map(t => ({ team: { ...t, lineup: { starters: t.lineup || [] } }, p: Number(t.chopProbability), from: t.liveChopFrom, peeks: livePeeks(chopPeeks({ ...t, lineup: onDrive(t.lineup) }, guillotine.teams, games), { lineup: { starters: t.lineup || [] } }).map(pk => ({ ...pk, sync: true })) }))}
@@ -549,7 +551,8 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
             {field.map(f => <p key={f.id}><b>{f.head}</b>{f.on.length ? " — " + f.on.join(", ") : " — no league starters"}</p>)}</div> : null}
         </aside>
       </div>
-      {rushPop && !announcement ? <div className="tv-rushpop" key={rushPop.key}>
+      {overlay}
+      {rushPop && !announcement && !catchup?.from ? <div className="tv-rushpop" key={rushPop.key}>
         <small className="mini-needles-label">🏈 PLAYOFF RACE SHIFT</small>
         {rushPop.cause ? <p className="tv-rushpop-cause">Biggest play since the last update: <b>{rushPop.cause}</b></p> : null}
         <RushShift moves={rushPop.moves} math={seasonOdds?.math || {}} logos={logos} />
