@@ -920,6 +920,8 @@ function App() {
           <div className="section-heading"><div><span className="section-kicker">RACE TO THE PLAYOFFS</span><h2>The 100-Yard Rush <ShareLink section="rush" /></h2></div></div>
           <RushField seasonOdds={live.seasonOdds} logos={teamLogos} weekStarted={(scoreboard.nflGames || []).some(g => g.state !== "pre")} />
         </div> : null}
+        {/* The survivor panel last on the League view too (Jim, 2026-11-26), for everyone, while the pool is down to its last few. */}
+        {dashMode === "league" ? <div className="tv my-surv dash-surv"><SurvivorLive feed={survivorFeed} games={scoreboard.nflGames || []} week={Number(scoreboard.week)} logos={teamLogos} /></div> : null}
       </section> : null}
 
       {tab === "live" ? <>

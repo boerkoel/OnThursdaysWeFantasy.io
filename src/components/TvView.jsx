@@ -215,16 +215,35 @@ export function SurvivorLive({ feed, games, week, logos }) {
   const beat = r => r.state === "live" || r.state === "pre" ? `${(0.35 + 1.25 * Math.max(0, Math.min(1, r.p ?? 0.5))).toFixed(2)}s` : null;
   return <div className="tv-surv">
     <small className="mini-needles-label">🛡️ SURVIVOR · {inPlay.filter(e => e.picks?.[n]?.result !== "lost" || !m.settledPick(e.picks[n])).length} LEFT · ${Math.round(m.pot)} POT</small>
-    {rows.map(r => <p key={r.user} className={"tv-surv-row " + r.state} title={`${r.name}${r.team ? ` on ${r.team}` : ""}: ${r.win == null ? "" : `${Math.round(100 * r.win)}% to be the last one standing, `}worth $${Math.round(r.value)} of the pot`}>
-      <span className="tv-surv-heart" style={beat(r) ? { animationDuration: beat(r) } : null}>{heart(r)}</span>
-      {logos[r.teamId] ? <img src={logos[r.teamId]} alt="" /> : null}
-      <b className="tv-surv-name">{r.name}{r.n > 1 ? ` ×${r.n}` : ""}</b>
-      <span className="tv-surv-pick">{r.team || "?"}</span>
-      <span className="tv-surv-bar"><i style={{ width: `${Math.round(100 * (r.p ?? 0))}%`, background: r.p == null ? "#8b8e86" : r.p >= 0.7 ? "#72b96a" : r.p >= 0.4 ? "#e6c85c" : "#d96b67" }} /></span>
-      <em>{r.p == null ? "—" : `${Math.round(100 * r.p)}%`}</em>
-      <strong>{r.win == null ? `$${Math.round(r.value)}` : `🏆${Math.round(100 * r.win)}%`}</strong>
-    </p>)}
+    {rows.map(r => <SurvivorRow key={r.user} r={r} logos={logos} heart={heart} beat={beat} />)}
   </div>;
+}
+
+// One survivor line. A big shift flashes it gold with the move in a badge (Jim, 2026-11-26: "add the animations to
+// survival odds to highlight big shifts"), like the needles: the 🏆 chance moving SURV_BURST_PTS+ points, or the
+// pick's chance moving 2× that (a score in its game).
+const SURV_BURST_PTS = 5;
+function SurvivorRow({ r, logos, heart, beat }) {
+  const last = useRef({ win: r.win, p: r.p });
+  const [burst, setBurst] = useState(null);
+  useEffect(() => {
+    const dWin = r.win != null && last.current.win != null ? 100 * (r.win - last.current.win) : 0;
+    const dP = r.p != null && last.current.p != null ? 100 * (r.p - last.current.p) : 0;
+    if (Math.abs(dWin) >= SURV_BURST_PTS) setBurst({ key: Date.now(), d: dWin, what: "🏆" });
+    else if (Math.abs(dP) >= 2 * SURV_BURST_PTS) setBurst({ key: Date.now(), d: dP, what: r.team || "" });
+    last.current = { win: r.win, p: r.p };
+  }, [r.win, r.p]);
+  return <p className={"tv-surv-row " + r.state} title={`${r.name}${r.team ? ` on ${r.team}` : ""}: ${r.win == null ? "" : `${Math.round(100 * r.win)}% to be the last one standing, `}worth $${Math.round(r.value)} of the pot`}>
+    <span className="tv-surv-heart" style={beat(r) ? { animationDuration: beat(r) } : null}>{heart(r)}</span>
+    {logos[r.teamId] ? <img src={logos[r.teamId]} alt="" /> : null}
+    <b className="tv-surv-name">{r.name}{r.n > 1 ? ` ×${r.n}` : ""}</b>
+    <span className="tv-surv-pick">{r.team || "?"}</span>
+    <span className="tv-surv-bar"><i style={{ width: `${Math.round(100 * (r.p ?? 0))}%`, background: r.p == null ? "#8b8e86" : r.p >= 0.7 ? "#72b96a" : r.p >= 0.4 ? "#e6c85c" : "#d96b67" }} /></span>
+    <em>{r.p == null ? "—" : `${Math.round(100 * r.p)}%`}</em>
+    <strong>{r.win == null ? `$${Math.round(r.value)}` : `🏆${Math.round(100 * r.win)}%`}</strong>
+    {burst ? <i key={burst.key} className={"needle-burst surv-burst " + (burst.d > 0 ? "up" : "down")} aria-hidden="true">
+      <span>{burst.what} {burst.d > 0 ? "+" : "−"}{Math.abs(Math.round(burst.d))}</span></i> : null}
+  </p>;
 }
 
 // Pulse a matchup when its favorite changes (crossing 50%) between updates.

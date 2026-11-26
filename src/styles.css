@@ -1435,3 +1435,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 @keyframes catchup-in{from{opacity:0;transform:translate(-50%,-10px)}}
 .tv .catchup{font-size:max(14px,.95em)}
 .rush-lane{position:relative}
+.dash-surv:not(:has(.tv-surv)){display:none}.dash-surv{margin-top:18px}
+/* Survivor lines flash gold on a big shift (Jim, 2026-11-26); the pick bar glides to its new chance. */
+.tv-surv-row{position:relative;border-radius:8px}.tv-surv-bar i{transition:width .8s ease-out,background .8s}
+.surv-burst span{top:-11px;right:8px;white-space:nowrap}
