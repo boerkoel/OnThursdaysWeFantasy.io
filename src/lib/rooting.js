@@ -80,21 +80,37 @@ export function driveScenarios({ game, starters }) {
   return { offenseTeam, toGo, scenarios };
 }
 
-// drive: game.drive ({ possession, yardLine, redZone }); game: the NFL game; a, b: the matchup's two teams.
-export function driveRooting({ game, a, b }) {
+// A matchup's outcomes on this drive, each with side a's win odds after it (from the margin's spread, as the key
+// plays' momentum is judged). Null with nobody on the drive or the matchup all but decided.
+function rateDrive({ game, a, b }) {
   // This drive's league starters on both sides, tagged with their fantasy side.
   const built = driveScenarios({ game, starters: [[a, "a"], [b, "b"]].flatMap(([team, side]) => (team.lineup?.starters || []).map(p => ({ ...p, side }))) });
   if (!built) return null;
-  const { offenseTeam, toGo, scenarios } = built;
-  // Win odds after each, from the margin's spread (as the key plays' momentum is judged).
   const pa = Number(a.winProbability) / 100;
   if (!(pa > 0.005 && pa < 0.995)) return null;
   const sd = Math.max(3, Math.hypot(Number(a.projectionSd) || 0, Number(b.projectionSd) || 0));
   const z0 = normalQuantile(pa);
-  const rated = scenarios.map(s => {
+  const rated = built.scenarios.map(s => {
     const marginA = s.pts.reduce((sum, [p, v]) => sum + (p.side === "a" ? v : -v), 0);
     return { ...s, after: { a: 100 * normalCdf(z0 + marginA / sd) } };
   });
+  return { ...built, pa, rated };
+}
+
+// How much a game's current drive has riding on it (Jim, 2026-11-26: Watch mode's turns go to "the drives with
+// most at stake"): across the open matchups, the win-odds points each outcome would move, weighted by its chance.
+export function driveStakes({ game, pairs }) {
+  return pairs.reduce((sum, [a, b]) => {
+    const r = rateDrive({ game, a, b });
+    return r ? sum + r.rated.reduce((s, x) => s + x.chance * Math.abs(x.after.a - 100 * r.pa), 0) : sum;
+  }, 0);
+}
+
+// drive: game.drive ({ possession, yardLine, redZone }); game: the NFL game; a, b: the matchup's two teams.
+export function driveRooting({ game, a, b }) {
+  const r = rateDrive({ game, a, b });
+  if (!r) return null;
+  const { offenseTeam, toGo, pa, rated } = r;
   const hopesFor = (team, key) => {
     const now = key === "a" ? 100 * pa : 100 * (1 - pa);
     const gain = s => (key === "a" ? s.after.a : 100 - s.after.a) - now;

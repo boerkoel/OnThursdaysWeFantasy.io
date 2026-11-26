@@ -4,7 +4,7 @@ import { oddsMove, shortPlay } from "../lib/playText.js";
 import { useWakeLock } from "../lib/wakeLock.js";
 import { LOCKED, MiniNeedle, NeedleRace, useSyncFocus, useSyncedPeek } from "./Needle.jsx";
 import { chopPeeks } from "../lib/tdPeeks.js";
-import { driveRooting } from "../lib/rooting.js";
+import { driveRooting, driveStakes } from "../lib/rooting.js";
 import { feedTeam, lastStanding, survivorModel } from "../../scripts/lib/survivor-model.js";
 import nflSeasonOdds from "../../data/current/nfl-season-odds.json";
 import managerLinks from "../data/manager-links.json";
@@ -102,13 +102,14 @@ const gameText = g => {
   return away && home ? `${has(away) ? "🏈 " : ""}${away.abbrev} ${away.score}–${home.score} ${home.abbrev}${has(home) ? " 🏈" : ""}${g.detail ? " · " + g.detail : ""}` : g.name;
 };
 
-const GAME_TURN_MS = 12000;
+const GAME_TURN_MS = 12000, HEAT_WINDOW_MS = 15 * 60 * 1000;
 const ago = at => { const m = Math.round((Date.now() - Date.parse(at)) / 60000); return m < 1 ? "just now" : `${m} min ago`; };
 // The strip of screen below what iOS lets the page pin to (Jim, 2026-11-12: "there's still room below, use the part
 // of the screen that curves"): the screen's height less the window's, when the page already runs under the status
 // bar (so the whole difference is at the bottom); published as --tv-below for the bottom panel to reach into.
-function useScreenBelow() {
+function useScreenBelow(on = true) {
   useEffect(() => {
+    if (!on) return;
     const root = document.documentElement;
     const probe = document.createElement("div");
     probe.style.cssText = "position:fixed;top:0;height:env(safe-area-inset-top);visibility:hidden;pointer-events:none";
@@ -128,7 +129,32 @@ function useScreenBelow() {
       root.style.removeProperty("--tv-below");
       probe.remove();
     };
-  }, []);
+  }, [on]);
+}
+// The Dashboard's dock (Jim, 2026-11-26: "dock the last play / what if hero"): the drive panel and play ticker sit
+// fixed just above the phone's tab bar for the whole League view. Publishes the tab bar's height (--tabbar-h, 0
+// when it's not pinned to the bottom) and the dock's (--tv-dock, which the page pads by) as they change.
+function useDock(on, el) {
+  useEffect(() => {
+    if (!on || !el) return;
+    const root = document.documentElement, bar = document.querySelector(".tab-bar");
+    const measure = () => {
+      const pinned = bar && getComputedStyle(bar).position === "fixed";
+      root.style.setProperty("--tabbar-h", pinned ? `${bar.offsetHeight}px` : "0px");
+      root.style.setProperty("--tv-dock", `${el.offsetHeight}px`);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    if (bar) ro.observe(bar);
+    window.addEventListener("resize", measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", measure);
+      root.style.removeProperty("--tabbar-h");
+      root.style.removeProperty("--tv-dock");
+    };
+  }, [on, el]);
 }
 // One live game's situation (Jim, 2026-11-12): a little field (home end zone on the left, since yardLine counts
 // from the home goal line) with the ball, then "BUF 14–10 KC · 4:12 - 2nd · BUF ball · 2nd & 7 at KC 34".
@@ -252,7 +278,7 @@ function useIdleCursor() {
 export default function TvView({ forks = { win: () => null, median: () => null, ticket: () => null }, peeks = { win: () => [], median: () => [], ticket: () => [] }, scoreboard, guillotine, livePlays, marquee, survivorFeed, logos = {}, onClose, inline = false, onOpenMatchup = null, onOpenStat = null }) {
   // inline (Jim, 2026-11-21): the Dashboard's League view, a block in the page: no scroll lock, wake lock or controls.
   useWakeLock(!inline);
-  useScreenBelow();
+  useScreenBelow(!inline);
   // The page underneath stays put (Jim, 2026-11-08: Watch mode wouldn't scroll back down on a phone, the
   // swipe went to the page under it).
   useEffect(() => {
@@ -321,17 +347,14 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
     return ball && teamIdsOf(g).includes(Number(p.proTeamId)) && (p.pos === "D/ST" ? Number(p.proTeamId) !== ball : Number(p.proTeamId) === ball);
   }));
 
-  // The ticker: the newest key plays (6+ points, or a 3+ point odds move) and the League Wire's top stories.
+  // The ticker: the newest league plays, newest first (Jim, 2026-11-26: "the most recent plays can be in the ticker
+  // instead", in place of the Dashboard's Latest plays list), then in Watch mode the League Wire's top stories.
   const plays = Number(livePlays?.week) === week ? livePlays.plays || [] : [];
-  const keyPlays = plays.filter(p => p.wallclock && Date.now() - Date.parse(p.wallclock) < TICKER_MAX_AGE_MS && (Math.abs(Number(p.points)) >= 6 || p.momentum?.shift >= 3))
+  const recent = plays.filter(p => p.wallclock && Number(p.points) && Date.now() - Date.parse(p.wallclock) < TICKER_MAX_AGE_MS)
     .sort((x, y) => Date.parse(y.wallclock) - Date.parse(x.wallclock)).slice(0, TICKER_PLAYS)
-    .map(p => `${teamName.get(Number(p.fantasyTeamId)) || ""}: ${p.player} ${shortPlay(p)}${p.momentum?.shift >= 1 ? ` · ${p.momentum.toward} ${oddsMove(p.momentum.winProbability, p.momentum.shift)}` : ""}`);
-  const stories = (Number(marquee?.week) === week ? marquee.stories || [] : []).slice(0, 4).map(s => s.text);
-  const ticker = [...keyPlays, ...stories];
-  // Latest plays (Jim, 2026-11-22), inline only: the last 5 scoring plays across every game, newest first; the
-  // newest carries its game's score line, so the list follows whichever game just moved.
-  const latest = inline ? plays.filter(p => p.wallclock && Number(p.points)).sort((x, y) => Date.parse(y.wallclock) - Date.parse(x.wallclock)).slice(0, 5) : [];
-  const latestGame = latest[0] ? games.find(g => String(g.id) === String(latest[0].eventId)) : null;
+    .map(p => `${Number(p.points) > 0 ? "+" : ""}${Number(p.points).toFixed(2)} ${p.player} ${shortPlay(p)} · ${teamName.get(Number(p.fantasyTeamId)) || ""}${p.momentum?.shift >= 1 ? ` · ${p.momentum.toward} ${oddsMove(p.momentum.winProbability, p.momentum.shift)}` : ""}`);
+  const stories = inline ? [] : (Number(marquee?.week) === week ? marquee.stories || [] : []).slice(0, 4).map(s => s.text);
+  const ticker = [...recent, ...stories];
 
   // On the field now: each live game's offense and the other side's D/ST, with whose they are.
   const field = liveGames.map(g => {
@@ -353,14 +376,34 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
   const whatIf = useSyncedPeek();
   const starterTeams = new Set(scores.flatMap(s => (s.lineup?.starters || []).map(p => Number(p.proTeamId))));
   const turnGames = liveGames.filter(g => teamIdsOf(g).some(id => starterTeams.has(id)));
-  const rotation = turnGames.length ? turnGames : liveGames;
-  const [turn, setTurn] = useState(0);
+  // Turns go to the drives with the most at stake (Jim, 2026-11-26: "rotate to the drives with most at stake /
+  // shifting the odds the most"): a game's heat is what its drive could move in the open matchups (driveStakes)
+  // plus a quarter of the win odds its league plays moved in the last 15 minutes. Games under a fifth of the
+  // hottest sit out; each turn goes to the highest heat × time since its last turn, so the big drive comes back
+  // most often and the rest still get a look.
+  const recentShift = g => plays.filter(p => String(p.eventId) === String(g.id) && p.wallclock && Date.now() - Date.parse(p.wallclock) < HEAT_WINDOW_MS)
+    .reduce((sum, p) => sum + (Number(p.momentum?.shift) || 0), 0);
+  const heat = new Map(turnGames.map(g => [String(g.id), driveStakes({ game: g, pairs: open }) + 0.25 * recentShift(g)]));
+  const hottest = Math.max(0, ...heat.values());
+  const rotation = turnGames.length ? turnGames.filter(g => !(hottest > 0) || heat.get(String(g.id)) >= 0.2 * hottest)
+    .sort((x, y) => heat.get(String(y.id)) - heat.get(String(x.id))) : liveGames;
+  const turnRef = useRef({ rotation, heat, last: new Map() });
+  turnRef.current.rotation = rotation; turnRef.current.heat = heat;
+  const [turnId, setTurnId] = useState(null);
   useEffect(() => {
     if (rotation.length < 2) return;
-    const id = setInterval(() => setTurn(t => t + 1), GAME_TURN_MS);
+    const id = setInterval(() => {
+      const { rotation: rot, heat: h, last } = turnRef.current, now = Date.now();
+      const next = rot.reduce((best, g) => {
+        const w = Math.max(0.01, h.get(String(g.id)) || 0) * (now - (last.get(String(g.id)) || 0));
+        return !best || w > best.w ? { id: String(g.id), w } : best;
+      }, null);
+      if (next) setTurnId(next.id);
+    }, GAME_TURN_MS);
     return () => clearInterval(id);
   }, [rotation.length]);
-  const turnGame = rotation.length ? rotation[turn % rotation.length] : null;
+  const turnGame = rotation.find(g => String(g.id) === turnId) || rotation[0] || null;
+  useEffect(() => { if (turnGame) turnRef.current.last.set(String(turnGame.id), Date.now()); }, [turnGame?.id]);
   useSyncFocus(rotation.length > 1 && turnGame ? String(turnGame.id) : null);
   const shownGame = whatIf?.game ? liveGames.find(g => String(g.id) === String(whatIf.game)) : null;
   const driveGame = shownGame || turnGame;
@@ -372,6 +415,20 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
     const p = plays.filter(x => String(x.eventId) === String(driveGame.id)).sort((x, y) => Date.parse(y.wallclock) - Date.parse(x.wallclock))[0];
     return p ? `${p.player} ${shortPlay(p)}` : null;
   })();
+  // The play hero: the shown game's situation, then the what-if, or the last play as its needles jump. In Watch
+  // mode on a wide screen it's a big card in the side column (Jim, 2026-11-26: "is there room for that on the full
+  // screen version? Keep it on live action"); on a phone it's the bottom panel, and on the Dashboard it docks.
+  const hero = driveGame || whatIf ? <div className="tv-drive">
+    {driveGame ? <DriveLine game={driveGame} /> : null}
+    <p className={"tv-whatif" + (whatIf?.replay ? " replay" : "")} key={whatIf?.text || ""} aria-live="polite">
+      {/* A replay is the last play with a league player in it, not always the game's last play (Jim, 2026-11-12:
+          Nabers showed while Washington had the ball), so it says so, and how long ago. */}
+      {whatIf ? whatIf.replay ? <><span><small>LEAGUE PLAY{whatIf.at ? ` · ${ago(whatIf.at)}` : ""}</small> {whatIf.text}</span>{whatIf.move ? <em>{whatIf.move}</em> : null}</> : <><small>WHAT IF</small> {whatIf.text.replace(/^🏈 this drive: /, "")}</>
+        : lastInGame ? <span className="tv-lastplay"><small>LAST PLAY</small> {lastInGame}</span> : "\u00a0"}</p>
+  </div> : null;
+  const heroSide = !inline && !narrow;
+  const [dockEl, setDockEl] = useState(null);
+  useDock(inline, dockEl);
   return (
     <div className={"tv" + (inline ? " tv-inline" : idle ? " idle" : "")}>
       <header className="tv-head">
@@ -434,9 +491,7 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
             stakes={guillotine.teams.map(t => ({ lineup: { starters: t.lineup || [] } }))} games={games} /> : null}
           {/* Once the ticket is locked, the chopping block takes its place and it's one line below (Jim, 2026-11-09). */}
           {ticketWinner ? <p className="tv-results-line">🎟️ Ticket: {ticketWinner.team}</p> : null}
-          {latest.length ? <div className="tv-latest"><small className="mini-needles-label">⚡ LATEST PLAYS{latestGame ? ` · ${gameText(latestGame)}` : ""}</small>
-            {latest.map((p, i) => <p key={p.id || p.wallclock + p.player} className={i ? "" : "newest"}><b>{Number(p.points) > 0 ? "+" : ""}{Number(p.points).toFixed(2)}</b> {p.player} {shortPlay(p)} <em>{teamName.get(Number(p.fantasyTeamId)) || ""}</em>{p.momentum?.shift >= 1 ? <span> · {p.momentum.toward} {oddsMove(p.momentum.winProbability, p.momentum.shift)}</span> : null}</p>)}
-          </div> : null}
+          {heroSide && hero ? <div className="tv-hero"><small className="mini-needles-label">🏈 LIVE ACTION</small>{hero}</div> : null}
           {/* Survivor left Watch mode for room (Jim, 2026-11-21): managers with entries see them in their game-day view. */}
           {field.length ? <div className="tv-field"><small className="mini-needles-label">ON THE FIELD NOW</small>
             {field.map(f => <p key={f.id}><b>{f.head}</b>{f.on.length ? " — " + f.on.join(", ") : " — no league starters"}</p>)}</div> : null}
@@ -445,15 +500,8 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
       {announcement ? <div className="tv-announce" key={announcement.text + announcement.sub}>
         <span>{announcement.icon}</span><b>{announcement.text}</b>{announcement.sub ? <small>{announcement.sub}</small> : null}
       </div> : null}
-      {ticker.length || whatIf || driveGame ? <footer className="tv-ticker" aria-label="Key plays and League Wire">
-        {driveGame || whatIf ? <div className="tv-drive">
-          {driveGame ? <DriveLine game={driveGame} /> : null}
-          <p className={"tv-whatif" + (whatIf?.replay ? " replay" : "")} key={whatIf?.text || ""} aria-live="polite">
-            {/* A replay is the last play with a league player in it, not always the game's last play (Jim, 2026-11-12:
-                Nabers showed while Washington had the ball), so it says so, and how long ago. */}
-            {whatIf ? whatIf.replay ? <><span><small>LEAGUE PLAY{whatIf.at ? ` · ${ago(whatIf.at)}` : ""}</small> {whatIf.text}</span>{whatIf.move ? <em>{whatIf.move}</em> : null}</> : <><small>WHAT IF</small> {whatIf.text.replace(/^🏈 this drive: /, "")}</>
-              : lastInGame ? <span className="tv-lastplay"><small>LAST PLAY</small> {lastInGame}</span> : "\u00a0"}</p>
-        </div> : null}
+      {ticker.length || (hero && !heroSide) ? <footer className="tv-ticker" ref={setDockEl} aria-label="Latest plays and League Wire">
+        {heroSide ? null : hero}
         <div className="tv-ticker-window"><div className="tv-ticker-track" style={{ animationDuration: `${Math.max(40, ticker.join(" ").length / 6)}s` }}>
           {[...ticker, ...ticker].map((t, i) => <span key={i}>{t}</span>)}
         </div></div>
