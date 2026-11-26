@@ -3,7 +3,8 @@
 // desktop, home-screen app or browser. No names, no addresses. Devices marked as the commissioner's ("me") are
 // counted apart, so the numbers are everyone else.
 // - GET /usage: a small page with the last 4 weeks; GET /usage.json: the same as data.
-// - Every morning at 8 AM Pacific, a push with yesterday's numbers to the "me" devices that have notifications on
+// - A text each morning from the commissioner's Mac (not in this repo) reads /usage.json. morningReport is the old
+//   push version (off since 2026-11-25): yesterday's numbers to the "me" devices that have notifications on
 //   (or, until one has, to phones following the commissioner's team).
 // Kept in the LiveStore Durable Object (one key per day), never KV: KV's free plan allows 1,000 writes a day.
 const DAY_KEY = day => `usage:${day}`;
@@ -91,7 +92,7 @@ th{font-weight:600}td:nth-child(n+2):nth-child(-n+4),th:nth-child(n+2):nth-child
 <p>Devices other than yours (${s.meDevices} marked as yours). Each device counts once a day.</p>
 <div class="tiles"><div><b>${s.days[0]?.people ?? 0}</b>today</div><div><b>${s.last7}</b>last 7 days</div><div><b>${s.last28}</b>last 28 days</div></div>
 <table><thead><tr><th>Day</th><th>People</th><th>New</th><th>Opens</th><th>Top tabs</th><th>Devices</th></tr></thead><tbody>${rows}</tbody></table>
-<p>${s.reportTo ? "A summary goes to your phone at 8 AM." : "No phone marked as yours has notifications on yet, so the 8 AM summary goes to phones following your team."}</p>
+<p>A summary comes by text at 8 AM.</p>
 </body></html>`;
 }
 

@@ -168,7 +168,7 @@ export default {
     ctx.waitUntil(snapshotLines(env).catch(() => null));
     ctx.waitUntil(checkSplashLogin(env).catch(() => null));
     ctx.waitUntil(survivorFeed(env, { cron: true }).catch(() => null));   // the only Splash renewals (splash.js)
-    ctx.waitUntil(sendUsageReport(env).catch(() => null));
+    // The usage summary goes by text from the commissioner's Mac now (Jim, 2026-11-25); sendUsageReport is kept to switch back.
   }
 };
 
