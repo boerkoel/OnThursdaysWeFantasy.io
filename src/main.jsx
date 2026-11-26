@@ -42,6 +42,7 @@ import { drivePeeks, medianEchoes, tdPeeks } from "./lib/tdPeeks.js";
 import TvView, { SurvivorLive } from "./components/TvView.jsx";
 import RushField from "./components/RushField.jsx";
 import { oddsMove, shortPlay } from "./lib/playText.js";
+import { pingTab, titleTap } from "./lib/usage.js";
 
 // Standings and rest-of-season odds in one sortable table: current seed and
 // record (standings.json, playoffs.json) plus simulated odds (season-odds.js).
@@ -216,6 +217,7 @@ function App() {
   const refresher = useRefresh(live.refresh, scoreboard.lastUpdated);
   const flashingScores = useChangedScores(scores);
   const [tab, goToTab] = useTabs();
+  useEffect(() => { pingTab(tab); }, [tab]);   // anonymous usage counts (lib/usage.js)
   const { feed: survivorFeed } = useSurvivorFeed(scoreboard.nflGames || []);   // for the pinned team's survivor line
   const [myTeamId, setMyTeamId] = useMyTeam();
   const matchupIds = [...new Set(scores.map(s => s.matchupId))];
@@ -889,7 +891,7 @@ function App() {
       <header className="topbar">
         <div>
           <p className="eyebrow">ON THURSDAYS WE WATCH FOOTBALL</p>
-          <h1>On Thursdays We Fantasy</h1>
+          <h1 onClick={() => { const on = titleTap(); if (on != null) window.alert(on ? "This device is marked as yours: not counted in usage stats." : "This device counts in usage stats again."); }}>On Thursdays We Fantasy</h1>
           <p className="subtitle">The Officially Unofficial League Record Book</p>
         </div>
         <button type="button" className="header-bell" onClick={() => setNotifyOpen(true)} aria-label="Notification settings" title="Notifications">🔔</button>

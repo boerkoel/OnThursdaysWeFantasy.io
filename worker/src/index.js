@@ -4,6 +4,7 @@
 //   what they want to follow; /unsubscribe; /test sends a test alert;
 //   /refresh starts the GitHub live-update workflow if the published data is
 //   stale (pull-to-refresh in the app).
+// - /hit: the site's anonymous usage pings; /usage (page) and /usage.json: the counts (usage.js).
 // - /live: the live data itself, published by each live update run (POST)
 //   and polled by the app (GET); see live.js.
 // - scheduled (every 2 minutes): reads the latest live data, finds
@@ -20,7 +21,8 @@
 // Secret GITHUB_TOKEN: a token allowed to run the repo's Actions workflows.
 import { generateVapidKeys, sendPush } from "./webpush.js";
 import { loginReminder, splashLogin, splashProbe, survivorFeed } from "./splash.js";
-import { LiveStore, publishLive, readLive, serveLive, storeGet, storePut } from "./live.js";
+import { LiveStore, publishLive, readLive, serveLive, storeGet, storePut, usageStore } from "./live.js";
+import { cleanHit, morningReport, usageDay, usagePage } from "./usage.js";
 import { readLines, snapshotLines } from "./lines.js";
 // Main-league team -> the same manager's guillotine team and Splash handles:
 // following a team follows its manager's other contests too.
@@ -117,7 +119,18 @@ export default {
       if (request.method === "GET" && pathname === "/survivor") return json(await survivorFeed(env), 200, origin);
       // This week's betting lines: opening line and every move since (lines.js).
       if (request.method === "GET" && pathname === "/lines") return json(await readLines(env), 200, origin);
+      // Usage counts (usage.js): the site's pings, and the commissioner's page.
+      if (request.method === "GET" && pathname === "/usage.json") return json(await (await usageStore(env).fetch("https://usage/usage/summary")).json(), 200, origin);
+      if (request.method === "GET" && pathname === "/usage") {
+        return new Response(usagePage(await (await usageStore(env).fetch("https://usage/usage/summary")).json()), { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
+      }
       if (request.method !== "POST") return json({ error: "Not found" }, 404, origin);
+      if (pathname === "/hit") {
+        // Sent as text/plain (no CORS preflight); a bad ping is dropped quietly.
+        const hit = cleanHit(await request.json().catch(() => null));
+        if (hit) await usageStore(env).fetch("https://usage/usage/hit", { method: "POST", body: JSON.stringify(hit) });
+        return new Response(null, { status: 204, headers: corsHeaders(origin) });
+      }
       if (pathname === "/refresh") return json(await requestLiveUpdate(env), 200, origin);
 
       const body = await request.json().catch(() => ({}));
@@ -155,6 +168,7 @@ export default {
     ctx.waitUntil(snapshotLines(env).catch(() => null));
     ctx.waitUntil(checkSplashLogin(env).catch(() => null));
     ctx.waitUntil(survivorFeed(env, { cron: true }).catch(() => null));   // the only Splash renewals (splash.js)
+    ctx.waitUntil(sendUsageReport(env).catch(() => null));
   }
 };
 
@@ -491,4 +505,25 @@ async function checkSplashLogin(env, now = Date.now()) {
   }
   await storePut(env, "splash-reminders", { checkedAt: new Date(now).toISOString(), seededAt: login?.seededAt || null,
     sent: due ? [...new Set([...sent, due.key, ...(due.skip || [])])] : sent });
+}
+
+// The 8 AM usage summary (usage.js): to the push subscriptions of devices marked as the commissioner's, or until
+// there are any, to phones following the commissioner's team.
+async function sendUsageReport(env, now = Date.now()) {
+  const hour = Number(new Date(now).toLocaleString("en-US", { timeZone: "America/Los_Angeles", hour: "numeric", hour12: false }));
+  if (hour < 8) return;
+  const lastSent = await storeGet(env, "usage-report");
+  if (lastSent === usageDay(now)) return;
+  const summary = await (await usageStore(env).fetch("https://usage/usage/summary")).json();
+  const due = morningReport(summary, lastSent, now);
+  if (!due) return;
+  await storePut(env, "usage-report", due.day);
+  const vapid = await vapidKeys(env);
+  const page = "https://otwf-notify.otwf.workers.dev/usage";
+  const mine = new Set((await (await usageStore(env).fetch("https://usage/usage/me")).json())?.subs || []);
+  for (const { name } of (await env.SUBS.list({ prefix: "sub:" })).keys) {
+    const stored = await env.SUBS.get(name, "json");
+    if (!stored || !(mine.size ? mine.has(stored.subscription?.endpoint) : wants(stored.prefs, `team:${COMMISSIONER_TEAM}`))) continue;
+    await sendPush(stored.subscription, { title: due.title, body: due.body, url: page, tag: "usage" }, vapid, SITE).catch(() => 0);
+  }
 }

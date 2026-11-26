@@ -11,6 +11,8 @@
 // storage. A Durable Object rather than KV: its free allowance covers a write
 // every update and a read on every page poll; KV's daily write cap wouldn't.
 // Files are kept as text so serving them doesn't re-parse anything.
+import { recordHit, usageSummary } from "./usage.js";
+
 const LIVE_FILES = ["scoreboard", "marquee", "livePlays", "guillotine", "seasonOdds"];
 const ALL_FILES = [...LIVE_FILES, "weekArchive"];
 const EDGE_CACHE_SECONDS = 5;
@@ -31,6 +33,13 @@ export class LiveStore {
     if (kv) {
       if (request.method === "PUT") { await this.state.storage.put("kv:" + kv[1], await request.text()); return new Response("ok"); }
       return new Response((await this.state.storage.get("kv:" + kv[1])) ?? "null", { headers: { "Content-Type": "application/json" } });
+    }
+    // Usage counts (usage.js), in their own instance ("usage"): /usage/hit, /usage/summary, /usage/me.
+    const usage = new URL(request.url).pathname.match(/^\/usage\/(hit|summary|me)$/);
+    if (usage) {
+      if (usage[1] === "hit") { await recordHit(this.state.storage, await request.json()); return new Response("ok"); }
+      if (usage[1] === "me") return Response.json(await this.state.storage.get("usage:me") || null);
+      return Response.json(await usageSummary(this.state.storage));
     }
     const files = await this.load();
     if (request.method === "PUT") {
@@ -56,6 +65,7 @@ export class LiveStore {
 }
 
 const store = env => env.LIVE.get(env.LIVE.idFromName("live"));
+export const usageStore = env => env.LIVE.get(env.LIVE.idFromName("usage"));
 
 // JSON values in the LiveStore (see /kv/ above), falling back to KV for values saved there before 2026-10-26.
 export async function storeGet(env, key) {
