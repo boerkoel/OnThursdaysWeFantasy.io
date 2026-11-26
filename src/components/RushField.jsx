@@ -13,7 +13,7 @@ const xOf = (p, status) => status === "clinched" ? 100 - EZ / 2 : status === "el
 const WEEK_REPLAY_MS = 10000, SEASON_STEP_MS = 600;
 // A gold burst when a live update moves a team this many yards or more (Jim, 2026-11-26: "a gold burst to show a
 // surge or loss on a big play"): a ring at the runner, the yards gained or lost beside it, and a flash down the lane.
-const BURST_YDS = 3;
+const BURST_YDS = 3, SWING_YDS = 25;
 const timeLabel = iso => new Date(iso).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });
 
 // The dice (Jim, 2026-11-24: "advance one week at a time ... that way there's a build"): each press rolls one more
@@ -54,7 +54,12 @@ function diceFrame(m, rolled) {
     math: Object.fromEntries([...status].filter(([, x]) => x.clinched || x.eliminated).map(([id, x]) => [String(id), x.clinched ? "clinched" : "eliminated"])) };
 }
 
-export default function RushField({ seasonOdds, logos, weekStarted }) {
+// compact (Jim, 2026-11-26: "add the playoff dash to the full screen dashboard for desktops"): Watch mode's side
+// column. Just the field, live: no buttons, notes or tap-for-detail. It zooms in on the teams playing for
+// something (Jim: "the ones in the middle of the field who can move the most"): those this week can move SWING_YDS
+// or more (lose both vs win both, from byWins), each with that range as a faint gold band; the rest are named
+// in one line above the field.
+export default function RushField({ seasonOdds, logos, weekStarted, compact = false }) {
   const [replay, setReplay] = useState(null);     // { kind, frames, step, ms }
   const [open, setOpen] = useState(null);         // tapped lane
   const [dice, setDice] = useState(null);         // { rolled: [scores by week], frames }
@@ -133,7 +138,18 @@ export default function RushField({ seasonOdds, logos, weekStarted }) {
     return { lo: Math.min(...xs), hi: Math.max(...xs), x0: Math.min(...ps), x1: Math.max(...ps) };
   };
   // Lanes stay in today's order (best odds on top), so a replay shows each team finding its spot.
-  const lanes = [...teams].sort((a, b) => live[b.teamId] - live[a.teamId]);
+  const swingOf = id => {
+    const xs = (seasonOdds?.byWins?.[String(id)] || []).filter(Boolean).map(x => Number(x.playoffOdds)).filter(Number.isFinite);
+    return xs.length > 1 ? [Math.min(...xs), Math.max(...xs)] : null;
+  };
+  const inPlay = t => {
+    if (math[String(t.teamId)]) return false;
+    const sw = swingOf(t.teamId);
+    return sw ? sw[1] - sw[0] >= SWING_YDS : live[t.teamId] >= 10 && live[t.teamId] <= 90;
+  };
+  const sorted = [...teams].sort((a, b) => live[b.teamId] - live[a.teamId]);
+  const lanes = compact ? sorted.filter(inPlay) : sorted;
+  const aside = compact ? sorted.filter(t => !inPlay(t)) : [];
   const move = id => Math.round(frame.odds[id] - from.odds[id]);
   const moves = lanes.map(t => [t, move(t.teamId)]).filter(([, d]) => d);
   const surge = moves.reduce((best, m) => !best || m[1] > best[1] ? m : best, null);
@@ -145,9 +161,9 @@ export default function RushField({ seasonOdds, logos, weekStarted }) {
   const upset = done ? lanes.filter(t => frame.odds[t.teamId] === 0 && from.odds[t.teamId] > 50).sort((a, b) => from.odds[b.teamId] - from.odds[a.teamId])[0] : null;
 
   return (
-    <div className={"rush" + (replay || dice ? " replaying" : "")} style={{ "--rush-ms": `${replay ? replay.ms : dice ? DICE_MS : 1200}ms` }}>
+    <div className={"rush" + (replay || dice ? " replaying" : "") + (compact ? " compact" : "")} style={{ "--rush-ms": `${replay ? replay.ms : dice ? DICE_MS : 1200}ms` }}>
       <div className="rush-head">
-        <div className="rush-buttons">
+        {compact ? null : <div className="rush-buttons">
           {replay ? <>
             <button type="button" className="active" onClick={() => play(replay.kind)}>↺ {replayDone ? "Watch again" : "Restart"}</button>
             <button type="button" onClick={() => setReplay(null)}>{replayDone ? "✕ Close" : "■ Stop"}</button>
@@ -159,7 +175,7 @@ export default function RushField({ seasonOdds, logos, weekStarted }) {
               {dice && !done ? <button type="button" onClick={() => setDice(null)}>Today</button> : null}
             </span>
           </>}
-        </div>
+        </div>}
         <span className="rush-caption">{replay || dice ? <strong>{frame.label}</strong> : null}
           {done && longShot ? <span className="up">Long shot in: {longShot.team} ({pct(from.odds[longShot.teamId])})</span> : null}
           {done && upset ? <span className="down">Out: {upset.team} ({pct(from.odds[upset.teamId])})</span> : null}
@@ -167,7 +183,8 @@ export default function RushField({ seasonOdds, logos, weekStarted }) {
           {!replay && !dice && lastWeek && surge ? <span>Last week:</span> : null}
           {surge && surge[1] > 0 ? <span className="up">▲ {surge[0].team} +{surge[1]} yds</span> : null}
           {setback && setback[1] < 0 ? <span className="down">▼ {setback[0].team} {setback[1]} yds</span> : null}
-          {!surge && !replay && !dice ? <span>No moves yet {span}</span> : null}</>}</span>
+          {!surge && !replay && !dice ? <span>No moves yet {span}</span> : null}</>}
+          {aside.length ? <span>Also: {aside.map(t => `${t.team} ${math[String(t.teamId)] === "clinched" ? "IN" : math[String(t.teamId)] === "eliminated" ? "OUT" : pct(live[t.teamId])}`).join(" · ")}</span> : null}</span>
       </div>
       <div className="rush-board">
         <div className="rush-row rush-numbers" aria-hidden="true">
@@ -184,12 +201,13 @@ export default function RushField({ seasonOdds, logos, weekStarted }) {
           const byWins = !replay ? seasonOdds?.byWins?.[String(id)] : null;
           const burst = !replay && !dice ? bursts[id] : null;
           return <div key={id} className={"rush-lane" + (open === id ? " open" : "")}>
-            <button type="button" className="rush-row" onClick={() => setOpen(open === id ? null : id)}>
+            <button type="button" className="rush-row" onClick={compact ? undefined : () => setOpen(open === id ? null : id)}>
               <span className="rush-name"><b>{t.team}</b>
                 <small>{dice && frame.wins ? `${frame.wins[id]}-${frame.games - frame.wins[id]} · ` : ""}{status === "clinched" ? (dice ? "IN" : "CLINCHED") : status === "eliminated" ? "OUT" : pct(now)}
                   {d ? <em className={d > 0 ? "up" : "down"}>{d > 0 ? ` ▲${d}` : ` ▼${-d}`}</em> : null}</small></span>
               <span className="rush-track">
-                <i className="rush-range" style={{ left: `${rg.x0}%`, width: `${rg.x1 - rg.x0}%` }} />
+                {compact && swingOf(id) ? <i className="rush-range swing" style={{ left: `${xOf(swingOf(id)[0])}%`, width: `${xOf(swingOf(id)[1]) - xOf(swingOf(id)[0])}%` }} title="Lose both to win both this week" />
+                  : <i className="rush-range" style={{ left: `${rg.x0}%`, width: `${rg.x1 - rg.x0}%` }} />}
                 <i className={"rush-trail " + (b >= a ? "up" : "down")} style={{ left: `${Math.min(a, b)}%`, width: `${Math.abs(b - a)}%` }} />
                 <i className="rush-ghost" style={{ left: `${a}%` }} />
                 {burst ? <i key={burst.key} className="rush-flash" /> : null}
@@ -205,7 +223,7 @@ export default function RushField({ seasonOdds, logos, weekStarted }) {
           </div>;
         })}
       </div>
-      <Explain lead={`Playoff odds as yards: 100 = in. Hollow marker: where ${lastWeek ? "last week" : "the week"} started; faint band: the range since.`}>Each lane is a team's chance of making the playoffs, from {Number(seasonOdds?.simulations || 0).toLocaleString()} season simulations, updated during games. A touchdown means clinched for sure; a safety means eliminated. Replay the week to watch every swing since it began (before kickoff, last week's), or the season to see where each team stood after every week (the same model, knowing only the results up to then). 🎲 rolls one random week per press, then shows the odds from there: one possible future, not a forecast; roll again for another. Tap a lane for what this week's results would do.</Explain>
+      {compact ? null : <Explain lead={`Playoff odds as yards: 100 = in. Hollow marker: where ${lastWeek ? "last week" : "the week"} started; faint band: the range since.`}>Each lane is a team's chance of making the playoffs, from {Number(seasonOdds?.simulations || 0).toLocaleString()} season simulations, updated during games. A touchdown means clinched for sure; a safety means eliminated. Replay the week to watch every swing since it began (before kickoff, last week's), or the season to see where each team stood after every week (the same model, knowing only the results up to then). 🎲 rolls one random week per press, then shows the odds from there: one possible future, not a forecast; roll again for another. Tap a lane for what this week's results would do.</Explain>}
     </div>
   );
 }

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { money } from "../lib/data.js";
 import { oddsMove, shortPlay } from "../lib/playText.js";
 import { useWakeLock } from "../lib/wakeLock.js";
+import RushField from "./RushField.jsx";
 import { LOCKED, MiniNeedle, NeedleRace, useSyncFocus, useSyncedPeek } from "./Needle.jsx";
 import { chopPeeks } from "../lib/tdPeeks.js";
 import { driveRooting, driveStakes } from "../lib/rooting.js";
@@ -275,7 +276,7 @@ function useIdleCursor() {
 // On a phone (Jim, 2026-11-02: one always-on snapshot, the detail is in Primetime view): shorter tiles (the
 // odds alone under the dial, players left beside the scores), races as compact rows, chip columns on one line
 // each, results on one line, a smaller ticker that covers nothing, and no "on the field" list.
-export default function TvView({ forks = { win: () => null, median: () => null, ticket: () => null }, peeks = { win: () => [], median: () => [], ticket: () => [] }, scoreboard, guillotine, livePlays, marquee, survivorFeed, logos = {}, onClose, inline = false, onOpenMatchup = null, onOpenStat = null }) {
+export default function TvView({ forks = { win: () => null, median: () => null, ticket: () => null }, peeks = { win: () => [], median: () => [], ticket: () => [] }, scoreboard, guillotine, livePlays, marquee, survivorFeed, seasonOdds = null, logos = {}, onClose, inline = false, onOpenMatchup = null, onOpenStat = null }) {
   // inline (Jim, 2026-11-21): the Dashboard's League view, a block in the page: no scroll lock, wake lock or controls.
   useWakeLock(!inline);
   useScreenBelow(!inline);
@@ -505,8 +506,12 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
           {/* Once the ticket is locked, the chopping block takes its place and it's one line below (Jim, 2026-11-09). */}
           {ticketWinner ? <p className="tv-results-line">🎟️ Ticket: {ticketWinner.team}</p> : null}
           {heroSide && hero ? <div className="tv-hero"><small className="mini-needles-label">🏈 LIVE ACTION</small>{hero}</div> : null}
+          {/* The 100-Yard Rush on a wide screen (Jim, 2026-11-26), ahead of the on-the-field list, which gets what's left. */}
+          {heroSide && seasonOdds?.teams?.length ? <div className="tv-rush"><small className="mini-needles-label">🏈 100-YARD RUSH</small>
+            <RushField seasonOdds={seasonOdds} logos={logos} weekStarted={games.some(g => g.state !== "pre")} compact /></div> : null}
           {/* Survivor left Watch mode for room (Jim, 2026-11-21): managers with entries see them in their game-day view. */}
-          {field.length ? <div className="tv-field"><small className="mini-needles-label">ON THE FIELD NOW</small>
+          {/* On a wide screen the Rush takes the room "on the field now" had; Live Action covers the drive. */}
+          {field.length && !(heroSide && seasonOdds?.teams?.length) ? <div className="tv-field"><small className="mini-needles-label">ON THE FIELD NOW</small>
             {field.map(f => <p key={f.id}><b>{f.head}</b>{f.on.length ? " — " + f.on.join(", ") : " — no league starters"}</p>)}</div> : null}
         </aside>
       </div>

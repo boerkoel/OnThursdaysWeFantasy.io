@@ -1386,3 +1386,22 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 @keyframes rush-yds{0%{opacity:0;transform:translateX(-6px)}12%{opacity:1;transform:none}80%{opacity:1}100%{opacity:0}}
 @keyframes rush-flash{0%{box-shadow:inset 0 0 0 0 #e6c85c00}25%{box-shadow:inset 0 0 0 2px #e6c85c,inset 0 0 22px #e6c85c55}100%{box-shadow:inset 0 0 0 0 #e6c85c00}}
 @media (prefers-reduced-motion:reduce){.rush-burst::before,.rush-flash{animation:none;display:none}.rush-burst span{animation:rush-yds 3.2s step-end both}.tv-ticker-track span.fresh{animation:none}}
+/* Watch mode's compact 100-Yard Rush (Jim, 2026-11-26): it takes the side column's leftover height, the lanes share
+   it (up to 1.5em each, so the whole field fits any screen shape), and each lane's name and odds sit on one line. */
+.tv-side{display:flex;flex-direction:column}.tv-side>*{flex:none}
+.tv-rush{flex:1 1 0!important;min-height:7em;margin-top:.6vw;display:flex;flex-direction:column}
+.rush.compact{flex:1;min-height:0;margin:0;display:flex;flex-direction:column}.rush.compact .rush-head{margin:.15em 0 .3em}.rush.compact .rush-caption{font-size:.68em;gap:.1em .8em}
+.rush.compact .rush-board{flex:1;min-height:0;display:flex;flex-direction:column;border-radius:.5em}
+.rush.compact .rush-lane{flex:1 1 0;min-height:0;max-height:1.5em;display:flex}.rush.compact .rush-lane .rush-row{flex:1;min-height:0}.rush.compact .rush-row{grid-template-columns:9em 1fr;cursor:default}
+.rush.compact .rush-numbers{flex:none}
+.rush.compact .rush-name{flex-direction:row;align-items:center;justify-content:space-between;gap:.4em;padding:0 .45em;line-height:1}.rush.compact .rush-name b{font-size:.6em;min-width:0}.rush.compact .rush-name small{font-size:.55em;white-space:nowrap}
+.rush.compact .rush-track{height:auto;min-height:0}.rush.compact .rush-numbers .rush-track{height:.95em}.rush.compact .rush-numbers b{font-size:.5em;top:.25em}
+.rush.compact .rush-runner{top:50%;height:86%;width:auto;aspect-ratio:1;margin-left:0;transform:translate(-50%,-50%);box-shadow:0 0 0 1.5px #f7f7f2}.rush.compact .rush-runner .inline-team-logo{width:82%;height:82%}
+.rush.compact .rush-runner.clinched{box-shadow:0 0 0 1.5px #e6c85c}.rush.compact .rush-runner.eliminated{box-shadow:0 0 0 1.5px #d96b67}.rush.compact .rush-runner em{font-size:.4em}
+.rush.compact .rush-trail{top:50%;height:.2em;transform:translateY(-50%)}.rush.compact .rush-ghost{top:50%;width:.42em;height:.42em;margin-left:-.21em;border-width:1.5px;transform:translateY(-50%)}.rush.compact .rush-range{top:50%;height:55%;transform:translateY(-50%)}
+.rush.compact .rush-burst::before{width:1.1em;height:1.1em;left:-.55em;top:-.55em;border-width:2px}.rush.compact .rush-burst span{font-size:.7em;left:1em;top:-.6em}
+.tv-hero .tv-whatif{font-size:1.35em;-webkit-line-clamp:2}.tv-hero .tv-field-strip>span{width:7em}
+/* The Live Action text: its label line plus two lines of play, cut cleanly (a line clamp counts the label as a line). */
+.tv-hero .tv-whatif{display:block!important;-webkit-line-clamp:unset;height:3.05em;min-height:0;overflow:hidden}
+/* The compact Rush's lanes: fewer teams, so taller lanes; the band is the week's possible range (lose both to win both). */
+.rush.compact .rush-lane{max-height:2.1em}.rush.compact .rush-range.swing{background:#e6c85c2e;box-shadow:inset 0 0 0 1px #e6c85c55}
