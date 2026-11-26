@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { money } from "../lib/data.js";
 import { oddsMove, shortPlay } from "../lib/playText.js";
 import { useWakeLock } from "../lib/wakeLock.js";
-import RushField from "./RushField.jsx";
+import RushField, { RushShift } from "./RushField.jsx";
 import { LOCKED, MiniNeedle, NeedleRace, useSyncFocus, useSyncedPeek } from "./Needle.jsx";
 import { chopPeeks } from "../lib/tdPeeks.js";
 import { driveRooting, driveStakes } from "../lib/rooting.js";
@@ -104,6 +104,8 @@ const gameText = g => {
 };
 
 const GAME_TURN_MS = 12000, HEAT_WINDOW_MS = 15 * 60 * 1000;
+// The Rush pop-up (Watch mode): teams a live update moves at least this many yards, the top three, for this long.
+const RUSH_POP_YDS = 3, RUSH_POP_MS = 7000;
 const ago = at => { const m = Math.round((Date.now() - Date.parse(at)) / 60000); return m < 1 ? "just now" : `${m} min ago`; };
 // The strip of screen below what iOS lets the page pin to (Jim, 2026-11-12: "there's still room below, use the part
 // of the screen that curves"): the screen's height less the window's, when the page already runs under the status
@@ -444,6 +446,33 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
   // The Rush in Watch mode on any screen (Jim, 2026-11-26); on a phone it follows the median's tightest two and the
   // ticket's top two, and the Live Action hero docks at the bottom with the ticker under it, in the curved strip.
   const showRush = !inline && Boolean(seasonOdds?.teams?.length);
+  // A big swing pops up the lanes that moved (Jim, 2026-11-26), with the biggest league play since the last update,
+  // since the odds move on each refresh rather than on the snap. ?rushdemo in the address shows a made-up one.
+  const rushSeen = useRef(null);
+  const [rushPop, setRushPop] = useState(null);
+  const rushKey = (seasonOdds?.teams || []).map(t => `${t.teamId}:${t.playoffOdds}`).join(",");
+  useEffect(() => {
+    if (!showRush) return;
+    const now = Object.fromEntries(seasonOdds.teams.map(t => [t.teamId, Number(t.playoffOdds)]));
+    const before = rushSeen.current;
+    rushSeen.current = { odds: now, at: Date.now() };
+    let moves = [];
+    if (before) moves = seasonOdds.teams.map(t => ({ team: t, from: before.odds[t.teamId], to: now[t.teamId] }))
+      .filter(m => Number.isFinite(m.from) && Math.abs(m.to - m.from) >= RUSH_POP_YDS);
+    else if (/[?&]rushdemo/.test(window.location.search)) moves = seasonOdds.teams.filter(t => now[t.teamId] > 15 && now[t.teamId] < 85).slice(0, 3)
+      .map((t, k) => ({ team: t, from: Math.min(99, Math.max(1, now[t.teamId] + [-9, 6, -4][k])), to: now[t.teamId] }));
+    if (!moves.length) return;
+    const since = before ? before.at - 60000 : Date.now() - 10 * 60000;
+    const big = plays.filter(p => p.wallclock && Date.parse(p.wallclock) >= since && Number(p.points)).sort((x, y) => Math.abs(y.points) - Math.abs(x.points))[0];
+    setRushPop({ key: Date.now(), cause: big ? `${big.player} ${shortPlay(big)}` : null,
+      moves: moves.sort((x, y) => Math.abs(y.to - y.from) - Math.abs(x.to - x.from)).slice(0, 3) });
+  }, [rushKey, showRush]);
+  // It waits for a full-screen announcement (a clinch, a swap) to finish, then gets its own seconds.
+  useEffect(() => {
+    if (!rushPop || announcement) return;
+    const t = setTimeout(() => setRushPop(null), RUSH_POP_MS);
+    return () => clearTimeout(t);
+  }, [rushPop?.key, Boolean(announcement)]);
   const [dockEl, setDockEl] = useState(null);
   useDock(inline, dockEl);
   return (
@@ -517,6 +546,11 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
             {field.map(f => <p key={f.id}><b>{f.head}</b>{f.on.length ? " — " + f.on.join(", ") : " — no league starters"}</p>)}</div> : null}
         </aside>
       </div>
+      {rushPop && !announcement ? <div className="tv-rushpop" key={rushPop.key}>
+        <small className="mini-needles-label">🏈 PLAYOFF RACE SHIFT</small>
+        {rushPop.cause ? <p className="tv-rushpop-cause">Biggest play since the last update: <b>{rushPop.cause}</b></p> : null}
+        <RushShift moves={rushPop.moves} math={seasonOdds?.math || {}} logos={logos} />
+      </div> : null}
       {announcement ? <div className="tv-announce" key={announcement.text + announcement.sub}>
         <span>{announcement.icon}</span><b>{announcement.text}</b>{announcement.sub ? <small>{announcement.sub}</small> : null}
       </div> : null}

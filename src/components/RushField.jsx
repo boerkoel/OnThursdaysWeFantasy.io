@@ -227,3 +227,28 @@ export default function RushField({ seasonOdds, logos, weekStarted, compact = fa
     </div>
   );
 }
+
+// Watch mode's pop-up on a big swing (Jim, 2026-11-26: "on a big play, pop up the relevant 2-3 lanes with shifts to
+// demonstrate the animation"): moves = [{ team, from, to }]. Each runner starts where it was, then runs to where it is
+// now with the burst, as on the field; math: clinched/eliminated, for the end zones.
+export function RushShift({ moves, math = {}, logos = {} }) {
+  const [go, setGo] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setGo(true), 500); return () => clearTimeout(t); }, []);
+  return <div className="rush compact rush-shift" style={{ "--rush-ms": "1600ms" }}><div className="rush-board">
+    {moves.map(({ team, from, to }) => {
+      const id = team.teamId, status = math[String(id)], d = Math.round(to - from);
+      const a = xOf(from), b = xOf(to, status), x = go ? b : a;
+      return <div key={id} className="rush-lane"><div className="rush-row">
+        <span className="rush-name"><b>{team.team}</b><small>{pct(go ? to : from)}{go ? <em className={d > 0 ? "up" : "down"}>{d > 0 ? ` ▲${d}` : ` ▼${-d}`}</em> : null}</small></span>
+        <span className="rush-track">
+          <i className={"rush-trail " + (b >= a ? "up" : "down")} style={{ left: `${Math.min(a, x)}%`, width: `${Math.abs(x - a)}%` }} />
+          <i className="rush-ghost" style={{ left: `${a}%` }} />
+          <span className={"rush-runner" + (go && status ? " " + status : "")} style={{ left: `${x}%` }}>
+            <TeamLogo src={logos[id]} />
+            {go ? <b className={"rush-burst " + (d > 0 ? "up" : "down")}><span>{d > 0 ? `+${d}` : d}</span></b> : null}
+          </span>
+        </span>
+      </div></div>;
+    })}
+  </div></div>;
+}

@@ -1419,3 +1419,10 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .rush.compact .rush-lane{flex:none;height:26px;max-height:none}.rush.compact .rush-track{height:26px}
 .tv:not(.tv-inline) .tv-ticker:not(:has(.tv-drive)){display:block}.tv:not(.tv-inline) .tv-ticker-window{display:block;padding:4px 0 0}
 .tv:not(.tv-inline) .tv-ticker-track span{font-size:12px!important}.tv:not(.tv-inline) .tv-body{flex:none;padding-bottom:150px}}
+/* Watch mode's Rush pop-up on a big swing (Jim, 2026-11-26): the lanes that moved, run from where they were. */
+.tv-rushpop{position:absolute;left:50%;bottom:14vh;z-index:6;width:min(60vw,1000px);padding:.9em 1.2em 1.1em;border:2px solid #e6c85c;border-radius:1em;background:#10110ff4;box-shadow:0 0 40px #e6c85c55;font-size:1.25em;transform:translateX(-50%);animation:rushpop 7s ease-in-out both}
+.tv-rushpop .mini-needles-label{margin:0 0 .3em;display:block}.tv-rushpop-cause{margin:0 0 .6em;font-size:.75em;color:#c7c9c1}.tv-rushpop-cause b{color:#f7f7f2}
+.rush.rush-shift .rush-lane{flex:none;height:2.3em;max-height:none}.rush.rush-shift .rush-track{height:2.3em}
+@keyframes rushpop{0%{opacity:0;transform:translate(-50%,20px) scale(.96)}6%{opacity:1;transform:translate(-50%,0)}90%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,10px)}}
+@media (max-width:760px),(orientation:portrait) and (max-width:1024px){.tv-rushpop{position:fixed;width:94vw;bottom:calc(170px + var(--tv-below,0px));font-size:15px;padding:12px 12px 14px}.rush.rush-shift .rush-lane,.rush.rush-shift .rush-track{height:34px}}
+@media (prefers-reduced-motion:reduce){.tv-rushpop{animation:none}}
