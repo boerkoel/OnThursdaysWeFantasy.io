@@ -4,7 +4,7 @@ import { feedTeam } from "../../scripts/lib/survivor-model.js";
 import { Field } from "./SurvivorTab.jsx";
 import { rateGames } from "../../scripts/lib/game-drama.js";
 import { shortPlay } from "../lib/playText.js";
-import { Explain } from "./LiveBits.jsx";
+import { Explain, ShareLink } from "./LiveBits.jsx";
 
 // Games tab (Jim, 2026-10-29): the NFL slate through the league's eyes.
 // - All games: every game with score, clock, win odds, possession and the
@@ -239,7 +239,7 @@ export default function GamesTab({ scoreboard, guillotine, livePlays, survivorFe
   };
 
   return <section id="games" className="section">
-    <div className="section-heading"><div><span className="section-kicker">WEEK {week} · THE NFL SLATE</span><h2>Games</h2></div>
+    <div className="section-heading"><div><span className="section-kicker">WEEK {week} · THE NFL SLATE</span><h2>Games <ShareLink section="games" /></h2></div>
       {view !== "all" ? picker : null}</div>
     <div className="standings-live-toggle gm-toggle" role="tablist">
       {[["all", "All games"], ["mine", "My players"], ["opp", "Opponent"]].map(([id, label]) =>

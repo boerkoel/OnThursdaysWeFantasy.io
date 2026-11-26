@@ -1,6 +1,6 @@
 import React from "react";
 import { money } from "../lib/data.js";
-import { Explain } from "./LiveBits.jsx";
+import { Explain, ShareLink } from "./LiveBits.jsx";
 
 // A team's simulated final score, compactly: the thin line spans the middle 80%
 // of outcomes (10th-90th percentile), the band the middle half (25th-75th), the
@@ -91,7 +91,7 @@ export function AccuracyScorecard({ scorecard }) {
     <td className="num"><b className={ours <= espn ? "up" : "down"}>{ours.toFixed(digits)}{unit}</b> <small>vs {espn.toFixed(digits)}{unit}</small></td>;
   return (
     <section id="accuracy" className="section">
-      <div className="section-heading"><div><span className="section-kicker">KEEPING OURSELVES HONEST</span><h2>Projection scorecard</h2></div></div>
+      <div className="section-heading"><div><span className="section-kicker">KEEPING OURSELVES HONEST</span><h2>Projection scorecard <ShareLink section="accuracy" /></h2></div></div>
       {graded ? <div className="scorecard-table"><table>
         <thead><tr><th></th>{cols.map(([k, l]) => <th key={k} className="num">{l}<small> · {scorecard[k]?.weeks || 0} wk</small></th>)}</tr></thead>
         <tbody>

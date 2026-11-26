@@ -1355,3 +1355,6 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .rush-lane.open .rush-row .rush-name{background:#ffffff08}.rush-detail{margin:0;padding:7px 10px;font-size:11px;color:#c7c9c1;background:#ffffff08;border-top:1px solid #30332d}@media(max-width:520px){.rush-row{grid-template-columns:92px 1fr}.rush-name{padding:3px 6px}.rush-buttons{width:100%}.rush-buttons button{flex:1}}
 .rush-range{position:absolute;top:8px;height:14px;margin-left:-3px;padding-right:6px;box-sizing:content-box;border-radius:7px;background:#ffffff1f;transition:left var(--rush-ms) ease-in-out,width var(--rush-ms) ease-in-out}
 .rush-buttons{flex-wrap:wrap}.rush-dice{display:flex;gap:6px}.rush-dice button:first-child{border-color:#6b5f2c;color:#f1dc8a}@media(max-width:520px){.rush-dice{flex-basis:100%}.rush-dice button{flex:1}.rush-dice button+button{flex:0 0 auto}}
+/* 🔗 beside a section title: shares the view's preview link (Jim, 2026-11-25). Quiet until hovered. */
+.share-button.share-link{display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-left:6px;padding:2px 7px;font-size:12px;line-height:1.2;letter-spacing:0;opacity:.75;position:relative;top:-2px}
+.share-button.share-link:hover{opacity:1}

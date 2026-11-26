@@ -847,7 +847,7 @@ function App() {
   );
   const renderMedian = () => (
       <section id="scoreboard" className="section">
-        <div className="section-heading"><div><span className="section-kicker">MEDIAN SCORING</span><h2>Week {scoreboard.week} Scoreboard</h2></div>
+        <div className="section-heading"><div><span className="section-kicker">MEDIAN SCORING</span><h2>Week {scoreboard.week} Scoreboard <ShareLink section="scoreboard" /></h2></div>
           {displayScores.length ? <ShareButton section="scoreboard" iconOnly label="Share the scoreboard" filename={`week-${scoreboard.week}-scoreboard`} build={shareScoreboard} /> : null}</div>
         <div className="score-list">
           <div className="score-sort-controls" role="group" aria-label="Sort scoreboard">
@@ -905,19 +905,20 @@ function App() {
         <div className="dash-toggle" role="tablist">
           {[["manager", "📌 Manager"], ["league", "📺 League"]].map(([v, label]) =>
             <button key={v} type="button" role="tab" aria-selected={dashMode === v} className={dashMode === v ? "active" : ""} onClick={() => setDashView(v)}>{label}</button>)}
+          <ShareLink section="dashboard" />
           <button type="button" className="dash-full" onClick={() => dashMode === "league" ? setTv(true) : openGameday()} disabled={dashMode === "manager" && !myScore} title="Full screen">⛶</button>
         </div>
         {dashMode === "manager" ? <>{renderMyTeam({ gamedayButton: false })}{renderGameday()}</>
           : <TvView forks={{ win: winFork, median: medianFork, ticket: ticketFork }} peeks={watchPeeks} scoreboard={scoreboard} guillotine={guillotine} livePlays={livePlayFeed} marquee={live.marquee} survivorFeed={survivorFeed} logos={teamLogos} inline onOpenMatchup={setOpenMatchup} onOpenStat={setStatSheet} />}
         {dashMode === "league" ? <div className="rush-dash" id="rush">
-          <div className="section-heading"><div><span className="section-kicker">RACE TO THE PLAYOFFS</span><h2>The 100-Yard Rush</h2></div><ShareLink section="rush" label="Share a link to the 100-Yard Rush" /></div>
+          <div className="section-heading"><div><span className="section-kicker">RACE TO THE PLAYOFFS</span><h2>The 100-Yard Rush <ShareLink section="rush" /></h2></div></div>
           <RushField seasonOdds={live.seasonOdds} logos={teamLogos} weekStarted={(scoreboard.nflGames || []).some(g => g.state !== "pre")} />
         </div> : null}
       </section> : null}
 
       {tab === "live" ? <>
       <section className="hero-strip">
-        <div className="hero-main"><span className="section-kicker">2026 SEASON</span><h2>Week {scoreboard.week}</h2><p>{status === "NOT STARTED" ? "The week is set. Scores will appear here once the games begin."
+        <div className="hero-main"><span className="section-kicker">2026 SEASON</span><h2>Week {scoreboard.week} <ShareLink section="live" /></h2><p>{status === "NOT STARTED" ? "The week is set. Scores will appear here once the games begin."
           : status === "LIVE" ? "The league is live. Here’s how everyone is doing."
           : status === "FINAL" ? "Every game is final. Here’s how the week shook out."
           : "Between games. Here’s where everyone stands."}</p></div>
@@ -926,7 +927,7 @@ function App() {
       <LeagueWire stories={live.marquee.stories || []} status={status} week={live.marquee.week ?? scoreboard.week} onOpen={openWireStory} />
       <PrimetimeWatch scores={scores} nflGames={scoreboard.nflGames || []} guillotine={Number(guillotine.week) === Number(scoreboard.week) ? guillotine : null} logos={teamLogos} week={scoreboard.week} />
       <section id="scores" className="section">
-        <div className="section-heading"><div><span className="section-kicker">RIGHT NOW</span><h2>Week {scoreboard.week} Scores</h2></div>
+        <div className="section-heading"><div><span className="section-kicker">RIGHT NOW</span><h2>Week {scoreboard.week} Scores <ShareLink section="scores" /></h2></div>
           <span className="scores-actions">
             <button type="button" className={primetimeView ? "primetime-toggle on" : "primetime-toggle"} aria-pressed={primetimeView} onClick={() => setPrimetimeView(!primetimeView)} title="Expand each matchup to the players live right now and its key plays">📺 Primetime view</button>
             <a className="primetime-toggle tv-link" href="#watch" title="The whole league on one screen: put it up on a TV or laptop at a watch party">👀 Watch mode</a>
@@ -944,14 +945,14 @@ function App() {
 
       {tab === "standings" ? <>
       <section id="standings-odds" className="section">
-        <div className="section-heading"><div><span className="section-kicker">WEEK {scoreboard.week} · {seasonOddsWeeksLeft} WEEKS LEFT</span><h2>Standings</h2></div></div>
+        <div className="section-heading"><div><span className="section-kicker">WEEK {scoreboard.week} · {seasonOddsWeeksLeft} WEEKS LEFT</span><h2>Standings <ShareLink section="standings-odds" /></h2></div></div>
         <h3 className="survival-heading">The 100-Yard Rush</h3>
         <RushField seasonOdds={live.seasonOdds} logos={teamLogos} weekStarted={(scoreboard.nflGames || []).some(g => g.state !== "pre")} />
         <StandingsTable seasonOdds={live.seasonOdds} logos={teamLogos} liveScores={scores} week={scoreboard.week} />
       </section>
       <section id="playoffs" className="section">
         <div className="section-heading">
-          <div><span className="section-kicker">ROAD TO THE TITLE</span><h2>2026 Playoffs</h2></div>
+          <div><span className="section-kicker">ROAD TO THE TITLE</span><h2>2026 Playoffs <ShareLink section="playoffs" /></h2></div>
           <span className="record-count">{playoffs.status === "ACTIVE" ? "PLAYOFFS ACTIVE" : "PROJECTED FROM CURRENT STANDINGS"}</span>
         </div>
         <Explain className="playoff-intro" lead="Six teams qualify; the top two get byes.">Seeding goes by record (head-to-head plus median wins), with total points breaking ties. Teams are reseeded after the quarterfinals: the #1 seed plays the lowest remaining seed (dashed lines).</Explain>
@@ -1001,7 +1002,7 @@ function App() {
       </section>
       <section id="ultimate-loser" className="section">
         <div className="section-heading">
-          <div><span className="section-kicker">THE OTHER ROAD</span><h2>Ultimate Loser</h2></div>
+          <div><span className="section-kicker">THE OTHER ROAD</span><h2>Ultimate Loser <ShareLink section="ultimate-loser" /></h2></div>
           <span className="record-count">WEEKS 16–18 · 8 TEAMS</span>
         </div>
         <Explain className="playoff-intro" lead="Three weeks, eight teams: the lower score advances.">Single elimination, and teams are reseeded after the quarterfinals (dashed lines). The six regular-season non-playoff teams are seeded 1–6, followed by the lower-ranked Week 15 playoff loser at #7 and the higher-ranked Week 15 playoff loser at #8.</Explain>
@@ -1078,7 +1079,7 @@ function App() {
       <ReportCards cards={reportCards} logos={teamLogos} />
       <section id="history" className="section">
         <div className="section-heading">
-          <div><span className="section-kicker">THE SEASON SO FAR</span><h2>Weekly History</h2></div>
+          <div><span className="section-kicker">THE SEASON SO FAR</span><h2>Weekly History <ShareLink section="history" /></h2></div>
           <span className="record-count">{completedHistoryWeeks.length} WEEKS COMPLETE</span>
         </div>
         <div className="history-week-tabs" role="tablist" aria-label="Select completed week">
@@ -1141,7 +1142,7 @@ function App() {
       </section>
       <section id="awards" className="section">
         <div className="section-heading">
-          <div><span className="section-kicker">THE GOOD STUFF</span><h2>League Awards</h2></div>
+          <div><span className="section-kicker">THE GOOD STUFF</span><h2>League Awards <ShareLink section="awards" /></h2></div>
           <span className="record-count">THROUGH WEEK {awards.currentWeek}</span>
         </div>
         <div className="award-grid">
@@ -1166,7 +1167,7 @@ function App() {
       <TopTrades teams={teamsData.teams || []} week={metadata.currentWeek || scoreboard.week} />
       <section id="teams" className="section">
         <div className="section-heading">
-          <div><span className="section-kicker">THE ROSTER ROOM</span><h2>Team Cards</h2></div>
+          <div><span className="section-kicker">THE ROSTER ROOM</span><h2>Team Cards <ShareLink section="teams" /></h2></div>
           <span className="record-count">{(teamsData.teams || []).length} TEAMS · 2026</span>
         </div>
         <p className="team-cards-intro">Every manager gets a baseball-card-style snapshot of the season. Click a card to open the full team profile.</p>

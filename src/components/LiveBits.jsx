@@ -27,7 +27,7 @@ export function ShareLink({ section, label = "Share a link" }) {
     try { if (navigator.share) return await navigator.share({ url }); } catch (error) { if (error?.name === "AbortError") return; }
     try { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch {}
   };
-  return <button type="button" className="share-button icon-only" onClick={onClick} aria-label={label} title={copied ? "Link copied" : label}>{copied ? "✓" : "🔗"}</button>;
+  return <button type="button" className="share-button icon-only share-link" onClick={onClick} aria-label={label} title={copied ? "Link copied" : label}>{copied ? "✓" : "🔗"}</button>;
 }
 
 // A short note with the long explanation tucked behind a caret (Jim, 2026-11-02).

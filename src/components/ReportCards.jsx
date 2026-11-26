@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Explain, TeamLogo } from "./LiveBits.jsx";
+import { Explain, TeamLogo, ShareLink } from "./LiveBits.jsx";
 
 // Report cards (scripts/report-cards.js): every manager graded on a curve
 // against the league, this season (by category), last week and all-time.
@@ -35,7 +35,7 @@ export default function ReportCards({ cards, logos = {} }) {
   return (
     <section id="report-cards" className="section">
       <div className="section-heading">
-        <div><span className="section-kicker">THROUGH WEEK {cards.throughWeek} · GRADED ON A CURVE</span><h2>Report cards</h2></div>
+        <div><span className="section-kicker">THROUGH WEEK {cards.throughWeek} · GRADED ON A CURVE</span><h2>Report cards <ShareLink section="report-cards" /></h2></div>
       </div>
       <div className="report-cards">
         <div className="rc-row head">

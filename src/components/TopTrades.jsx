@@ -1,5 +1,5 @@
 import React from "react";
-import { Explain, ShareButton, TeamLogo } from "./LiveBits.jsx";
+import { Explain, ShareButton, TeamLogo, ShareLink } from "./LiveBits.jsx";
 import { basisTag } from "../lib/tradeBasis.js";
 
 // Teams tab: the league's best win-win trades (1-for-1, 2-for-1, 2-for-2),
@@ -69,7 +69,7 @@ export default function TopTrades({ teams, week }) {
   return (
     <section id="trades" className="section">
       <div className="section-heading">
-        <div><span className="section-kicker">THE TRADE MACHINE · IN HINDSIGHT</span><h2>Trades that should have happened</h2></div>
+        <div><span className="section-kicker">THE TRADE MACHINE · IN HINDSIGHT</span><h2>Trades that should have happened <ShareLink section="trades" /></h2></div>
         <ShareButton section="trades" iconOnly label="Share the trades that should have happened" filename={`week-${week}-top-trades`} build={share} />
       </div>
       <Explain className="team-cards-intro" lead="Swaps that would have left both teams ahead today.">The wins each would have added, replaying the weeks with optimal lineups or the lineups ESPN's projections would have set. Hindsight, not a promise about what happens next.</Explain>

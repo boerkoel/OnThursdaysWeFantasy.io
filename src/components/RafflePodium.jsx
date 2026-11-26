@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { money, pct } from "../lib/data.js";
 import { HALF_MEAN_SD, normalCdf, normalQuantile, playerOutlook } from "../../scripts/lib/simulation.js";
-import { TeamLogo } from "./LiveBits.jsx";
+import { TeamLogo, ShareLink } from "./LiveBits.jsx";
 import { VsLineups } from "./MatchupLineup.jsx";
 import ChopChart, { peakTeams } from "./ChopChart.jsx";
 import Podium from "./Podium.jsx";
@@ -68,7 +68,7 @@ export default function RafflePodium({ ticketFork = () => null, ticketPeeks = ()
 
   return (
     <section id="ticket-race" className="section">
-      <div className="section-heading"><div><span className="section-kicker">WEEK {week} · TOP SCORE WINS A RAFFLE TICKET</span><h2>Ticket race</h2></div></div>
+      <div className="section-heading"><div><span className="section-kicker">WEEK {week} · TOP SCORE WINS A RAFFLE TICKET</span><h2>Ticket race <ShareLink section="ticket-race" /></h2></div></div>
       <Podium ariaLabel="Best odds of the week's top score" items={top.map((s, i) => ({
         key: s.teamId,
         logo: <TeamLogo src={logos[s.teamId]} size="md" />,

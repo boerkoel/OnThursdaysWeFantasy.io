@@ -1,3 +1,4 @@
+import { ShareLink } from "./LiveBits.jsx";
 import React, { useState } from "react";
 import { money } from "../lib/data.js";
 import { managerLabel, recordBook, rivalryBetween } from "../lib/recordBook.js";
@@ -76,7 +77,7 @@ export default function RecordBook() {
   return (
     <section id="record-book" className="section">
       <div className="section-heading">
-        <div><span className="section-kicker">SINCE {seasons[0] || recordBook.currentSeason}</span><h2>All-Time Record Book</h2></div>
+        <div><span className="section-kicker">SINCE {seasons[0] || recordBook.currentSeason}</span><h2>All-Time Record Book <ShareLink section="record-book" /></h2></div>
         <span className="record-count">{seasons.length} SEASONS · THROUGH {recordBook.currentSeason} WEEK {recordBook.throughWeek}</span>
       </div>
       {!pastSeasons.length ? <p className="median-note">Past seasons load with the next daily ESPN update; until then this covers {recordBook.currentSeason} only.</p> : null}

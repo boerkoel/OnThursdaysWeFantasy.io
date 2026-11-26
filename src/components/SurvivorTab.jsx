@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { NOTIFY_SERVICE, pct } from "../lib/data.js";
-import { Explain } from "./LiveBits.jsx";
+import { Explain, ShareLink } from "./LiveBits.jsx";
 import { feedTeam, survivorModel, withManualPicks } from "../../scripts/lib/survivor-model.js";
 import MANUAL_PICKS from "../data/survivor-manual.json";
 
@@ -122,7 +122,7 @@ function GamesSection({ feed, games, pot }) {
     {x.who.length ? <small>{x.who.map(([u, k]) => k > 1 ? `${u} ×${k}` : u).join(", ")}</small> : null}
   </div>;
   return <section id="survivor-games" className="section">
-    <div className="section-heading"><div><span className="section-kicker">WEEK {n} · WHO'S RIDING WHOM</span><h2>Games</h2></div>
+    <div className="section-heading"><div><span className="section-kicker">WEEK {n} · WHO'S RIDING WHOM</span><h2>Games <ShareLink section="survivor-games" /></h2></div>
       <span className="record-count">{revealed} OF {inPlay.length} PICKS REVEALED</span></div>
     <div className="sv-games">
       {rows.filter(r => r.a.count + r.h.count > 0).map(({ g, a, h, winner }) => {
@@ -182,7 +182,7 @@ export default function SurvivorTab({ nflGames = [], nflWeek = null }) {
 
   if (!feed) {
     return <section id="survivor" className="section">
-      <div className="section-heading"><div><span className="section-kicker">ONSUNDAYSWESURVIVE · SPLASH SPORTS</span><h2>Survivor</h2></div></div>
+      <div className="section-heading"><div><span className="section-kicker">ONSUNDAYSWESURVIVE · SPLASH SPORTS</span><h2>Survivor <ShareLink section="survivor" /></h2></div></div>
       <p className="median-note">{failed ? "The survivor feed isn't available yet. It's being connected to Splash Sports; check back soon." : "Loading the survivor pool…"}</p>
     </section>;
   }
@@ -289,7 +289,7 @@ export default function SurvivorTab({ nflGames = [], nflWeek = null }) {
 
   return <>
     <section id="survivor" className="section">
-      <div className="section-heading"><div><span className="section-kicker">{(c.name || "Survivor pool").toUpperCase()} · SPLASH SPORTS</span><h2>Week {c.currentWeek} Survivor</h2></div>
+      <div className="section-heading"><div><span className="section-kicker">{(c.name || "Survivor pool").toUpperCase()} · SPLASH SPORTS</span><h2>Week {c.currentWeek} Survivor <ShareLink section="survivor" /></h2></div>
         <span className="record-count">{c.alive} OF {total} ALIVE</span></div>
       {weekSim ? <p className="sv-topline">{weekSim.final   // topline (Jim, 2026-10-25): entries still standing and how many the odds expect to survive
         ? <><b>{weekSim.total - weekSim.lost}</b> of {weekSim.total} entries survived Week {n}.</>
@@ -310,7 +310,7 @@ export default function SurvivorTab({ nflGames = [], nflWeek = null }) {
     {nflWeek === Number(c.currentWeek) ? <GamesSection feed={feed} games={nflGames} pot={pot} /> : null}
 
     <section id="survivor-picks" className="section">
-      <div className="section-heading"><div><span className="section-kicker">WHO PICKED WHOM</span><h2>Pick distribution</h2></div></div>
+      <div className="section-heading"><div><span className="section-kicker">WHO PICKED WHOM</span><h2>Pick distribution <ShareLink section="survivor-picks" /></h2></div></div>
       <div className="sv-weeks" role="tablist">
         {/* Newest week first (Jim, 2026-11-17). */}
         {[...weeks].reverse().map(w => <button type="button" role="tab" key={w.week} disabled={!w.locked} aria-selected={week?.week === w.week}
@@ -331,7 +331,7 @@ export default function SurvivorTab({ nflGames = [], nflWeek = null }) {
     </section>
 
     <section id="survivor-managers" className="section">
-      <div className="section-heading"><div><span className="section-kicker">THE PORTFOLIOS</span><h2>Managers
+      <div className="section-heading"><div><span className="section-kicker">THE PORTFOLIOS</span><h2>Managers <ShareLink section="survivor-managers" />
         {weekSim && !weekSim.final ? <span className="standings-live-toggle">
           <button type="button" className={ledgerLive ? "active" : ""} onClick={() => setLedgerLive(true)}>{lookAhead ? `Week ${n} look-ahead` : "Live"}</button>
           <button type="button" className={ledgerLive ? "" : "active"} onClick={() => setLedgerLive(false)}>As it stands</button>
@@ -364,7 +364,7 @@ export default function SurvivorTab({ nflGames = [], nflWeek = null }) {
     </section>
 
     <section id="survivor-teams" className="section">
-      <div className="section-heading"><div><span className="section-kicker">WHO'S STILL ON THE MENU</span><h2>Teams left</h2></div>
+      <div className="section-heading"><div><span className="section-kicker">WHO'S STILL ON THE MENU</span><h2>Teams left <ShareLink section="survivor-teams" /></h2></div>
         <span className="record-count">OF {liveEntries.length} LIVE ENTRIES</span></div>
       <div className="sv-teams">
         {teamsLeft.map(t => <div className={"sv-team" + (t.left ? "" : " gone")} key={t.team} title={`${TEAM_NAMES[t.team]}: ${t.left} of ${liveEntries.length} live entries can still pick them`}>
@@ -378,7 +378,7 @@ export default function SurvivorTab({ nflGames = [], nflWeek = null }) {
     </section>
 
     <section id="survivor-standings" className="section">
-      <div className="section-heading"><div><span className="section-kicker">STILL STANDING</span><h2>Entries</h2></div><span className="record-count">{live.length} ALIVE</span></div>
+      <div className="section-heading"><div><span className="section-kicker">STILL STANDING</span><h2>Entries <ShareLink section="survivor-standings" /></h2></div><span className="record-count">{live.length} ALIVE</span></div>
       <div className="sv-entries">{live.map(entryRow)}</div>
       {out.length ? <>
         <div className="sv-divider">Eliminated · {out.length}</div>

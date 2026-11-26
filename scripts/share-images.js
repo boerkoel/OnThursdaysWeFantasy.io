@@ -15,7 +15,7 @@ const PORT = 4173, DEBUG_PORT = 9335;   // 4173: an origin the notify service al
 // SHARE_BASE: picture another copy of the site instead (a local test against the live site).
 const BASE = process.env.SHARE_BASE || `http://localhost:${PORT}/OnThursdaysWeFantasy.io/`;
 // 800 CSS px wide at 1.5x: 1200 px pictures, cut to at most 4:3 (the top of a tall section).
-const WIDTH = 800, SCALE = 1.5, MAX_ASPECT = 0.75, SETTLE_MS = 4000, VIEW_TIMEOUT_MS = 25000;
+const WIDTH = 800, SCALE = 1.5, MAX_ASPECT = 0.75, SETTLE_MS = 3500, VIEW_TIMEOUT_MS = 15000;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 const CHROMES = [process.env.CHROME_PATH, "/usr/bin/google-chrome", "/usr/bin/google-chrome-stable", "/usr/bin/chromium-browser", "/usr/bin/chromium",
