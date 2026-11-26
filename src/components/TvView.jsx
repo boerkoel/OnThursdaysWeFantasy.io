@@ -22,7 +22,7 @@ const A_COLOR = "#7aa6d8", B_COLOR = "#e0a64a";
 const MEDIAN_COLORS = ["#d96b67", "#e6c85c", "#72b96a"];
 const FLASH_MS = 6000;
 const TICKER_PLAYS = 12;
-const TICKER_MAX_AGE_MS = 3 * 60 * 60 * 1000;
+const TICKER_MAX_AGE_MS = 3 * 60 * 60 * 1000, FRESH_MS = 12000;
 const ANNOUNCE_MS = 6000;
 
 // Sound for the big moments (Jim, 2026-11-02): off until tapped on (browsers only play sound after a tap), then a
@@ -352,9 +352,22 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
   const plays = Number(livePlays?.week) === week ? livePlays.plays || [] : [];
   const recent = plays.filter(p => p.wallclock && Number(p.points) && Date.now() - Date.parse(p.wallclock) < TICKER_MAX_AGE_MS)
     .sort((x, y) => Date.parse(y.wallclock) - Date.parse(x.wallclock)).slice(0, TICKER_PLAYS)
-    .map(p => `${Number(p.points) > 0 ? "+" : ""}${Number(p.points).toFixed(2)} ${p.player} ${shortPlay(p)} · ${teamName.get(Number(p.fantasyTeamId)) || ""}${p.momentum?.shift >= 1 ? ` · ${p.momentum.toward} ${oddsMove(p.momentum.winProbability, p.momentum.shift)}` : ""}`);
-  const stories = inline ? [] : (Number(marquee?.week) === week ? marquee.stories || [] : []).slice(0, 4).map(s => s.text);
+    .map(p => ({ id: String(p.id || p.wallclock + p.player), text: `${Number(p.points) > 0 ? "+" : ""}${Number(p.points).toFixed(2)} ${p.player} ${shortPlay(p)} · ${teamName.get(Number(p.fantasyTeamId)) || ""}${p.momentum?.shift >= 1 ? ` · ${p.momentum.toward} ${oddsMove(p.momentum.winProbability, p.momentum.shift)}` : ""}` }));
+  const stories = inline ? [] : (Number(marquee?.week) === week ? marquee.stories || [] : []).slice(0, 4).map(s => ({ text: s.text }));
   const ticker = [...recent, ...stories];
+  // A play that just came in flashes gold (Jim, 2026-11-26), and the ticker starts over so it's the first to scroll by.
+  const seenPlays = useRef(null);
+  const [fresh, setFresh] = useState(() => new Set());
+  const recentKey = recent.map(r => r.id).join("|");
+  useEffect(() => {
+    const seen = seenPlays.current;
+    seenPlays.current = new Set([...(seen || []), ...recent.map(r => r.id)]);
+    const added = seen ? recent.map(r => r.id).filter(id => !seen.has(id)) : [];
+    if (!added.length) return;
+    setFresh(new Set(added));
+    const t = setTimeout(() => setFresh(new Set()), FRESH_MS);
+    return () => clearTimeout(t);
+  }, [recentKey]);
 
   // On the field now: each live game's offense and the other side's D/ST, with whose they are.
   const field = liveGames.map(g => {
@@ -502,8 +515,8 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
       </div> : null}
       {ticker.length || (hero && !heroSide) ? <footer className="tv-ticker" ref={setDockEl} aria-label="Latest plays and League Wire">
         {heroSide ? null : hero}
-        <div className="tv-ticker-window"><div className="tv-ticker-track" style={{ animationDuration: `${Math.max(40, ticker.join(" ").length / 6)}s` }}>
-          {[...ticker, ...ticker].map((t, i) => <span key={i}>{t}</span>)}
+        <div className="tv-ticker-window"><div className="tv-ticker-track" key={recent[0]?.id || ""} style={{ animationDuration: `${Math.max(40, ticker.map(t => t.text).join(" ").length / 6)}s` }}>
+          {[...ticker, ...ticker].map((t, i) => <span key={i} className={t.id && fresh.has(t.id) ? "fresh" : undefined}>{t.text}</span>)}
         </div></div>
       </footer> : null}
     </div>

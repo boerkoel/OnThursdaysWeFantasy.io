@@ -1372,3 +1372,17 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .tv-hero .tv-whatif{font-size:1.6em;line-height:1.2;margin-top:.5vw!important;min-height:2.4em;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
 .tv-hero .tv-whatif small{display:block;font-size:.45em;margin-bottom:.2em}
 .tv-hero .tv-whatif.replay>span,.tv-hero .tv-whatif.replay em{white-space:normal}
+/* A new play in the ticker flashes gold (Jim, 2026-11-26). */
+.tv-ticker-track span.fresh{color:#f1dc8a;animation:tv-fresh 1.2s ease-in-out 8}
+@keyframes tv-fresh{50%{color:#fff3b8;text-shadow:0 0 10px #e6c85c,0 0 2px #e6c85c}}
+/* The Rush's burst on a big live move (Jim, 2026-11-26): a gold ring at the runner, the yards beside it, a lane flash.
+   It starts as the runner sets off and fades on its own. */
+.rush-burst{position:absolute;left:50%;top:50%;width:0;height:0;pointer-events:none;z-index:2}
+.rush-burst::before{content:"";position:absolute;left:-12px;top:-12px;width:24px;height:24px;border-radius:50%;border:3px solid #e6c85c;box-shadow:0 0 12px #e6c85c;animation:rush-ring .9s ease-out 3 both}
+.rush-burst span{position:absolute;left:16px;top:-8px;font-size:12px;font-weight:900;font-style:normal;white-space:nowrap;text-shadow:0 1px 3px #000;animation:rush-yds 3.2s ease-out both}
+.rush-burst.up span{color:#8fd087}.rush-burst.down span{color:#e88b86}
+.rush-flash{position:absolute;inset:0;pointer-events:none;animation:rush-flash 1.8s ease-out both}
+@keyframes rush-ring{from{transform:scale(.4);opacity:1}to{transform:scale(2.2);opacity:0}}
+@keyframes rush-yds{0%{opacity:0;transform:translateX(-6px)}12%{opacity:1;transform:none}80%{opacity:1}100%{opacity:0}}
+@keyframes rush-flash{0%{box-shadow:inset 0 0 0 0 #e6c85c00}25%{box-shadow:inset 0 0 0 2px #e6c85c,inset 0 0 22px #e6c85c55}100%{box-shadow:inset 0 0 0 0 #e6c85c00}}
+@media (prefers-reduced-motion:reduce){.rush-burst::before,.rush-flash{animation:none;display:none}.rush-burst span{animation:rush-yds 3.2s step-end both}.tv-ticker-track span.fresh{animation:none}}

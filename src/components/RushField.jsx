@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Explain, TeamLogo } from "./LiveBits.jsx";
 import { pct } from "../lib/data.js";
 import { mathStatus } from "../../scripts/lib/clinch.js";
@@ -11,6 +11,9 @@ import { mathStatus } from "../../scripts/lib/clinch.js";
 const EZ = 9;                                     // each end zone's share of the lane, in %
 const xOf = (p, status) => status === "clinched" ? 100 - EZ / 2 : status === "eliminated" ? EZ / 2 : EZ + (100 - 2 * EZ) * Math.min(100, Math.max(0, p)) / 100;
 const WEEK_REPLAY_MS = 10000, SEASON_STEP_MS = 600;
+// A gold burst when a live update moves a team this many yards or more (Jim, 2026-11-26: "a gold burst to show a
+// surge or loss on a big play"): a ring at the runner, the yards gained or lost beside it, and a flash down the lane.
+const BURST_YDS = 3;
 const timeLabel = iso => new Date(iso).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });
 
 // The dice (Jim, 2026-11-24: "advance one week at a time ... that way there's a build"): each press rolls one more
@@ -60,6 +63,16 @@ export default function RushField({ seasonOdds, logos, weekStarted }) {
   const math = seasonOdds?.math || {};
   const live = useMemo(() => Object.fromEntries(teams.map(t => [t.teamId, Number(t.playoffOdds)])), [teams]);
   const toMap = (ids, list) => Object.fromEntries(ids.map((id, i) => [id, list[i]]));
+  const prevLive = useRef(null);
+  const [bursts, setBursts] = useState({});      // teamId -> { d: yards, key }; the CSS animation fades it out
+  useEffect(() => {
+    const before = prevLive.current;
+    prevLive.current = live;
+    if (!before) return;
+    const hits = Object.fromEntries(Object.entries(live).map(([id, p]) => [id, Math.round(p - before[id])])
+      .filter(([, d]) => Number.isFinite(d) && Math.abs(d) >= BURST_YDS).map(([id, d]) => [id, { d, key: Date.now() }]));
+    if (Object.keys(hits).length) setBursts(b => ({ ...b, ...hits }));
+  }, [live]);
 
   const path = seasonOdds?.seasonPath, prior = seasonOdds?.lastWeekTrail;
   const lastWeek = !weekStarted && prior?.points?.length > 1;
@@ -169,6 +182,7 @@ export default function RushField({ seasonOdds, logos, weekStarted }) {
           const id = t.teamId, status = frame.math[String(id)], now = frame.odds[id], was = from.odds[id];
           const a = xOf(was, from.math[String(id)]), b = xOf(now, status), d = move(id), rg = range(id);
           const byWins = !replay ? seasonOdds?.byWins?.[String(id)] : null;
+          const burst = !replay && !dice ? bursts[id] : null;
           return <div key={id} className={"rush-lane" + (open === id ? " open" : "")}>
             <button type="button" className="rush-row" onClick={() => setOpen(open === id ? null : id)}>
               <span className="rush-name"><b>{t.team}</b>
@@ -178,8 +192,10 @@ export default function RushField({ seasonOdds, logos, weekStarted }) {
                 <i className="rush-range" style={{ left: `${rg.x0}%`, width: `${rg.x1 - rg.x0}%` }} />
                 <i className={"rush-trail " + (b >= a ? "up" : "down")} style={{ left: `${Math.min(a, b)}%`, width: `${Math.abs(b - a)}%` }} />
                 <i className="rush-ghost" style={{ left: `${a}%` }} />
+                {burst ? <i key={burst.key} className="rush-flash" /> : null}
                 <span className={"rush-runner" + (status ? " " + status : "")} style={{ left: `${b}%` }}>
                   <TeamLogo src={logos[id]} />{status === "clinched" ? <em>TD</em> : null}
+                  {burst ? <b key={burst.key} className={"rush-burst " + (burst.d > 0 ? "up" : "down")}><span>{burst.d > 0 ? `+${burst.d}` : burst.d}</span></b> : null}
                 </span>
               </span>
             </button>
