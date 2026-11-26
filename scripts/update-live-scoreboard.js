@@ -3,7 +3,7 @@ import { BENCH_SLOT, IR_SLOT, settledLineupRegret } from "./lib/lineup.js";
 import { altProjectionFn, buildLineupModel, calibrateAlt, chanceToPlayFn, fixAbbr, trackLineups } from "./lib/lineup-model.js";
 import { projectionScale } from "./lib/projection-bias.js";
 import { liveMarket } from "./lib/live-markets.js";
-import { SIMULATIONS, bigPlayCeiling, gameScriptInputs, injuredOutlook, injuryShareFn, keepInPlay, weeklyUsage, medianOf, normalCdf, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
+import { SIMULATIONS, bigPlayCeiling, gameScriptInputs, injuredOutlook, injuryShareFn, keepInPlay, weeklyUsage, medianOf, dstAllowanceFn, normalCdf, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
 
 const season = process.env.ESPN_SEASON || "2026";
 const leagueId = process.env.ESPN_LEAGUE_ID || "998599827";
@@ -232,6 +232,11 @@ const hurtNow = player => nflGamesByTeam.get(Number(player.proTeamId))?.state ==
 // projection, shown and graded as "espn", stays as published.
 const archive = await readFile("data/current/week-archive.json", "utf8").then(JSON.parse).catch(() => ({ weeks: {} }));
 const projectionBias = projectionScale(archive.weeks, currentWeek);
+// The league's scoring rules, for scoring the second opinion's stat lines and a live D/ST's points/yards-allowed
+// tiers (simulation.js dstAllowanceFn).
+const scoringItems = await readFile("data/current/mSettings.json", "utf8").then(JSON.parse)
+  .then(m => m.settings?.scoringSettings?.scoringItems || null).catch(() => null);
+const allowanceOf = dstAllowanceFn(scoringItems, currentWeek);
 console.log("Projection scale:", JSON.stringify(projectionBias));
 
 for (const teamId of teams.keys()) {
@@ -256,7 +261,7 @@ for (const teamId of teams.keys()) {
       if (!nflWeek || (nflGame && !nflGame.completed)) {
         const share = hurtNow(player);
         if (share < 1) console.log(`In-game injury: ${player.fullName} keeps ${Math.round(share * 100)}% of his remaining points`);
-        remainingPlayers.push(injuredOutlook(playerOutlook({ actual, projection: fullProjection * projectionBias.scale, positionId: player.defaultPositionId, game: nflGame, proTeamId: player.proTeamId, usage: usageOf(player) }), share));
+        remainingPlayers.push(injuredOutlook(playerOutlook({ actual, projection: fullProjection * projectionBias.scale, positionId: player.defaultPositionId, game: nflGame, proTeamId: player.proTeamId, usage: usageOf(player), allowance: allowanceOf(player, nflGame) }), share));
       }
     }
     if (!Number.isFinite(fullProjection)) continue;
@@ -292,15 +297,12 @@ for (const teamId of teams.keys()) {
 const lineupBaseline = trackLineups(previousScoreboard?.lineupBaseline, currentWeek,
   [...teams.keys()].map(id => [id, rosterEntriesForTeam(id)]));
 const chanceToPlay = await chanceToPlayFn(new Map(nflGames.flatMap(g => g.teams.map(t => [Number(t.id), fixAbbr(t.abbrev)]))));
-// The league's scoring rules, for scoring the second opinion's stat lines.
-const scoringItems = await readFile("data/current/mSettings.json", "utf8").then(JSON.parse)
-  .then(m => m.settings?.scoringSettings?.scoringItems || null).catch(() => null);
 const altProjection = calibrateAlt(await altProjectionFn(currentWeek, scoringItems), [...teams.keys()].flatMap(id => rosterEntriesForTeam(id)).map(e => e.playerPoolEntry?.player).filter(Boolean), weeklyStat);
 console.log("Second-opinion scales by position:", JSON.stringify(altProjection.scale));
 const lineupModels = new Map(), lineupSummaries = new Map();
 for (const teamId of teams.keys()) {
   const { model, summary } = buildLineupModel({ entries: rosterEntriesForTeam(teamId), nflWeek: Boolean(nflWeek), usageOf,
-    gameFor: id => nflGamesByTeam.get(id) || null, weeklyStat, chanceToPlay, altProjection, set: lineupBaseline.changed[teamId], scale: projectionBias.scale, injuryShare });
+    gameFor: id => nflGamesByTeam.get(id) || null, weeklyStat, chanceToPlay, altProjection, set: lineupBaseline.changed[teamId], scale: projectionBias.scale, injuryShare, allowanceOf });
   if (model) lineupModels.set(teamId, model);
   if (summary) lineupSummaries.set(teamId, summary);
 }
@@ -336,6 +338,8 @@ for (const teamId of teams.keys()) {
         eligibleSlots: (player.eligibleSlots || []).map(Number),
         // Targets + carries so far vs projected for the game (RB/WR/TE; usage in the odds and the lineups).
         ...([1, 2, 3, 4].includes(Number(player.defaultPositionId)) && usageOf(player) ? { usage: usageOf(player) } : {}),
+        // A live D/ST's points/yards-allowed tiers: in ESPN's score now vs headed for (pace marks, odds).
+        ...(allowanceOf(player, game) ? { allowance: allowanceOf(player, game) } : {}),
         // No game this week (bye) counts as finished.
         finished: game ? game.completed : nflGames.length > 0
       };

@@ -1,6 +1,6 @@
 import React, { useEffect, useId, useRef, useState } from "react";
 import { money } from "../lib/data.js";
-import { normalCdf, normalQuantile, playerOutlook } from "../../scripts/lib/simulation.js";
+import { normalCdf, normalQuantile, paceSoFar, playerOutlook } from "../../scripts/lib/simulation.js";
 
 // The Primetime needle (Jim, 2026-11-02, after the NYT election needle): a matchup's win odds on a half dial,
 // team a's side on the left, b's on the right, shaded from lean to very likely. The needle wanders over where
@@ -42,7 +42,7 @@ function stakesLeft(teams, games) {
   for (const p of teams.flatMap(t => t.lineup?.starters || [])) {
     const game = games.find(g => (g.teamIds || (g.teams || []).map(x => Number(x.id))).map(Number).includes(Number(p.proTeamId)));
     if (!game || game.completed) continue;
-    const v = playerOutlook({ actual: p.actual, projection: p.projection, positionId: POSITION_IDS[p.pos], game, proTeamId: p.proTeamId }).sd ** 2;
+    const v = playerOutlook({ actual: p.actual, projection: p.projection, positionId: POSITION_IDS[p.pos], game, proTeamId: p.proTeamId, allowance: p.allowance }).sd ** 2;
     total += v;
     if (game.state === "in") live += v;
   }
@@ -132,9 +132,9 @@ function onTheField(team, games) {
     const g = games.find(x => x.state === "in" && (x.teamIds || []).map(Number).includes(Number(p.proTeamId)));
     if (!g) return [];
     const left = g.period > 4 ? 0 : Math.max(0, (4 - (Number(g.period) || 1)) * 900 + (Number(g.clock) || 0));
-    const due = (Number(p.projection) || 0) * (1 - left / 3600), diff = (Number(p.actual) || 0) - due;
+    const so = paceSoFar(p, 1 - left / 3600), due = so.due, diff = so.actual - due;   // D/ST tiers as trending
     const name = /D\/ST/.test(p.name) ? p.name.replace(" D/ST", "") : p.name.replace(/^[A-Z]\.\s*/, "");
-    return [{ name, trend: diff >= 2 ? "up" : diff <= -2 ? "down" : "even", title: `${p.name}: ${money(p.actual)} pts, ${money(due)} expected by now` }];
+    return [{ name, trend: diff >= 2 ? "up" : diff <= -2 ? "down" : "even", title: `${p.name}: ${money(so.actual)} pts${p.allowance ? " (allowed tiers as trending)" : ""}, ${money(due)} expected by now` }];
   });
 }
 

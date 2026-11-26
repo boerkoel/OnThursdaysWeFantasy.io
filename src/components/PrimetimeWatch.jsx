@@ -62,7 +62,7 @@ function nightSlot(nflGames) {
 function tonight(players, gameTeams, games = []) {
   const list = (players || []).filter(p => gameTeams.has(Number(p.proTeamId)));
   const outlook = list.map(p => playerOutlook({ actual: p.actual, projection: p.projection, positionId: POSITION_IDS[p.pos],
-    game: games.find(g => (g.teamIds || []).includes(Number(p.proTeamId))), proTeamId: p.proTeamId }));
+    game: games.find(g => (g.teamIds || []).includes(Number(p.proTeamId))), proTeamId: p.proTeamId, allowance: p.allowance }));
   // The players who can move the needle (Jim, 2026-11-09): the biggest spread, plus anyone with at least half of it.
   const top = Math.max(0, ...outlook.map(o => o.sd));
   const key = list.map((p, i) => ({ p, sd: outlook[i].sd })).filter(x => x.sd >= top / 2).sort((a, b) => b.sd - a.sd).slice(0, 3).map(x => x.p);

@@ -23,7 +23,7 @@ function playersLeft(team, nflGames) {
   return (team.lineup?.starters || []).map(p => {
     const game = nflGames.find(g => (g.teamIds || []).includes(p.proTeamId));
     if (!game || game.completed) return null;
-    return { ...p, game, ...playerOutlook({ actual: p.actual, projection: p.projection, positionId: POSITION_IDS[p.pos] }) };
+    return { ...p, game, ...playerOutlook({ actual: p.actual, projection: p.projection, positionId: POSITION_IDS[p.pos], allowance: p.allowance }) };
   }).filter(Boolean);
 }
 

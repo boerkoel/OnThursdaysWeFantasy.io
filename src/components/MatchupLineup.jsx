@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { usageFactor } from "../../scripts/lib/simulation.js";
+import { paceSoFar, usageFactor } from "../../scripts/lib/simulation.js";
 
 // "Live" lineups: only players whose NFL game is in progress. One shared
 // setting (remembered on this device) so every lineup view follows it.
@@ -23,7 +23,9 @@ export function LiveToggle({ liveOnly, onChange }) {
 }
 // Pace: how a player who has kicked off is doing against his projection so
 // far: projection x the share of his game played (quarter and clock; a final
-// game counts in full). Returns "up", "down" or null, with a tooltip.
+// game counts in full). A live D/ST's points/yards-allowed tiers count where
+// they're headed, not the 10 a shutout start shows (Jim, 2026-11-25). Returns
+// "up", "down" or null, with a tooltip.
 const PACE_RATIO = 0.25, PACE_POINTS = 3;
 export function paceOf(player, nflGames) {
   const game = player && nflGames.find(g => (g.teamIds || []).includes(player.proTeamId));
@@ -34,9 +36,9 @@ export function paceOf(player, nflGames) {
     const period = Math.min(Number(game.period) || 1, 4), left = Math.max(0, Number(game.clock) || 0);
     share = Math.min(1, Math.max(0.05, ((period - 1) * 900 + (900 - Math.min(left, 900))) / 3600));
   }
-  const expected = proj * share, gap = actual - expected;
+  const so = paceSoFar(player, share), expected = so.due, gap = so.actual - expected;
   if (Math.abs(gap) < PACE_POINTS || Math.abs(gap) < PACE_RATIO * expected) return null;
-  const tip = `${actual.toFixed(1)} pts vs ${expected.toFixed(1)} expected ${game.completed ? "(projection " + proj.toFixed(1) + ")" : "by now (" + Math.round(share * 100) + "% of his game played, projection " + proj.toFixed(1) + ")"}`;
+  const tip = `${so.actual.toFixed(1)} pts${player.allowance && !game.completed ? " (allowed tiers as trending)" : ""} vs ${expected.toFixed(1)} expected ${game.completed ? "(projection " + proj.toFixed(1) + ")" : "by now (" + Math.round(share * 100) + "% of his game played, projection " + proj.toFixed(1) + ")"}`;
   return { dir: gap > 0 ? "up" : "down", tip };
 }
 const PaceMark = ({ pace }) => pace ? <span className={"pace " + pace.dir} title={pace.tip} aria-label={pace.dir === "up" ? "outpacing his projection" : "behind his projection"}>{pace.dir === "up" ? "↑" : "↓"}</span> : null;

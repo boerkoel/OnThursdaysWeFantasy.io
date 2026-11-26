@@ -1,6 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { altProjectionFn, buildLineupModel, calibrateAlt, chanceToPlayFn, fixAbbr, trackLineups } from "./lib/lineup-model.js";
-import { SIMULATIONS, STILL_IN_PLAY, bigPlayCeiling, gameScriptInputs, injuryShareFn, keepInPlay, weeklyUsage, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
+import { SIMULATIONS, STILL_IN_PLAY, bigPlayCeiling, dstAllowanceFn, gameScriptInputs, injuryShareFn, keepInPlay, weeklyUsage, playerOutlook, possibleOdds, round, scoreRange, seededRng, simulateFinal } from "./lib/simulation.js";
 
 // Death Watch for the companion guillotine league (public on ESPN, so no
 // cookies are needed): each week the lowest-scoring surviving team is
@@ -162,6 +162,7 @@ const lineupBaseline = trackLineups(previous?.lineupBaseline, week, [...rosterBy
 const chanceToPlay = await chanceToPlayFn(abbrByProTeam);
 const altProjection = calibrateAlt(await altProjectionFn(week, league.settings?.scoringSettings?.scoringItems), [...rosterByTeam.values()].flat().map(e => e.playerPoolEntry?.player).filter(Boolean), weeklyStat);
 console.log("Second-opinion scales by position:", JSON.stringify(altProjection.scale));
+const allowanceOf = dstAllowanceFn(league.settings?.scoringSettings?.scoringItems, week);   // live D/ST tiers (simulation.js)
 
 const alive = [...scoreByTeam.values()]
   .filter(t => Number(t.eliminationMatchupPeriod) === 0)
@@ -177,12 +178,13 @@ const alive = [...scoreByTeam.values()]
       lineup.push({ id: Number(entry.playerId), name: shortName(player), pos: POSITIONS[Number(player.defaultPositionId)] || "", proTeamId: Number(player.proTeamId), slot,
         actual: Number.isFinite(weekActual) ? round(weekActual) : 0, projection: Number.isFinite(weekProjection) ? round(weekProjection) : null,
         injury: INJURY_SHORT[player.injuryStatus] || null,
-        owned: Number.isFinite(player.ownership?.percentOwned) ? Math.round(player.ownership.percentOwned) : null });
+        owned: Number.isFinite(player.ownership?.percentOwned) ? Math.round(player.ownership.percentOwned) : null,
+        ...(allowanceOf(player, nflGameByProTeam.get(Number(player.proTeamId))) ? { allowance: allowanceOf(player, nflGameByProTeam.get(Number(player.proTeamId))) } : {}) });
     }
     // Starters still to play (bye weeks and finished games have nothing left to
     // add), and the lineup model the simulation uses.
     const built = buildLineupModel({ entries: rosterByTeam.get(teamId) || [], nflWeek: Boolean(nflWeek), usageOf: p => weeklyUsage(p, week),
-      gameFor: id => nflGameByProTeam.get(id) || null, weeklyStat, chanceToPlay, altProjection, set: lineupBaseline.changed[teamId], injuryShare });
+      gameFor: id => nflGameByProTeam.get(id) || null, weeklyStat, chanceToPlay, altProjection, set: lineupBaseline.changed[teamId], injuryShare, allowanceOf });
     for (const r of built.remaining) remaining.push({ name: r.player.fullName, game: r.game?.name || "", actual: round(r.actual), ...r.outlook });
     const score = round(Number(t.totalPointsLive ?? t.totalPoints ?? 0));
     return {

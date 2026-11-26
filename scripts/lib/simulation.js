@@ -240,17 +240,75 @@ export function paceFactor({ positionId, actual, projection, game }) {
   return Math.min(1.3, Math.max(0.7, Math.sqrt(((Number(actual) || 0) + PACE_PRIOR) / (due + PACE_PRIOR))));
 }
 
-export function playerOutlook({ actual, projection, positionId, game = null, proTeamId = null, usage = null }) {
+// D/ST points and yards allowed (Jim, 2026-11-25: a defense jumped to 10 at kickoff, 0 points and 0 yards
+// allowed, and read as far ahead of its ~6 projection). Those tiers only settle at the final whistle, so a
+// live D/ST's tier points count at where they're headed: today's points and yards allowed plus what the
+// opponent should add in the time left (ESPN's projected points/yards allowed x the game left, normal spread),
+// scored on the league's tiers. Sacks, takeaways and return TDs count as they happen.
+// allowance = { now: tier points in ESPN's live score, expected: tier points expected at the final, start: the
+// same at kickoff (the projection's tier part), sd: their spread }.
+const DST_ALLOWED = [
+  { stat: 120, mean: 21, sd: 10, tiers: [[0, 89], [6, 90], [13, 91], [17, 92], [21, 121], [27, 122], [34, 123], [45, 124], [Infinity, 125]] },
+  { stat: 127, mean: 330, sd: 80, tiers: [[99, 128], [199, 129], [299, 130], [349, 131], [399, 132], [449, 133], [499, 134], [549, 135], [Infinity, 136]] }
+];
+export function dstAllowanceFn(scoringItems, week) {
+  const points = new Map((scoringItems || []).map(i => [Number(i.statId), Number(i.pointsOverrides?.["16"] ?? i.points) || 0]));
+  const tierPoints = (tiers, x) => points.get(tiers.find(([max]) => x <= max)[1]) || 0;
+  const weekStats = (player, source) => (player?.stats || []).find(s => Number(s.scoringPeriodId) === Number(week)
+    && Number(s.statSourceId) === source && Number(s.statSplitTypeId) === 1)?.stats;
+  // Mean and variance of the tier points at the final, from `cur` allowed with `left` of the game to go.
+  const tierOutlook = ({ sd, tiers }, cur, mean, left) => {
+    if (!(left > 0)) return { mean: tierPoints(tiers, cur), v: 0 };
+    const mu = cur + mean * left, s = sd * Math.sqrt(left);
+    let below = 0, m = 0, m2 = 0;
+    for (const [max, stat] of tiers) {
+      const upTo = max === Infinity ? 1 : max < cur ? 0 : normalCdf((max + 0.5 - mu) / s), p = upTo - below, pts = points.get(stat) || 0;
+      m += p * pts; m2 += p * pts * pts; below = upTo;
+    }
+    return { mean: m, v: Math.max(0, m2 - m * m) };
+  };
+  return (player, game) => {
+    if (!points.size || Number(player?.defaultPositionId) !== 16) return null;
+    const actual = weekStats(player, 0), proj = weekStats(player, 1) || {};
+    const left = game?.completed ? 0 : gameShareLeft(game);
+    if (!actual || left == null) return null;
+    let now = 0, expected = 0, start = 0, v = 0;
+    for (const a of DST_ALLOWED) {
+      const cur = Number(actual[a.stat]) || 0, mean = Number(proj[a.stat]) > 0 ? Number(proj[a.stat]) : a.mean;
+      const later = tierOutlook(a, cur, mean, left);
+      now += tierPoints(a.tiers, cur); expected += later.mean; v += later.v;
+      start += tierOutlook(a, 0, mean, 1).mean;
+    }
+    return { now: round(now), expected: round(expected), start: round(start), sd: round(Math.sqrt(v)) };
+  };
+}
+// A live D/ST's score and projection with the tiers counted where they're headed (the rest, as it happens).
+function dstSplit({ actual, projection, allowance }) {
+  return { actual: (Number(actual) || 0) - allowance.now, projection: Math.max(0, (Number(projection) || 0) - allowance.start) };
+}
+// Pace (the ↑/↓ marks): what a player has toward his projection so far, and what was due by now with `played`
+// of his game done. A D/ST's tiers count at where they're headed and are due in full from kickoff.
+export function paceSoFar({ actual, projection, allowance = null }, played) {
+  if (!allowance) return { actual: Number(actual) || 0, due: (Number(projection) || 0) * played };
+  const s = dstSplit({ actual, projection, allowance });
+  return { actual: s.actual + allowance.expected, due: s.projection * played + allowance.start };
+}
+
+export function playerOutlook({ actual, projection, positionId, game = null, proTeamId = null, usage = null, allowance = null }) {
+  const tiers = Number(positionId) === 16 && allowance ? allowance : null;
+  if (tiers) ({ actual, projection } = dstSplit({ actual, projection, allowance }));
   const unscripted = restOf({ projection, actual, game }) * paceFactor({ positionId, actual, projection, game });
   const shareLeft = Number.isFinite(projection) && projection > 0 ? Math.min(1, unscripted / projection) : 0.5;
   const rest = unscripted * gameScriptFactor({ positionId, proTeamId, game }) * driveFactor({ positionId, proTeamId, game }) * usageFactor({ positionId, usage, game });
   const live = game?.state === "in" && TD_POINTS[Number(positionId)];
+  const sd = (SD_FRACTION[Number(positionId)] ?? DEFAULT_SD_FRACTION) * Math.max(rest, MIN_SPREAD_POINTS);
   return {
-    rest,
+    // A D/ST's tiers can still fall from what ESPN shows now, so its rest can be negative.
+    rest: tiers ? rest + tiers.expected - tiers.now : rest,
     ...(live ? { td: { chance: tdChance(positionId, rest), points: TD_POINTS[Number(positionId)] } } : {}),
-    sd: (SD_FRACTION[Number(positionId)] ?? DEFAULT_SD_FRACTION) * Math.max(rest, MIN_SPREAD_POINTS),
-    floor: NEGATIVE_FLOOR[Number(positionId)] ?? DEFAULT_FLOOR,
-    exitRisk: EARLY_EXIT_RATE * shareLeft
+    sd: tiers ? Math.hypot(sd, tiers.sd) : sd,
+    floor: (NEGATIVE_FLOOR[Number(positionId)] ?? DEFAULT_FLOOR) + (tiers ? Math.max(0, tiers.now) : 0),
+    exitRisk: tiers ? 0 : EARLY_EXIT_RATE * shareLeft
   };
 }
 

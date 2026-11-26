@@ -128,7 +128,7 @@ export function trackLineups(previous, week, entriesByTeam) {
 // can tally each current starter's simulated points.
 const FRESH_MS = 6 * 24 * 3600 * 1000;   // a pickup counts as new for 6 days
 // scale: the projection bias correction (projection-bias.js), applied to the blended projection.
-export function buildLineupModel({ entries, nflWeek, gameFor, weeklyStat, chanceToPlay, set, now = Date.now(), altProjection = () => null, usageOf = () => null, scale = 1, injuryShare = () => 1 }) {
+export function buildLineupModel({ entries, nflWeek, gameFor, weeklyStat, chanceToPlay, set, now = Date.now(), altProjection = () => null, usageOf = () => null, scale = 1, injuryShare = () => 1, allowanceOf = () => null }) {
   let nextKickoff = Infinity;
   const fixed = [], fixedIdx = [], slots = [], pool = [], current = [], remaining = [], poolRemIdx = [];
   for (const entry of entries || []) {
@@ -141,7 +141,7 @@ export function buildLineupModel({ entries, nflWeek, gameFor, weeklyStat, chance
     const espn = weeklyStat(player, 1), alt = altProjection(player);
     const projection = scale * (Number.isFinite(espn) && alt != null ? (espn + alt) / 2 : Number.isFinite(espn) ? espn : alt ?? NaN);
     // hurt in this game and not back yet: part of his remaining points (simulation.js injuryShareFn)
-    const base = injuredOutlook(playerOutlook({ actual, projection, positionId: player.defaultPositionId, game, proTeamId: player.proTeamId, usage: usageOf(player) }),
+    const base = injuredOutlook(playerOutlook({ actual, projection, positionId: player.defaultPositionId, game, proTeamId: player.proTeamId, usage: usageOf(player), allowance: allowanceOf(player, game) }),
       game?.state === "in" ? injuryShare(player) : 1);
     const gap = Number.isFinite(espn) && alt != null ? Math.abs(espn - alt) : 0;
     const left = Number.isFinite(projection) && projection > 0 ? Math.min(1, base.rest / projection) : 0;
