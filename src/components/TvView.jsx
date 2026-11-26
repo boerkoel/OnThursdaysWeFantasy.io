@@ -441,6 +441,9 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
         : lastInGame ? <span className="tv-lastplay"><small>LAST PLAY</small> {lastInGame}</span> : "\u00a0"}</p>
   </div> : null;
   const heroSide = !inline && !narrow;
+  // The Rush in Watch mode on any screen (Jim, 2026-11-26); on a phone it follows the median's tightest two and the
+  // ticket's top two, and the Live Action hero docks at the bottom with the ticker under it, in the curved strip.
+  const showRush = !inline && Boolean(seasonOdds?.teams?.length);
   const [dockEl, setDockEl] = useState(null);
   useDock(inline, dockEl);
   return (
@@ -493,7 +496,7 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
         <aside className="tv-side">
           {/* Inline, the median and ticket needles open them as pop-ups (Jim, 2026-11-22). */}
           <div onClick={inline && onOpenStat ? () => onOpenStat("median") : undefined} style={inline ? { cursor: "pointer" } : undefined}>
-          <NeedleRace label="MEDIAN LINE" compact max={inline ? null : narrow && open.length > 4 ? 2 : 4} even={inline} pick="stake" onSwap={swapped("📏")} items={scores.map(s => ({ team: s, p: Number(s.aboveMedianProbability), from: s.liveAboveFrom, fork: forks.median(s), peeks: livePeeks(peeks.median(s), s) }))}
+          <NeedleRace label="MEDIAN LINE" compact max={inline ? null : narrow ? 2 : 4} even={inline} pick="stake" onSwap={swapped("📏")} items={scores.map(s => ({ team: s, p: Number(s.aboveMedianProbability), from: s.liveAboveFrom, fork: forks.median(s), peeks: livePeeks(peeks.median(s), s) }))}
             sides={["below", "above"]} colors={MEDIAN_COLORS} band={[30, 70]} words={{ likely: ["likely below", "likely above"], locked: ["❌ below", "✅ above"] }}
             stakes={scores} history={scoreboard.medianHistory?.week === scoreboard.week ? scoreboard.medianHistory.points : []} games={games} />
           </div>
@@ -506,12 +509,11 @@ export default function TvView({ forks = { win: () => null, median: () => null, 
           {/* Once the ticket is locked, the chopping block takes its place and it's one line below (Jim, 2026-11-09). */}
           {ticketWinner ? <p className="tv-results-line">🎟️ Ticket: {ticketWinner.team}</p> : null}
           {heroSide && hero ? <div className="tv-hero"><small className="mini-needles-label">🏈 LIVE ACTION</small>{hero}</div> : null}
-          {/* The 100-Yard Rush on a wide screen (Jim, 2026-11-26), ahead of the on-the-field list, which gets what's left. */}
-          {heroSide && seasonOdds?.teams?.length ? <div className="tv-rush"><small className="mini-needles-label">🏈 100-YARD RUSH</small>
+          {/* The 100-Yard Rush (Jim, 2026-11-26) takes the room the on-the-field list had; Live Action covers the drive. */}
+          {showRush ? <div className="tv-rush"><small className="mini-needles-label">🏈 100-YARD RUSH</small>
             <RushField seasonOdds={seasonOdds} logos={logos} weekStarted={games.some(g => g.state !== "pre")} compact /></div> : null}
           {/* Survivor left Watch mode for room (Jim, 2026-11-21): managers with entries see them in their game-day view. */}
-          {/* On a wide screen the Rush takes the room "on the field now" had; Live Action covers the drive. */}
-          {field.length && !(heroSide && seasonOdds?.teams?.length) ? <div className="tv-field"><small className="mini-needles-label">ON THE FIELD NOW</small>
+          {field.length && !showRush ? <div className="tv-field"><small className="mini-needles-label">ON THE FIELD NOW</small>
             {field.map(f => <p key={f.id}><b>{f.head}</b>{f.on.length ? " — " + f.on.join(", ") : " — no league starters"}</p>)}</div> : null}
         </aside>
       </div>

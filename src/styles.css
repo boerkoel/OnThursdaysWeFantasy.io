@@ -1405,3 +1405,17 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .tv-hero .tv-whatif{display:block!important;-webkit-line-clamp:unset;height:3.05em;min-height:0;overflow:hidden}
 /* The compact Rush's lanes: fewer teams, so taller lanes; the band is the week's possible range (lose both to win both). */
 .rush.compact .rush-lane{max-height:2.1em}.rush.compact .rush-range.swing{background:#e6c85c2e;box-shadow:inset 0 0 0 1px #e6c85c55}
+/* A needle's gold flash on a big real move (Jim, 2026-11-26), like the Rush's burst. */
+.mini-needle{position:relative}
+.needle-burst{position:absolute;inset:-1px;border-radius:inherit;pointer-events:none;animation:needle-flash 2s ease-out both}
+.needle-burst span{position:absolute;top:4px;right:6px;padding:1px 5px;border-radius:999px;background:#e6c85c;color:#10110f;font-size:11px;font-weight:900;font-style:normal;animation:rush-yds 3.2s ease-out both}
+.needle-burst.down span{background:#d98a86}
+@keyframes needle-flash{0%{box-shadow:0 0 0 0 #e6c85c00}20%{box-shadow:0 0 0 2px #e6c85c,0 0 18px #e6c85c88,inset 0 0 16px #e6c85c44}100%{box-shadow:0 0 0 0 #e6c85c00}}
+@media (prefers-reduced-motion:reduce){.needle-burst{animation:none}.needle-burst span{animation:rush-yds 3.2s step-end both}}
+/* Watch mode on a phone (Jim, 2026-11-26): the Rush lanes at a fixed height in the scrolling page, and the ticker back
+   under the Live Action hero, down in the curved strip at the bottom. */
+@media (max-width:760px),(orientation:portrait) and (max-width:1024px){
+.tv-rush{flex:none!important;min-height:0;margin-top:12px}.rush.compact{font-size:16px}.rush.compact .rush-row{grid-template-columns:112px 1fr}
+.rush.compact .rush-lane{flex:none;height:26px;max-height:none}.rush.compact .rush-track{height:26px}
+.tv:not(.tv-inline) .tv-ticker:not(:has(.tv-drive)){display:block}.tv:not(.tv-inline) .tv-ticker-window{display:block;padding:4px 0 0}
+.tv:not(.tv-inline) .tv-ticker-track span{font-size:12px!important}.tv:not(.tv-inline) .tv-body{flex:none;padding-bottom:150px}}

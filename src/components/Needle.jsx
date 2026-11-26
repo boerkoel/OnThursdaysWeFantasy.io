@@ -11,6 +11,9 @@ import { normalCdf, normalQuantile, paceSoFar, playerOutlook } from "../../scrip
 // margin reads like a betting line.
 const CX = 120, CY = 118, R_OUT = 104, R_IN = 66;
 // Zone edges in b's win chance, and how strong each zone's shade is.
+// A gold flash when a real update (not a what-if) moves a needle this many points (Jim, 2026-11-26: like the Rush's
+// burst): the card glows and the move shows in a badge, then both fade.
+const BURST_PTS = 6;
 const ZONES = [[0, 5, 0.9], [5, 25, 0.6], [25, 50, 0.32], [50, 75, 0.32], [75, 95, 0.6], [95, 100, 0.9]];
 const A_COLOR = "#7aa6d8", B_COLOR = "#e0a64a";
 const point = (pB, r) => { const t = Math.PI * (1 - pB / 100); return [CX + r * Math.cos(t), CY - r * Math.sin(t)]; };
@@ -324,6 +327,13 @@ export function MiniNeedle({ team, p, from = null, sides, colors, band = null, h
   const { live, shown, peek, slow } = useQuake({ teams: stakes || [team], games, history, historyId: team.teamId, p, fork, peeks,
     name: team.team + (sides[1] === team.team ? "" : " " + sides[1]) });
   const markerId = useId();
+  const lastP = useRef(Number(p));
+  const [burst, setBurst] = useState(null);
+  useEffect(() => {
+    const d = Number(p) - lastP.current;
+    if (Number.isFinite(d) && Math.abs(d) >= BURST_PTS) setBurst({ d, key: Date.now() });
+    if (Number.isFinite(Number(p))) lastP.current = Number(p);
+  }, [p]);
   if (!Number.isFinite(Number(p))) return null;
   const range = sinceDayStart({ teams: stakes || [team], games, history, id: team.teamId, now: Number(p) });
   const right = fixed || Number(p) >= 50;
@@ -354,6 +364,8 @@ export function MiniNeedle({ team, p, from = null, sides, colors, band = null, h
       {peeks.length ? <span className="mini-needle-peek">{peek && !peek.silent ? `${peek.label}: ${Math.round(right ? peek.p : 100 - peek.p)}%` : "\u00a0"}</span> : null}
       {fork ? <span className="mini-needle-fork" title={`Flailing between two futures: ${Math.round(p)}% if he's back, ${Math.round(fork.pOut)}% if not`}>
         {fork.label} · {Math.round(right ? p : 100 - p)}↔{Math.round(right ? fork.pOut : 100 - fork.pOut)}%</span> : null}
+      {burst ? <i key={burst.key} className={"needle-burst " + ((right ? burst.d : -burst.d) > 0 ? "up" : "down")} aria-hidden="true">
+        <span>{(right ? burst.d : -burst.d) > 0 ? "+" : "−"}{Math.abs(Math.round(burst.d))}</span></i> : null}
     </div>
   );
 }
