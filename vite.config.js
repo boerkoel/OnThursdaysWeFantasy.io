@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { execSync } from "node:child_process";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { SHARE_VIEWS } from "./src/lib/shareViews.js";
 
 // Which code this build is: the commit (live runs rebuild the same commit, so
 // it only changes when code or the daily data is pushed). The page compares
@@ -15,15 +16,15 @@ try { BUILD_ID = execSync("git rev-parse HEAD", { encoding: "utf8" }).trim() || 
 let BUILD_TIME = 0;
 try { BUILD_TIME = Number(execSync("git log -1 --format=%ct", { encoding: "utf8" }).trim()) || 0; } catch {}
 
-// Link-preview pages, one per tab: /s/<tab>/ carries the tab's name in its
-// preview tags (crawlers never see the part after #, so the hash alone can't
-// do this) and forwards to the site, keeping any #section from the link.
+// Link-preview pages, one per view in src/lib/shareViews.js: /s/<view>/ carries the view's name in its preview tags
+// (crawlers never see the part after #, so the hash alone can't do this) and forwards to the site, keeping any
+// #section from the link. The picture starts as the site icon; scripts/share-images.js swaps in a screenshot of
+// the view after the build (the marked og:image lines), so a failed screenshot still leaves a working preview.
 const SITE_URL = "https://boerkoel.github.io/OnThursdaysWeFantasy.io/";
-const SHARE_TABS = { live: "Live", standings: "Standings", "death-watch": "Death Watch", league: "League", teams: "Teams", survivor: "Survivor" };
 const escapeHtml = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-function sharePage(tab, title) {
+function sharePage({ title, hash }) {
   const full = escapeHtml(`${title} · On Thursdays We Fantasy`);
-  const to = `${SITE_URL}#${tab}`;
+  const to = `${SITE_URL}#${hash}`;
   return `<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -32,10 +33,10 @@ function sharePage(tab, title) {
 <meta property="og:site_name" content="On Thursdays We Fantasy">
 <meta property="og:title" content="${full}">
 <meta property="og:description" content="The Officially Unofficial League Record Book">
-<meta property="og:image" content="${SITE_URL}icons/icon-512.png">
+<meta property="og:image" content="${SITE_URL}icons/icon-512.png"><!--share-image-->
 <meta property="og:type" content="website">
-<meta name="twitter:card" content="summary">
-<script>location.replace(${JSON.stringify(SITE_URL)} + (location.hash || ${JSON.stringify("#" + tab)}))</script>
+<meta name="twitter:card" content="summary"><!--share-card-->
+<script>location.replace(${JSON.stringify(SITE_URL)} + (location.hash || ${JSON.stringify("#" + hash)}))</script>
 <noscript><meta http-equiv="refresh" content="0; url=${to}"></noscript>
 </head><body style="background:#10110f;color:#f7f7f2;font-family:system-ui,sans-serif"><a style="color:#b8c69b" href="${to}">${full}</a></body></html>
 `;
@@ -44,8 +45,8 @@ function publishSharePages() {
   return {
     name: "publish-share-pages",
     generateBundle() {
-      for (const [tab, title] of Object.entries(SHARE_TABS)) {
-        this.emitFile({ type: "asset", fileName: `s/${tab}/index.html`, source: sharePage(tab, title) });
+      for (const [view, spec] of Object.entries(SHARE_VIEWS)) {
+        this.emitFile({ type: "asset", fileName: `s/${view}/index.html`, source: sharePage(spec) });
       }
     }
   };

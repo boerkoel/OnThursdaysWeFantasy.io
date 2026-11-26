@@ -41,6 +41,12 @@ jobs:
         run: npm ci
       - name: Build site
         run: npm run build
+      # Link-preview pictures for /s/<view>/ (scripts/share-images.js): headless Chrome screenshots of each view.
+      # A failure leaves the site icon in the previews, never a failed deploy.
+      - name: Take link-preview pictures
+        continue-on-error: true
+        timeout-minutes: 5
+        run: node scripts/share-images.js
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:

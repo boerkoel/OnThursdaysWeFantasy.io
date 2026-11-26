@@ -9,7 +9,7 @@ import playoffs from "../data/current/playoffs.json";
 import teamsData from "../data/current/teams.json";
 import weekly from "../data/current/weekly.json";
 import { fetchData, fetchWeekArchive, gameState, money, pct, useLiveData } from "./lib/data.js";
-import { Explain, ShareButton, TeamLogo, UpdatedAgo, useChangedScores } from "./components/LiveBits.jsx";
+import { Explain, ShareButton, ShareLink, TeamLogo, UpdatedAgo, useChangedScores } from "./components/LiveBits.jsx";
 import LeagueWire from "./components/LeagueWire.jsx";
 import { useRefresh } from "./components/PullToRefresh.jsx";
 import TeamCards from "./components/TeamCards.jsx";
@@ -910,7 +910,7 @@ function App() {
         {dashMode === "manager" ? <>{renderMyTeam({ gamedayButton: false })}{renderGameday()}</>
           : <TvView forks={{ win: winFork, median: medianFork, ticket: ticketFork }} peeks={watchPeeks} scoreboard={scoreboard} guillotine={guillotine} livePlays={livePlayFeed} marquee={live.marquee} survivorFeed={survivorFeed} logos={teamLogos} inline onOpenMatchup={setOpenMatchup} onOpenStat={setStatSheet} />}
         {dashMode === "league" ? <div className="rush-dash" id="rush">
-          <div className="section-heading"><div><span className="section-kicker">RACE TO THE PLAYOFFS</span><h2>The 100-Yard Rush</h2></div></div>
+          <div className="section-heading"><div><span className="section-kicker">RACE TO THE PLAYOFFS</span><h2>The 100-Yard Rush</h2></div><ShareLink section="rush" label="Share a link to the 100-Yard Rush" /></div>
           <RushField seasonOdds={live.seasonOdds} logos={teamLogos} weekStarted={(scoreboard.nflGames || []).some(g => g.state !== "pre")} />
         </div> : null}
       </section> : null}

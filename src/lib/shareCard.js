@@ -1,4 +1,5 @@
-import { SECTION_TAB, TABS } from "./tabs.js";
+import { SECTION_TAB } from "./tabs.js";
+import { SHARE_VIEWS } from "./shareViews.js";
 // Share cards: a 1080px-wide image (height fits the content) drawn on a canvas, shared through the phone's
 // share sheet when available, otherwise downloaded. Drawn directly (not a
 // page screenshot) so layout is predictable; only same-origin logos are drawn
@@ -127,13 +128,15 @@ export async function renderShareCard(spec) {
   return card;
 }
 
-// Shared along with the image: a link to the card's section. /s/<tab>/ is a
-// tiny page (made by vite.config.js) whose link preview carries the tab's
-// name, and which forwards to /#<section> on the site.
+// Shared along with the image: a link to the card's section. /s/<view>/ is a
+// tiny page (made by vite.config.js) whose link preview carries the view's
+// name and picture (src/lib/shareViews.js), and which forwards to /#<section>
+// on the site. ?v= is the build, so a new deploy's picture isn't hidden behind
+// a preview the messaging app cached for an older link.
 export const sectionLink = section => {
-  const tab = !section ? "live" : TABS.some(t => t.id === section) ? section : SECTION_TAB[section] || "live";
-  const hash = section && section !== tab ? `#${section}` : "";
-  return new URL(`s/${tab}/${hash}`, window.location.origin + import.meta.env.BASE_URL).href;
+  const view = SHARE_VIEWS[section] ? section : !section ? "live" : SHARE_VIEWS[SECTION_TAB[section]] ? SECTION_TAB[section] : "live";
+  const hash = section && section !== view ? `#${section}` : "";
+  return new URL(`s/${view}/?v=${__BUILD_TIME__}${hash}`, window.location.origin + import.meta.env.BASE_URL).href;
 };
 
 export async function shareCard(spec, filename, section) {

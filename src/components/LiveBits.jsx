@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { shareCard } from "../lib/shareCard.js";
+import { sectionLink, shareCard } from "../lib/shareCard.js";
 
 // Small "Share" button; build() returns the share card spec when clicked.
 // iconOnly shows just the arrow (label is then only read out by screen readers).
@@ -15,6 +15,19 @@ export function ShareButton({ build, filename, section, label = "Share", iconOnl
     return <button type="button" className="share-button icon-only" onClick={onClick} disabled={busy} aria-label={label + " as an image"} title={label}>{busy ? "…" : "⤴"}</button>;
   }
   return <button type="button" className="share-button" onClick={onClick} disabled={busy} aria-label={label + " as an image"}>⤴ {busy ? "…" : label}</button>;
+}
+
+// Share just the link (Jim, 2026-11-25): /s/<view>/, whose preview shows the view's picture (shareViews.js);
+// the address bar's /#<section> can't carry one. Copies it where the phone has no share sheet.
+export function ShareLink({ section, label = "Share a link" }) {
+  const [copied, setCopied] = useState(false);
+  const onClick = async event => {
+    event.stopPropagation();
+    const url = sectionLink(section);
+    try { if (navigator.share) return await navigator.share({ url }); } catch (error) { if (error?.name === "AbortError") return; }
+    try { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch {}
+  };
+  return <button type="button" className="share-button icon-only" onClick={onClick} aria-label={label} title={copied ? "Link copied" : label}>{copied ? "✓" : "🔗"}</button>;
 }
 
 // A short note with the long explanation tucked behind a caret (Jim, 2026-11-02).
